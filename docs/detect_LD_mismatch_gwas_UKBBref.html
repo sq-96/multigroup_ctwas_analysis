@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Kaixuan Luo" />
+
+<meta name="date" content="2023-11-08" />
+
+<title>Detect mismatch between GWAS zscores and LD reference</title>
+
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/htmlwidgets-1.6.1/htmlwidgets.js"></script>
+<link href="site_libs/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet" />
+<script src="site_libs/datatables-binding-0.22/datatables.js"></script>
+<link href="site_libs/dt-core-1.11.3/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="site_libs/dt-core-1.11.3/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="site_libs/dt-core-1.11.3/js/jquery.dataTables.min.js"></script>
+<link href="site_libs/crosstalk-1.2.0/css/crosstalk.min.css" rel="stylesheet" />
+<script src="site_libs/crosstalk-1.2.0/js/crosstalk.min.js"></script>
+<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">multigroup_ctwas_analysis</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/sq-96/multigroup_ctwas_analysis">
+    <span class="fab fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Detect mismatch between GWAS zscores and LD reference</h1>
+<h4 class="author">Kaixuan Luo</h4>
+<h4 class="date">2023-11-08</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span> workflowr <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2023-11-14
+</p>
+<p>
+<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 7 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 0
+</p>
+<p>
+<strong>Knit directory:</strong> <code>multigroup_ctwas_analysis/</code> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="This is the local directory in which the code in this file was executed."> </span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a> analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version 1.7.0). The <em>Checks</em> tab describes the reproducibility checks that were applied when the results were created. The <em>Past versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguptodate" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great! Since the R Markdown file has been committed to the Git repository, you know the exact version of the code that produced these results.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the global environment can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it’s best to always run the code in an empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20231112code"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Seed:</strong> <code>set.seed(20231112)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20231112code" class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20231112)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Session information:</strong> recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be confident that you successfully produced the results during this run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree6ebf5cf6c2da9fb03b954613cd9161d9743a0241targetblank6ebf5cfa"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/6ebf5cf6c2da9fb03b954613cd9161d9743a0241" target="_blank">6ebf5cf</a> </a>
+</p>
+</div>
+<div id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree6ebf5cf6c2da9fb03b954613cd9161d9743a0241targetblank6ebf5cfa" class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version <a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/6ebf5cf6c2da9fb03b954613cd9161d9743a0241" target="_blank">6ebf5cf</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .Rproj.user/
+
+Unstaged changes:
+    Modified:   analysis/index.Rmd
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+
+<p>
+These are the previous versions of the repository in which changes were made to the R Markdown (<code>analysis/detect_LD_mismatch_gwas_UKBBref.Rmd</code>) and HTML (<code>docs/detect_LD_mismatch_gwas_UKBBref.html</code>) files. If you’ve configured a remote Git repository (see <code>?wflow_git_remote</code>), click on the hyperlinks in the table below to view the files as they were in that past version.
+</p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/6ebf5cf6c2da9fb03b954613cd9161d9743a0241/analysis/detect_LD_mismatch_gwas_UKBBref.Rmd" target="_blank">6ebf5cf</a>
+</td>
+<td>
+kevinlkx
+</td>
+<td>
+2023-11-14
+</td>
+<td>
+wflow_publish(“analysis/detect_LD_mismatch_gwas_UKBBref.Rmd”)
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<div id="load-packages-and-functions" class="section level2">
+<h2>Load packages and functions</h2>
+<pre class="r"><code>library(ctwas)
+library(susieR)
+library(tidyverse)
+library(GenomicRanges)
+library(rtracklayer)</code></pre>
+<pre class="r"><code># Load UKBB reference LD matrix and SNP info
+load_UKBB_R_snp_info &lt;- function(region_df, ld_R_dir, filestem = &quot;ukb_b38_0.1&quot;){
+  filename &lt;- sprintf(&quot;%s_chr%s.R_snp.%d_%d&quot;, filestem,
+                      gsub(&quot;chr&quot;, &quot;&quot;, region_df$chr), region_df$start, region_df$stop)
+  print(filename)
+  if(!file.exists(file.path(ld_R_dir, paste0(filename, &quot;.RDS&quot;))) || !file.exists(file.path(ld_R_dir, paste0(filename, &quot;.Rvar&quot;)))){
+    stop(&quot;LD Reference files not exist!&quot;)
+  }
+  R_snp &lt;- readRDS(file.path(ld_R_dir, paste0(filename, &quot;.RDS&quot;)))
+  R_snp_info &lt;- read.table(file.path(ld_R_dir, paste0(filename, &quot;.Rvar&quot;)), header=TRUE)
+  return(list(R_snp = R_snp, R_snp_info = R_snp_info))
+}
+
+# Match GWAS sumstats with LD reference files. Only keep variants included in LD reference.
+match_gwas_R_snp &lt;- function(sumstats, R, snp_info){
+  sumstats &lt;- sumstats[sumstats$id %in% snp_info$id,]
+  R_snp_index &lt;- na.omit(match(sumstats$id, snp_info$id))
+  sumstats$R_snp_index &lt;- R_snp_index
+  R &lt;- R[R_snp_index, R_snp_index]
+  stopifnot(nrow(sumstats) == nrow(R))
+  return(list(sumstats = sumstats, R = R))
+}
+
+liftOver_hg19ToHg38 &lt;- function(gr){
+  seqlevelsStyle(gr) &lt;- &quot;UCSC&quot;
+  ch &lt;- import.chain(&quot;~/softwares/liftOver/hg19ToHg38.over.chain&quot;)
+  gr &lt;- unlist(liftOver(gr, ch))
+  genome(gr) &lt;- &quot;hg38&quot;
+  return(gr)
+}</code></pre>
+<p>Load LD Regions (ldetect blocks)</p>
+<pre class="r"><code>regions &lt;- system.file(&quot;extdata/ldetect&quot;, &quot;EUR.b38.bed&quot;, package = &quot;ctwas&quot;)
+regions_df &lt;- read.table(regions, header = T)
+regions_df &lt;- regions_df %&gt;% dplyr::arrange(chr, start, stop) %&gt;% dplyr::mutate(locus = 1:nrow(regions_df))</code></pre>
+</div>
+<div id="ldl" class="section level2">
+<h2>LDL</h2>
+<pre class="r"><code>trait &lt;- &quot;LDL&quot;
+set.seed(123)
+outdir &lt;- paste0(&quot;/project2/xinhe/kevinluo/cTWAS/multigroup/ld_mismatch_filtering/&quot;, trait)
+if(!dir.exists(outdir)) dir.create(outdir)</code></pre>
+<p>GWAS data</p>
+<pre class="r"><code># read the data
+sumstats &lt;- VariantAnnotation::readVcf(&quot;/project2/xinhe/shared_data/multigroup_ctwas/gwas/ukb-d-30780_irnt.vcf.gz&quot;)
+sumstats &lt;- gwasvcf::vcf_to_tibble(sumstats)
+
+# compute the z-scores
+sumstats$Z &lt;- sumstats$ES/sumstats$SE
+
+# drop multiallelic variants (id not unique)
+sumstats &lt;- sumstats[!(sumstats$rsid %in% sumstats$rsid[duplicated(sumstats$rsid)]),]
+
+keep_columns &lt;- c(&quot;seqnames&quot;, &quot;start&quot;, &quot;rsid&quot;, &quot;REF&quot;, &quot;ALT&quot;, &quot;ES&quot;, &quot;SE&quot;, &quot;Z&quot;, &quot;LP&quot;)
+sumstats &lt;- sumstats[,keep_columns] %&gt;% 
+  dplyr::rename(chr = seqnames, pos = start, id = rsid, A1 = ALT, A2 = REF, z = Z, pval = LP)
+saveRDS(sumstats, file=&quot;/project2/xinhe/shared_data/multigroup_ctwas/gwas/gwas_processed/LDL-ukb-d-30780_irnt.sumstats.RDS&quot;)
+
+# subset the columns and format the column names
+z_snp &lt;- as.data.frame(sumstats[,c(&quot;id&quot;, &quot;A1&quot;, &quot;A2&quot;, &quot;z&quot;)])
+
+# save the formatted z-scores
+saveRDS(z_snp, file=&quot;/project2/xinhe/shared_data/multigroup_ctwas/gwas/gwas_processed/LDL-ukb-d-30780_irnt.z_snp.RDS&quot;)</code></pre>
+<pre class="r"><code>sumstats_file &lt;- &quot;/project2/xinhe/shared_data/multigroup_ctwas/gwas/gwas_processed/LDL-ukb-d-30780_irnt.sumstats.RDS&quot;
+print(sumstats_file)
+sumstats &lt;- readRDS(sumstats_file)
+z_snp &lt;- as.data.frame(sumstats[,c(&quot;id&quot;, &quot;A1&quot;, &quot;A2&quot;, &quot;z&quot;)])
+gwas_n &lt;- 343621</code></pre>
+<p>Assign GWAS SNPs to LD Regions</p>
+<pre class="r"><code>sumstats &lt;- makeGRangesFromDataFrame(sumstats, start.field = &quot;pos&quot;, end.field = &quot;pos&quot;, keep.extra.columns = T)
+sumstats_hg38 &lt;- liftOver_hg19ToHg38(sumstats) %&gt;% as.data.frame() %&gt;%
+  dplyr::rename(chr = seqnames, pos = start, snp = id) %&gt;%
+  dplyr::select(chr, pos, snp, A1, A2, z, pval)
+sumstats_hg38 &lt;- mapgen::assign_snp_locus(sumstats_hg38, regions_df)</code></pre>
+<p>Select locus</p>
+<pre class="r"><code>sig.loci &lt;- sumstats_hg38 %&gt;% dplyr::filter(pval &gt; -log10(5e-8)) %&gt;%
+  dplyr::arrange(-pval) %&gt;%
+  dplyr::pull(locus) %&gt;% unique()
+saveRDS(sig.loci,  file.path(outdir, paste0(trait, &quot;.sig.loci.rds&quot;)))
+
+rm(sumstats)
+rm(sumstats_hg38)</code></pre>
+<p>LD mismatch diagnosis</p>
+<pre class="r"><code>sig.loci &lt;- readRDS(file.path(outdir, paste0(trait, &quot;.sig.loci.rds&quot;)))
+cat(length(sig.loci), &quot;significant loci.\n&quot;)
+
+n.loci &lt;- length(sig.loci)
+condz_table &lt;- readRDS(file.path(outdir, paste0(trait, &quot;.lambda.condz.&quot;, n.loci, &quot;loci.rds&quot;)))
+condz_table &lt;- condz_table %&gt;% dplyr::rename(flip_snps = problematic_snps)
+condz_table$n_flip_snps &lt;- 0
+condz_table$n_pval_snps &lt;- 0
+
+condz_dist_all &lt;- readRDS(file.path(outdir, paste0(trait, &quot;.condz.dist.&quot;, n.loci, &quot;loci.rds&quot;)))
+
+for(locus in condz_table$locus){
+  condz_dist &lt;- condz_dist_all[[as.character(locus)]]
+  condz_dist$pval_diff &lt;- pchisq(condz_dist$z_std_diff^2, df = 1, lower.tail=FALSE)
+  
+  detected_flip_index &lt;- which(condz_dist$logLR &gt; 2 &amp; abs(condz_dist$z) &gt; 2)
+  detected_pval_diff_index &lt;- which(condz_dist$pval_diff &lt; 5e-8)
+
+  condz_table[condz_table$locus == locus, ]$n_flip_snps &lt;- length(detected_flip_index)
+  condz_table[condz_table$locus == locus, ]$n_pval_snps &lt;- length(detected_pval_diff_index)
+}
+
+sprintf(&quot;%d out of %d (%.2f %%) loci with problematic variants&quot;, length(which(condz_table$n_pval_snps &gt; 0)), nrow(condz_table),
+        length(which(condz_table$n_pval_snps &gt; 0))/nrow(condz_table)*100)
+
+sprintf(&quot;%d out of %d (%.2f %%) loci with flipped variants&quot;, length(which(condz_table$flip_snps != &quot;&quot;)), nrow(condz_table),
+        length(which(condz_table$flip_snps != &quot;&quot;))/nrow(condz_table)*100)
+
+ggplot(condz_table, aes(x = n_flip_snps)) + 
+  geom_histogram(bins = 30) +
+  labs(x = &quot;Number of flipped variants (logLR &gt; 2 &amp; abs(z) &lt; 2)&quot;, y = &quot;Number of loci&quot;) +
+  theme_bw()</code></pre>
+<p><img src="figure/detect_LD_mismatch_gwas_UKBBref.Rmd/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>
+ggplot(condz_table, aes(x = n_pval_snps)) + 
+  geom_histogram(binwidth = 1) + 
+  labs(x = &quot;Number of problematic variants (p &lt; 5e-8)&quot;, y = &quot;Number of loci&quot;) +
+  theme_bw()</code></pre>
+<p><img src="figure/detect_LD_mismatch_gwas_UKBBref.Rmd/unnamed-chunk-7-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>
+condz_table %&gt;% dplyr::mutate(lambda = round(lambda, 4)) %&gt;% 
+  dplyr::select(locus, lambda, n_flip_snps, n_pval_snps) %&gt;%
+  DT::datatable(options = list(order = list(list(3, &#39;desc&#39;), list(4, &#39;desc&#39;))))
+# 169 significant loci.
+# [1] &quot;147 out of 169 (86.98 %) loci with problematic variants&quot;
+# [1] &quot;2 out of 169 (1.18 %) loci with flipped variants&quot;</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-9eceb20dc2a931752ae4" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-9eceb20dc2a931752ae4">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92","93","94","95","96","97","98","99","100","101","102","103","104","105","106","107","108","109","110","111","112","113","114","115","116","117","118","119","120","121","122","123","124","125","126","127","128","129","130","131","132","133","134","135","136","137","138","139","140","141","142","143","144","145","146","147","148","149","150","151","152","153","154","155","156","157","158","159","160","161","162","163","164","165","166","167","168","169"],[34,67,707,729,750,1255,1615,713,764,1696,1425,610,588,286,643,39,905,121,728,753,1303,580,730,1347,250,1341,293,1424,731,1577,749,1465,367,1452,906,1544,708,18,737,631,112,1340,894,1334,374,642,1642,35,1286,806,1137,444,1679,909,1348,807,1346,1241,190,991,1345,1574,1610,1456,839,526,857,392,778,765,1398,1342,902,447,1093,714,598,1143,1344,648,1043,201,1349,1007,976,331,220,535,1626,1343,1049,1495,678,1155,208,1041,632,56,622,621,712,1156,1692,1552,1560,802,1388,99,817,275,1699,177,1054,253,202,1437,309,644,336,919,1459,1629,611,711,492,1254,960,1290,587,195,1189,913,164,1586,1494,389,562,1481,1405,173,837,529,1441,476,229,874,1410,7,779,16,1661,1493,283,726,662,1555,957,478,1014,579,1553,1407,1457,1542,252,473,66,145,1545],[0.0001,0,0.0001,0.0062,0.0001,0.0001,0,0.0001,0.0001,0.0001,0.0756,0,0.0001,0.0001,0.0001,0,0,0,0,0.0001,0.0002,0.0001,0,0.0001,0.0001,0.0001,0,0,0,0,0,0,0.0001,0.0001,0.0001,0.0001,0.0001,0,0,0,0,0,0.0001,0.0009,0.0001,0,0.0001,0,0,0.0003,0,0,0.0001,0.0001,0.0001,0.0001,0.0002,0,0,0.0001,0.0001,0,0,0.0001,0.0004,0.0001,0.0001,0,0.0001,0.0001,0,0,0,0,0.0001,0,0.0001,0.0001,0.0001,0.0001,0,0.0001,0.0001,0.0001,0.0001,0.0001,0,0.0001,0,0.0001,0,0,0.0001,0,0,0,0,0,0,0,0,0,0,0.0001,0,0.0001,0,0.0001,0.0001,0,0.0001,0.0001,0,0,0,0.0001,0,0,0,0.0001,0,0.0001,0,0,0,0,0.0051,0.0002,0.0001,0,0.0001,0,0,0,0.0001,0,0.0001,0,0,0,0,0.0001,0.0002,0,0,0,0.0001,0.0001,0,0,0,0,0,0,0.0001,0.0001,0,0.0026,0,0,0.0001,0,0.0001,0.0001,0,0.0001,0,0.0001,0.0001],[0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[6,4,8,4,7,8,6,1,1,1,1,3,0,6,1,1,0,0,3,0,4,3,1,3,4,2,1,5,3,3,3,2,4,3,1,1,8,1,2,12,3,8,1,7,3,4,0,1,1,6,7,1,3,5,11,3,46,7,4,13,6,7,3,2,9,0,7,4,1,0,5,4,2,2,0,1,0,1,1,0,0,0,4,0,4,5,4,3,3,6,2,1,2,1,2,4,0,2,2,9,2,4,4,3,0,3,5,4,2,8,2,1,3,0,1,1,5,4,3,2,5,1,1,1,0,10,4,7,1,4,5,3,3,1,3,7,1,5,5,5,2,6,2,8,5,1,4,1,0,0,5,1,3,1,1,2,1,1,3,2,0,9,3,1,1,2,6,0,0]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>locus<\/th>\n      <th>lambda<\/th>\n      <th>n_flip_snps<\/th>\n      <th>n_pval_snps<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"order":[[3,"desc"],[4,"desc"]],"columnDefs":[{"className":"dt-right","targets":[1,2,3,4]},{"orderable":false,"targets":0}],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="afib" class="section level2">
+<h2>AFib</h2>
+<pre class="r"><code>trait &lt;- &quot;AFib&quot;
+outdir &lt;- &quot;/project2/xinhe/kevinluo/cTWAS/multigroup/ld_mismatch_filtering/AFib&quot;
+if(!dir.exists(outdir)) dir.create(outdir)</code></pre>
+<p>GWAS data</p>
+<pre class="r"><code># read the data
+sumstats &lt;- VariantAnnotation::readVcf(&quot;/project2/xinhe/shared_data/multigroup_ctwas/gwas/ebi-a-GCST006414.vcf.gz&quot;)
+sumstats &lt;- gwasvcf::vcf_to_tibble(sumstats)
+
+# compute the z-scores
+sumstats$Z &lt;- sumstats$ES/sumstats$SE
+
+# drop multiallelic variants (id not unique)
+sumstats &lt;- sumstats[!(sumstats$rsid %in% sumstats$rsid[duplicated(sumstats$rsid)]),]
+
+keep_columns &lt;- c(&quot;seqnames&quot;, &quot;start&quot;, &quot;rsid&quot;, &quot;REF&quot;, &quot;ALT&quot;, &quot;ES&quot;, &quot;SE&quot;, &quot;Z&quot;, &quot;LP&quot;)
+sumstats &lt;- sumstats[,keep_columns] %&gt;% 
+  dplyr::rename(chr = seqnames, pos = start, id = rsid, A1 = ALT, A2 = REF, z = Z, pval = LP)
+
+saveRDS(sumstats, file=&quot;/project2/xinhe/shared_data/multigroup_ctwas/gwas/gwas_processed/AFib-ebi-a-GCST006414.sumstats.RDS&quot;)
+
+# subset the columns and format the column names
+z_snp &lt;- as.data.frame(sumstats[,c(&quot;id&quot;, &quot;A1&quot;, &quot;A2&quot;, &quot;z&quot;)])
+
+# save the formatted z-scores
+saveRDS(z_snp, file=&quot;/project2/xinhe/shared_data/multigroup_ctwas/gwas/gwas_processed/AFib-ebi-a-GCST006414.z_snp.RDS&quot;)</code></pre>
+<pre class="r"><code>sumstats_file &lt;- &quot;/project2/xinhe/shared_data/multigroup_ctwas/gwas/gwas_processed/AFib-ebi-a-GCST006414.sumstats.RDS&quot;
+print(sumstats_file)
+sumstats &lt;- readRDS(sumstats_file)
+z_snp &lt;- as.data.frame(sumstats[,c(&quot;id&quot;, &quot;A1&quot;, &quot;A2&quot;, &quot;z&quot;)])
+gwas_n &lt;- 1030836
+# [1] &quot;/project2/xinhe/shared_data/multigroup_ctwas/gwas/gwas_processed/AFib-ebi-a-GCST006414.sumstats.RDS&quot;</code></pre>
+<p>Assign GWAS SNPs to LD Regions</p>
+<pre class="r"><code>sumstats &lt;- makeGRangesFromDataFrame(sumstats, start.field = &quot;pos&quot;, end.field = &quot;pos&quot;, keep.extra.columns = T)
+sumstats_hg38 &lt;- liftOver_hg19ToHg38(sumstats) %&gt;% as.data.frame() %&gt;%
+  dplyr::rename(chr = seqnames, pos = start, snp = id) %&gt;%
+  dplyr::select(chr, pos, snp, A1, A2, z, pval)
+sumstats_hg38 &lt;- mapgen::assign_snp_locus(sumstats_hg38, regions_df)</code></pre>
+<p>Select locus</p>
+<pre class="r"><code>sig.loci &lt;- sumstats_hg38 %&gt;% dplyr::filter(pval &gt; -log10(5e-8)) %&gt;%
+  dplyr::arrange(-pval) %&gt;%
+  dplyr::pull(locus) %&gt;% unique()
+saveRDS(sig.loci,  file.path(outdir, paste0(trait, &quot;.sig.loci.rds&quot;)))
+
+rm(sumstats)
+rm(sumstats_hg38)</code></pre>
+<p>LD mismatch diagnosis</p>
+<pre class="r"><code>sig.loci &lt;- readRDS(file.path(outdir, paste0(trait, &quot;.sig.loci.rds&quot;)))
+cat(length(sig.loci), &quot;significant loci.\n&quot;)
+
+n.loci &lt;- length(sig.loci)
+condz_table &lt;- readRDS(file.path(outdir, paste0(trait, &quot;.lambda.condz.&quot;, n.loci, &quot;loci.rds&quot;)))
+condz_table &lt;- condz_table %&gt;% dplyr::rename(flip_snps = problematic_snps)
+condz_table$n_flip_snps &lt;- 0
+condz_table$n_pval_snps &lt;- 0
+
+condz_dist_all &lt;- readRDS(file.path(outdir, paste0(trait, &quot;.condz.dist.&quot;, n.loci, &quot;loci.rds&quot;)))
+
+for(locus in condz_table$locus){
+  condz_dist &lt;- condz_dist_all[[as.character(locus)]]
+  condz_dist$pval_diff &lt;- pchisq(condz_dist$z_std_diff^2, df = 1, lower.tail=FALSE)
+  
+  detected_flip_index &lt;- which(condz_dist$logLR &gt; 2 &amp; abs(condz_dist$z) &gt; 2)
+  detected_pval_diff_index &lt;- which(condz_dist$pval_diff &lt; 5e-8)
+
+  condz_table[condz_table$locus == locus, ]$n_flip_snps &lt;- length(detected_flip_index)
+  condz_table[condz_table$locus == locus, ]$n_pval_snps &lt;- length(detected_pval_diff_index)
+}
+
+sprintf(&quot;%d out of %d (%.2f %%) loci with problematic variants&quot;, length(which(condz_table$n_pval_snps &gt; 0)), nrow(condz_table),
+        length(which(condz_table$n_pval_snps &gt; 0))/nrow(condz_table)*100)
+
+sprintf(&quot;%d out of %d (%.2f %%) loci with flipped variants&quot;, length(which(condz_table$flip_snps != &quot;&quot;)), nrow(condz_table),
+        length(which(condz_table$flip_snps != &quot;&quot;))/nrow(condz_table)*100)
+
+ggplot(condz_table, aes(x = n_flip_snps)) + 
+  geom_histogram(bins = 30) +
+  labs(x = &quot;Number of flipped variants (logLR &gt; 2 &amp; abs(z) &lt; 2)&quot;, y = &quot;Number of loci&quot;) +
+  theme_bw()</code></pre>
+<p><img src="figure/detect_LD_mismatch_gwas_UKBBref.Rmd/unnamed-chunk-13-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>
+ggplot(condz_table, aes(x = n_pval_snps)) + 
+  geom_histogram(binwidth = 2) + 
+  labs(x = &quot;Number of problematic variants (p &lt; 5e-8)&quot;, y = &quot;Number of loci&quot;) +
+  theme_bw()</code></pre>
+<p><img src="figure/detect_LD_mismatch_gwas_UKBBref.Rmd/unnamed-chunk-13-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>
+
+condz_table %&gt;% dplyr::mutate(lambda = round(lambda, 4)) %&gt;% 
+  dplyr::select(locus, lambda, n_flip_snps, n_pval_snps) %&gt;%
+  DT::datatable(options = list(order = list(list(3, &#39;desc&#39;), list(4, &#39;desc&#39;))))
+# 122 significant loci.
+# [1] &quot;122 out of 122 (100.00 %) loci with problematic variants&quot;
+# [1] &quot;25 out of 122 (20.49 %) loci with flipped variants&quot;</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-f30d7598595affc4f25a" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-f30d7598595affc4f25a">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92","93","94","95","96","97","98","99","100","101","102","103","104","105","106","107","108","109","110","111","112","113","114","115","116","117","118","119","120","121","122"],[1161,589,76,197,1503,83,84,369,535,1293,179,1674,180,473,1334,317,845,1418,976,855,1399,779,1314,1552,1400,452,296,230,995,102,1335,1403,1612,842,1295,934,75,783,1279,537,1036,453,32,69,1551,552,322,73,1350,33,343,1162,1202,72,196,335,946,173,1489,1448,752,631,318,1315,615,862,1185,678,1526,791,1026,627,811,548,1012,1380,1699,525,15,25,478,1555,447,1289,1457,534,950,1624,7,994,1160,985,1143,611,1311,1014,385,1274,606,31,1077,290,346,538,1547,1511,777,480,1051,201,444,382,823,1087,104,375,648,1481,1157,679,175,529],[0.5677,0.1085,0.1831,0.1794,0.226,0.1581,0.0977,0.1278,0.1026,0.2978,0.1091,0.125,0.1331,0.1997,0.0771,0.0727,0.1217,0.0714,0.167,0.183,0.0862,0.1274,0.1143,0.0721,0.076,0.0837,0.0584,0.0834,0.1134,0.105,0.1034,0.1117,0.074,0.1161,0.088,0.0753,0.1081,0.1794,0.2189,0.0752,0.1458,0.1639,0.2076,0.0703,0.1007,0.1241,0.1016,0.1056,0.0632,0.1473,0.1188,0.0877,0.0732,0.0751,0.1744,0.1604,0.1114,0.1378,0.1522,0.0514,0.1077,0.2499,0.0849,0.0471,0.0633,0.05,0.103,0.0767,0.1401,0.0913,0.1601,0.1852,0.0558,0.0599,0.0638,0.2722,0.0819,0.0534,0.0876,0.1119,0.1101,0.0935,0.0947,0.1213,0.0741,0.0732,0.0603,0.1014,0.0817,0.0483,0.1138,0.0536,0.0615,0.0753,0.0616,0.1948,0.0997,0.0708,0.0816,0.0824,0.0689,0.0889,0.0708,0.1198,0.0667,0.0977,0.1221,0.0564,0.21,0.0487,0.1159,0.1315,0.0642,0.0868,0.0994,0.119,0.0836,0.1753,0.1328,0.106,0.1099,0.0937],[1,0,0,0,0,0,0,0,1,0,0,0,2,0,1,2,0,0,0,0,0,1,0,1,0,0,0,0,1,0,1,0,0,1,0,0,0,0,0,0,0,1,0,0,1,1,1,4,0,0,0,0,0,0,0,0,2,0,0,0,0,1,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,0,0,0],[81,26,14,29,40,35,27,27,31,38,18,19,34,18,42,28,44,26,28,25,24,14,26,40,23,36,28,22,21,19,40,40,40,49,27,21,13,28,36,29,42,18,9,19,17,10,20,31,25,28,22,36,26,42,18,10,23,50,9,19,26,21,46,21,13,23,22,24,15,30,33,26,13,18,33,38,9,28,12,27,49,14,19,50,39,15,20,31,18,27,37,38,13,14,19,13,14,20,8,9,14,16,31,35,37,20,37,15,18,35,18,11,18,11,17,38,16,15,19,64,42,33]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>locus<\/th>\n      <th>lambda<\/th>\n      <th>n_flip_snps<\/th>\n      <th>n_pval_snps<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"order":[[3,"desc"],[4,"desc"]],"columnDefs":[{"className":"dt-right","targets":[1,2,3,4]},{"orderable":false,"targets":0}],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<p>Plot example locus with problematic variants</p>
+<pre class="r"><code>condz_dist_all &lt;- readRDS(file.path(outdir, paste0(trait, &quot;.condz.dist.&quot;, n.loci, &quot;loci.rds&quot;)))
+
+check_loci &lt;- condz_table$locus[which(condz_table$problematic_snps_after_flipping != &quot;&quot;)]
+condz_table[condz_table$locus %in% check_loci, ]
+
+locus &lt;- check_loci[1]
+region_df &lt;- regions_df[regions_df$locus == locus,]
+
+condz_dist &lt;- condz_dist_all[[as.character(locus)]]
+detected_flip_index &lt;- which(condz_dist$logLR &gt; 2 &amp; abs(condz_dist$z) &gt; 2)
+condz_dist$allele_flipping &lt;- 0
+condz_dist$allele_flipping[detected_flip_index] &lt;- 1
+if(length(detected_flip_index) &gt; 0){
+  cat(sprintf(&quot;Detected %d variants with possible allele flipping: \n&quot;, length(detected_flip_index)))
+  # print(condz_dist[condz_dist$allele_flipping == 1,])
+}
+
+ggplot(condz_dist, aes(x = condmean, y = z, col = factor(allele_flipping))) +
+  geom_point() +
+  scale_colour_manual(values = c(&quot;0&quot; = &quot;black&quot;, &quot;1&quot; = &quot;red&quot;)) + 
+  labs(x = &quot;Expected value&quot;, y = &quot;Observed z scores&quot;, color = &quot;Possible allele flipping&quot;) + 
+  ggtitle(sprintf(&quot;%s, locus %s, %s:%d-%d&quot;, trait, locus, region_df$chr, region_df$start, region_df$stop)) + 
+  theme_bw()</code></pre>
+<p><img src="figure/detect_LD_mismatch_gwas_UKBBref.Rmd/AFib-condz-plots-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>
+# flip alleles
+cat(&quot;Rerun after flipping alleles...\n&quot;)
+condz_flip &lt;- readRDS(file.path(outdir, paste0(trait, &quot;.locus&quot;, locus, &quot;.condz.conditional_dist.flipped.rds&quot;)))
+detected_flip_index &lt;- which(condz_flip$logLR &gt; 2 &amp; abs(condz_flip$z) &gt; 2)
+condz_flip$allele_flipping &lt;- 0
+condz_flip$allele_flipping[detected_flip_index] &lt;- 1
+
+ggplot(condz_flip, aes(x = condmean, y = z, col = factor(allele_flipping))) +
+  geom_point() +
+  scale_colour_manual(values = c(&quot;0&quot; = &quot;black&quot;, &quot;1&quot; = &quot;red&quot;)) +
+  labs(x = &quot;Expected value&quot;, y = &quot;Observed z scores&quot;, color = &quot;Possible allele flipping&quot;) +
+  ggtitle(sprintf(&quot;%s, locus %s, %s:%d-%d&quot;, trait, locus, region_df$chr, region_df$start, region_df$stop)) +
+  theme_bw()</code></pre>
+<p><img src="figure/detect_LD_mismatch_gwas_UKBBref.Rmd/AFib-condz-plots-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>
+# compute p-values
+condz_dist$pval &lt;- pchisq(condz_dist$z_std_diff^2, df = 1, lower.tail=FALSE)
+detected_pval_diff_index &lt;- which(condz_dist$pval &lt; 5e-8)
+condz_dist$pval_diff &lt;- 0
+condz_dist$pval_diff[detected_pval_diff_index] &lt;- 1
+if(length(detected_pval_diff_index) &gt; 0){
+  cat(sprintf(&quot;%d problematic variants based on pval: \n&quot;, length(detected_pval_diff_index)))
+  # print(condz_dist[condz_dist$pval_diff == 1,])
+}
+
+ggplot(condz_dist, aes(x = condmean, y = z, col = factor(pval_diff))) +
+  geom_point() +
+  scale_colour_manual(values = c(&quot;0&quot; = &quot;black&quot;, &quot;1&quot; = &quot;red&quot;)) + 
+  labs(x = &quot;Expected value&quot;, y = &quot;Observed z scores&quot;, color = &quot;Problematic variants with condz pval &lt; 5e-8&quot;) + 
+  ggtitle(sprintf(&quot;%s, locus %s, %s:%d-%d&quot;, trait, locus, region_df$chr, region_df$start, region_df$stop)) + 
+  theme_bw()</code></pre>
+<p><img src="figure/detect_LD_mismatch_gwas_UKBBref.Rmd/AFib-condz-plots-3.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>
+# check zscores and LD for problematic variants
+cat(&quot;check zscores and LD for problematic variants...\n&quot;)
+ldref_res &lt;- load_UKBB_R_snp_info(region_df, &quot;/project2/mstephens/wcrouse/UKB_LDR_0.1&quot;, &quot;ukb_b38_0.1&quot;)
+matched.sumstat.LD &lt;- match_gwas_R_snp(z_snp, ldref_res$R_snp, ldref_res$R_snp_info)
+sumstats.locus &lt;- matched.sumstat.LD$sumstats
+R.locus &lt;- matched.sumstat.LD$R
+rm(matched.sumstat.LD)
+
+sumstats.locus[detected_flip_index, ]
+condz_dist &lt;- cbind(id = sumstats.locus$id, condz_dist)
+
+R_tmp &lt;- R.locus[detected_flip_index, detected_flip_index]
+colnames(R_tmp) &lt;- rownames(R_tmp) &lt;- sumstats.locus$id[detected_flip_index]
+print(R_tmp)
+
+condz_dist[detected_flip_index, ]
+#    locus   lambda                                     flip_snps
+# 48    73 0.105559 rs7536827,rs146930144,rs138990014,rs148539878
+#    lambda_after_flipping problematic_snps_after_flipping n_flip_snps
+# 48             0.1031303         rs146930144,rs138990014           4
+#    n_pval_snps
+# 48          31
+# Detected 4 variants with possible allele flipping: 
+# Rerun after flipping alleles...
+# 31 problematic variants based on pval: 
+# check zscores and LD for problematic variants...
+# [1] &quot;ukb_b38_0.1_chr1.R_snp.118296444_148907004&quot;
+#                  id A1 A2         z R_snp_index
+# 1367236 rs146930144  A  G  2.739550        6101
+# 1367336 rs138990014  C  G -2.353612        6086
+#             rs146930144 rs138990014
+# rs146930144   1.0000000   0.9748118
+# rs138990014   0.9748118   1.0000000
+#               id         z  condmean   condvar z_std_diff    logLR
+# 5136 rs146930144  2.739541 -1.699637 0.2152640   9.567906 4.966918
+# 5149 rs138990014 -2.353607  2.177581 0.2137971  -9.799663 8.324928
+#      allele_flipping         pval pval_diff
+# 5136               1 1.090928e-21         1
+# 5149               1 1.129619e-22         1</code></pre>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span> Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()
+# R version 4.2.0 (2022-04-22)
+# Platform: x86_64-pc-linux-gnu (64-bit)
+# Running under: CentOS Linux 7 (Core)
+# 
+# Matrix products: default
+# BLAS/LAPACK: /software/openblas-0.3.13-el7-x86_64/lib/libopenblas_haswellp-r0.3.13.so
+# 
+# locale:
+#  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+#  [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+#  [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+#  [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+#  [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+# [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+# 
+# attached base packages:
+# [1] stats4    stats     graphics  grDevices utils     datasets  methods  
+# [8] base     
+# 
+# other attached packages:
+#  [1] rtracklayer_1.58.0   GenomicRanges_1.48.0 GenomeInfoDb_1.34.9 
+#  [4] IRanges_2.32.0       S4Vectors_0.36.1     BiocGenerics_0.44.0 
+#  [7] forcats_1.0.0        stringr_1.5.0        dplyr_1.1.0         
+# [10] purrr_1.0.1          readr_2.1.4          tidyr_1.3.0         
+# [13] tibble_3.1.8         ggplot2_3.4.1        tidyverse_1.3.2     
+# [16] susieR_0.12.27       ctwas_0.1.35         workflowr_1.7.0     
+# 
+# loaded via a namespace (and not attached):
+#   [1] googledrive_2.0.0           colorspace_2.1-0           
+#   [3] rjson_0.2.21                ellipsis_0.3.2             
+#   [5] rprojroot_2.0.3             XVector_0.38.0             
+#   [7] fs_1.6.1                    rstudioapi_0.14            
+#   [9] farver_2.1.1                DT_0.22                    
+#  [11] fansi_1.0.4                 lubridate_1.9.2            
+#  [13] xml2_1.3.3                  codetools_0.2-18           
+#  [15] logging_0.10-108            cachem_1.0.6               
+#  [17] knitr_1.42                  jsonlite_1.8.4             
+#  [19] Rsamtools_2.12.0            broom_1.0.3                
+#  [21] dbplyr_2.3.0                compiler_4.2.0             
+#  [23] httr_1.4.4                  backports_1.4.1            
+#  [25] assertthat_0.2.1            Matrix_1.5-3               
+#  [27] fastmap_1.1.0               gargle_1.3.0               
+#  [29] cli_3.6.0                   later_1.3.0                
+#  [31] htmltools_0.5.4             tools_4.2.0                
+#  [33] gtable_0.3.1                glue_1.6.2                 
+#  [35] GenomeInfoDbData_1.2.9      Rcpp_1.0.10                
+#  [37] Biobase_2.58.0              cellranger_1.1.0           
+#  [39] jquerylib_0.1.4             vctrs_0.5.2                
+#  [41] Biostrings_2.66.0           crosstalk_1.2.0            
+#  [43] iterators_1.0.14            xfun_0.37                  
+#  [45] ps_1.7.2                    rvest_1.0.3                
+#  [47] timechange_0.2.0            lifecycle_1.0.3            
+#  [49] irlba_2.3.5                 restfulr_0.0.15            
+#  [51] XML_3.99-0.13               googlesheets4_1.0.1        
+#  [53] getPass_0.2-2               zlibbioc_1.44.0            
+#  [55] scales_1.2.1                MatrixGenerics_1.10.0      
+#  [57] hms_1.1.2                   promises_1.2.0.1           
+#  [59] parallel_4.2.0              SummarizedExperiment_1.28.0
+#  [61] yaml_2.3.7                  sass_0.4.5                 
+#  [63] reshape_0.8.9               stringi_1.7.12             
+#  [65] highr_0.10                  BiocIO_1.8.0               
+#  [67] foreach_1.5.2               BiocParallel_1.32.5        
+#  [69] rlang_1.0.6                 pkgconfig_2.0.3            
+#  [71] matrixStats_0.63.0          bitops_1.0-7               
+#  [73] evaluate_0.20               lattice_0.20-45            
+#  [75] htmlwidgets_1.6.1           labeling_0.4.2             
+#  [77] GenomicAlignments_1.34.0    processx_3.8.0             
+#  [79] tidyselect_1.2.0            plyr_1.8.7                 
+#  [81] magrittr_2.0.3              R6_2.5.1                   
+#  [83] generics_0.1.3              DelayedArray_0.24.0        
+#  [85] DBI_1.1.3                   pgenlibr_0.3.3             
+#  [87] pillar_1.8.1                haven_2.5.1                
+#  [89] whisker_0.4                 withr_2.5.0                
+#  [91] RCurl_1.98-1.10             mixsqp_0.3-43              
+#  [93] modelr_0.1.10               crayon_1.5.2               
+#  [95] utf8_1.2.3                  tzdb_0.3.0                 
+#  [97] rmarkdown_2.20              grid_4.2.0                 
+#  [99] readxl_1.4.2                callr_3.7.3                
+# [101] git2r_0.30.1                reprex_2.0.2               
+# [103] digest_0.6.31               httpuv_1.6.5               
+# [105] munsell_0.5.0               bslib_0.4.2</code></pre>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
