@@ -1,5 +1,5 @@
 ---
-title: "Detect mismatch between GWAS zscores and LD reference"
+title: "Detect mismatch between GWAS zscores and LD reference using SuSiE RSS"
 author: "Kaixuan Luo"
 date: "2023-11-08"
 output:
@@ -330,7 +330,7 @@ if(length(detected_pval_diff_index) > 0){
 ggplot(condz_dist, aes(x = condmean, y = z, col = factor(pval_diff))) +
   geom_point() +
   scale_colour_manual(values = c("0" = "black", "1" = "red")) + 
-  labs(x = "Expected value", y = "Observed z scores", color = "Problematic variants with condz pval < 5e-8") + 
+  labs(x = "Expected value", y = "Observed z scores", color = "Variants with condz pval < 5e-8") + 
   ggtitle(sprintf("%s, locus %s, %s:%d-%d", trait, locus, region_df$chr, region_df$start, region_df$stop)) + 
   theme_bw()
 
