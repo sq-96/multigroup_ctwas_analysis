@@ -1,0 +1,355 @@
+---
+title: "Detect mismatch between GWAS zscores and LD reference"
+author: "Kaixuan Luo"
+date: "2023-11-08"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+    toc: true
+---
+
+```{r knitr-opts, include=FALSE}
+knitr::opts_chunk$set(comment = "#",collapse = TRUE,results = "hold")
+```
+
+## Load packages and functions
+
+```{r packages, message=FALSE}
+library(ctwas)
+library(susieR)
+library(tidyverse)
+library(GenomicRanges)
+library(rtracklayer)
+```
+
+```{r functions}
+# Load UKBB reference LD matrix and SNP info
+load_UKBB_R_snp_info <- function(region_df, ld_R_dir, filestem = "ukb_b38_0.1"){
+  filename <- sprintf("%s_chr%s.R_snp.%d_%d", filestem,
+                      gsub("chr", "", region_df$chr), region_df$start, region_df$stop)
+  print(filename)
+  if(!file.exists(file.path(ld_R_dir, paste0(filename, ".RDS"))) || !file.exists(file.path(ld_R_dir, paste0(filename, ".Rvar")))){
+    stop("LD Reference files not exist!")
+  }
+  R_snp <- readRDS(file.path(ld_R_dir, paste0(filename, ".RDS")))
+  R_snp_info <- read.table(file.path(ld_R_dir, paste0(filename, ".Rvar")), header=TRUE)
+  return(list(R_snp = R_snp, R_snp_info = R_snp_info))
+}
+
+# Match GWAS sumstats with LD reference files. Only keep variants included in LD reference.
+match_gwas_R_snp <- function(sumstats, R, snp_info){
+  sumstats <- sumstats[sumstats$id %in% snp_info$id,]
+  R_snp_index <- na.omit(match(sumstats$id, snp_info$id))
+  sumstats$R_snp_index <- R_snp_index
+  R <- R[R_snp_index, R_snp_index]
+  stopifnot(nrow(sumstats) == nrow(R))
+  return(list(sumstats = sumstats, R = R))
+}
+
+liftOver_hg19ToHg38 <- function(gr){
+  seqlevelsStyle(gr) <- "UCSC"
+  ch <- import.chain("~/softwares/liftOver/hg19ToHg38.over.chain")
+  gr <- unlist(liftOver(gr, ch))
+  genome(gr) <- "hg38"
+  return(gr)
+}
+
+```
+
+Load LD Regions (ldetect blocks)
+```{r}
+regions <- system.file("extdata/ldetect", "EUR.b38.bed", package = "ctwas")
+regions_df <- read.table(regions, header = T)
+regions_df <- regions_df %>% dplyr::arrange(chr, start, stop) %>% dplyr::mutate(locus = 1:nrow(regions_df))
+```
+
+## LDL
+
+```{r}
+trait <- "LDL"
+set.seed(123)
+outdir <- paste0("/project2/xinhe/kevinluo/cTWAS/multigroup/ld_mismatch_filtering/", trait)
+if(!dir.exists(outdir)) dir.create(outdir)
+```
+
+GWAS data
+```{r, eval=FALSE}
+# read the data
+sumstats <- VariantAnnotation::readVcf("/project2/xinhe/shared_data/multigroup_ctwas/gwas/ukb-d-30780_irnt.vcf.gz")
+sumstats <- gwasvcf::vcf_to_tibble(sumstats)
+
+# compute the z-scores
+sumstats$Z <- sumstats$ES/sumstats$SE
+
+# drop multiallelic variants (id not unique)
+sumstats <- sumstats[!(sumstats$rsid %in% sumstats$rsid[duplicated(sumstats$rsid)]),]
+
+keep_columns <- c("seqnames", "start", "rsid", "REF", "ALT", "ES", "SE", "Z", "LP")
+sumstats <- sumstats[,keep_columns] %>% 
+  dplyr::rename(chr = seqnames, pos = start, id = rsid, A1 = ALT, A2 = REF, z = Z, pval = LP)
+saveRDS(sumstats, file="/project2/xinhe/shared_data/multigroup_ctwas/gwas/gwas_processed/LDL-ukb-d-30780_irnt.sumstats.RDS")
+
+# subset the columns and format the column names
+z_snp <- as.data.frame(sumstats[,c("id", "A1", "A2", "z")])
+
+# save the formatted z-scores
+saveRDS(z_snp, file="/project2/xinhe/shared_data/multigroup_ctwas/gwas/gwas_processed/LDL-ukb-d-30780_irnt.z_snp.RDS")
+```
+
+```{r, eval=FALSE}
+sumstats_file <- "/project2/xinhe/shared_data/multigroup_ctwas/gwas/gwas_processed/LDL-ukb-d-30780_irnt.sumstats.RDS"
+print(sumstats_file)
+sumstats <- readRDS(sumstats_file)
+z_snp <- as.data.frame(sumstats[,c("id", "A1", "A2", "z")])
+gwas_n <- 343621
+```
+
+Assign GWAS SNPs to LD Regions
+```{r, eval=FALSE}
+sumstats <- makeGRangesFromDataFrame(sumstats, start.field = "pos", end.field = "pos", keep.extra.columns = T)
+sumstats_hg38 <- liftOver_hg19ToHg38(sumstats) %>% as.data.frame() %>%
+  dplyr::rename(chr = seqnames, pos = start, snp = id) %>%
+  dplyr::select(chr, pos, snp, A1, A2, z, pval)
+sumstats_hg38 <- mapgen::assign_snp_locus(sumstats_hg38, regions_df)
+```
+
+Select locus
+```{r, eval=FALSE}
+sig.loci <- sumstats_hg38 %>% dplyr::filter(pval > -log10(5e-8)) %>%
+  dplyr::arrange(-pval) %>%
+  dplyr::pull(locus) %>% unique()
+saveRDS(sig.loci,  file.path(outdir, paste0(trait, ".sig.loci.rds")))
+
+rm(sumstats)
+rm(sumstats_hg38)
+```
+
+LD mismatch diagnosis
+```{r}
+sig.loci <- readRDS(file.path(outdir, paste0(trait, ".sig.loci.rds")))
+cat(length(sig.loci), "significant loci.\n")
+
+n.loci <- length(sig.loci)
+condz_table <- readRDS(file.path(outdir, paste0(trait, ".lambda.condz.", n.loci, "loci.rds")))
+condz_table <- condz_table %>% dplyr::rename(flip_snps = problematic_snps)
+condz_table$n_flip_snps <- 0
+condz_table$n_pval_snps <- 0
+
+condz_dist_all <- readRDS(file.path(outdir, paste0(trait, ".condz.dist.", n.loci, "loci.rds")))
+
+for(locus in condz_table$locus){
+  condz_dist <- condz_dist_all[[as.character(locus)]]
+  condz_dist$pval_diff <- pchisq(condz_dist$z_std_diff^2, df = 1, lower.tail=FALSE)
+  
+  detected_flip_index <- which(condz_dist$logLR > 2 & abs(condz_dist$z) > 2)
+  detected_pval_diff_index <- which(condz_dist$pval_diff < 5e-8)
+
+  condz_table[condz_table$locus == locus, ]$n_flip_snps <- length(detected_flip_index)
+  condz_table[condz_table$locus == locus, ]$n_pval_snps <- length(detected_pval_diff_index)
+}
+
+sprintf("%d out of %d (%.2f %%) loci with problematic variants", length(which(condz_table$n_pval_snps > 0)), nrow(condz_table),
+        length(which(condz_table$n_pval_snps > 0))/nrow(condz_table)*100)
+
+sprintf("%d out of %d (%.2f %%) loci with flipped variants", length(which(condz_table$flip_snps != "")), nrow(condz_table),
+        length(which(condz_table$flip_snps != ""))/nrow(condz_table)*100)
+
+ggplot(condz_table, aes(x = n_flip_snps)) + 
+  geom_histogram(bins = 30) +
+  labs(x = "Number of flipped variants (logLR > 2 & abs(z) < 2)", y = "Number of loci") +
+  theme_bw()
+
+ggplot(condz_table, aes(x = n_pval_snps)) + 
+  geom_histogram(binwidth = 1) + 
+  labs(x = "Number of problematic variants (p < 5e-8)", y = "Number of loci") +
+  theme_bw()
+
+condz_table %>% dplyr::mutate(lambda = round(lambda, 4)) %>% 
+  dplyr::select(locus, lambda, n_flip_snps, n_pval_snps) %>%
+  DT::datatable(options = list(order = list(list(3, 'desc'), list(4, 'desc'))))
+
+```
+
+## AFib
+
+```{r}
+trait <- "AFib"
+outdir <- "/project2/xinhe/kevinluo/cTWAS/multigroup/ld_mismatch_filtering/AFib"
+if(!dir.exists(outdir)) dir.create(outdir)
+```
+
+GWAS data
+```{r, eval=FALSE}
+# read the data
+sumstats <- VariantAnnotation::readVcf("/project2/xinhe/shared_data/multigroup_ctwas/gwas/ebi-a-GCST006414.vcf.gz")
+sumstats <- gwasvcf::vcf_to_tibble(sumstats)
+
+# compute the z-scores
+sumstats$Z <- sumstats$ES/sumstats$SE
+
+# drop multiallelic variants (id not unique)
+sumstats <- sumstats[!(sumstats$rsid %in% sumstats$rsid[duplicated(sumstats$rsid)]),]
+
+keep_columns <- c("seqnames", "start", "rsid", "REF", "ALT", "ES", "SE", "Z", "LP")
+sumstats <- sumstats[,keep_columns] %>% 
+  dplyr::rename(chr = seqnames, pos = start, id = rsid, A1 = ALT, A2 = REF, z = Z, pval = LP)
+
+saveRDS(sumstats, file="/project2/xinhe/shared_data/multigroup_ctwas/gwas/gwas_processed/AFib-ebi-a-GCST006414.sumstats.RDS")
+
+# subset the columns and format the column names
+z_snp <- as.data.frame(sumstats[,c("id", "A1", "A2", "z")])
+
+# save the formatted z-scores
+saveRDS(z_snp, file="/project2/xinhe/shared_data/multigroup_ctwas/gwas/gwas_processed/AFib-ebi-a-GCST006414.z_snp.RDS")
+```
+
+```{r}
+sumstats_file <- "/project2/xinhe/shared_data/multigroup_ctwas/gwas/gwas_processed/AFib-ebi-a-GCST006414.sumstats.RDS"
+print(sumstats_file)
+sumstats <- readRDS(sumstats_file)
+z_snp <- as.data.frame(sumstats[,c("id", "A1", "A2", "z")])
+gwas_n <- 1030836
+```
+
+Assign GWAS SNPs to LD Regions
+```{r, eval=FALSE}
+sumstats <- makeGRangesFromDataFrame(sumstats, start.field = "pos", end.field = "pos", keep.extra.columns = T)
+sumstats_hg38 <- liftOver_hg19ToHg38(sumstats) %>% as.data.frame() %>%
+  dplyr::rename(chr = seqnames, pos = start, snp = id) %>%
+  dplyr::select(chr, pos, snp, A1, A2, z, pval)
+sumstats_hg38 <- mapgen::assign_snp_locus(sumstats_hg38, regions_df)
+```
+
+Select locus
+```{r, eval=FALSE}
+sig.loci <- sumstats_hg38 %>% dplyr::filter(pval > -log10(5e-8)) %>%
+  dplyr::arrange(-pval) %>%
+  dplyr::pull(locus) %>% unique()
+saveRDS(sig.loci,  file.path(outdir, paste0(trait, ".sig.loci.rds")))
+
+rm(sumstats)
+rm(sumstats_hg38)
+```
+
+LD mismatch diagnosis
+```{r}
+sig.loci <- readRDS(file.path(outdir, paste0(trait, ".sig.loci.rds")))
+cat(length(sig.loci), "significant loci.\n")
+
+n.loci <- length(sig.loci)
+condz_table <- readRDS(file.path(outdir, paste0(trait, ".lambda.condz.", n.loci, "loci.rds")))
+condz_table <- condz_table %>% dplyr::rename(flip_snps = problematic_snps)
+condz_table$n_flip_snps <- 0
+condz_table$n_pval_snps <- 0
+
+condz_dist_all <- readRDS(file.path(outdir, paste0(trait, ".condz.dist.", n.loci, "loci.rds")))
+
+for(locus in condz_table$locus){
+  condz_dist <- condz_dist_all[[as.character(locus)]]
+  condz_dist$pval_diff <- pchisq(condz_dist$z_std_diff^2, df = 1, lower.tail=FALSE)
+  
+  detected_flip_index <- which(condz_dist$logLR > 2 & abs(condz_dist$z) > 2)
+  detected_pval_diff_index <- which(condz_dist$pval_diff < 5e-8)
+
+  condz_table[condz_table$locus == locus, ]$n_flip_snps <- length(detected_flip_index)
+  condz_table[condz_table$locus == locus, ]$n_pval_snps <- length(detected_pval_diff_index)
+}
+
+sprintf("%d out of %d (%.2f %%) loci with problematic variants", length(which(condz_table$n_pval_snps > 0)), nrow(condz_table),
+        length(which(condz_table$n_pval_snps > 0))/nrow(condz_table)*100)
+
+sprintf("%d out of %d (%.2f %%) loci with flipped variants", length(which(condz_table$flip_snps != "")), nrow(condz_table),
+        length(which(condz_table$flip_snps != ""))/nrow(condz_table)*100)
+
+ggplot(condz_table, aes(x = n_flip_snps)) + 
+  geom_histogram(bins = 30) +
+  labs(x = "Number of flipped variants (logLR > 2 & abs(z) < 2)", y = "Number of loci") +
+  theme_bw()
+
+ggplot(condz_table, aes(x = n_pval_snps)) + 
+  geom_histogram(binwidth = 2) + 
+  labs(x = "Number of problematic variants (p < 5e-8)", y = "Number of loci") +
+  theme_bw()
+
+
+condz_table %>% dplyr::mutate(lambda = round(lambda, 4)) %>% 
+  dplyr::select(locus, lambda, n_flip_snps, n_pval_snps) %>%
+  DT::datatable(options = list(order = list(list(3, 'desc'), list(4, 'desc'))))
+```
+
+Plot example locus with problematic variants
+```{r AFib-condz-plots}
+condz_dist_all <- readRDS(file.path(outdir, paste0(trait, ".condz.dist.", n.loci, "loci.rds")))
+
+check_loci <- condz_table$locus[which(condz_table$problematic_snps_after_flipping != "")]
+condz_table[condz_table$locus %in% check_loci, ]
+
+locus <- check_loci[1]
+region_df <- regions_df[regions_df$locus == locus,]
+
+condz_dist <- condz_dist_all[[as.character(locus)]]
+detected_flip_index <- which(condz_dist$logLR > 2 & abs(condz_dist$z) > 2)
+condz_dist$allele_flipping <- 0
+condz_dist$allele_flipping[detected_flip_index] <- 1
+if(length(detected_flip_index) > 0){
+  cat(sprintf("Detected %d variants with possible allele flipping: \n", length(detected_flip_index)))
+  # print(condz_dist[condz_dist$allele_flipping == 1,])
+}
+
+ggplot(condz_dist, aes(x = condmean, y = z, col = factor(allele_flipping))) +
+  geom_point() +
+  scale_colour_manual(values = c("0" = "black", "1" = "red")) + 
+  labs(x = "Expected value", y = "Observed z scores", color = "Possible allele flipping") + 
+  ggtitle(sprintf("%s, locus %s, %s:%d-%d", trait, locus, region_df$chr, region_df$start, region_df$stop)) + 
+  theme_bw()
+
+# flip alleles
+cat("Rerun after flipping alleles...\n")
+condz_flip <- readRDS(file.path(outdir, paste0(trait, ".locus", locus, ".condz.conditional_dist.flipped.rds")))
+detected_flip_index <- which(condz_flip$logLR > 2 & abs(condz_flip$z) > 2)
+condz_flip$allele_flipping <- 0
+condz_flip$allele_flipping[detected_flip_index] <- 1
+
+ggplot(condz_flip, aes(x = condmean, y = z, col = factor(allele_flipping))) +
+  geom_point() +
+  scale_colour_manual(values = c("0" = "black", "1" = "red")) +
+  labs(x = "Expected value", y = "Observed z scores", color = "Possible allele flipping") +
+  ggtitle(sprintf("%s, locus %s, %s:%d-%d", trait, locus, region_df$chr, region_df$start, region_df$stop)) +
+  theme_bw()
+
+# compute p-values
+condz_dist$pval <- pchisq(condz_dist$z_std_diff^2, df = 1, lower.tail=FALSE)
+detected_pval_diff_index <- which(condz_dist$pval < 5e-8)
+condz_dist$pval_diff <- 0
+condz_dist$pval_diff[detected_pval_diff_index] <- 1
+if(length(detected_pval_diff_index) > 0){
+  cat(sprintf("%d problematic variants based on pval: \n", length(detected_pval_diff_index)))
+  # print(condz_dist[condz_dist$pval_diff == 1,])
+}
+
+ggplot(condz_dist, aes(x = condmean, y = z, col = factor(pval_diff))) +
+  geom_point() +
+  scale_colour_manual(values = c("0" = "black", "1" = "red")) + 
+  labs(x = "Expected value", y = "Observed z scores", color = "Problematic variants with condz pval < 5e-8") + 
+  ggtitle(sprintf("%s, locus %s, %s:%d-%d", trait, locus, region_df$chr, region_df$start, region_df$stop)) + 
+  theme_bw()
+
+# check zscores and LD for problematic variants
+cat("check zscores and LD for problematic variants...\n")
+ldref_res <- load_UKBB_R_snp_info(region_df, "/project2/mstephens/wcrouse/UKB_LDR_0.1", "ukb_b38_0.1")
+matched.sumstat.LD <- match_gwas_R_snp(z_snp, ldref_res$R_snp, ldref_res$R_snp_info)
+sumstats.locus <- matched.sumstat.LD$sumstats
+R.locus <- matched.sumstat.LD$R
+rm(matched.sumstat.LD)
+
+sumstats.locus[detected_flip_index, ]
+condz_dist <- cbind(id = sumstats.locus$id, condz_dist)
+
+R_tmp <- R.locus[detected_flip_index, detected_flip_index]
+colnames(R_tmp) <- rownames(R_tmp) <- sumstats.locus$id[detected_flip_index]
+print(R_tmp)
+
+condz_dist[detected_flip_index, ]
+
+```
+
