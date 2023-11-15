@@ -2,14 +2,11 @@
 title: "Deciding the matching tissue"
 author: "XSun"
 date: "2023-11-13"
-output: workflowr::wflow_html
-editor_options:
-  chunk_output_type: console
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+    toc: true
 ---
-
-```{r message=FALSE, warning=FALSE, echo=FALSE}
-
-```
 
 
 # Overview
@@ -18,8 +15,9 @@ Traits: aFib, Asthma, IBD, LDL, SBP, SCZ, WBC
 
 Weights: PredictDB, 32 tissues with sample size (RNASeq.and.Genotyped.samples below) >= 200
 
-```{r echo=FALSE}
-load("/project/xinhe/xsun/ctwas/1.matching_tissue/results_data/summary_table.rdata")
+```{r }
+load("/project/xinhe/xsun/ctwas/1.matching_tissue/results_data/summary_table.rd")
+colnames(sum_all)[8] <- "num_gene_susiepip08"
 
 weights <- read.csv("/project/xinhe/xsun/ctwas/1.matching_tissue/results_data/gtex_samplesize.csv")
 DT::datatable(weights,options = list(pageLength = 5))
@@ -28,13 +26,12 @@ DT::datatable(weights,options = list(pageLength = 5))
 
 # aFib
 
-```{r echo=FALSE}
-load("/project/xinhe/xsun/ctwas/1.matching_tissue/results_data/summary_table.rd")
+```{r }
 
 sum_cat <- sum_all[sum_all$traits =="aFib-ebi-a-GCST006414",]
 DT::datatable(sum_cat,options = list(pageLength = 5))
 
-sum_cat <- sum_cat[order(as.numeric(sum_cat$num_gene_08),decreasing = T),]
+sum_cat <- sum_cat[order(as.numeric(sum_cat$num_gene_susiepip08),decreasing = T),]
 print(sprintf("the best tissue based on the number of high PIP genes are: %s",paste0(sum_cat$weights[1:5],collapse = ", ")))
 
 sum_cat <- sum_cat[order(as.numeric(sum_cat$group_pve_gene),decreasing = T),]
@@ -44,13 +41,28 @@ print(sprintf("the best tissue based on PVE explained by genes are: %s",paste0(s
 
 
 
-# asthma
+# asthma - -ukb-d-J10_ASTHMA 
 
-```{r echo=FALSE}
+```{r }
 sum_cat <- sum_all[sum_all$traits =="Asthma-ukb-d-J10_ASTHMA",]
 DT::datatable(sum_cat,options = list(pageLength = 5))
 
-sum_cat <- sum_cat[order(as.numeric(sum_cat$num_gene_08),decreasing = T),]
+sum_cat <- sum_cat[order(as.numeric(sum_cat$num_gene_susiepip08),decreasing = T),]
+print(sprintf("the best tissue based on the number of high PIP genes are: %s",paste0(sum_cat$weights[1:5],collapse = ", ")))
+
+sum_cat <- sum_cat[order(as.numeric(sum_cat$group_pve_gene),decreasing = T),]
+print(sprintf("the best tissue based on PVE explained by genes are: %s",paste0(sum_cat$weights[1:5],collapse = ", ")))
+
+```
+
+
+# asthma - ukb-a-446
+
+```{r }
+sum_cat <- sum_all[sum_all$traits =="Asthma-ukb-a-446",]
+DT::datatable(sum_cat,options = list(pageLength = 5))
+
+sum_cat <- sum_cat[order(as.numeric(sum_cat$num_gene_susiepip08),decreasing = T),]
 print(sprintf("the best tissue based on the number of high PIP genes are: %s",paste0(sum_cat$weights[1:5],collapse = ", ")))
 
 sum_cat <- sum_cat[order(as.numeric(sum_cat$group_pve_gene),decreasing = T),]
@@ -61,12 +73,12 @@ print(sprintf("the best tissue based on PVE explained by genes are: %s",paste0(s
 
 # IBD
 
-```{r echo=FALSE}
+```{r }
 
 sum_cat <- sum_all[sum_all$traits =="IBD-ebi-a-GCST004131",]
 DT::datatable(sum_cat,options = list(pageLength = 5))
 
-sum_cat <- sum_cat[order(as.numeric(sum_cat$num_gene_08),decreasing = T),]
+sum_cat <- sum_cat[order(as.numeric(sum_cat$num_gene_susiepip08),decreasing = T),]
 print(sprintf("the best tissue based on the number of high PIP genes are: %s",paste0(sum_cat$weights[1:5],collapse = ", ")))
 
 sum_cat <- sum_cat[order(as.numeric(sum_cat$group_pve_gene),decreasing = T),]
@@ -76,12 +88,12 @@ print(sprintf("the best tissue based on PVE explained by genes are: %s",paste0(s
 
 # LDL
 
-```{r echo=FALSE}
+```{r }
 
 sum_cat <- sum_all[sum_all$traits =="LDL-ukb-d-30780_irnt",]
 DT::datatable(sum_cat,options = list(pageLength = 5))
 
-sum_cat <- sum_cat[order(as.numeric(sum_cat$num_gene_08),decreasing = T),]
+sum_cat <- sum_cat[order(as.numeric(sum_cat$num_gene_susiepip08),decreasing = T),]
 print(sprintf("the best tissue based on the number of high PIP genes are: %s",paste0(sum_cat$weights[1:5],collapse = ", ")))
 
 sum_cat <- sum_cat[order(as.numeric(sum_cat$group_pve_gene),decreasing = T),]
@@ -92,12 +104,12 @@ print(sprintf("the best tissue based on PVE explained by genes are: %s",paste0(s
 
 # SBP
 
-```{r echo=FALSE}
+```{r }
 
 sum_cat <- sum_all[sum_all$traits =="SBP-ukb-a-360",]
 DT::datatable(sum_cat,options = list(pageLength = 5))
 
-sum_cat <- sum_cat[order(as.numeric(sum_cat$num_gene_08),decreasing = T),]
+sum_cat <- sum_cat[order(as.numeric(sum_cat$num_gene_susiepip08),decreasing = T),]
 print(sprintf("the best tissue based on the number of high PIP genes are: %s",paste0(sum_cat$weights[1:5],collapse = ", ")))
 
 sum_cat <- sum_cat[order(as.numeric(sum_cat$group_pve_gene),decreasing = T),]
@@ -108,12 +120,12 @@ print(sprintf("the best tissue based on PVE explained by genes are: %s",paste0(s
 
 # SCZ
 
-```{r echo=FALSE}
+```{r }
 
 sum_cat <- sum_all[sum_all$traits =="SCZ-ieu-b-5102",]
 DT::datatable(sum_cat,options = list(pageLength = 5))
 
-sum_cat <- sum_cat[order(as.numeric(sum_cat$num_gene_08),decreasing = T),]
+sum_cat <- sum_cat[order(as.numeric(sum_cat$num_gene_susiepip08),decreasing = T),]
 print(sprintf("the best tissue based on the number of high PIP genes are: %s",paste0(sum_cat$weights[1:5],collapse = ", ")))
 
 sum_cat <- sum_cat[order(as.numeric(sum_cat$group_pve_gene),decreasing = T),]
@@ -123,12 +135,12 @@ print(sprintf("the best tissue based on PVE explained by genes are: %s",paste0(s
 
 # WBC
 
-```{r echo=FALSE}
+```{r }
 
 sum_cat <- sum_all[sum_all$traits =="WBC-ieu-b-30",]
 DT::datatable(sum_cat,options = list(pageLength = 5))
 
-sum_cat <- sum_cat[order(as.numeric(sum_cat$num_gene_08),decreasing = T),]
+sum_cat <- sum_cat[order(as.numeric(sum_cat$num_gene_susiepip08),decreasing = T),]
 print(sprintf("the best tissue based on the number of high PIP genes are: %s",paste0(sum_cat$weights[1:5],collapse = ", ")))
 
 sum_cat <- sum_cat[order(as.numeric(sum_cat$group_pve_gene),decreasing = T),]
