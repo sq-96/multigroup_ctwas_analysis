@@ -8,12 +8,23 @@ output:
     toc: true
 ---
 
+```{r }
+library(lattice)
+```
+
+
 
 # Overview
 
-Traits: aFib, Asthma, IBD, LDL, SBP, SCZ, WBC
+## Traits
 
-Weights: PredictDB, 32 tissues with sample size (RNASeq.and.Genotyped.samples below) >= 200
+aFib, IBD, LDL, SBP, SCZ, WBC 
+
+[details](https://sq-96.github.io/multigroup_ctwas_analysis/data.html)
+
+## Weights 
+
+PredictDB, 32 tissues with sample size (RNASeq.and.Genotyped.samples below) >= 200
 
 ```{r }
 load("/project/xinhe/xsun/ctwas/1.matching_tissue/results_data/summary_table.rd")
@@ -21,6 +32,22 @@ colnames(sum_all)[8] <- "num_gene_susiepip08"
 
 weights <- read.csv("/project/xinhe/xsun/ctwas/1.matching_tissue/results_data/gtex_samplesize.csv")
 DT::datatable(weights,options = list(pageLength = 5))
+
+num_top <- 10
+```
+
+##  Tissue-tissue correlation data 
+
+From [MASH paper, PMID30478440](https://www.nature.com/articles/s41588-018-0268-8)
+
+The MASH paper provides a matrix indicating the shared magnitude of eQTLs among tissues [by computing the proportion of effects significant in either tissue that are within 2-fold magnitude of one another](https://stephenslab.github.io/gtexresults/SharingMag.html).
+
+[data download link (MASH matrix)](https://github.com/stephenslab/gtexresults)
+
+```{r}
+load("/project/xinhe/xsun/ctwas/1.matching_tissue/data/tissue_cor.rdata")
+clrs <- colorRampPalette(rev(c("#D73027","#FC8D59","#FEE090","#FFFFBF",
+                               "#E0F3F8","#91BFDB","#4575B4")))(64)
 ```
 
 
@@ -32,46 +59,58 @@ sum_cat <- sum_all[sum_all$traits =="aFib-ebi-a-GCST006414",]
 DT::datatable(sum_cat,options = list(pageLength = 5))
 
 sum_cat <- sum_cat[order(as.numeric(sum_cat$num_gene_susiepip08),decreasing = T),]
-print(sprintf("the best tissue based on the number of high PIP genes are: %s",paste0(sum_cat$weights[1:5],collapse = ", ")))
+print(sprintf("the best tissue based on the number of high PIP genes are: %s",paste0(sum_cat$weights[1:num_top],collapse = ", ")))
+
+tissue_select <- sum_cat$weights[num_top:1]
+tissue_select <- tissue_select[tissue_select%in%rownames(lat)]
+cor <- lat[tissue_select,tissue_select]
+
+for (i in 1:nrow(cor)) {
+    for (j in 1:ncol(cor)) {
+        # Check if the upper triangle element is NA and the lower triangle element is not NA
+        if (is.na(cor[i, j]) && !is.na(cor[j, i])) {
+            # Copy the value from the lower triangle to the upper triangle
+            cor[i, j] <- cor[j, i]
+        }
+    }
+}
+cor[lower.tri(cor)] <- NA
+print(levelplot(cor,col.regions = clrs,xlab = "",ylab = "",
+                colorkey = TRUE))
+
+cor <- cor[rev(tissue_select),rev(tissue_select)]
+DT::datatable(cor,options = list(pageLength = 10))
+
 
 sum_cat <- sum_cat[order(as.numeric(sum_cat$group_pve_gene),decreasing = T),]
-print(sprintf("the best tissue based on PVE explained by genes are: %s",paste0(sum_cat$weights[1:5],collapse = ", ")))
+print(sprintf("the best tissue based on PVE explained by genes are: %s",paste0(sum_cat$weights[1:num_top],collapse = ", ")))
 
+tissue_select <- sum_cat$weights[num_top:1]
+tissue_select <- tissue_select[tissue_select%in%rownames(lat)]
+cor <- lat[tissue_select,tissue_select]
+
+for (i in 1:nrow(cor)) {
+    for (j in 1:ncol(cor)) {
+        # Check if the upper triangle element is NA and the lower triangle element is not NA
+        if (is.na(cor[i, j]) && !is.na(cor[j, i])) {
+            # Copy the value from the lower triangle to the upper triangle
+            cor[i, j] <- cor[j, i]
+        }
+    }
+}
+cor[lower.tri(cor)] <- NA
+print(levelplot(cor,col.regions = clrs,xlab = "",ylab = "",
+                colorkey = TRUE))
+
+cor <- cor[rev(tissue_select),rev(tissue_select)]
+DT::datatable(cor,options = list(pageLength = 10))
 ```
 
 
-
-# asthma - -ukb-d-J10_ASTHMA 
-
-```{r }
-sum_cat <- sum_all[sum_all$traits =="Asthma-ukb-d-J10_ASTHMA",]
-DT::datatable(sum_cat,options = list(pageLength = 5))
-
-sum_cat <- sum_cat[order(as.numeric(sum_cat$num_gene_susiepip08),decreasing = T),]
-print(sprintf("the best tissue based on the number of high PIP genes are: %s",paste0(sum_cat$weights[1:5],collapse = ", ")))
-
-sum_cat <- sum_cat[order(as.numeric(sum_cat$group_pve_gene),decreasing = T),]
-print(sprintf("the best tissue based on PVE explained by genes are: %s",paste0(sum_cat$weights[1:5],collapse = ", ")))
-
-```
-
-
-# asthma - ukb-a-446
-
-```{r }
-sum_cat <- sum_all[sum_all$traits =="Asthma-ukb-a-446",]
-DT::datatable(sum_cat,options = list(pageLength = 5))
-
-sum_cat <- sum_cat[order(as.numeric(sum_cat$num_gene_susiepip08),decreasing = T),]
-print(sprintf("the best tissue based on the number of high PIP genes are: %s",paste0(sum_cat$weights[1:5],collapse = ", ")))
-
-sum_cat <- sum_cat[order(as.numeric(sum_cat$group_pve_gene),decreasing = T),]
-print(sprintf("the best tissue based on PVE explained by genes are: %s",paste0(sum_cat$weights[1:5],collapse = ", ")))
-
-```
 
 
 # IBD
+
 
 ```{r }
 
@@ -79,13 +118,52 @@ sum_cat <- sum_all[sum_all$traits =="IBD-ebi-a-GCST004131",]
 DT::datatable(sum_cat,options = list(pageLength = 5))
 
 sum_cat <- sum_cat[order(as.numeric(sum_cat$num_gene_susiepip08),decreasing = T),]
-print(sprintf("the best tissue based on the number of high PIP genes are: %s",paste0(sum_cat$weights[1:5],collapse = ", ")))
+print(sprintf("the best tissue based on the number of high PIP genes are: %s",paste0(sum_cat$weights[1:num_top],collapse = ", ")))
+
+tissue_select <- sum_cat$weights[num_top:1]
+tissue_select <- tissue_select[tissue_select%in%rownames(lat)]
+cor <- lat[tissue_select,tissue_select]
+
+for (i in 1:nrow(cor)) {
+    for (j in 1:ncol(cor)) {
+        # Check if the upper triangle element is NA and the lower triangle element is not NA
+        if (is.na(cor[i, j]) && !is.na(cor[j, i])) {
+            # Copy the value from the lower triangle to the upper triangle
+            cor[i, j] <- cor[j, i]
+        }
+    }
+}
+cor[lower.tri(cor)] <- NA
+print(levelplot(cor,col.regions = clrs,xlab = "",ylab = "",
+                colorkey = TRUE))
+
+cor <- cor[rev(tissue_select),rev(tissue_select)]
+DT::datatable(cor,options = list(pageLength = 10))
+
 
 sum_cat <- sum_cat[order(as.numeric(sum_cat$group_pve_gene),decreasing = T),]
-print(sprintf("the best tissue based on PVE explained by genes are: %s",paste0(sum_cat$weights[1:5],collapse = ", ")))
+print(sprintf("the best tissue based on PVE explained by genes are: %s",paste0(sum_cat$weights[1:num_top],collapse = ", ")))
 
+tissue_select <- sum_cat$weights[num_top:1]
+tissue_select <- tissue_select[tissue_select%in%rownames(lat)]
+cor <- lat[tissue_select,tissue_select]
+
+for (i in 1:nrow(cor)) {
+    for (j in 1:ncol(cor)) {
+        # Check if the upper triangle element is NA and the lower triangle element is not NA
+        if (is.na(cor[i, j]) && !is.na(cor[j, i])) {
+            # Copy the value from the lower triangle to the upper triangle
+            cor[i, j] <- cor[j, i]
+        }
+    }
+}
+cor[lower.tri(cor)] <- NA
+print(levelplot(cor,col.regions = clrs,xlab = "",ylab = "",
+                colorkey = TRUE))
+
+cor <- cor[rev(tissue_select),rev(tissue_select)]
+DT::datatable(cor,options = list(pageLength = 10))
 ```
-
 # LDL
 
 ```{r }
@@ -94,11 +172,51 @@ sum_cat <- sum_all[sum_all$traits =="LDL-ukb-d-30780_irnt",]
 DT::datatable(sum_cat,options = list(pageLength = 5))
 
 sum_cat <- sum_cat[order(as.numeric(sum_cat$num_gene_susiepip08),decreasing = T),]
-print(sprintf("the best tissue based on the number of high PIP genes are: %s",paste0(sum_cat$weights[1:5],collapse = ", ")))
+print(sprintf("the best tissue based on the number of high PIP genes are: %s",paste0(sum_cat$weights[1:num_top],collapse = ", ")))
+
+tissue_select <- sum_cat$weights[num_top:1]
+tissue_select <- tissue_select[tissue_select%in%rownames(lat)]
+cor <- lat[tissue_select,tissue_select]
+
+for (i in 1:nrow(cor)) {
+    for (j in 1:ncol(cor)) {
+        # Check if the upper triangle element is NA and the lower triangle element is not NA
+        if (is.na(cor[i, j]) && !is.na(cor[j, i])) {
+            # Copy the value from the lower triangle to the upper triangle
+            cor[i, j] <- cor[j, i]
+        }
+    }
+}
+cor[lower.tri(cor)] <- NA
+print(levelplot(cor,col.regions = clrs,xlab = "",ylab = "",
+                colorkey = TRUE))
+
+cor <- cor[rev(tissue_select),rev(tissue_select)]
+DT::datatable(cor,options = list(pageLength = 10))
+
 
 sum_cat <- sum_cat[order(as.numeric(sum_cat$group_pve_gene),decreasing = T),]
-print(sprintf("the best tissue based on PVE explained by genes are: %s",paste0(sum_cat$weights[1:5],collapse = ", ")))
+print(sprintf("the best tissue based on PVE explained by genes are: %s",paste0(sum_cat$weights[1:num_top],collapse = ", ")))
 
+tissue_select <- sum_cat$weights[num_top:1]
+tissue_select <- tissue_select[tissue_select%in%rownames(lat)]
+cor <- lat[tissue_select,tissue_select]
+
+for (i in 1:nrow(cor)) {
+    for (j in 1:ncol(cor)) {
+        # Check if the upper triangle element is NA and the lower triangle element is not NA
+        if (is.na(cor[i, j]) && !is.na(cor[j, i])) {
+            # Copy the value from the lower triangle to the upper triangle
+            cor[i, j] <- cor[j, i]
+        }
+    }
+}
+cor[lower.tri(cor)] <- NA
+print(levelplot(cor,col.regions = clrs,xlab = "",ylab = "",
+                colorkey = TRUE))
+
+cor <- cor[rev(tissue_select),rev(tissue_select)]
+DT::datatable(cor,options = list(pageLength = 10))
 ```
 
 
@@ -110,11 +228,51 @@ sum_cat <- sum_all[sum_all$traits =="SBP-ukb-a-360",]
 DT::datatable(sum_cat,options = list(pageLength = 5))
 
 sum_cat <- sum_cat[order(as.numeric(sum_cat$num_gene_susiepip08),decreasing = T),]
-print(sprintf("the best tissue based on the number of high PIP genes are: %s",paste0(sum_cat$weights[1:5],collapse = ", ")))
+print(sprintf("the best tissue based on the number of high PIP genes are: %s",paste0(sum_cat$weights[1:num_top],collapse = ", ")))
+
+tissue_select <- sum_cat$weights[num_top:1]
+tissue_select <- tissue_select[tissue_select%in%rownames(lat)]
+cor <- lat[tissue_select,tissue_select]
+
+for (i in 1:nrow(cor)) {
+    for (j in 1:ncol(cor)) {
+        # Check if the upper triangle element is NA and the lower triangle element is not NA
+        if (is.na(cor[i, j]) && !is.na(cor[j, i])) {
+            # Copy the value from the lower triangle to the upper triangle
+            cor[i, j] <- cor[j, i]
+        }
+    }
+}
+cor[lower.tri(cor)] <- NA
+print(levelplot(cor,col.regions = clrs,xlab = "",ylab = "",
+                colorkey = TRUE))
+
+cor <- cor[rev(tissue_select),rev(tissue_select)]
+DT::datatable(cor,options = list(pageLength = 10))
+
 
 sum_cat <- sum_cat[order(as.numeric(sum_cat$group_pve_gene),decreasing = T),]
-print(sprintf("the best tissue based on PVE explained by genes are: %s",paste0(sum_cat$weights[1:5],collapse = ", ")))
+print(sprintf("the best tissue based on PVE explained by genes are: %s",paste0(sum_cat$weights[1:num_top],collapse = ", ")))
 
+tissue_select <- sum_cat$weights[num_top:1]
+tissue_select <- tissue_select[tissue_select%in%rownames(lat)]
+cor <- lat[tissue_select,tissue_select]
+
+for (i in 1:nrow(cor)) {
+    for (j in 1:ncol(cor)) {
+        # Check if the upper triangle element is NA and the lower triangle element is not NA
+        if (is.na(cor[i, j]) && !is.na(cor[j, i])) {
+            # Copy the value from the lower triangle to the upper triangle
+            cor[i, j] <- cor[j, i]
+        }
+    }
+}
+cor[lower.tri(cor)] <- NA
+print(levelplot(cor,col.regions = clrs,xlab = "",ylab = "",
+                colorkey = TRUE))
+
+cor <- cor[rev(tissue_select),rev(tissue_select)]
+DT::datatable(cor,options = list(pageLength = 10))
 ```
 
 
@@ -126,11 +284,51 @@ sum_cat <- sum_all[sum_all$traits =="SCZ-ieu-b-5102",]
 DT::datatable(sum_cat,options = list(pageLength = 5))
 
 sum_cat <- sum_cat[order(as.numeric(sum_cat$num_gene_susiepip08),decreasing = T),]
-print(sprintf("the best tissue based on the number of high PIP genes are: %s",paste0(sum_cat$weights[1:5],collapse = ", ")))
+print(sprintf("the best tissue based on the number of high PIP genes are: %s",paste0(sum_cat$weights[1:num_top],collapse = ", ")))
+
+tissue_select <- sum_cat$weights[num_top:1]
+tissue_select <- tissue_select[tissue_select%in%rownames(lat)]
+cor <- lat[tissue_select,tissue_select]
+
+for (i in 1:nrow(cor)) {
+    for (j in 1:ncol(cor)) {
+        # Check if the upper triangle element is NA and the lower triangle element is not NA
+        if (is.na(cor[i, j]) && !is.na(cor[j, i])) {
+            # Copy the value from the lower triangle to the upper triangle
+            cor[i, j] <- cor[j, i]
+        }
+    }
+}
+cor[lower.tri(cor)] <- NA
+print(levelplot(cor,col.regions = clrs,xlab = "",ylab = "",
+                colorkey = TRUE))
+
+cor <- cor[rev(tissue_select),rev(tissue_select)]
+DT::datatable(cor,options = list(pageLength = 10))
+
 
 sum_cat <- sum_cat[order(as.numeric(sum_cat$group_pve_gene),decreasing = T),]
-print(sprintf("the best tissue based on PVE explained by genes are: %s",paste0(sum_cat$weights[1:5],collapse = ", ")))
+print(sprintf("the best tissue based on PVE explained by genes are: %s",paste0(sum_cat$weights[1:num_top],collapse = ", ")))
 
+tissue_select <- sum_cat$weights[num_top:1]
+tissue_select <- tissue_select[tissue_select%in%rownames(lat)]
+cor <- lat[tissue_select,tissue_select]
+
+for (i in 1:nrow(cor)) {
+    for (j in 1:ncol(cor)) {
+        # Check if the upper triangle element is NA and the lower triangle element is not NA
+        if (is.na(cor[i, j]) && !is.na(cor[j, i])) {
+            # Copy the value from the lower triangle to the upper triangle
+            cor[i, j] <- cor[j, i]
+        }
+    }
+}
+cor[lower.tri(cor)] <- NA
+print(levelplot(cor,col.regions = clrs,xlab = "",ylab = "",
+                colorkey = TRUE))
+
+cor <- cor[rev(tissue_select),rev(tissue_select)]
+DT::datatable(cor,options = list(pageLength = 10))
 ```
 
 # WBC
@@ -141,9 +339,81 @@ sum_cat <- sum_all[sum_all$traits =="WBC-ieu-b-30",]
 DT::datatable(sum_cat,options = list(pageLength = 5))
 
 sum_cat <- sum_cat[order(as.numeric(sum_cat$num_gene_susiepip08),decreasing = T),]
-print(sprintf("the best tissue based on the number of high PIP genes are: %s",paste0(sum_cat$weights[1:5],collapse = ", ")))
+print(sprintf("the best tissue based on the number of high PIP genes are: %s",paste0(sum_cat$weights[1:num_top],collapse = ", ")))
+
+tissue_select <- sum_cat$weights[num_top:1]
+tissue_select <- tissue_select[tissue_select%in%rownames(lat)]
+cor <- lat[tissue_select,tissue_select]
+
+for (i in 1:nrow(cor)) {
+    for (j in 1:ncol(cor)) {
+        # Check if the upper triangle element is NA and the lower triangle element is not NA
+        if (is.na(cor[i, j]) && !is.na(cor[j, i])) {
+            # Copy the value from the lower triangle to the upper triangle
+            cor[i, j] <- cor[j, i]
+        }
+    }
+}
+cor[lower.tri(cor)] <- NA
+print(levelplot(cor,col.regions = clrs,xlab = "",ylab = "",
+                colorkey = TRUE))
+
+cor <- cor[rev(tissue_select),rev(tissue_select)]
+DT::datatable(cor,options = list(pageLength = 10))
+
 
 sum_cat <- sum_cat[order(as.numeric(sum_cat$group_pve_gene),decreasing = T),]
-print(sprintf("the best tissue based on PVE explained by genes are: %s",paste0(sum_cat$weights[1:5],collapse = ", ")))
+print(sprintf("the best tissue based on PVE explained by genes are: %s",paste0(sum_cat$weights[1:num_top],collapse = ", ")))
+
+tissue_select <- sum_cat$weights[num_top:1]
+tissue_select <- tissue_select[tissue_select%in%rownames(lat)]
+cor <- lat[tissue_select,tissue_select]
+
+for (i in 1:nrow(cor)) {
+    for (j in 1:ncol(cor)) {
+        # Check if the upper triangle element is NA and the lower triangle element is not NA
+        if (is.na(cor[i, j]) && !is.na(cor[j, i])) {
+            # Copy the value from the lower triangle to the upper triangle
+            cor[i, j] <- cor[j, i]
+        }
+    }
+}
+cor[lower.tri(cor)] <- NA
+print(levelplot(cor,col.regions = clrs,xlab = "",ylab = "",
+                colorkey = TRUE))
+
+cor <- cor[rev(tissue_select),rev(tissue_select)]
+DT::datatable(cor,options = list(pageLength = 10))
 
 ```
+
+
+<!-- # asthma - -ukb-d-J10_ASTHMA  -->
+
+<!-- ```{r } -->
+<!-- sum_cat <- sum_all[sum_all$traits =="Asthma-ukb-d-J10_ASTHMA",] -->
+<!-- DT::datatable(sum_cat,options = list(pageLength = 5)) -->
+
+<!-- sum_cat <- sum_cat[order(as.numeric(sum_cat$num_gene_susiepip08),decreasing = T),] -->
+<!-- print(sprintf("the best tissue based on the number of high PIP genes are: %s",paste0(sum_cat$weights[1:num_top],collapse = ", "))) -->
+
+<!-- sum_cat <- sum_cat[order(as.numeric(sum_cat$group_pve_gene),decreasing = T),] -->
+<!-- print(sprintf("the best tissue based on PVE explained by genes are: %s",paste0(sum_cat$weights[1:num_top],collapse = ", "))) -->
+
+<!-- ``` -->
+
+
+<!-- # asthma - ukb-a-446 -->
+
+<!-- ```{r } -->
+<!-- sum_cat <- sum_all[sum_all$traits =="Asthma-ukb-a-446",] -->
+<!-- DT::datatable(sum_cat,options = list(pageLength = 5)) -->
+
+<!-- sum_cat <- sum_cat[order(as.numeric(sum_cat$num_gene_susiepip08),decreasing = T),] -->
+<!-- print(sprintf("the best tissue based on the number of high PIP genes are: %s",paste0(sum_cat$weights[1:num_top],collapse = ", "))) -->
+
+<!-- sum_cat <- sum_cat[order(as.numeric(sum_cat$group_pve_gene),decreasing = T),] -->
+<!-- print(sprintf("the best tissue based on PVE explained by genes are: %s",paste0(sum_cat$weights[1:num_top],collapse = ", "))) -->
+
+<!-- ``` -->
+
