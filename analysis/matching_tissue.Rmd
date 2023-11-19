@@ -8,12 +8,6 @@ output:
     toc: true
 ---
 
-```{r }
-library(lattice)
-```
-
-
-
 # Overview
 
 ## Traits
@@ -50,6 +44,79 @@ clrs <- colorRampPalette(rev(c("#D73027","#FC8D59","#FEE090","#FFFFBF",
                                "#E0F3F8","#91BFDB","#4575B4")))(64)
 ```
 
+We filtered the correlation using 0.8 as cutoff.
+
+## Functions used 
+
+```{r }
+library(lattice)
+
+get_correlation <- function(tissue1, tissue2, cor_matrix) {
+  # Check if tissues are in the matrix and find their positions
+  pos1 <- match(tissue1, colnames(cor_matrix))
+  pos2 <- match(tissue2, rownames(cor_matrix))
+  
+  return(cor_matrix[pos2, pos1]) 
+}
+
+r2cutoff <- 0.8
+filter_tissues <- function(tissue_list, cor_matrix) {
+  filtered_list <- c(tissue_list[1]) # Start with the first tissue
+  
+  for (i in 2:length(tissue_list)) {
+    high_correlation_found <- FALSE
+    for (j in 1:length(filtered_list)) {
+      if (!is.na(get_correlation(filtered_list[j], tissue_list[i], cor_matrix)) &&
+          get_correlation(filtered_list[j], tissue_list[i], cor_matrix) > r2cutoff) {
+        high_correlation_found <- TRUE
+        break # Break the inner loop as high correlation is found
+      }
+    }
+    
+    if (!high_correlation_found) {
+      filtered_list <- c(filtered_list, tissue_list[i])
+    }
+  }
+  return(filtered_list)
+}
+
+fill_upper_triangle <- function(cor_matrix) {
+    for (i in 1:nrow(cor_matrix)) {
+        for (j in 1:ncol(cor_matrix)) {
+            # Check if the upper triangle element is NA and the lower triangle element is not NA
+            if (is.na(cor_matrix[i, j]) && !is.na(cor_matrix[j, i])) {
+                # Copy the value from the lower triangle to the upper triangle
+                cor_matrix[i, j] <- cor_matrix[j, i]
+            }
+        }
+    }
+    cor_matrix[lower.tri(cor_matrix)] <- NA
+    return(cor_matrix)
+}
+
+combine_vectors <- function(vec1, vec_cor1, vec2, vec_cor2, pad_with_na = TRUE) {
+  # Check if padding with NAs is required
+  if (pad_with_na) {
+    # Pad the shorter primary vector and its corresponding vector with NAs
+    if (length(vec1) < length(vec2)) {
+      extra_length <- length(vec2) - length(vec1)
+      vec1 <- c(vec1, rep(NA, extra_length))
+      vec_cor1 <- c(vec_cor1, rep(NA, extra_length))
+    } else {
+      extra_length <- length(vec1) - length(vec2)
+      vec2 <- c(vec2, rep(NA, extra_length))
+      vec_cor2 <- c(vec_cor2, rep(NA, extra_length))
+    }
+    # Combine the vectors into a matrix/data frame
+    return(cbind(vec1, vec_cor1, vec2, vec_cor2))
+  } else {
+    # Combine the vectors into a list
+    return(list(vec1=vec1, vec_cor1=vec_cor1, vec2=vec2, vec_cor2=vec_cor2))
+  }
+}
+
+```
+
 
 # aFib
 
@@ -58,52 +125,59 @@ clrs <- colorRampPalette(rev(c("#D73027","#FC8D59","#FEE090","#FFFFBF",
 sum_cat <- sum_all[sum_all$traits =="aFib-ebi-a-GCST006414",]
 DT::datatable(sum_cat,options = list(pageLength = 5))
 
+print("filtering based on the number of high PIP genes")
 sum_cat <- sum_cat[order(as.numeric(sum_cat$num_gene_susiepip08),decreasing = T),]
-print(sprintf("the best tissue based on the number of high PIP genes are: %s",paste0(sum_cat$weights[1:num_top],collapse = ", ")))
 
 tissue_select <- sum_cat$weights[num_top:1]
 tissue_select <- tissue_select[tissue_select%in%rownames(lat)]
-cor <- lat[tissue_select,tissue_select]
 
-for (i in 1:nrow(cor)) {
-    for (j in 1:ncol(cor)) {
-        # Check if the upper triangle element is NA and the lower triangle element is not NA
-        if (is.na(cor[i, j]) && !is.na(cor[j, i])) {
-            # Copy the value from the lower triangle to the upper triangle
-            cor[i, j] <- cor[j, i]
-        }
-    }
-}
-cor[lower.tri(cor)] <- NA
+##heatmap
+cor <- lat[tissue_select,tissue_select]
+cor <- fill_upper_triangle(cor)
 print(levelplot(cor,col.regions = clrs,xlab = "",ylab = "",
                 colorkey = TRUE))
 
+##cor matrix
 cor <- cor[rev(tissue_select),rev(tissue_select)]
 DT::datatable(cor,options = list(pageLength = 10))
 
+tissue_select_f1 <- sum_cat$weights[1:num_top]
+filtered_tissues <- filter_tissues(tissue_select_f1, cor)
 
+tissue_select_f1_cor <- sum_cat$num_gene_susiepip08[sum_cat$weights %in% tissue_select_f1 ]
+filtered_tissues_cor <- sum_cat$num_gene_susiepip08[sum_cat$weights %in% filtered_tissues ]
+comb <- combine_vectors(tissue_select_f1, tissue_select_f1_cor, filtered_tissues, filtered_tissues_cor, pad_with_na = TRUE)
+colnames(comb) <- c("without_filtering","#ofgene","filtered","#ofgene")
+DT::datatable(comb,options = list(pageLength = 10))
+
+
+
+print("filtering based on PVE explained by genes")
 sum_cat <- sum_cat[order(as.numeric(sum_cat$group_pve_gene),decreasing = T),]
-print(sprintf("the best tissue based on PVE explained by genes are: %s",paste0(sum_cat$weights[1:num_top],collapse = ", ")))
+
 
 tissue_select <- sum_cat$weights[num_top:1]
 tissue_select <- tissue_select[tissue_select%in%rownames(lat)]
-cor <- lat[tissue_select,tissue_select]
 
-for (i in 1:nrow(cor)) {
-    for (j in 1:ncol(cor)) {
-        # Check if the upper triangle element is NA and the lower triangle element is not NA
-        if (is.na(cor[i, j]) && !is.na(cor[j, i])) {
-            # Copy the value from the lower triangle to the upper triangle
-            cor[i, j] <- cor[j, i]
-        }
-    }
-}
-cor[lower.tri(cor)] <- NA
+##heatmap
+cor <- lat[tissue_select,tissue_select]
+cor <- fill_upper_triangle(cor)
 print(levelplot(cor,col.regions = clrs,xlab = "",ylab = "",
                 colorkey = TRUE))
 
+##cor matrix
 cor <- cor[rev(tissue_select),rev(tissue_select)]
 DT::datatable(cor,options = list(pageLength = 10))
+
+tissue_select_f1 <- sum_cat$weights[1:num_top]
+filtered_tissues <- filter_tissues(tissue_select_f1, cor)
+
+tissue_select_f1_cor <- sum_cat$group_pve_gene[sum_cat$weights %in% tissue_select_f1 ]
+filtered_tissues_cor <- sum_cat$group_pve_gene[sum_cat$weights %in% filtered_tissues ]
+comb <- combine_vectors(tissue_select_f1, tissue_select_f1_cor, filtered_tissues, filtered_tissues_cor, pad_with_na = TRUE)
+colnames(comb) <- c("without_filtering","PVE_gene","filtered","PVE_gene")
+
+DT::datatable(comb,options = list(pageLength = 10))
 ```
 
 
@@ -117,52 +191,59 @@ DT::datatable(cor,options = list(pageLength = 10))
 sum_cat <- sum_all[sum_all$traits =="IBD-ebi-a-GCST004131",]
 DT::datatable(sum_cat,options = list(pageLength = 5))
 
+print("filtering based on the number of high PIP genes")
 sum_cat <- sum_cat[order(as.numeric(sum_cat$num_gene_susiepip08),decreasing = T),]
-print(sprintf("the best tissue based on the number of high PIP genes are: %s",paste0(sum_cat$weights[1:num_top],collapse = ", ")))
 
 tissue_select <- sum_cat$weights[num_top:1]
 tissue_select <- tissue_select[tissue_select%in%rownames(lat)]
-cor <- lat[tissue_select,tissue_select]
 
-for (i in 1:nrow(cor)) {
-    for (j in 1:ncol(cor)) {
-        # Check if the upper triangle element is NA and the lower triangle element is not NA
-        if (is.na(cor[i, j]) && !is.na(cor[j, i])) {
-            # Copy the value from the lower triangle to the upper triangle
-            cor[i, j] <- cor[j, i]
-        }
-    }
-}
-cor[lower.tri(cor)] <- NA
+##heatmap
+cor <- lat[tissue_select,tissue_select]
+cor <- fill_upper_triangle(cor)
 print(levelplot(cor,col.regions = clrs,xlab = "",ylab = "",
                 colorkey = TRUE))
 
+##cor matrix
 cor <- cor[rev(tissue_select),rev(tissue_select)]
 DT::datatable(cor,options = list(pageLength = 10))
 
+tissue_select_f1 <- sum_cat$weights[1:num_top]
+filtered_tissues <- filter_tissues(tissue_select_f1, cor)
 
+tissue_select_f1_cor <- sum_cat$num_gene_susiepip08[sum_cat$weights %in% tissue_select_f1 ]
+filtered_tissues_cor <- sum_cat$num_gene_susiepip08[sum_cat$weights %in% filtered_tissues ]
+comb <- combine_vectors(tissue_select_f1, tissue_select_f1_cor, filtered_tissues, filtered_tissues_cor, pad_with_na = TRUE)
+colnames(comb) <- c("without_filtering","#ofgene","filtered","#ofgene")
+DT::datatable(comb,options = list(pageLength = 10))
+
+
+
+print("filtering based on PVE explained by genes")
 sum_cat <- sum_cat[order(as.numeric(sum_cat$group_pve_gene),decreasing = T),]
-print(sprintf("the best tissue based on PVE explained by genes are: %s",paste0(sum_cat$weights[1:num_top],collapse = ", ")))
+
 
 tissue_select <- sum_cat$weights[num_top:1]
 tissue_select <- tissue_select[tissue_select%in%rownames(lat)]
-cor <- lat[tissue_select,tissue_select]
 
-for (i in 1:nrow(cor)) {
-    for (j in 1:ncol(cor)) {
-        # Check if the upper triangle element is NA and the lower triangle element is not NA
-        if (is.na(cor[i, j]) && !is.na(cor[j, i])) {
-            # Copy the value from the lower triangle to the upper triangle
-            cor[i, j] <- cor[j, i]
-        }
-    }
-}
-cor[lower.tri(cor)] <- NA
+##heatmap
+cor <- lat[tissue_select,tissue_select]
+cor <- fill_upper_triangle(cor)
 print(levelplot(cor,col.regions = clrs,xlab = "",ylab = "",
                 colorkey = TRUE))
 
+##cor matrix
 cor <- cor[rev(tissue_select),rev(tissue_select)]
 DT::datatable(cor,options = list(pageLength = 10))
+
+tissue_select_f1 <- sum_cat$weights[1:num_top]
+filtered_tissues <- filter_tissues(tissue_select_f1, cor)
+
+tissue_select_f1_cor <- sum_cat$group_pve_gene[sum_cat$weights %in% tissue_select_f1 ]
+filtered_tissues_cor <- sum_cat$group_pve_gene[sum_cat$weights %in% filtered_tissues ]
+comb <- combine_vectors(tissue_select_f1, tissue_select_f1_cor, filtered_tissues, filtered_tissues_cor, pad_with_na = TRUE)
+colnames(comb) <- c("without_filtering","PVE_gene","filtered","PVE_gene")
+
+DT::datatable(comb,options = list(pageLength = 10))
 ```
 # LDL
 
@@ -171,52 +252,59 @@ DT::datatable(cor,options = list(pageLength = 10))
 sum_cat <- sum_all[sum_all$traits =="LDL-ukb-d-30780_irnt",]
 DT::datatable(sum_cat,options = list(pageLength = 5))
 
+print("filtering based on the number of high PIP genes")
 sum_cat <- sum_cat[order(as.numeric(sum_cat$num_gene_susiepip08),decreasing = T),]
-print(sprintf("the best tissue based on the number of high PIP genes are: %s",paste0(sum_cat$weights[1:num_top],collapse = ", ")))
 
 tissue_select <- sum_cat$weights[num_top:1]
 tissue_select <- tissue_select[tissue_select%in%rownames(lat)]
-cor <- lat[tissue_select,tissue_select]
 
-for (i in 1:nrow(cor)) {
-    for (j in 1:ncol(cor)) {
-        # Check if the upper triangle element is NA and the lower triangle element is not NA
-        if (is.na(cor[i, j]) && !is.na(cor[j, i])) {
-            # Copy the value from the lower triangle to the upper triangle
-            cor[i, j] <- cor[j, i]
-        }
-    }
-}
-cor[lower.tri(cor)] <- NA
+##heatmap
+cor <- lat[tissue_select,tissue_select]
+cor <- fill_upper_triangle(cor)
 print(levelplot(cor,col.regions = clrs,xlab = "",ylab = "",
                 colorkey = TRUE))
 
+##cor matrix
 cor <- cor[rev(tissue_select),rev(tissue_select)]
 DT::datatable(cor,options = list(pageLength = 10))
 
+tissue_select_f1 <- sum_cat$weights[1:num_top]
+filtered_tissues <- filter_tissues(tissue_select_f1, cor)
 
+tissue_select_f1_cor <- sum_cat$num_gene_susiepip08[sum_cat$weights %in% tissue_select_f1 ]
+filtered_tissues_cor <- sum_cat$num_gene_susiepip08[sum_cat$weights %in% filtered_tissues ]
+comb <- combine_vectors(tissue_select_f1, tissue_select_f1_cor, filtered_tissues, filtered_tissues_cor, pad_with_na = TRUE)
+colnames(comb) <- c("without_filtering","#ofgene","filtered","#ofgene")
+DT::datatable(comb,options = list(pageLength = 10))
+
+
+
+print("filtering based on PVE explained by genes")
 sum_cat <- sum_cat[order(as.numeric(sum_cat$group_pve_gene),decreasing = T),]
-print(sprintf("the best tissue based on PVE explained by genes are: %s",paste0(sum_cat$weights[1:num_top],collapse = ", ")))
+
 
 tissue_select <- sum_cat$weights[num_top:1]
 tissue_select <- tissue_select[tissue_select%in%rownames(lat)]
-cor <- lat[tissue_select,tissue_select]
 
-for (i in 1:nrow(cor)) {
-    for (j in 1:ncol(cor)) {
-        # Check if the upper triangle element is NA and the lower triangle element is not NA
-        if (is.na(cor[i, j]) && !is.na(cor[j, i])) {
-            # Copy the value from the lower triangle to the upper triangle
-            cor[i, j] <- cor[j, i]
-        }
-    }
-}
-cor[lower.tri(cor)] <- NA
+##heatmap
+cor <- lat[tissue_select,tissue_select]
+cor <- fill_upper_triangle(cor)
 print(levelplot(cor,col.regions = clrs,xlab = "",ylab = "",
                 colorkey = TRUE))
 
+##cor matrix
 cor <- cor[rev(tissue_select),rev(tissue_select)]
 DT::datatable(cor,options = list(pageLength = 10))
+
+tissue_select_f1 <- sum_cat$weights[1:num_top]
+filtered_tissues <- filter_tissues(tissue_select_f1, cor)
+
+tissue_select_f1_cor <- sum_cat$group_pve_gene[sum_cat$weights %in% tissue_select_f1 ]
+filtered_tissues_cor <- sum_cat$group_pve_gene[sum_cat$weights %in% filtered_tissues ]
+comb <- combine_vectors(tissue_select_f1, tissue_select_f1_cor, filtered_tissues, filtered_tissues_cor, pad_with_na = TRUE)
+colnames(comb) <- c("without_filtering","PVE_gene","filtered","PVE_gene")
+
+DT::datatable(comb,options = list(pageLength = 10))
 ```
 
 
@@ -227,52 +315,59 @@ DT::datatable(cor,options = list(pageLength = 10))
 sum_cat <- sum_all[sum_all$traits =="SBP-ukb-a-360",]
 DT::datatable(sum_cat,options = list(pageLength = 5))
 
+print("filtering based on the number of high PIP genes")
 sum_cat <- sum_cat[order(as.numeric(sum_cat$num_gene_susiepip08),decreasing = T),]
-print(sprintf("the best tissue based on the number of high PIP genes are: %s",paste0(sum_cat$weights[1:num_top],collapse = ", ")))
 
 tissue_select <- sum_cat$weights[num_top:1]
 tissue_select <- tissue_select[tissue_select%in%rownames(lat)]
-cor <- lat[tissue_select,tissue_select]
 
-for (i in 1:nrow(cor)) {
-    for (j in 1:ncol(cor)) {
-        # Check if the upper triangle element is NA and the lower triangle element is not NA
-        if (is.na(cor[i, j]) && !is.na(cor[j, i])) {
-            # Copy the value from the lower triangle to the upper triangle
-            cor[i, j] <- cor[j, i]
-        }
-    }
-}
-cor[lower.tri(cor)] <- NA
+##heatmap
+cor <- lat[tissue_select,tissue_select]
+cor <- fill_upper_triangle(cor)
 print(levelplot(cor,col.regions = clrs,xlab = "",ylab = "",
                 colorkey = TRUE))
 
+##cor matrix
 cor <- cor[rev(tissue_select),rev(tissue_select)]
 DT::datatable(cor,options = list(pageLength = 10))
 
+tissue_select_f1 <- sum_cat$weights[1:num_top]
+filtered_tissues <- filter_tissues(tissue_select_f1, cor)
 
+tissue_select_f1_cor <- sum_cat$num_gene_susiepip08[sum_cat$weights %in% tissue_select_f1 ]
+filtered_tissues_cor <- sum_cat$num_gene_susiepip08[sum_cat$weights %in% filtered_tissues ]
+comb <- combine_vectors(tissue_select_f1, tissue_select_f1_cor, filtered_tissues, filtered_tissues_cor, pad_with_na = TRUE)
+colnames(comb) <- c("without_filtering","#ofgene","filtered","#ofgene")
+DT::datatable(comb,options = list(pageLength = 10))
+
+
+
+print("filtering based on PVE explained by genes")
 sum_cat <- sum_cat[order(as.numeric(sum_cat$group_pve_gene),decreasing = T),]
-print(sprintf("the best tissue based on PVE explained by genes are: %s",paste0(sum_cat$weights[1:num_top],collapse = ", ")))
+
 
 tissue_select <- sum_cat$weights[num_top:1]
 tissue_select <- tissue_select[tissue_select%in%rownames(lat)]
-cor <- lat[tissue_select,tissue_select]
 
-for (i in 1:nrow(cor)) {
-    for (j in 1:ncol(cor)) {
-        # Check if the upper triangle element is NA and the lower triangle element is not NA
-        if (is.na(cor[i, j]) && !is.na(cor[j, i])) {
-            # Copy the value from the lower triangle to the upper triangle
-            cor[i, j] <- cor[j, i]
-        }
-    }
-}
-cor[lower.tri(cor)] <- NA
+##heatmap
+cor <- lat[tissue_select,tissue_select]
+cor <- fill_upper_triangle(cor)
 print(levelplot(cor,col.regions = clrs,xlab = "",ylab = "",
                 colorkey = TRUE))
 
+##cor matrix
 cor <- cor[rev(tissue_select),rev(tissue_select)]
 DT::datatable(cor,options = list(pageLength = 10))
+
+tissue_select_f1 <- sum_cat$weights[1:num_top]
+filtered_tissues <- filter_tissues(tissue_select_f1, cor)
+
+tissue_select_f1_cor <- sum_cat$group_pve_gene[sum_cat$weights %in% tissue_select_f1 ]
+filtered_tissues_cor <- sum_cat$group_pve_gene[sum_cat$weights %in% filtered_tissues ]
+comb <- combine_vectors(tissue_select_f1, tissue_select_f1_cor, filtered_tissues, filtered_tissues_cor, pad_with_na = TRUE)
+colnames(comb) <- c("without_filtering","PVE_gene","filtered","PVE_gene")
+
+DT::datatable(comb,options = list(pageLength = 10))
 ```
 
 
@@ -283,52 +378,59 @@ DT::datatable(cor,options = list(pageLength = 10))
 sum_cat <- sum_all[sum_all$traits =="SCZ-ieu-b-5102",]
 DT::datatable(sum_cat,options = list(pageLength = 5))
 
+print("filtering based on the number of high PIP genes")
 sum_cat <- sum_cat[order(as.numeric(sum_cat$num_gene_susiepip08),decreasing = T),]
-print(sprintf("the best tissue based on the number of high PIP genes are: %s",paste0(sum_cat$weights[1:num_top],collapse = ", ")))
 
 tissue_select <- sum_cat$weights[num_top:1]
 tissue_select <- tissue_select[tissue_select%in%rownames(lat)]
-cor <- lat[tissue_select,tissue_select]
 
-for (i in 1:nrow(cor)) {
-    for (j in 1:ncol(cor)) {
-        # Check if the upper triangle element is NA and the lower triangle element is not NA
-        if (is.na(cor[i, j]) && !is.na(cor[j, i])) {
-            # Copy the value from the lower triangle to the upper triangle
-            cor[i, j] <- cor[j, i]
-        }
-    }
-}
-cor[lower.tri(cor)] <- NA
+##heatmap
+cor <- lat[tissue_select,tissue_select]
+cor <- fill_upper_triangle(cor)
 print(levelplot(cor,col.regions = clrs,xlab = "",ylab = "",
                 colorkey = TRUE))
 
+##cor matrix
 cor <- cor[rev(tissue_select),rev(tissue_select)]
 DT::datatable(cor,options = list(pageLength = 10))
 
+tissue_select_f1 <- sum_cat$weights[1:num_top]
+filtered_tissues <- filter_tissues(tissue_select_f1, cor)
 
+tissue_select_f1_cor <- sum_cat$num_gene_susiepip08[sum_cat$weights %in% tissue_select_f1 ]
+filtered_tissues_cor <- sum_cat$num_gene_susiepip08[sum_cat$weights %in% filtered_tissues ]
+comb <- combine_vectors(tissue_select_f1, tissue_select_f1_cor, filtered_tissues, filtered_tissues_cor, pad_with_na = TRUE)
+colnames(comb) <- c("without_filtering","#ofgene","filtered","#ofgene")
+DT::datatable(comb,options = list(pageLength = 10))
+
+
+
+print("filtering based on PVE explained by genes")
 sum_cat <- sum_cat[order(as.numeric(sum_cat$group_pve_gene),decreasing = T),]
-print(sprintf("the best tissue based on PVE explained by genes are: %s",paste0(sum_cat$weights[1:num_top],collapse = ", ")))
+
 
 tissue_select <- sum_cat$weights[num_top:1]
 tissue_select <- tissue_select[tissue_select%in%rownames(lat)]
-cor <- lat[tissue_select,tissue_select]
 
-for (i in 1:nrow(cor)) {
-    for (j in 1:ncol(cor)) {
-        # Check if the upper triangle element is NA and the lower triangle element is not NA
-        if (is.na(cor[i, j]) && !is.na(cor[j, i])) {
-            # Copy the value from the lower triangle to the upper triangle
-            cor[i, j] <- cor[j, i]
-        }
-    }
-}
-cor[lower.tri(cor)] <- NA
+##heatmap
+cor <- lat[tissue_select,tissue_select]
+cor <- fill_upper_triangle(cor)
 print(levelplot(cor,col.regions = clrs,xlab = "",ylab = "",
                 colorkey = TRUE))
 
+##cor matrix
 cor <- cor[rev(tissue_select),rev(tissue_select)]
 DT::datatable(cor,options = list(pageLength = 10))
+
+tissue_select_f1 <- sum_cat$weights[1:num_top]
+filtered_tissues <- filter_tissues(tissue_select_f1, cor)
+
+tissue_select_f1_cor <- sum_cat$group_pve_gene[sum_cat$weights %in% tissue_select_f1 ]
+filtered_tissues_cor <- sum_cat$group_pve_gene[sum_cat$weights %in% filtered_tissues ]
+comb <- combine_vectors(tissue_select_f1, tissue_select_f1_cor, filtered_tissues, filtered_tissues_cor, pad_with_na = TRUE)
+colnames(comb) <- c("without_filtering","PVE_gene","filtered","PVE_gene")
+
+DT::datatable(comb,options = list(pageLength = 10))
 ```
 
 # WBC
@@ -338,52 +440,59 @@ DT::datatable(cor,options = list(pageLength = 10))
 sum_cat <- sum_all[sum_all$traits =="WBC-ieu-b-30",]
 DT::datatable(sum_cat,options = list(pageLength = 5))
 
+print("filtering based on the number of high PIP genes")
 sum_cat <- sum_cat[order(as.numeric(sum_cat$num_gene_susiepip08),decreasing = T),]
-print(sprintf("the best tissue based on the number of high PIP genes are: %s",paste0(sum_cat$weights[1:num_top],collapse = ", ")))
 
 tissue_select <- sum_cat$weights[num_top:1]
 tissue_select <- tissue_select[tissue_select%in%rownames(lat)]
-cor <- lat[tissue_select,tissue_select]
 
-for (i in 1:nrow(cor)) {
-    for (j in 1:ncol(cor)) {
-        # Check if the upper triangle element is NA and the lower triangle element is not NA
-        if (is.na(cor[i, j]) && !is.na(cor[j, i])) {
-            # Copy the value from the lower triangle to the upper triangle
-            cor[i, j] <- cor[j, i]
-        }
-    }
-}
-cor[lower.tri(cor)] <- NA
+##heatmap
+cor <- lat[tissue_select,tissue_select]
+cor <- fill_upper_triangle(cor)
 print(levelplot(cor,col.regions = clrs,xlab = "",ylab = "",
                 colorkey = TRUE))
 
+##cor matrix
 cor <- cor[rev(tissue_select),rev(tissue_select)]
 DT::datatable(cor,options = list(pageLength = 10))
 
+tissue_select_f1 <- sum_cat$weights[1:num_top]
+filtered_tissues <- filter_tissues(tissue_select_f1, cor)
 
+tissue_select_f1_cor <- sum_cat$num_gene_susiepip08[sum_cat$weights %in% tissue_select_f1 ]
+filtered_tissues_cor <- sum_cat$num_gene_susiepip08[sum_cat$weights %in% filtered_tissues ]
+comb <- combine_vectors(tissue_select_f1, tissue_select_f1_cor, filtered_tissues, filtered_tissues_cor, pad_with_na = TRUE)
+colnames(comb) <- c("without_filtering","#ofgene","filtered","#ofgene")
+DT::datatable(comb,options = list(pageLength = 10))
+
+
+
+print("filtering based on PVE explained by genes")
 sum_cat <- sum_cat[order(as.numeric(sum_cat$group_pve_gene),decreasing = T),]
-print(sprintf("the best tissue based on PVE explained by genes are: %s",paste0(sum_cat$weights[1:num_top],collapse = ", ")))
+
 
 tissue_select <- sum_cat$weights[num_top:1]
 tissue_select <- tissue_select[tissue_select%in%rownames(lat)]
-cor <- lat[tissue_select,tissue_select]
 
-for (i in 1:nrow(cor)) {
-    for (j in 1:ncol(cor)) {
-        # Check if the upper triangle element is NA and the lower triangle element is not NA
-        if (is.na(cor[i, j]) && !is.na(cor[j, i])) {
-            # Copy the value from the lower triangle to the upper triangle
-            cor[i, j] <- cor[j, i]
-        }
-    }
-}
-cor[lower.tri(cor)] <- NA
+##heatmap
+cor <- lat[tissue_select,tissue_select]
+cor <- fill_upper_triangle(cor)
 print(levelplot(cor,col.regions = clrs,xlab = "",ylab = "",
                 colorkey = TRUE))
 
+##cor matrix
 cor <- cor[rev(tissue_select),rev(tissue_select)]
 DT::datatable(cor,options = list(pageLength = 10))
+
+tissue_select_f1 <- sum_cat$weights[1:num_top]
+filtered_tissues <- filter_tissues(tissue_select_f1, cor)
+
+tissue_select_f1_cor <- sum_cat$group_pve_gene[sum_cat$weights %in% tissue_select_f1 ]
+filtered_tissues_cor <- sum_cat$group_pve_gene[sum_cat$weights %in% filtered_tissues ]
+comb <- combine_vectors(tissue_select_f1, tissue_select_f1_cor, filtered_tissues, filtered_tissues_cor, pad_with_na = TRUE)
+colnames(comb) <- c("without_filtering","PVE_gene","filtered","PVE_gene")
+
+DT::datatable(comb,options = list(pageLength = 10))
 
 ```
 
