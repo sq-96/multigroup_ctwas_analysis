@@ -1,0 +1,288 @@
+---
+title: "Detect LD mismatch between GWAS zscores and UKBB LD reference using DENTIST and SuSiE_RSS"
+author: "Kaixuan Luo"
+date: "2023-11-28"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+    toc: true
+---
+
+```{r knitr-opts, include=FALSE}
+knitr::opts_chunk$set(comment = "#", results = "hold")
+```
+
+## Load packages and functions
+
+```{r packages, message=FALSE}
+library(ctwas)
+library(susieR)
+library(foreach)
+library(data.table)
+library(tidyverse)
+```
+
+## LD Regions (ldetect blocks)
+```{r}
+regions <- system.file("extdata/ldetect", "EUR.b38.bed", package = "ctwas")
+regions_df <- read.table(regions, header = T)
+regions_df <- regions_df %>% dplyr::arrange(chr, start, stop) %>% dplyr::mutate(locus = 1:nrow(regions_df))
+```
+
+## LDL
+
+```{r}
+trait <- "LDL"
+```
+
+### Compare DENTIST and SuSiE RSS pvalues in chr22
+
+load DENTIST results
+```{r}
+CHR=22
+dentist.dir <- paste0("/project2/xinhe/shared_data/multigroup_ctwas/DENTIST/", trait)
+dentist.res.file <- file.path(dentist.dir, paste0("LDL-ukb-d-30780_irnt.ukb_chr", CHR, ".b38.DENTIST.full.txt"))
+dentist.chr.df <- data.table::fread(dentist.res.file)
+colnames(dentist.chr.df) <- c("rsID", "chisq", "LP", "ifDup")
+
+dentist.chr.snps <- dentist.chr.df$rsID
+dentist_detected_snps <- dentist.chr.df$rsID[which(dentist.chr.df$LP > -log10(5e-8))]
+cat(sprintf("%d variants with DENTIST result in chr%s \n", length(dentist.chr.snps), CHR))
+cat(sprintf("%d detected variants with DENTIST pvalue < 5e-8.\n", length(dentist_detected_snps)))
+```
+
+load SuSiE RSS result
+```{r}
+select_loci <- paste0("chr", CHR)
+susie_rss_dir <- paste0("/project2/xinhe/shared_data/multigroup_ctwas/ld_mismatch_susie_rss/", trait)
+condz_dist_chr <- readRDS(file.path(susie_rss_dir, paste0(trait, ".condz.dist.", select_loci, "loci.rds")))
+condz_dist_chr.df <- do.call(rbind.data.frame, condz_dist_chr)
+
+susierss.chr.snps <- condz_dist_chr.df$id
+susierss_detected_snps <- condz_dist_chr.df$id[which(condz_dist_chr.df$p_diff < 5e-8)]
+susierss_detected_flipped_snps <- condz_dist_chr.df$id[which(condz_dist_chr.df$logLR > 2 & abs(condz_dist_chr.df$z) > 2)]
+cat(sprintf("%d variants with susie_rss result in chr%s \n", length(susierss.chr.snps), CHR))
+cat(sprintf("%d detected variants with susie_rss pvalue < 5e-8.\n", length(susierss_detected_snps)))
+cat(sprintf("%d detected variants with susie_rss allele flipped.\n", length(susierss_detected_flipped_snps)))
+```
+
+```{r LDL-compare-pvals}
+cat(sprintf("%d variants with DENTIST result \n", length(dentist.chr.snps)))
+cat(sprintf("%d variants with susie_rss result \n", length(susierss.chr.snps)))
+cat(sprintf("%d variants with both DENTIST and susie_rss result \n", length(intersect(dentist.chr.snps, susierss.chr.snps))))
+cat(sprintf("%d variants detected by both DENTIST and susie_rss (pvalue < 5e-8).\n", length(intersect(dentist_detected_snps, susierss_detected_snps))))
+
+common.snps <- intersect(dentist.chr.snps, susierss.chr.snps)
+df <- data.frame(rsID = common.snps, dentist.pval = NA, susierss.pval = NA)
+df$dentist.pval <- dentist.chr.df$LP[match(common.snps, dentist.chr.df$rsID)]
+df$susierss.pval <- -log10(condz_dist_chr.df$p_diff[match(common.snps, condz_dist_chr.df$id)])
+
+ggplot(df, aes(x = dentist.pval, y = susierss.pval)) +
+  geom_point(alpha=0.3) +
+  xlim(0, 100) + ylim(0, 100) +
+  labs(x = "DENTIST -log10P", y = "SuSiE RSS -log10P", title = paste0(trait, " chr", CHR)) +
+  geom_abline(intercept = 0, slope = 1) + 
+  geom_vline(xintercept = -log10(5e-8), col = "red") +
+  geom_hline(yintercept = -log10(5e-8), col = "red") +
+  theme_bw()
+```
+
+### Genome-wide results
+
+DENTIST results for significant GWAS loci
+```{r}
+dentist.dir <- paste0("/project2/xinhe/shared_data/multigroup_ctwas/DENTIST/", trait)
+dentist.res <- foreach(CHR=1:22) %do% {
+  dentist.res.file <- file.path(dentist.dir, paste0("LDL-ukb-d-30780_irnt.ukb_chr", CHR, ".b38.sigloci.DENTIST.full.txt"))
+  if(file.exists(dentist.res.file)){
+    dentist.chr.res <- data.table::fread(dentist.res.file)
+    colnames(dentist.chr.res) <- c("rsID", "chisq", "LP", "ifDup")
+    cbind(chr = CHR, dentist.chr.res)
+  }else{
+    NULL
+  }
+}
+dentist.res <- do.call(rbind.data.frame, dentist.res)
+cat(length(which(dentist.res$LP > -log10(5e-8))), "variants in significant loci with DENTIST pval < 5e-8")
+```
+
+DENTIST results genome-wide
+```{r eval=FALSE}
+dentist.dir <- paste0("/project2/xinhe/shared_data/multigroup_ctwas/DENTIST/", trait)
+dentist.res <- foreach(CHR=1:22) %do% {
+  dentist.res.file <- file.path(dentist.dir, paste0("LDL-ukb-d-30780_irnt.ukb_chr", CHR, ".b38.DENTIST.full.txt"))
+  if(file.exists(dentist.res.file)){
+    dentist.chr.res <- data.table::fread(dentist.res.file)
+    colnames(dentist.chr.res) <- c("rsID", "chisq", "LP", "ifDup")
+    cbind(chr = CHR, dentist.chr.res)
+  }else{
+    NULL
+  }
+}
+dentist.res.df <- do.call(rbind.data.frame, dentist.res)
+data.table::fwrite(dentist.res.df, file.path(dentist.dir, paste0("LDL-ukb-d-30780_irnt.ukb_chrs.b38.DENTIST.full.txt.gz")), sep = "\t", col.names = TRUE)
+```
+```{r}
+dentist.res.df <- data.table::fread(file.path(dentist.dir, paste0("LDL-ukb-d-30780_irnt.ukb_chrs.b38.DENTIST.full.txt.gz")))
+cat(length(which(dentist.res.df$LP > -log10(5e-8))), "variants genome-wide with DENTIST pval < 5e-8")
+```
+
+SuSiE RSS results genome-wide
+
+_TODO_: add chr6 result
+
+```{r eval=FALSE}
+susie_rss_dir <- paste0("/project2/xinhe/shared_data/multigroup_ctwas/ld_mismatch_susie_rss/", trait)
+condz_dist.res <- foreach(CHR=1:22) %do% {
+  select_loci <- paste0("chr", CHR)
+  condz_dist.file <- file.path(susie_rss_dir, paste0(trait, ".condz.dist.", select_loci, "loci.rds"))
+  if(file.exists(condz_dist.file)){
+    condz_dist_chr <- readRDS(condz_dist.file)
+    condz_dist_chr.df <- do.call(rbind.data.frame, condz_dist_chr)
+    cbind(chr = CHR, condz_dist_chr.df)
+  }else{
+    NULL
+  }
+}
+# summary(condz_dist.res)
+condz_dist_all.df <- do.call(rbind.data.frame, condz_dist.res)
+saveRDS(condz_dist_all.df, file.path(susie_rss_dir, paste0(trait, ".susie_rss.condz.dist.rds")))
+```
+
+````{r}
+susie_rss_dir <- paste0("/project2/xinhe/shared_data/multigroup_ctwas/ld_mismatch_susie_rss/", trait)
+condz_dist_all.df <- readRDS(file.path(susie_rss_dir, paste0(trait, ".susie_rss.condz.dist.rds")))
+susierss.chr.snps <- condz_dist_all.df$id
+susierss_detected_snps <- condz_dist_all.df$id[which(condz_dist_all.df$p_diff < 5e-8)]
+susierss_detected_flipped_snps <- condz_dist_all.df$id[which(condz_dist_all.df$logLR > 2 & abs(condz_dist_all.df$z) > 2)]
+cat(sprintf("%d detected variants with susie_rss pvalue < 5e-8.\n", length(susierss_detected_snps)))
+cat(sprintf("%d detected variants with susie_rss allele flipped.\n", length(susierss_detected_flipped_snps)))
+```
+
+## aFib
+
+```{r}
+trait <- "aFib"
+```
+
+### Compare DENTIST and SuSiE RSS pvalues in chr22
+
+load DENTIST results
+```{r}
+CHR=22
+dentist.dir <- paste0("/project2/xinhe/shared_data/multigroup_ctwas/DENTIST/", trait)
+dentist.res.file <- file.path(dentist.dir, paste0("aFib-ebi-a-GCST006414.ukb_chr", CHR, ".b38.DENTIST.full.txt"))
+dentist.chr.df <- data.table::fread(dentist.res.file)
+colnames(dentist.chr.df) <- c("rsID", "chisq", "LP", "ifDup")
+
+dentist.chr.snps <- dentist.chr.df$rsID
+dentist_detected_snps <- dentist.chr.df$rsID[which(dentist.chr.df$LP > -log10(5e-8))]
+cat(sprintf("%d variants with DENTIST result in chr%s \n", length(dentist.chr.snps), CHR))
+cat(sprintf("%d detected variants with DENTIST pvalue < 5e-8.\n", length(dentist_detected_snps)))
+```
+
+load SuSiE RSS result
+```{r}
+select_loci <- paste0("chr", CHR)
+susie_rss_dir <- paste0("/project2/xinhe/shared_data/multigroup_ctwas/ld_mismatch_susie_rss/", trait)
+condz_dist_chr <- readRDS(file.path(susie_rss_dir, paste0(trait, ".condz.dist.", select_loci, "loci.rds")))
+condz_dist_chr.df <- do.call(rbind.data.frame, condz_dist_chr)
+
+susierss.chr.snps <- condz_dist_chr.df$id
+susierss_detected_snps <- condz_dist_chr.df$id[which(condz_dist_chr.df$p_diff < 5e-8)]
+susierss_detected_flipped_snps <- condz_dist_chr.df$id[which(condz_dist_chr.df$logLR > 2 & abs(condz_dist_chr.df$z) > 2)]
+cat(sprintf("%d variants with susie_rss result in chr%s \n", length(susierss.chr.snps), CHR))
+cat(sprintf("%d detected variants with susie_rss pvalue < 5e-8.\n", length(susierss_detected_snps)))
+cat(sprintf("%d detected variants with susie_rss allele flipped.\n", length(susierss_detected_flipped_snps)))
+```
+
+```{r aFib-compare-pvals}
+cat(sprintf("%d variants with DENTIST result \n", length(dentist.chr.snps)))
+cat(sprintf("%d variants with susie_rss result \n", length(susierss.chr.snps)))
+cat(sprintf("%d variants with both DENTIST and susie_rss result \n", length(intersect(dentist.chr.snps, susierss.chr.snps))))
+cat(sprintf("%d variants detected by both DENTIST and susie_rss (pvalue < 5e-8).\n", length(intersect(dentist_detected_snps, susierss_detected_snps))))
+
+common.snps <- intersect(dentist.chr.snps, susierss.chr.snps)
+df <- data.frame(rsID = common.snps, dentist.pval = NA, susierss.pval = NA)
+df$dentist.pval <- dentist.chr.df$LP[match(common.snps, dentist.chr.df$rsID)]
+df$susierss.pval <- -log10(condz_dist_chr.df$p_diff[match(common.snps, condz_dist_chr.df$id)])
+
+ggplot(df, aes(x = dentist.pval, y = susierss.pval)) +
+  geom_point(alpha=0.3) +
+  xlim(0, 100) + ylim(0, 100) +
+  labs(x = "DENTIST -log10P", y = "SuSiE RSS -log10P", title = paste0(trait, " chr", CHR)) +
+  geom_abline(intercept = 0, slope = 1) + 
+  geom_vline(xintercept = -log10(5e-8), col = "red") +
+  geom_hline(yintercept = -log10(5e-8), col = "red") +
+  theme_bw()
+```
+
+### Genome-wide results
+
+DENTIST results for significant GWAS loci
+```{r}
+dentist.dir <- paste0("/project2/xinhe/shared_data/multigroup_ctwas/DENTIST/", trait)
+dentist.res <- foreach(CHR=1:22) %do% {
+  dentist.res.file <- file.path(dentist.dir, paste0("aFib-ebi-a-GCST006414.ukb_chr", CHR, ".b38.sigloci.DENTIST.full.txt"))
+  if(file.exists(dentist.res.file)){
+    dentist.chr.res <- data.table::fread(dentist.res.file)
+    colnames(dentist.chr.res) <- c("rsID", "chisq", "LP", "ifDup")
+    cbind(chr = CHR, dentist.chr.res)
+  }else{
+    NULL
+  }
+}
+dentist.res.df <- do.call(rbind.data.frame, dentist.res)
+cat(length(which(dentist.res.df$LP > -log10(5e-8))), "variants in significant loci with DENTIST pval < 5e-8")
+```
+
+DENTIST results genome-wide
+```{r eval=FALSE}
+dentist.dir <- paste0("/project2/xinhe/shared_data/multigroup_ctwas/DENTIST/", trait)
+dentist.res <- foreach(CHR=1:22) %do% {
+  dentist.res.file <- file.path(dentist.dir, paste0("aFib-ebi-a-GCST006414.ukb_chr", CHR, ".b38.DENTIST.full.txt"))
+  if(file.exists(dentist.res.file)){
+    dentist.chr.res <- data.table::fread(dentist.res.file)
+    colnames(dentist.chr.res) <- c("rsID", "chisq", "LP", "ifDup")
+    cbind(chr = CHR, dentist.chr.res)
+  }else{
+    NULL
+  }
+}
+dentist.res.df <- do.call(rbind.data.frame, dentist.res)
+data.table::fwrite(dentist.res.df, file.path(dentist.dir, paste0("aFib-ebi-a-GCST006414.ukb_chrs.b38.DENTIST.full.txt.gz")), sep = "\t", col.names = TRUE)
+```
+
+```{r}
+dentist.res.df <- data.table::fread(file.path(dentist.dir, paste0("aFib-ebi-a-GCST006414.ukb_chrs.b38.DENTIST.full.txt.gz")))
+cat(length(which(dentist.res.df$LP > -log10(5e-8))), "variants genome-wide with DENTIST pval < 5e-8")
+```
+
+SuSiE RSS results genome-wide
+```{r eval=FALSE}
+susie_rss_dir <- paste0("/project2/xinhe/shared_data/multigroup_ctwas/ld_mismatch_susie_rss/", trait)
+condz_dist.res <- foreach(CHR=1:22) %do% {
+  select_loci <- paste0("chr", CHR)
+  condz_dist.file <- file.path(susie_rss_dir, paste0(trait, ".condz.dist.", select_loci, "loci.rds"))
+  if(file.exists(condz_dist.file)){
+    condz_dist_chr <- readRDS(condz_dist.file)
+    condz_dist_chr.df <- do.call(rbind.data.frame, condz_dist_chr)
+    cbind(chr = CHR, condz_dist_chr.df)
+  }else{
+    NULL
+  }
+}
+# summary(condz_dist.res)
+condz_dist_all.df <- do.call(rbind.data.frame, condz_dist.res)
+saveRDS(condz_dist_all.df, file.path(susie_rss_dir, paste0(trait, ".susie_rss.condz.dist.rds")))
+```
+
+```{r}
+susie_rss_dir <- paste0("/project2/xinhe/shared_data/multigroup_ctwas/ld_mismatch_susie_rss/", trait)
+condz_dist_all.df <- readRDS(file.path(susie_rss_dir, paste0(trait, ".susie_rss.condz.dist.rds")))
+susierss.chr.snps <- condz_dist_all.df$id
+susierss_detected_snps <- condz_dist_all.df$id[which(condz_dist_all.df$p_diff < 5e-8)]
+susierss_detected_flipped_snps <- condz_dist_all.df$id[which(condz_dist_all.df$logLR > 2 & abs(condz_dist_all.df$z) > 2)]
+cat(sprintf("%d detected variants with susie_rss pvalue < 5e-8.\n", length(susierss_detected_snps)))
+cat(sprintf("%d detected variants with susie_rss allele flipped.\n", length(susierss_detected_flipped_snps)))
+```
