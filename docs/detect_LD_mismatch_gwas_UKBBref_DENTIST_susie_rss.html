@@ -534,15 +534,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistreec19525208b70f65e0523cbc716ae2836119e9c08targetblankc195252a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree8883dec860626b3e5063b2d96919a988f18db805targetblank8883deca">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/c19525208b70f65e0523cbc716ae2836119e9c08" target="_blank">c195252</a>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/8883dec860626b3e5063b2d96919a988f18db805" target="_blank">8883dec</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistreec19525208b70f65e0523cbc716ae2836119e9c08targetblankc195252a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree8883dec860626b3e5063b2d96919a988f18db805targetblank8883deca"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -552,7 +552,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/c19525208b70f65e0523cbc716ae2836119e9c08" target="_blank">c195252</a>.
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/8883dec860626b3e5063b2d96919a988f18db805" target="_blank">8883dec</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -571,7 +571,7 @@ Ignored files:
     Ignored:    .Rproj.user/
 
 Unstaged changes:
-    Modified:   analysis/index.Rmd
+    Modified:   analysis/detect_LD_mismatch_gwas_UKBBref_susie_rss.Rmd
 
 </code></pre>
 <p>
@@ -619,6 +619,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/8883dec860626b3e5063b2d96919a988f18db805/analysis/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd" target="_blank">8883dec</a>
+</td>
+<td>
+kevinlkx
+</td>
+<td>
+2023-11-29
+</td>
+<td>
+update susie_rss LDL result with chr6 result
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/sq-96/multigroup_ctwas_analysis/c9fee4b2ec51db36c4baeef34082fc6673714018/docs/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.html" target="_blank">c9fee4b</a>
+</td>
+<td>
+kevinlkx
+</td>
+<td>
+2023-11-29
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -711,6 +745,43 @@ ggplot(df, aes(x = dentist.pval, y = susierss.pval)) +
   theme_bw()</code></pre>
 <pre><code># Warning: Removed 6 rows containing missing values (`geom_point()`).</code></pre>
 <p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/LDL-compare-pvals-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-LDL-compare-pvals-1">
+Past versions of LDL-compare-pvals-1.png
+</button>
+</p>
+<div id="fig-LDL-compare-pvals-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/c9fee4b2ec51db36c4baeef34082fc6673714018/docs/figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/LDL-compare-pvals-1.png" target="_blank">c9fee4b</a>
+</td>
+<td>
+kevinlkx
+</td>
+<td>
+2023-11-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code># 118796 variants with DENTIST result 
 # 120845 variants with susie_rss result 
 # 118796 variants with both DENTIST and susie_rss result 
@@ -718,21 +789,6 @@ ggplot(df, aes(x = dentist.pval, y = susierss.pval)) +
 </div>
 <div id="genome-wide-results" class="section level3">
 <h3>Genome-wide results</h3>
-<p>DENTIST results for significant GWAS loci</p>
-<pre class="r"><code>dentist.dir &lt;- paste0(&quot;/project2/xinhe/shared_data/multigroup_ctwas/DENTIST/&quot;, trait)
-dentist.res &lt;- foreach(CHR=1:22) %do% {
-  dentist.res.file &lt;- file.path(dentist.dir, paste0(&quot;LDL-ukb-d-30780_irnt.ukb_chr&quot;, CHR, &quot;.b38.sigloci.DENTIST.full.txt&quot;))
-  if(file.exists(dentist.res.file)){
-    dentist.chr.res &lt;- data.table::fread(dentist.res.file)
-    colnames(dentist.chr.res) &lt;- c(&quot;rsID&quot;, &quot;chisq&quot;, &quot;LP&quot;, &quot;ifDup&quot;)
-    cbind(chr = CHR, dentist.chr.res)
-  }else{
-    NULL
-  }
-}
-dentist.res &lt;- do.call(rbind.data.frame, dentist.res)
-cat(length(which(dentist.res$LP &gt; -log10(5e-8))), &quot;variants in significant loci with DENTIST pval &lt; 5e-8&quot;)</code></pre>
-<pre><code># 288 variants in significant loci with DENTIST pval &lt; 5e-8</code></pre>
 <p>DENTIST results genome-wide</p>
 <pre class="r"><code>dentist.dir &lt;- paste0(&quot;/project2/xinhe/shared_data/multigroup_ctwas/DENTIST/&quot;, trait)
 dentist.res &lt;- foreach(CHR=1:22) %do% {
@@ -747,11 +803,13 @@ dentist.res &lt;- foreach(CHR=1:22) %do% {
 }
 dentist.res.df &lt;- do.call(rbind.data.frame, dentist.res)
 data.table::fwrite(dentist.res.df, file.path(dentist.dir, paste0(&quot;LDL-ukb-d-30780_irnt.ukb_chrs.b38.DENTIST.full.txt.gz&quot;)), sep = &quot;\t&quot;, col.names = TRUE)</code></pre>
-<pre class="r"><code>dentist.res.df &lt;- data.table::fread(file.path(dentist.dir, paste0(&quot;LDL-ukb-d-30780_irnt.ukb_chrs.b38.DENTIST.full.txt.gz&quot;)))
+<pre class="r"><code>dentist.dir &lt;- paste0(&quot;/project2/xinhe/shared_data/multigroup_ctwas/DENTIST/&quot;, trait)
+dentist.res.df &lt;- data.table::fread(file.path(dentist.dir, paste0(&quot;LDL-ukb-d-30780_irnt.ukb_chrs.b38.DENTIST.full.txt.gz&quot;)))
+cat(sprintf(&quot;%d variants with DENTIST result in total \n&quot;, length(dentist.res.df$rsID)))
 cat(length(which(dentist.res.df$LP &gt; -log10(5e-8))), &quot;variants genome-wide with DENTIST pval &lt; 5e-8&quot;)</code></pre>
-<pre><code># 292 variants genome-wide with DENTIST pval &lt; 5e-8</code></pre>
+<pre><code># 8687900 variants with DENTIST result in total 
+# 292 variants genome-wide with DENTIST pval &lt; 5e-8</code></pre>
 <p>SuSiE RSS results genome-wide</p>
-<p><em>TODO</em>: add chr6 result</p>
 <pre class="r"><code>susie_rss_dir &lt;- paste0(&quot;/project2/xinhe/shared_data/multigroup_ctwas/ld_mismatch_susie_rss/&quot;, trait)
 condz_dist.res &lt;- foreach(CHR=1:22) %do% {
   select_loci &lt;- paste0(&quot;chr&quot;, CHR)
@@ -769,12 +827,13 @@ condz_dist_all.df &lt;- do.call(rbind.data.frame, condz_dist.res)
 saveRDS(condz_dist_all.df, file.path(susie_rss_dir, paste0(trait, &quot;.susie_rss.condz.dist.rds&quot;)))</code></pre>
 <pre class="r"><code>susie_rss_dir &lt;- paste0(&quot;/project2/xinhe/shared_data/multigroup_ctwas/ld_mismatch_susie_rss/&quot;, trait)
 condz_dist_all.df &lt;- readRDS(file.path(susie_rss_dir, paste0(trait, &quot;.susie_rss.condz.dist.rds&quot;)))
-susierss.chr.snps &lt;- condz_dist_all.df$id
 susierss_detected_snps &lt;- condz_dist_all.df$id[which(condz_dist_all.df$p_diff &lt; 5e-8)]
 susierss_detected_flipped_snps &lt;- condz_dist_all.df$id[which(condz_dist_all.df$logLR &gt; 2 &amp; abs(condz_dist_all.df$z) &gt; 2)]
+cat(sprintf(&quot;%d variants with susie_rss result in total \n&quot;, length(condz_dist_all.df$id)))
 cat(sprintf(&quot;%d detected variants with susie_rss pvalue &lt; 5e-8.\n&quot;, length(susierss_detected_snps)))
 cat(sprintf(&quot;%d detected variants with susie_rss allele flipped.\n&quot;, length(susierss_detected_flipped_snps)))</code></pre>
-<pre><code># 4203 detected variants with susie_rss pvalue &lt; 5e-8.
+<pre><code># 8841628 variants with susie_rss result in total 
+# 4607 detected variants with susie_rss pvalue &lt; 5e-8.
 # 8 detected variants with susie_rss allele flipped.</code></pre>
 </div>
 </div>
@@ -832,6 +891,43 @@ ggplot(df, aes(x = dentist.pval, y = susierss.pval)) +
   theme_bw()</code></pre>
 <pre><code># Warning: Removed 23 rows containing missing values (`geom_point()`).</code></pre>
 <p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/aFib-compare-pvals-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-aFib-compare-pvals-1">
+Past versions of aFib-compare-pvals-1.png
+</button>
+</p>
+<div id="fig-aFib-compare-pvals-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/c9fee4b2ec51db36c4baeef34082fc6673714018/docs/figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/aFib-compare-pvals-1.png" target="_blank">c9fee4b</a>
+</td>
+<td>
+kevinlkx
+</td>
+<td>
+2023-11-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code># 109507 variants with DENTIST result 
 # 110716 variants with susie_rss result 
 # 109504 variants with both DENTIST and susie_rss result 
@@ -839,21 +935,6 @@ ggplot(df, aes(x = dentist.pval, y = susierss.pval)) +
 </div>
 <div id="genome-wide-results-1" class="section level3">
 <h3>Genome-wide results</h3>
-<p>DENTIST results for significant GWAS loci</p>
-<pre class="r"><code>dentist.dir &lt;- paste0(&quot;/project2/xinhe/shared_data/multigroup_ctwas/DENTIST/&quot;, trait)
-dentist.res &lt;- foreach(CHR=1:22) %do% {
-  dentist.res.file &lt;- file.path(dentist.dir, paste0(&quot;aFib-ebi-a-GCST006414.ukb_chr&quot;, CHR, &quot;.b38.sigloci.DENTIST.full.txt&quot;))
-  if(file.exists(dentist.res.file)){
-    dentist.chr.res &lt;- data.table::fread(dentist.res.file)
-    colnames(dentist.chr.res) &lt;- c(&quot;rsID&quot;, &quot;chisq&quot;, &quot;LP&quot;, &quot;ifDup&quot;)
-    cbind(chr = CHR, dentist.chr.res)
-  }else{
-    NULL
-  }
-}
-dentist.res.df &lt;- do.call(rbind.data.frame, dentist.res)
-cat(length(which(dentist.res.df$LP &gt; -log10(5e-8))), &quot;variants in significant loci with DENTIST pval &lt; 5e-8&quot;)</code></pre>
-<pre><code># 27800 variants in significant loci with DENTIST pval &lt; 5e-8</code></pre>
 <p>DENTIST results genome-wide</p>
 <pre class="r"><code>dentist.dir &lt;- paste0(&quot;/project2/xinhe/shared_data/multigroup_ctwas/DENTIST/&quot;, trait)
 dentist.res &lt;- foreach(CHR=1:22) %do% {
@@ -868,9 +949,12 @@ dentist.res &lt;- foreach(CHR=1:22) %do% {
 }
 dentist.res.df &lt;- do.call(rbind.data.frame, dentist.res)
 data.table::fwrite(dentist.res.df, file.path(dentist.dir, paste0(&quot;aFib-ebi-a-GCST006414.ukb_chrs.b38.DENTIST.full.txt.gz&quot;)), sep = &quot;\t&quot;, col.names = TRUE)</code></pre>
-<pre class="r"><code>dentist.res.df &lt;- data.table::fread(file.path(dentist.dir, paste0(&quot;aFib-ebi-a-GCST006414.ukb_chrs.b38.DENTIST.full.txt.gz&quot;)))
+<pre class="r"><code>dentist.dir &lt;- paste0(&quot;/project2/xinhe/shared_data/multigroup_ctwas/DENTIST/&quot;, trait)
+dentist.res.df &lt;- data.table::fread(file.path(dentist.dir, paste0(&quot;aFib-ebi-a-GCST006414.ukb_chrs.b38.DENTIST.full.txt.gz&quot;)))
+cat(sprintf(&quot;%d variants with DENTIST result in total \n&quot;, length(dentist.res.df$rsID)))
 cat(length(which(dentist.res.df$LP &gt; -log10(5e-8))), &quot;variants genome-wide with DENTIST pval &lt; 5e-8&quot;)</code></pre>
-<pre><code># 321808 variants genome-wide with DENTIST pval &lt; 5e-8</code></pre>
+<pre><code># 8230059 variants with DENTIST result in total 
+# 321808 variants genome-wide with DENTIST pval &lt; 5e-8</code></pre>
 <p>SuSiE RSS results genome-wide</p>
 <pre class="r"><code>susie_rss_dir &lt;- paste0(&quot;/project2/xinhe/shared_data/multigroup_ctwas/ld_mismatch_susie_rss/&quot;, trait)
 condz_dist.res &lt;- foreach(CHR=1:22) %do% {
@@ -889,12 +973,13 @@ condz_dist_all.df &lt;- do.call(rbind.data.frame, condz_dist.res)
 saveRDS(condz_dist_all.df, file.path(susie_rss_dir, paste0(trait, &quot;.susie_rss.condz.dist.rds&quot;)))</code></pre>
 <pre class="r"><code>susie_rss_dir &lt;- paste0(&quot;/project2/xinhe/shared_data/multigroup_ctwas/ld_mismatch_susie_rss/&quot;, trait)
 condz_dist_all.df &lt;- readRDS(file.path(susie_rss_dir, paste0(trait, &quot;.susie_rss.condz.dist.rds&quot;)))
-susierss.chr.snps &lt;- condz_dist_all.df$id
 susierss_detected_snps &lt;- condz_dist_all.df$id[which(condz_dist_all.df$p_diff &lt; 5e-8)]
 susierss_detected_flipped_snps &lt;- condz_dist_all.df$id[which(condz_dist_all.df$logLR &gt; 2 &amp; abs(condz_dist_all.df$z) &gt; 2)]
+cat(sprintf(&quot;%d variants with susie_rss result in total \n&quot;, length(condz_dist_all.df$id)))
 cat(sprintf(&quot;%d detected variants with susie_rss pvalue &lt; 5e-8.\n&quot;, length(susierss_detected_snps)))
 cat(sprintf(&quot;%d detected variants with susie_rss allele flipped.\n&quot;, length(susierss_detected_flipped_snps)))</code></pre>
-<pre><code># 38330 detected variants with susie_rss pvalue &lt; 5e-8.
+<pre><code># 8258166 variants with susie_rss result in total 
+# 38330 detected variants with susie_rss pvalue &lt; 5e-8.
 # 439 detected variants with susie_rss allele flipped.</code></pre>
 <br>
 <p>
