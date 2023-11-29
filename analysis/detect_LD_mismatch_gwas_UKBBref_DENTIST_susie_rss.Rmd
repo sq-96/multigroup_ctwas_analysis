@@ -122,11 +122,14 @@ dentist.res <- foreach(CHR=1:22) %do% {
 dentist.res.df <- do.call(rbind.data.frame, dentist.res)
 data.table::fwrite(dentist.res.df, file.path(dentist.dir, paste0("LDL-ukb-d-30780_irnt.ukb_chrs.b38.DENTIST.full.txt.gz")), sep = "\t", col.names = TRUE)
 ```
+
 ```{r}
 dentist.dir <- paste0("/project2/xinhe/shared_data/multigroup_ctwas/DENTIST/", trait)
 dentist.res.df <- data.table::fread(file.path(dentist.dir, paste0("LDL-ukb-d-30780_irnt.ukb_chrs.b38.DENTIST.full.txt.gz")))
 cat(sprintf("%d variants with DENTIST result in total \n", length(dentist.res.df$rsID)))
+dentist_detected_snps <- dentist.res.df$rsID[which(dentist.res.df$LP > -log10(5e-8))]
 cat(length(which(dentist.res.df$LP > -log10(5e-8))), "variants genome-wide with DENTIST pval < 5e-8")
+cat(sprintf("%d detected variants (%.3f%%) with DENTIST pvalue < 5e-8.\n", length(dentist_detected_snps), length(dentist_detected_snps)/length(dentist.res.df$rsID)*100))
 ```
 
 SuSiE RSS results genome-wide
@@ -155,7 +158,7 @@ condz_dist_all.df <- readRDS(file.path(susie_rss_dir, paste0(trait, ".susie_rss.
 susierss_detected_snps <- condz_dist_all.df$id[which(condz_dist_all.df$p_diff < 5e-8)]
 susierss_detected_flipped_snps <- condz_dist_all.df$id[which(condz_dist_all.df$logLR > 2 & abs(condz_dist_all.df$z) > 2)]
 cat(sprintf("%d variants with susie_rss result in total \n", length(condz_dist_all.df$id)))
-cat(sprintf("%d detected variants with susie_rss pvalue < 5e-8.\n", length(susierss_detected_snps)))
+cat(sprintf("%d detected variants (%.3f%%) with susie_rss pvalue < 5e-8.\n", length(susierss_detected_snps), length(susierss_detected_snps)/length(condz_dist_all.df$id)*100))
 cat(sprintf("%d detected variants with susie_rss allele flipped.\n", length(susierss_detected_flipped_snps)))
 ```
 
@@ -257,7 +260,8 @@ data.table::fwrite(dentist.res.df, file.path(dentist.dir, paste0("aFib-ebi-a-GCS
 dentist.dir <- paste0("/project2/xinhe/shared_data/multigroup_ctwas/DENTIST/", trait)
 dentist.res.df <- data.table::fread(file.path(dentist.dir, paste0("aFib-ebi-a-GCST006414.ukb_chrs.b38.DENTIST.full.txt.gz")))
 cat(sprintf("%d variants with DENTIST result in total \n", length(dentist.res.df$rsID)))
-cat(length(which(dentist.res.df$LP > -log10(5e-8))), "variants genome-wide with DENTIST pval < 5e-8")
+dentist_detected_snps <- dentist.res.df$rsID[which(dentist.res.df$LP > -log10(5e-8))]
+cat(sprintf("%d detected variants (%.3f%%) with DENTIST pvalue < 5e-8.\n", length(dentist_detected_snps), length(dentist_detected_snps)/length(dentist.res.df$rsID)*100))
 ```
 
 SuSiE RSS results genome-wide
@@ -285,6 +289,6 @@ condz_dist_all.df <- readRDS(file.path(susie_rss_dir, paste0(trait, ".susie_rss.
 susierss_detected_snps <- condz_dist_all.df$id[which(condz_dist_all.df$p_diff < 5e-8)]
 susierss_detected_flipped_snps <- condz_dist_all.df$id[which(condz_dist_all.df$logLR > 2 & abs(condz_dist_all.df$z) > 2)]
 cat(sprintf("%d variants with susie_rss result in total \n", length(condz_dist_all.df$id)))
-cat(sprintf("%d detected variants with susie_rss pvalue < 5e-8.\n", length(susierss_detected_snps)))
+cat(sprintf("%d detected variants (%.3f%%) with susie_rss pvalue < 5e-8.\n", length(susierss_detected_snps), length(susierss_detected_snps)/length(condz_dist_all.df$id)*100))
 cat(sprintf("%d detected variants with susie_rss allele flipped.\n", length(susierss_detected_flipped_snps)))
 ```
