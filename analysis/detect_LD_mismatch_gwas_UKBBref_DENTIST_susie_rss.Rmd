@@ -89,8 +89,8 @@ ggplot(df, aes(x = dentist.pval, y = susierss.pval)) +
 
 ### Genome-wide results
 
-DENTIST results for significant GWAS loci
-```{r}
+```{r eval=FALSE, include=FALSE}
+# DENTIST results for significant GWAS loci
 dentist.dir <- paste0("/project2/xinhe/shared_data/multigroup_ctwas/DENTIST/", trait)
 dentist.res <- foreach(CHR=1:22) %do% {
   dentist.res.file <- file.path(dentist.dir, paste0("LDL-ukb-d-30780_irnt.ukb_chr", CHR, ".b38.sigloci.DENTIST.full.txt"))
@@ -123,13 +123,13 @@ dentist.res.df <- do.call(rbind.data.frame, dentist.res)
 data.table::fwrite(dentist.res.df, file.path(dentist.dir, paste0("LDL-ukb-d-30780_irnt.ukb_chrs.b38.DENTIST.full.txt.gz")), sep = "\t", col.names = TRUE)
 ```
 ```{r}
+dentist.dir <- paste0("/project2/xinhe/shared_data/multigroup_ctwas/DENTIST/", trait)
 dentist.res.df <- data.table::fread(file.path(dentist.dir, paste0("LDL-ukb-d-30780_irnt.ukb_chrs.b38.DENTIST.full.txt.gz")))
+cat(sprintf("%d variants with DENTIST result in total \n", length(dentist.res.df$rsID)))
 cat(length(which(dentist.res.df$LP > -log10(5e-8))), "variants genome-wide with DENTIST pval < 5e-8")
 ```
 
 SuSiE RSS results genome-wide
-
-_TODO_: add chr6 result
 
 ```{r eval=FALSE}
 susie_rss_dir <- paste0("/project2/xinhe/shared_data/multigroup_ctwas/ld_mismatch_susie_rss/", trait)
@@ -152,9 +152,9 @@ saveRDS(condz_dist_all.df, file.path(susie_rss_dir, paste0(trait, ".susie_rss.co
 ````{r}
 susie_rss_dir <- paste0("/project2/xinhe/shared_data/multigroup_ctwas/ld_mismatch_susie_rss/", trait)
 condz_dist_all.df <- readRDS(file.path(susie_rss_dir, paste0(trait, ".susie_rss.condz.dist.rds")))
-susierss.chr.snps <- condz_dist_all.df$id
 susierss_detected_snps <- condz_dist_all.df$id[which(condz_dist_all.df$p_diff < 5e-8)]
 susierss_detected_flipped_snps <- condz_dist_all.df$id[which(condz_dist_all.df$logLR > 2 & abs(condz_dist_all.df$z) > 2)]
+cat(sprintf("%d variants with susie_rss result in total \n", length(condz_dist_all.df$id)))
 cat(sprintf("%d detected variants with susie_rss pvalue < 5e-8.\n", length(susierss_detected_snps)))
 cat(sprintf("%d detected variants with susie_rss allele flipped.\n", length(susierss_detected_flipped_snps)))
 ```
@@ -219,8 +219,8 @@ ggplot(df, aes(x = dentist.pval, y = susierss.pval)) +
 
 ### Genome-wide results
 
-DENTIST results for significant GWAS loci
-```{r}
+```{r eval=FALSE, include=FALSE}
+# DENTIST results for significant GWAS loci
 dentist.dir <- paste0("/project2/xinhe/shared_data/multigroup_ctwas/DENTIST/", trait)
 dentist.res <- foreach(CHR=1:22) %do% {
   dentist.res.file <- file.path(dentist.dir, paste0("aFib-ebi-a-GCST006414.ukb_chr", CHR, ".b38.sigloci.DENTIST.full.txt"))
@@ -254,7 +254,9 @@ data.table::fwrite(dentist.res.df, file.path(dentist.dir, paste0("aFib-ebi-a-GCS
 ```
 
 ```{r}
+dentist.dir <- paste0("/project2/xinhe/shared_data/multigroup_ctwas/DENTIST/", trait)
 dentist.res.df <- data.table::fread(file.path(dentist.dir, paste0("aFib-ebi-a-GCST006414.ukb_chrs.b38.DENTIST.full.txt.gz")))
+cat(sprintf("%d variants with DENTIST result in total \n", length(dentist.res.df$rsID)))
 cat(length(which(dentist.res.df$LP > -log10(5e-8))), "variants genome-wide with DENTIST pval < 5e-8")
 ```
 
@@ -280,9 +282,9 @@ saveRDS(condz_dist_all.df, file.path(susie_rss_dir, paste0(trait, ".susie_rss.co
 ```{r}
 susie_rss_dir <- paste0("/project2/xinhe/shared_data/multigroup_ctwas/ld_mismatch_susie_rss/", trait)
 condz_dist_all.df <- readRDS(file.path(susie_rss_dir, paste0(trait, ".susie_rss.condz.dist.rds")))
-susierss.chr.snps <- condz_dist_all.df$id
 susierss_detected_snps <- condz_dist_all.df$id[which(condz_dist_all.df$p_diff < 5e-8)]
 susierss_detected_flipped_snps <- condz_dist_all.df$id[which(condz_dist_all.df$logLR > 2 & abs(condz_dist_all.df$z) > 2)]
+cat(sprintf("%d variants with susie_rss result in total \n", length(condz_dist_all.df$id)))
 cat(sprintf("%d detected variants with susie_rss pvalue < 5e-8.\n", length(susierss_detected_snps)))
 cat(sprintf("%d detected variants with susie_rss allele flipped.\n", length(susierss_detected_flipped_snps)))
 ```
