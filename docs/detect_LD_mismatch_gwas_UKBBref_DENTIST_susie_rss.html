@@ -534,15 +534,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree8883dec860626b3e5063b2d96919a988f18db805targetblank8883deca">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree93529bbfea7dcbc8224b176729c428bba3077d66targetblank93529bba">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/8883dec860626b3e5063b2d96919a988f18db805" target="_blank">8883dec</a>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/93529bbfea7dcbc8224b176729c428bba3077d66" target="_blank">93529bb</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree8883dec860626b3e5063b2d96919a988f18db805targetblank8883deca"
+id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree93529bbfea7dcbc8224b176729c428bba3077d66targetblank93529bba"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -552,7 +552,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/8883dec860626b3e5063b2d96919a988f18db805" target="_blank">8883dec</a>.
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/93529bbfea7dcbc8224b176729c428bba3077d66" target="_blank">93529bb</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -619,6 +619,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/93529bbfea7dcbc8224b176729c428bba3077d66/analysis/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd" target="_blank">93529bb</a>
+</td>
+<td>
+kevinlkx
+</td>
+<td>
+2023-11-29
+</td>
+<td>
+minor update on the messages
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/sq-96/multigroup_ctwas_analysis/af426aed4c2514c099944eef32a671502b986e89/docs/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.html" target="_blank">af426ae</a>
+</td>
+<td>
+kevinlkx
+</td>
+<td>
+2023-11-29
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -806,9 +840,11 @@ data.table::fwrite(dentist.res.df, file.path(dentist.dir, paste0(&quot;LDL-ukb-d
 <pre class="r"><code>dentist.dir &lt;- paste0(&quot;/project2/xinhe/shared_data/multigroup_ctwas/DENTIST/&quot;, trait)
 dentist.res.df &lt;- data.table::fread(file.path(dentist.dir, paste0(&quot;LDL-ukb-d-30780_irnt.ukb_chrs.b38.DENTIST.full.txt.gz&quot;)))
 cat(sprintf(&quot;%d variants with DENTIST result in total \n&quot;, length(dentist.res.df$rsID)))
-cat(length(which(dentist.res.df$LP &gt; -log10(5e-8))), &quot;variants genome-wide with DENTIST pval &lt; 5e-8&quot;)</code></pre>
+dentist_detected_snps &lt;- dentist.res.df$rsID[which(dentist.res.df$LP &gt; -log10(5e-8))]
+cat(length(which(dentist.res.df$LP &gt; -log10(5e-8))), &quot;variants genome-wide with DENTIST pval &lt; 5e-8&quot;)
+cat(sprintf(&quot;%d detected variants (%.3f%%) with DENTIST pvalue &lt; 5e-8.\n&quot;, length(dentist_detected_snps), length(dentist_detected_snps)/length(dentist.res.df$rsID)*100))</code></pre>
 <pre><code># 8687900 variants with DENTIST result in total 
-# 292 variants genome-wide with DENTIST pval &lt; 5e-8</code></pre>
+# 292 variants genome-wide with DENTIST pval &lt; 5e-8292 detected variants (0.003%) with DENTIST pvalue &lt; 5e-8.</code></pre>
 <p>SuSiE RSS results genome-wide</p>
 <pre class="r"><code>susie_rss_dir &lt;- paste0(&quot;/project2/xinhe/shared_data/multigroup_ctwas/ld_mismatch_susie_rss/&quot;, trait)
 condz_dist.res &lt;- foreach(CHR=1:22) %do% {
@@ -830,10 +866,10 @@ condz_dist_all.df &lt;- readRDS(file.path(susie_rss_dir, paste0(trait, &quot;.su
 susierss_detected_snps &lt;- condz_dist_all.df$id[which(condz_dist_all.df$p_diff &lt; 5e-8)]
 susierss_detected_flipped_snps &lt;- condz_dist_all.df$id[which(condz_dist_all.df$logLR &gt; 2 &amp; abs(condz_dist_all.df$z) &gt; 2)]
 cat(sprintf(&quot;%d variants with susie_rss result in total \n&quot;, length(condz_dist_all.df$id)))
-cat(sprintf(&quot;%d detected variants with susie_rss pvalue &lt; 5e-8.\n&quot;, length(susierss_detected_snps)))
+cat(sprintf(&quot;%d detected variants (%.3f%%) with susie_rss pvalue &lt; 5e-8.\n&quot;, length(susierss_detected_snps), length(susierss_detected_snps)/length(condz_dist_all.df$id)*100))
 cat(sprintf(&quot;%d detected variants with susie_rss allele flipped.\n&quot;, length(susierss_detected_flipped_snps)))</code></pre>
 <pre><code># 8841628 variants with susie_rss result in total 
-# 4607 detected variants with susie_rss pvalue &lt; 5e-8.
+# 4607 detected variants (0.052%) with susie_rss pvalue &lt; 5e-8.
 # 8 detected variants with susie_rss allele flipped.</code></pre>
 </div>
 </div>
@@ -952,9 +988,10 @@ data.table::fwrite(dentist.res.df, file.path(dentist.dir, paste0(&quot;aFib-ebi-
 <pre class="r"><code>dentist.dir &lt;- paste0(&quot;/project2/xinhe/shared_data/multigroup_ctwas/DENTIST/&quot;, trait)
 dentist.res.df &lt;- data.table::fread(file.path(dentist.dir, paste0(&quot;aFib-ebi-a-GCST006414.ukb_chrs.b38.DENTIST.full.txt.gz&quot;)))
 cat(sprintf(&quot;%d variants with DENTIST result in total \n&quot;, length(dentist.res.df$rsID)))
-cat(length(which(dentist.res.df$LP &gt; -log10(5e-8))), &quot;variants genome-wide with DENTIST pval &lt; 5e-8&quot;)</code></pre>
+dentist_detected_snps &lt;- dentist.res.df$rsID[which(dentist.res.df$LP &gt; -log10(5e-8))]
+cat(sprintf(&quot;%d detected variants (%.3f%%) with DENTIST pvalue &lt; 5e-8.\n&quot;, length(dentist_detected_snps), length(dentist_detected_snps)/length(dentist.res.df$rsID)*100))</code></pre>
 <pre><code># 8230059 variants with DENTIST result in total 
-# 321808 variants genome-wide with DENTIST pval &lt; 5e-8</code></pre>
+# 321808 detected variants (3.910%) with DENTIST pvalue &lt; 5e-8.</code></pre>
 <p>SuSiE RSS results genome-wide</p>
 <pre class="r"><code>susie_rss_dir &lt;- paste0(&quot;/project2/xinhe/shared_data/multigroup_ctwas/ld_mismatch_susie_rss/&quot;, trait)
 condz_dist.res &lt;- foreach(CHR=1:22) %do% {
@@ -976,10 +1013,10 @@ condz_dist_all.df &lt;- readRDS(file.path(susie_rss_dir, paste0(trait, &quot;.su
 susierss_detected_snps &lt;- condz_dist_all.df$id[which(condz_dist_all.df$p_diff &lt; 5e-8)]
 susierss_detected_flipped_snps &lt;- condz_dist_all.df$id[which(condz_dist_all.df$logLR &gt; 2 &amp; abs(condz_dist_all.df$z) &gt; 2)]
 cat(sprintf(&quot;%d variants with susie_rss result in total \n&quot;, length(condz_dist_all.df$id)))
-cat(sprintf(&quot;%d detected variants with susie_rss pvalue &lt; 5e-8.\n&quot;, length(susierss_detected_snps)))
+cat(sprintf(&quot;%d detected variants (%.3f%%) with susie_rss pvalue &lt; 5e-8.\n&quot;, length(susierss_detected_snps), length(susierss_detected_snps)/length(condz_dist_all.df$id)*100))
 cat(sprintf(&quot;%d detected variants with susie_rss allele flipped.\n&quot;, length(susierss_detected_flipped_snps)))</code></pre>
 <pre><code># 8258166 variants with susie_rss result in total 
-# 38330 detected variants with susie_rss pvalue &lt; 5e-8.
+# 38330 detected variants (0.464%) with susie_rss pvalue &lt; 5e-8.
 # 439 detected variants with susie_rss allele flipped.</code></pre>
 <br>
 <p>
