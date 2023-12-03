@@ -1,0 +1,33 @@
+---
+title: "LDL - Ten tissues"
+output: html_document
+date: '2023-12-3'
+---
+
+### Load ctwas results
+
+```{r}
+outputdir <- "/project/xinhe/shengqian/cTWAS/cTWAS_analysis/data/LDL_multi_tissue/"
+outname <- "LDL_Liver_ctwas"
+gwas_n <- 343621
+thin <- 0.1
+
+ctwas_parameters <- ctwas:::ctwas_summarize_parameters(outputdir = outputdir, 
+                                               outname = outname, 
+                                               gwas_n = 343621, 
+                                               thin = 0.1)
+```
+
+
+```{r}
+ctwas_parameters$group_size
+ctwas_parameters$group_prior
+ctwas_parameters$group_prior_var
+ctwas_parameters$enrichment
+ctwas_parameters$group_pve
+```
+
+```{r}
+ctwas_parameters$convergence_plot
+```
+
