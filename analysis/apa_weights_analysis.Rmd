@@ -1,0 +1,110 @@
+---
+title: "APA_weights"
+output: html_document
+date: '2023-11-18'
+---
+
+```{r echo=FALSE}
+library(data.table)
+library(RSQLite)
+
+tissues <- as.vector(list.files("/project2/xinhe/shared_data/multigroup_ctwas/weights/aQTL/"))
+tissues <- sapply(tissues, function(x){unlist(strsplit(x, "[.]"))[1]})
+
+num_weights <- c()
+for(i in tissues){
+  sqlite <- RSQLite::dbDriver("SQLite")
+  db = RSQLite::dbConnect(sqlite, paste0('/project2/xinhe/shared_data/multigroup_ctwas/weights/predictdb_apa/',i,'.db'))
+  query <- function(...) RSQLite::dbGetQuery(db, ...)
+  weights <- query("select * from weights")
+  #num_weights <- c(num_weights,dim(weights)[1])
+  num_weights <- rbind(num_weights,c(i,dim(weights)[1]))
+}
+
+num_weights <- data.frame(num_weights)
+num_weights$X2 <- as.numeric(num_weights$X2)
+num_weights <- num_weights[order(-num_weights$X2),]
+colnames(num_weights) <- c("tissue","number of weights")
+```
+
+### Top five tissues
+```{r}
+head(num_weights,5)
+```
+
+### Last five tissues
+```{r}
+tail(num_weights,5)
+```
+
+
+```{r echo=FALSE}
+TRAITS <- c("LDL")
+WEIGHTS <- c("Adipose_Subcutaneous", "Adipose_Visceral_Omentum", "Lung", "Liver", "Whole_Blood")
+#WEIGHTS <- c("Brain", "Heart", "Lung", "Muscle")
+
+results <- list()
+
+for(trait in TRAITS){
+  for(weight in WEIGHTS){
+    outputdir = paste0("/project2/xinhe/shengqian/cTWAS/cTWAS_analysis/data/LDL_A/",weight,"/")
+    outname = paste0(trait,"_",weight,"_ctwas")
+    
+    ctwas_parameters <- ctwas:::ctwas_summarize_parameters(outputdir = paste0("/project2/xinhe/shengqian/cTWAS/cTWAS_analysis/data/LDL_A/",weight,"/"), 
+                                                           outname = paste0(trait,"_",weight,"_ctwas"), 
+                                                           gwas_n = 343621, 
+                                                           thin = 0.1)
+    
+    results[[weight]][["group_pve"]] <- ctwas_parameters$group_pve
+    ctwas_res <- read.table(paste0(outputdir, outname, ".susieIrss.txt"), header=T)
+    ctwas_res <- ctwas_res[order(-ctwas_res$susie_pip),]
+    ctwas_gene_res <- ctwas_res[ctwas_res$type=="gene",]
+    results[[weight]][["top_genes"]] <- ctwas_gene_res[1:5,c("id","susie_pip")]
+  }
+}
+```
+
+### Adipose_Subcutaneous
+```{r}
+results[["Adipose_Subcutaneous"]][["group_pve"]]
+```
+
+```{r}
+results[["Adipose_Subcutaneous"]][["top_genes"]]
+```
+
+### Adipose_Visceral_Omentum
+```{r}
+results[["Adipose_Visceral_Omentum"]][["group_pve"]]
+```
+
+```{r}
+results[["Adipose_Visceral_Omentum"]][["top_genes"]]
+```
+
+### Lung
+```{r}
+results[["Lung"]][["group_pve"]]
+```
+
+```{r}
+results[["Lung"]][["top_genes"]]
+```
+
+### Liver
+```{r}
+results[["Liver"]][["group_pve"]]
+```
+
+```{r}
+results[["Liver"]][["top_genes"]]
+```
+
+### Whole_Blood
+```{r}
+results[["Whole_Blood"]][["group_pve"]]
+```
+
+```{r}
+results[["Whole_Blood"]][["top_genes"]]
+```
