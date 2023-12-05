@@ -11,7 +11,7 @@
 
 <meta name="author" content="Kaixuan Luo" />
 
-<meta name="date" content="2023-11-28" />
+<meta name="date" content="2023-12-05" />
 
 <title>Detect LD mismatch between GWAS zscores and UKBB LD reference using DENTIST and SuSiE_RSS</title>
 
@@ -370,7 +370,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">Detect LD mismatch between GWAS zscores and UKBB LD reference using DENTIST and SuSiE_RSS</h1>
 <h4 class="author">Kaixuan Luo</h4>
-<h4 class="date">2023-11-28</h4>
+<h4 class="date">2023-12-05</h4>
 
 </div>
 
@@ -395,7 +395,7 @@ div.tocify {
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2023-12-04
+<strong>Last updated:</strong> 2023-12-05
 </p>
 <p>
 <strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 7 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 0
@@ -486,16 +486,16 @@ This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a> analysi
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree599682ee0804e629e1f8f104673c0c7bc098ed96targetblank599682ea"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/599682ee0804e629e1f8f104673c0c7bc098ed96" target="_blank">599682e</a> </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree8d658c82f8df82f45d7f483c6c99d23e7f8a219dtargetblank8d658c8a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/8d658c82f8df82f45d7f483c6c99d23e7f8a219d" target="_blank">8d658c8</a> </a>
 </p>
 </div>
-<div id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree599682ee0804e629e1f8f104673c0c7bc098ed96targetblank599682ea" class="panel-collapse collapse">
+<div id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree8d658c82f8df82f45d7f483c6c99d23e7f8a219dtargetblank8d658c8a" class="panel-collapse collapse">
 <div class="panel-body">
 <p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility.
 </p>
 <p>
-The results in this page were generated with repository version <a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/599682ee0804e629e1f8f104673c0c7bc098ed96" target="_blank">599682e</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
+The results in this page were generated with repository version <a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/8d658c82f8df82f45d7f483c6c99d23e7f8a219d" target="_blank">8d658c8</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
 </p>
 <p>
 Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
@@ -545,6 +545,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/8d658c82f8df82f45d7f483c6c99d23e7f8a219d/analysis/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd" target="_blank">8d658c8</a>
+</td>
+<td>
+kevinlkx
+</td>
+<td>
+2023-12-05
+</td>
+<td>
+update plots
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/sq-96/multigroup_ctwas_analysis/0a79e8529a5d0b146760295e320f15c1bd3640cb/docs/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.html" target="_blank">0a79e85</a>
+</td>
+<td>
+kevinlkx
+</td>
+<td>
+2023-12-04
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -755,6 +789,11 @@ regions_df &lt;- regions_df %&gt;% dplyr::arrange(chr, start, stop) %&gt;% dplyr
 <h2>LDL</h2>
 <pre class="r"><code>trait &lt;- &quot;LDL&quot;</code></pre>
 <pre class="r"><code>sumstats &lt;- readRDS(&quot;/project2/xinhe/shared_data/multigroup_ctwas/gwas/gwas_processed/LDL-ukb-d-30780_irnt.sumstats.RDS&quot;)
+# sumstats$z &lt;- sumstats$beta/sumstats$se
+# z_snp &lt;- sumstats[,c(&quot;ID&quot;, &quot;A1&quot;, &quot;A2&quot;, &quot;z&quot;, &quot;N&quot;)]
+# colnames(z_snp) &lt;- c(&quot;id&quot;, &quot;A1&quot;, &quot;A2&quot;, &quot;z&quot;, &quot;ss&quot;)
+# z_snp &lt;- z_snp[!(z_snp$id %in% z_snp$id[duplicated(z_snp$id)]),] #drop multiallelic variants (id not unique)
+
 sumstats &lt;- makeGRangesFromDataFrame(sumstats, start.field = &quot;pos&quot;, end.field = &quot;pos&quot;, keep.extra.columns = T)
 sumstats_hg38 &lt;- liftOver_hg19ToHg38(sumstats) %&gt;% as.data.frame() %&gt;%
     dplyr::rename(chr = seqnames, pos = start, snp = SNP) %&gt;%
@@ -809,8 +848,7 @@ df$susie.pval &lt;- -log10(condz_dist_chr.df$p_diff[m.susie])
 df$z &lt;- condz_dist_chr.df$z[m.susie]
 df$condmean &lt;- condz_dist_chr.df$condmean[m.susie]
 df$logLR &lt;- condz_dist_chr.df$logLR[m.susie]
-m.dentist.freq &lt;- match(common.snps, dentist.chr.freq.df$RS_ID)
-df$Freq_A1 &lt;- dentist.chr.freq.df$Freq_A1[m.dentist.freq]
+df$Freq_A1 &lt;- dentist.chr.freq.df$Freq_A1[match(common.snps, dentist.chr.freq.df$RS_ID)]
 df$MAF &lt;- pmin(df$Freq_A1, 1-df$Freq_A1)
 
 m.sumstats &lt;- match(common.snps, sumstats_hg38$snp)
@@ -845,19 +883,185 @@ table(df$type)</code></pre>
   theme_bw()</code></pre>
 <pre><code># Warning: Removed 6 rows containing missing values (`geom_point()`).</code></pre>
 <p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>ggplot(df, aes(x = condmean, y = z, col = factor(allele_flipping))) +
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-8-1">
+Past versions of unnamed-chunk-8-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-8-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/0a79e8529a5d0b146760295e320f15c1bd3640cb/docs/figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-8-1.png" target="_blank">0a79e85</a>
+</td>
+<td>
+kevinlkx
+</td>
+<td>
+2023-12-04
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<pre class="r"><code>ggplot(df %&gt;% dplyr::mutate(susie.pval = ifelse(susie.pval &gt; 10, 10, susie.pval)), 
+       aes(x = condmean, y = z, col = susie.pval)) +
   geom_point(alpha=0.6) +
-  scale_colour_manual(values = c(&quot;0&quot; = &quot;grey&quot;, &quot;1&quot; = &quot;red&quot;)) +
-  labs(x = &quot;Expected value&quot;, y = &quot;Observed z scores from SuSiE&quot;, color = &quot;Possible allele flipping from SuSiE&quot;, title = paste0(trait, &quot; chr&quot;, CHR)) +
+  geom_abline(intercept = 0, slope = 1) + 
+  scale_colour_gradient(low = &quot;grey&quot;, high = &quot;blue&quot;, name = &quot;SuSiE -log10P \n(truncated at 10)&quot;) +
+  labs(x = &quot;Expected value from SuSiE&quot;, y = &quot;Observed z scores&quot;, title = paste0(trait, &quot; chr&quot;, CHR)) + 
   theme_bw()</code></pre>
 <p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-8-2.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-8-2">
+Past versions of unnamed-chunk-8-2.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-8-2" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/0a79e8529a5d0b146760295e320f15c1bd3640cb/docs/figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-8-2.png" target="_blank">0a79e85</a>
+</td>
+<td>
+kevinlkx
+</td>
+<td>
+2023-12-04
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<pre class="r"><code>ggplot(df,
+       aes(x = condmean, y = z, col = dentist.pval)) +
+  geom_point(alpha=0.6) +
+  geom_abline(intercept = 0, slope = 1) + 
+  scale_colour_gradient(low = &quot;grey&quot;, high = &quot;blue&quot;, name = &quot;DENTIST -log10P&quot;) +
+  labs(x = &quot;Expected value from SuSiE&quot;, y = &quot;Observed z scores&quot;, title = paste0(trait, &quot; chr&quot;, CHR)) + 
+  theme_bw()</code></pre>
+<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-8-3.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-8-3">
+Past versions of unnamed-chunk-8-3.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-8-3" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/0a79e8529a5d0b146760295e320f15c1bd3640cb/docs/figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-8-3.png" target="_blank">0a79e85</a>
+</td>
+<td>
+kevinlkx
+</td>
+<td>
+2023-12-04
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>ggplot(df, aes(x = condmean, y = z, col = type)) +
   geom_point(alpha=0.6) +
   geom_abline(intercept = 0, slope = 1) + 
   scale_colour_manual(values = c(&quot;null&quot; = &quot;grey&quot;, &quot;SuSiE only&quot; = &quot;green&quot;, &quot;DENTIST only&quot; = &quot;blue&quot;,  &quot;SuSiE &amp; DENTIST&quot; = &quot;red&quot;)) +
   labs(x = &quot;Expected value from SuSiE&quot;, y = &quot;Observed z scores&quot;, title = paste0(trait, &quot; chr&quot;, CHR)) + 
   theme_bw()</code></pre>
-<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-8-3.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-8-4.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-8-4">
+Past versions of unnamed-chunk-8-4.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-8-4" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/0a79e8529a5d0b146760295e320f15c1bd3640cb/docs/figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-8-4.png" target="_blank">0a79e85</a>
+</td>
+<td>
+kevinlkx
+</td>
+<td>
+2023-12-04
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<pre class="r"><code>ggplot(df, aes(x = condmean, y = z, col = factor(allele_flipping))) +
+  geom_point(alpha=0.6) +
+  scale_colour_manual(values = c(&quot;0&quot; = &quot;grey&quot;, &quot;1&quot; = &quot;red&quot;)) +
+  labs(x = &quot;Expected value&quot;, y = &quot;Observed z scores from SuSiE&quot;, color = &quot;Possible allele flipping from SuSiE&quot;, 
+       title = paste0(trait, &quot; chr&quot;, CHR)) +
+  theme_bw()</code></pre>
+<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-8-5.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Allele frequency</p>
 <pre class="r"><code>p1 &lt;- ggplot(df[df$type == &quot;SuSiE only&quot;,], aes(x = MAF)) +
   geom_histogram(show.legend = FALSE, fill = &quot;green&quot;, color = &quot;black&quot;) +
   ggtitle(&quot;SuSiE only&quot;) +
@@ -868,10 +1072,48 @@ p2 &lt;- ggplot(df[df$type == &quot;null&quot;,], aes(x = MAF)) +
   ggtitle(&quot;null&quot;) +
   theme_bw()
 
-cowplot::plot_grid(p1, p2)</code></pre>
+cowplot::plot_grid(p1, p2, ncol = 1)</code></pre>
 <pre><code># `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 # `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
-<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-8-4.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-9-1.png" width="576" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-9-1">
+Past versions of unnamed-chunk-9-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-9-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/0a79e8529a5d0b146760295e320f15c1bd3640cb/docs/figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-9-1.png" target="_blank">0a79e85</a>
+</td>
+<td>
+kevinlkx
+</td>
+<td>
+2023-12-04
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Distribution of SuSiE only SNPs across loci</p>
 <pre class="r"><code>locus_counts.df &lt;- data.frame(locus = unique(df$locus[df$type != &quot;null&quot;]), 
                               n_dentist_only = 0, 
                               n_susie_only = 0, 
@@ -887,77 +1129,161 @@ ggplot(locus_counts.df, aes(x = locus, y = n_susie_only)) +
   labs(x = &quot;locus&quot;, y = &quot;number of SNPs&quot;) +
   ggtitle(&quot;SuSiE only&quot;) +
   theme_bw()</code></pre>
-<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-9-1.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>locus_counts.df %&gt;% dplyr::arrange(desc(n_susie_only - n_dentist_only)) %&gt;% head()</code></pre>
-<pre><code>#   locus n_dentist_only n_susie_only n_dentist_susie
-# 1   950              0            9               0
-# 2   945              0            8               0
-# 3   958              0            7               0
-# 4   962              0            7               0
-# 5   956              0            6               0
-# 6   967              0            6               0</code></pre>
-<p>Example locus</p>
+<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-10-1.png" width="576" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-10-1">
+Past versions of unnamed-chunk-10-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-10-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/0a79e8529a5d0b146760295e320f15c1bd3640cb/docs/figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-10-1.png" target="_blank">0a79e85</a>
+</td>
+<td>
+kevinlkx
+</td>
+<td>
+2023-12-04
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<pre class="r"><code># locus_counts.df %&gt;% dplyr::arrange(desc(n_susie_only - n_dentist_only)) %&gt;% head()</code></pre>
+</div>
+<div id="example-locus" class="section level4">
+<h4>Example locus</h4>
 <pre class="r"><code>locus = &quot;950&quot;
 
-df_locus &lt;- df[df$locus == locus,]
-df_locus %&gt;% dplyr::arrange(desc(dentist.pval - susie.pval)) %&gt;% head()
+region_df &lt;- regions_df[regions_df$locus == locus,]
+print(region_df)
+target_bp &lt;- round((region_df$start+region_df$stop)/2)
+radius &lt;- max(abs(region_df$start - target_bp), abs(region_df$stop - target_bp))
 
+cat(&quot;target_BP:&quot;, target_bp, &quot;radius:&quot;, radius, &quot;\n&quot;)
+
+# ldref_res &lt;- load_UKBB_R_snp_info(region_df, &quot;/project2/mstephens/wcrouse/UKB_LDR_0.1&quot;, &quot;ukb_b38_0.1&quot;)
+# length(ldref_res$R_snp_info$id)</code></pre>
+<pre><code>#       chr    start     stop locus
+# 950 chr22 24588236 26395662   950
+# target_BP: 25491949 radius: 903713</code></pre>
+<!-- load DENTIST results targeted at this locus -->
+<!-- ```{r} -->
+<!-- dentist.dir <- paste0("/project2/xinhe/shared_data/multigroup_ctwas/DENTIST/", trait) -->
+<!-- dentist.res.file <- file.path(dentist.dir, paste0("LDL-ukb-d-30780_irnt.ukb_chr", CHR, ".b38.target_25491949.radius_903713.niter10.DENTIST.full.txt")) -->
+<!-- dentist.locus.df <- data.table::fread(dentist.res.file) -->
+<!-- colnames(dentist.locus.df) <- c("rsID", "chisq", "LP", "ifDup") -->
+<!-- dentist.locus.snps <- dentist.locus.df$rsID -->
+<!-- dentist_detected_snps <- dentist.locus.df$rsID[which(dentist.locus.df$LP > -log10(5e-8))] -->
+<!-- cat(sprintf("%d variants with DENTIST result in chr%s \n", length(dentist.locus.snps), CHR)) -->
+<!-- cat(sprintf("%d detected variants with DENTIST pvalue < 5e-8.\n", length(dentist_detected_snps))) -->
+<!-- ``` -->
+<!-- Load SuSiE result for this locus -->
+<!-- ```{r} -->
+<!-- select_loci <- paste0("chr", CHR) -->
+<!-- susie_rss_dir <- paste0("/project2/xinhe/shared_data/multigroup_ctwas/ld_mismatch_susie_rss/", trait) -->
+<!-- condz_dist_chr <- readRDS(file.path(susie_rss_dir, paste0(trait, ".condz.dist.", select_loci, "loci.rds"))) -->
+<!-- condz_dist_locus.df <- condz_dist_chr[[locus]] -->
+<!-- susierss.locus.snps <- condz_dist_locus.df$id -->
+<!-- susierss_detected_snps <- condz_dist_locus.df$id[which(condz_dist_locus.df$p_diff < 5e-8)] -->
+<!-- susierss_detected_flipped_snps <- condz_dist_locus.df$id[which(condz_dist_locus.df$logLR > 2 & abs(condz_dist_locus.df$z) > 2)] -->
+<!-- cat(sprintf("%d variants with susie_rss result in chr%s \n", length(susierss.locus.snps), CHR)) -->
+<!-- cat(sprintf("%d detected variants with susie_rss pvalue < 5e-8.\n", length(susierss_detected_snps))) -->
+<!-- cat(sprintf("%d detected variants with susie_rss allele flipped.\n", length(susierss_detected_flipped_snps))) -->
+<!-- ``` -->
+<!-- Compare SuSiE RSS with DENTIST result in this locus -->
+<!-- ```{r} -->
+<!-- cat(sprintf("%d variants with DENTIST result \n", length(dentist.locus.snps))) -->
+<!-- cat(sprintf("%d variants with susie_rss result \n", length(susierss.locus.snps))) -->
+<!-- cat(sprintf("%d variants with both DENTIST and susie_rss result \n", length(intersect(dentist.locus.snps, susierss.locus.snps)))) -->
+<!-- cat(sprintf("%d variants detected by both DENTIST and susie_rss (pvalue < 5e-8).\n", length(intersect(dentist_detected_snps, susierss_detected_snps)))) -->
+<!-- common.snps <- intersect(dentist.locus.snps, susierss.locus.snps) -->
+<!-- df_locus <- data.frame(rsID = common.snps, dentist.pval = NA, susie.pval = NA) -->
+<!-- m.dentist <- match(common.snps, dentist.locus.df$rsID) -->
+<!-- df_locus$dentist.pval <- dentist.locus.df$LP[m.dentist] -->
+<!-- m.susie <- match(common.snps, condz_dist_locus.df$id) -->
+<!-- df_locus$susie.pval <- -log10(condz_dist_locus.df$p_diff[m.susie]) -->
+<!-- df_locus$z <- condz_dist_locus.df$z[m.susie] -->
+<!-- df_locus$condmean <- condz_dist_locus.df$condmean[m.susie] -->
+<!-- df_locus$logLR <- condz_dist_locus.df$logLR[m.susie] -->
+<!-- df_locus$Freq_A1 <- dentist.chr.freq.df$Freq_A1[match(common.snps, dentist.chr.freq.df$RS_ID)] -->
+<!-- df_locus$MAF <- pmin(df_locus$Freq_A1, 1-df_locus$Freq_A1) -->
+<!-- m.sumstats <- match(common.snps, sumstats_hg38$snp) -->
+<!-- df_locus$p <- sumstats_hg38$p[m.sumstats] -->
+<!-- df_locus$locus <- sumstats_hg38$locus[m.sumstats] -->
+<!-- df_locus$freq_A1_GWAS <- sumstats_hg38$freq[m.sumstats] -->
+<!-- df_locus$MAF_GWAS <- pmin(df_locus$freq_A1_GWAS, 1-df_locus$freq_A1_GWAS) -->
+<!-- df_locus <- df_locus %>% dplyr::mutate(allele_flipping = ifelse(logLR > 2 & abs(z) > 2, 1, 0)) -->
+<!-- df_locus <- df_locus %>% dplyr::mutate(type = case_when(susie.pval > -log10(5e-8) & dentist.pval > -log10(5e-8) ~ "SuSiE & DENTIST",  -->
+<!--                                       susie.pval > -log10(5e-8) ~ "SuSiE only", -->
+<!--                                       dentist.pval > -log10(5e-8) ~ "DENTIST only", -->
+<!--                                       .default = "null")) -->
+<!-- df_locus$type <- factor(df_locus$type, levels = c("null",  "SuSiE only", "DENTIST only", "SuSiE & DENTIST")) -->
+<!-- table(df_locus$type) -->
+<!-- ``` -->
+<pre class="r"><code>df_locus &lt;- df[df$locus == locus,]
+# df_locus %&gt;% dplyr::arrange(desc(dentist.pval - susie.pval)) %&gt;% head()
+
+# scatter plot comparing DENTIST vs. SuSiE pvalues
 ggplot(df_locus, aes(x = dentist.pval, y = susie.pval)) +
   geom_point(alpha=0.6) +
-  xlim(0, 50) + ylim(0, 50) +
+  xlim(0, 50) + 
+  # ylim(0, 50) +
   labs(x = &quot;DENTIST -log10P&quot;, y = &quot;SuSiE RSS -log10P&quot;, title = paste0(trait, &quot; chr&quot;, CHR, &quot; locus&quot;, locus)) +
   geom_abline(intercept = 0, slope = 1) + 
   geom_vline(xintercept = -log10(5e-8), col = &quot;red&quot;) +
   geom_hline(yintercept = -log10(5e-8), col = &quot;red&quot;) +
   theme_bw()</code></pre>
-<pre><code># Warning: Removed 1 rows containing missing values (`geom_point()`).</code></pre>
-<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-12-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggplot(df_locus %&gt;% dplyr::mutate(susie.pval = ifelse(susie.pval &gt; 10, 10, susie.pval)), 
+       aes(x = condmean, y = z, col = susie.pval)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1) + 
+  scale_colour_gradient(low = &quot;grey&quot;, high = &quot;blue&quot;, name = &quot;SuSiE -log10P \n(truncated at 10)&quot;) +
+  labs(x = &quot;Expected value from SuSiE&quot;, y = &quot;Observed z scores&quot;, title = paste0(trait, &quot; chr&quot;, CHR, &quot; locus&quot;, locus)) + 
+  theme_bw()</code></pre>
+<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-12-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggplot(df_locus,
+       aes(x = condmean, y = z, col = dentist.pval)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1) + 
+  scale_colour_gradient(low = &quot;grey&quot;, high = &quot;blue&quot;, name = &quot;DENTIST -log10P&quot;) +
+  labs(x = &quot;Expected value from SuSiE&quot;, y = &quot;Observed z scores&quot;, title = paste0(trait, &quot; chr&quot;, CHR, &quot; locus&quot;, locus)) + 
+  theme_bw()</code></pre>
+<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-12-3.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>ggplot(df_locus, aes(x = condmean, y = z, col = type)) +
   geom_point(alpha=0.6) +
   geom_abline(intercept = 0, slope = 1) + 
   scale_colour_manual(values = c(&quot;null&quot; = &quot;grey&quot;, &quot;SuSiE only&quot; = &quot;green&quot;, &quot;DENTIST only&quot; = &quot;blue&quot;,  &quot;SuSiE &amp; DENTIST&quot; = &quot;red&quot;)) +
   labs(x = &quot;Expected value from SuSiE&quot;, y = &quot;Observed z scores&quot;, title = paste0(trait, &quot; chr&quot;, CHR, &quot; locus&quot;, locus)) + 
   theme_bw()</code></pre>
-<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-10-2.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>ggplot(df_locus, aes(x = condmean, y = z, col = factor(allele_flipping))) +
-  geom_point(alpha=0.6) +
-  geom_abline(intercept = 0, slope = 1) + 
-  scale_colour_manual(values = c(&quot;0&quot; = &quot;grey&quot;, &quot;1&quot; = &quot;red&quot;)) +
-  labs(x = &quot;Expected value&quot;, y = &quot;Observed z scores from SuSiE&quot;, 
-       color = &quot;Possible allele flipping from SuSiE&quot;, 
-       title = paste0(trait, &quot; chr&quot;, CHR, &quot; locus&quot;, locus)) +
-  theme_bw()</code></pre>
-<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-10-3.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>ggplot(df_locus, aes(x = condmean, y = z, col = dentist.pval)) +
-  geom_point() +
-  geom_abline(intercept = 0, slope = 1) + 
-  scale_colour_gradient(low = &quot;grey&quot;, high = &quot;blue&quot;, name = &quot;DENTIST -log10P&quot;) +
-  labs(x = &quot;Expected value from SuSiE&quot;, y = &quot;Observed z scores&quot;, title = paste0(trait, &quot; chr&quot;, CHR, &quot; locus&quot;, locus)) + 
-  theme_bw()</code></pre>
-<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-10-4.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>df_locus$diff.pval &lt;-  df_locus$susie.pval - df_locus$dentist.pval
-df_locus$diff.pval[df_locus$diff.pval &gt; 20] &lt;- 20
-ggplot(df_locus, aes(x = condmean, y = z, col = diff.pval)) +
-  geom_point(alpha=0.6) +
-  geom_abline(intercept = 0, slope = 1) + 
-  scale_colour_gradient(low = &quot;white&quot;, high = &quot;black&quot;, name = &quot;SuSiE(-log10P) - DENTIST(-log10P) \n(truncated at 20)&quot;) +
-  labs(x = &quot;Expected value from SuSiE&quot;, y = &quot;Observed z scores&quot;, title = paste0(trait, &quot; chr&quot;, CHR, &quot; locus&quot;, locus)) + 
-  theme_bw()</code></pre>
-<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-10-5.png" width="672" style="display: block; margin: auto;" /></p>
-<pre><code>#        rsID dentist.pval susie.pval           z    condmean      logLR Freq_A1
-# 1 rs4049454      2.66393 0.23618399 -0.03334156 -0.02549472  -5.246503  0.9092
-# 2 rs9613160      2.12390 0.02552654 -0.18421147 -0.18499609 -12.452400  0.1780
-# 3 rs6005017      2.10970 0.05682472 -0.18230267 -0.18068444 -12.572235  0.1779
-# 4 rs4239916      2.73876 0.69209898 -0.04078291 -0.02282060  -5.257066  0.9091
-# 5 rs1207373      2.20069 0.26062969 -0.19442402 -0.17266713  -9.332881  0.1777
-# 6  rs688034      2.18737 0.24819459 -0.56777611 -0.53050893 -10.510847  0.6672
-#      MAF         p locus freq_A1_GWAS MAF_GWAS allele_flipping type
-# 1 0.0908 0.9733999   950     0.091434 0.091434               0 null
-# 2 0.1780 0.8538500   950     0.821400 0.178600               0 null
-# 3 0.1779 0.8553501   950     0.821380 0.178620               0 null
-# 4 0.0909 0.9674700   950     0.091502 0.091502               0 null
-# 5 0.1777 0.8458400   950     0.821650 0.178350               0 null
-# 6 0.3328 0.5701695   950     0.333030 0.333030               0 null</code></pre>
+<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-12-4.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code># ggplot(df_locus, aes(x = condmean, y = z, col = factor(allele_flipping))) +
+#   geom_point(alpha=0.6) +
+#   geom_abline(intercept = 0, slope = 1) +
+#   scale_colour_manual(values = c(&quot;0&quot; = &quot;grey&quot;, &quot;1&quot; = &quot;red&quot;)) +
+#   labs(x = &quot;Expected value&quot;, y = &quot;Observed z scores from SuSiE&quot;,
+#        color = &quot;Possible allele flipping from SuSiE&quot;,
+#        title = paste0(trait, &quot; chr&quot;, CHR, &quot; locus&quot;, locus)) +
+#   theme_bw()</code></pre>
 </div>
 </div>
 <div id="genome-wide-results" class="section level3">
@@ -1015,6 +1341,11 @@ cat(sprintf(&quot;%d detected variants with susie_rss allele flipped.\n&quot;, l
 <h2>aFib</h2>
 <pre class="r"><code>trait &lt;- &quot;aFib&quot;</code></pre>
 <pre class="r"><code>sumstats &lt;- readRDS(&quot;/project2/xinhe/shared_data/multigroup_ctwas/gwas/gwas_processed/aFib-ebi-a-GCST006414.sumstats.RDS&quot;)
+# sumstats$z &lt;- sumstats$beta/sumstats$se
+# z_snp &lt;- sumstats[,c(&quot;ID&quot;, &quot;A1&quot;, &quot;A2&quot;, &quot;z&quot;, &quot;N&quot;)]
+# colnames(z_snp) &lt;- c(&quot;id&quot;, &quot;A1&quot;, &quot;A2&quot;, &quot;z&quot;, &quot;ss&quot;)
+# z_snp &lt;- z_snp[!(z_snp$id %in% z_snp$id[duplicated(z_snp$id)]),] #drop multiallelic variants (id not unique)
+
 sumstats &lt;- makeGRangesFromDataFrame(sumstats, start.field = &quot;pos&quot;, end.field = &quot;pos&quot;, keep.extra.columns = T)
 sumstats_hg38 &lt;- liftOver_hg19ToHg38(sumstats) %&gt;% as.data.frame() %&gt;%
     dplyr::rename(chr = seqnames, pos = start, snp = SNP) %&gt;%
@@ -1034,13 +1365,11 @@ dentist_detected_snps &lt;- dentist.chr.df$rsID[which(dentist.chr.df$LP &gt; -lo
 cat(sprintf(&quot;%d variants with DENTIST result in chr%s \n&quot;, length(dentist.chr.snps), CHR))
 cat(sprintf(&quot;%d detected variants with DENTIST pvalue &lt; 5e-8.\n&quot;, length(dentist_detected_snps)))
 
-dentist.chr.short.snps &lt;- read.table(file.path(dentist.dir, paste0(&quot;aFib-ebi-a-GCST006414.ukb_chr&quot;, CHR, &quot;.b38.DENTIST.short.txt&quot;)))$V1
-length(dentist.chr.short.snps)
-setequal(dentist_detected_snps, dentist.chr.short.snps)</code></pre>
+# dentist.chr.short.snps &lt;- read.table(file.path(dentist.dir, paste0(&quot;aFib-ebi-a-GCST006414.ukb_chr&quot;, CHR, &quot;.b38.DENTIST.short.txt&quot;)))$V1
+# length(dentist.chr.short.snps)
+# setequal(dentist_detected_snps, dentist.chr.short.snps)</code></pre>
 <pre><code># 109507 variants with DENTIST result in chr22 
-# 2802 detected variants with DENTIST pvalue &lt; 5e-8.
-# [1] 2802
-# [1] TRUE</code></pre>
+# 2802 detected variants with DENTIST pvalue &lt; 5e-8.</code></pre>
 <p>load DENTIST results with one iteration</p>
 <pre class="r"><code>dentist.dir &lt;- paste0(&quot;/project2/xinhe/shared_data/multigroup_ctwas/DENTIST/&quot;, trait)
 dentist.res.file &lt;- file.path(dentist.dir, paste0(&quot;aFib-ebi-a-GCST006414.ukb_chr&quot;, CHR, &quot;.b38.niter1.DENTIST.full.txt&quot;))
@@ -1052,13 +1381,11 @@ dentist_detected_snps &lt;- dentist.chr.df$rsID[which(dentist.chr.df$LP &gt; -lo
 cat(sprintf(&quot;%d variants with DENTIST result in chr%s \n&quot;, length(dentist.chr.snps), CHR))
 cat(sprintf(&quot;%d detected variants with DENTIST pvalue &lt; 5e-8.\n&quot;, length(dentist_detected_snps)))
 
-dentist.chr.short.snps &lt;- read.table(file.path(dentist.dir, paste0(&quot;aFib-ebi-a-GCST006414.ukb_chr&quot;, CHR, &quot;.b38.niter1.DENTIST.short.txt&quot;)))$V1
-length(dentist.chr.short.snps)
-setequal(dentist_detected_snps, dentist.chr.short.snps)</code></pre>
+# dentist.chr.short.snps &lt;- read.table(file.path(dentist.dir, paste0(&quot;aFib-ebi-a-GCST006414.ukb_chr&quot;, CHR, &quot;.b38.niter1.DENTIST.short.txt&quot;)))$V1
+# length(dentist.chr.short.snps)
+# setequal(dentist_detected_snps, dentist.chr.short.snps)</code></pre>
 <pre><code># 109507 variants with DENTIST result in chr22 
-# 2596 detected variants with DENTIST pvalue &lt; 5e-8.
-# [1] 2596
-# [1] TRUE</code></pre>
+# 2596 detected variants with DENTIST pvalue &lt; 5e-8.</code></pre>
 <p>Load Allele Frequency</p>
 <pre class="r"><code>dentist.dir &lt;- paste0(&quot;/project2/xinhe/shared_data/multigroup_ctwas/DENTIST/&quot;, trait)
 dentist.chr.freq.df &lt;- data.table::fread(file.path(dentist.dir, paste0(&quot;aFib-ebi-a-GCST006414.ukb_chr&quot;, CHR, &quot;.b38.frq&quot;)))</code></pre>
@@ -1093,8 +1420,7 @@ df$susie.pval &lt;- -log10(condz_dist_chr.df$p_diff[m.susie])
 df$z &lt;- condz_dist_chr.df$z[m.susie]
 df$condmean &lt;- condz_dist_chr.df$condmean[m.susie]
 df$logLR &lt;- condz_dist_chr.df$logLR[m.susie]
-m.dentist.freq &lt;- match(common.snps, dentist.chr.freq.df$RS_ID)
-df$Freq_A1 &lt;- dentist.chr.freq.df$Freq_A1[m.dentist.freq]
+df$Freq_A1 &lt;- dentist.chr.freq.df$Freq_A1[match(common.snps, dentist.chr.freq.df$RS_ID)]
 df$MAF &lt;- pmin(df$Freq_A1, 1-df$Freq_A1)
 
 m.sumstats &lt;- match(common.snps, sumstats_hg38$snp)
@@ -1128,35 +1454,165 @@ table(df$type)</code></pre>
   geom_hline(yintercept = -log10(5e-8), col = &quot;red&quot;) +
   theme_bw()</code></pre>
 <pre><code># Warning: Removed 25 rows containing missing values (`geom_point()`).</code></pre>
-<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-23-1.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>ggplot(df, aes(x = condmean, y = z, col = factor(allele_flipping))) +
+<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-25-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-25-1">
+Past versions of unnamed-chunk-25-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-25-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/0a79e8529a5d0b146760295e320f15c1bd3640cb/docs/figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-25-1.png" target="_blank">0a79e85</a>
+</td>
+<td>
+kevinlkx
+</td>
+<td>
+2023-12-04
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<pre class="r"><code>ggplot(df %&gt;% dplyr::mutate(susie.pval = ifelse(susie.pval &gt; 10, 10, susie.pval)), 
+       aes(x = condmean, y = z, col = susie.pval)) +
   geom_point(alpha=0.6) +
-  scale_colour_manual(values = c(&quot;0&quot; = &quot;grey&quot;, &quot;1&quot; = &quot;red&quot;)) +
-  labs(x = &quot;Expected value&quot;, y = &quot;Observed z scores from SuSiE&quot;, color = &quot;Possible allele flipping from SuSiE&quot;, title = paste0(trait, &quot; chr&quot;, CHR)) +
+  geom_abline(intercept = 0, slope = 1) + 
+  scale_colour_gradient(low = &quot;grey&quot;, high = &quot;blue&quot;, name = &quot;SuSiE -log10P \n(truncated at 10)&quot;) +
+  labs(x = &quot;Expected value from SuSiE&quot;, y = &quot;Observed z scores&quot;, title = paste0(trait, &quot; chr&quot;, CHR)) + 
   theme_bw()</code></pre>
-<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-23-2.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-25-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggplot(df %&gt;% dplyr::mutate(dentist.pval = ifelse(dentist.pval &gt; 10, 10, dentist.pval)),
+       aes(x = condmean, y = z, col = dentist.pval)) +
+  geom_point(alpha=0.6) +
+  geom_abline(intercept = 0, slope = 1) + 
+  scale_colour_gradient(low = &quot;grey&quot;, high = &quot;blue&quot;, name = &quot;DENTIST -log10P \n(truncated at 10)&quot;) +
+  labs(x = &quot;Expected value from SuSiE&quot;, y = &quot;Observed z scores&quot;, title = paste0(trait, &quot; chr&quot;, CHR)) + 
+  theme_bw()</code></pre>
+<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-25-3.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>ggplot(df, aes(x = condmean, y = z, col = type)) +
   geom_point(alpha=0.6) +
   geom_abline(intercept = 0, slope = 1) + 
   scale_colour_manual(values = c(&quot;null&quot; = &quot;grey&quot;, &quot;SuSiE only&quot; = &quot;green&quot;, &quot;DENTIST only&quot; = &quot;blue&quot;,  &quot;SuSiE &amp; DENTIST&quot; = &quot;red&quot;)) +
   labs(x = &quot;Expected value from SuSiE&quot;, y = &quot;Observed z scores&quot;, title = paste0(trait, &quot; chr&quot;, CHR)) + 
   theme_bw()</code></pre>
-<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-23-3.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-25-4.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggplot(df, aes(x = condmean, y = z, col = factor(allele_flipping))) +
+  geom_point(alpha=0.6) +
+  scale_colour_manual(values = c(&quot;0&quot; = &quot;grey&quot;, &quot;1&quot; = &quot;red&quot;)) +
+  labs(x = &quot;Expected value&quot;, y = &quot;Observed z scores from SuSiE&quot;,
+       color = &quot;Possible allele flipping from SuSiE&quot;, title = paste0(trait, &quot; chr&quot;, CHR)) +
+  theme_bw()</code></pre>
+<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-25-5.png" width="672" style="display: block; margin: auto;" /></p>
+<p>GWAS p-values</p>
 <pre class="r"><code>ggplot(df, aes(x=type, y=-log10(p), fill=type)) +
   geom_boxplot(show.legend = FALSE) +
   scale_fill_manual(values = c(&quot;null&quot; = &quot;grey&quot;, &quot;SuSiE only&quot; = &quot;green&quot;, &quot;DENTIST only&quot; = &quot;blue&quot;,  &quot;SuSiE &amp; DENTIST&quot; = &quot;red&quot;)) +
   theme_bw()</code></pre>
-<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-23-4.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-26-1.png" width="480" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-26-1">
+Past versions of unnamed-chunk-26-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-26-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/0a79e8529a5d0b146760295e320f15c1bd3640cb/docs/figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-26-1.png" target="_blank">0a79e85</a>
+</td>
+<td>
+kevinlkx
+</td>
+<td>
+2023-12-04
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>ggplot(df[df$type != &quot;null&quot;,], aes(x=type, y=-log10(p), fill=type)) +
   geom_boxplot(show.legend = FALSE) +
   scale_fill_manual(values = c(&quot;null&quot; = &quot;grey&quot;, &quot;SuSiE only&quot; = &quot;green&quot;, &quot;DENTIST only&quot; = &quot;blue&quot;,  &quot;SuSiE &amp; DENTIST&quot; = &quot;red&quot;)) +
   theme_bw()</code></pre>
-<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-23-5.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-26-2.png" width="480" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-26-2">
+Past versions of unnamed-chunk-26-2.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-26-2" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/0a79e8529a5d0b146760295e320f15c1bd3640cb/docs/figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-26-2.png" target="_blank">0a79e85</a>
+</td>
+<td>
+kevinlkx
+</td>
+<td>
+2023-12-04
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Allele frequency</p>
 <pre class="r"><code>ggplot(df, aes(x=type, y=MAF, fill=type)) +
   geom_boxplot(show.legend = FALSE) +
   scale_fill_manual(values = c(&quot;null&quot; = &quot;grey&quot;, &quot;SuSiE only&quot; = &quot;green&quot;, &quot;DENTIST only&quot; = &quot;blue&quot;,  &quot;SuSiE &amp; DENTIST&quot; = &quot;red&quot;)) +
   theme_bw()</code></pre>
-<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-23-6.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-27-1.png" width="480" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>p1 &lt;- ggplot(df[df$type == &quot;SuSiE only&quot;,], aes(x = MAF)) +
   geom_histogram(show.legend = FALSE, fill = &quot;green&quot;, color = &quot;black&quot;) +
   ggtitle(&quot;SuSiE only&quot;) +
@@ -1182,7 +1638,8 @@ cowplot::plot_grid(p1, p2, p3, p4)</code></pre>
 # `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 # `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 # `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
-<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-23-7.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-28-1.png" width="576" style="display: block; margin: auto;" /></p>
+<p>Distribution of detected SNPs across loci</p>
 <pre class="r"><code>locus_counts.df &lt;- data.frame(locus = unique(df$locus[df$type != &quot;null&quot;]), 
                               n_dentist_only = 0, 
                               n_susie_only = 0, 
@@ -1224,7 +1681,7 @@ p3 &lt;- ggplot(locus_counts.df, aes(x = locus, y = n_dentist_susie)) +
   theme_bw()
 
 cowplot::plot_grid(p1, p2, p3, ncol = 1)</code></pre>
-<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-24-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-29-1.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>locus_counts.df %&gt;% dplyr::arrange(desc(n_dentist_only - n_susie_only)) %&gt;% head()</code></pre>
 <pre><code>#   locus n_dentist_only n_susie_only n_dentist_susie
 # 1   956            194            0              18
@@ -1280,8 +1737,8 @@ p3 &lt;- ggplot(locus_counts.df, aes(x = locus, y = n_dentist_susie)) +
   theme_bw()
 
 cowplot::plot_grid(p1, p2, p3, ncol = 1)</code></pre>
-<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-25-1.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>locus_counts.df %&gt;% dplyr::arrange(desc(n_dentist_only - n_susie_only)) %&gt;% head()</code></pre>
+<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-30-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code># locus_counts.df %&gt;% dplyr::arrange(desc(n_dentist_only - n_susie_only)) %&gt;% head()</code></pre>
 <pre><code># 
 #            null      SuSiE only    DENTIST only SuSiE &amp; DENTIST 
 #               0              12            1041             222 
@@ -1289,20 +1746,85 @@ cowplot::plot_grid(p1, p2, p3, ncol = 1)</code></pre>
 # 944 945 946 947 948 949 950 951 952 953 954 955 956 957 958 959 960 961 962 963 
 #   4  13  58  28  47  91  26   6  73  75  76  45 144  29  31   6 111  17  24  41 
 # 964 965 966 967 
-#  21  11  24  40 
-#   locus n_dentist_only n_susie_only n_dentist_susie
-# 1   956            144            0              15
-# 2   960            111            0               7
-# 3   949             91            0               4
-# 4   954             76            0               9
-# 5   953             75            1              17
-# 6   952             73            0              18</code></pre>
-<p>Example locus</p>
+#  21  11  24  40</code></pre>
+</div>
+<div id="example-locus-1" class="section level4">
+<h4>Example locus</h4>
 <pre class="r"><code>locus = &quot;956&quot;
 
-df_locus &lt;- df[df$locus == locus,]
-df_locus %&gt;% dplyr::arrange(desc(dentist.pval - susie.pval)) %&gt;% head()
+region_df &lt;- regions_df[regions_df$locus == locus,]
+print(region_df)
+target_bp &lt;- round((region_df$start+region_df$stop)/2)
+radius &lt;- max(abs(region_df$start - target_bp), abs(region_df$stop - target_bp))
 
+cat(&quot;target_BP:&quot;, target_bp, &quot;radius:&quot;, radius, &quot;\n&quot;)
+
+# ldref_res &lt;- load_UKBB_R_snp_info(region_df, &quot;/project2/mstephens/wcrouse/UKB_LDR_0.1&quot;, &quot;ukb_b38_0.1&quot;)
+# length(ldref_res$R_snp_info$id)</code></pre>
+<pre><code>#       chr    start     stop locus
+# 956 chr22 34098925 35134992   956
+# target_BP: 34616958 radius: 518034</code></pre>
+<!-- load DENTIST results targeted at this locus -->
+<!-- ```{r} -->
+<!-- dentist.dir <- paste0("/project2/xinhe/shared_data/multigroup_ctwas/DENTIST/", trait) -->
+<!-- dentist.res.file <- file.path(dentist.dir, paste0("aFib-ebi-a-GCST006414.ukb_chr", CHR, ".b38.target_34616958.radius_518034.niter10.DENTIST.full.txt")) -->
+<!-- dentist.locus.df <- data.table::fread(dentist.res.file) -->
+<!-- colnames(dentist.locus.df) <- c("rsID", "chisq", "LP", "ifDup") -->
+<!-- dentist.locus.snps <- dentist.locus.df$rsID -->
+<!-- dentist_detected_snps <- dentist.locus.df$rsID[which(dentist.locus.df$LP > -log10(5e-8))] -->
+<!-- cat(sprintf("%d variants with DENTIST result in chr%s \n", length(dentist.locus.snps), CHR)) -->
+<!-- cat(sprintf("%d detected variants with DENTIST pvalue < 5e-8.\n", length(dentist_detected_snps))) -->
+<!-- # dentist.locus.short.snps <- read.table(file.path(dentist.dir, paste0("aFib-ebi-a-GCST006414.ukb_chr", CHR, ".b38.target_34616958.radius_518034.niter10.DENTIST.short.txt")))$V1 -->
+<!-- # length(dentist.locus.short.snps) -->
+<!-- # setequal(dentist_detected_snps, dentist.locus.short.snps) -->
+<!-- ``` -->
+<!-- Load SuSiE result for this locus -->
+<!-- ```{r} -->
+<!-- select_loci <- paste0("chr", CHR) -->
+<!-- susie_rss_dir <- paste0("/project2/xinhe/shared_data/multigroup_ctwas/ld_mismatch_susie_rss/", trait) -->
+<!-- condz_dist_chr <- readRDS(file.path(susie_rss_dir, paste0(trait, ".condz.dist.", select_loci, "loci.rds"))) -->
+<!-- condz_dist_locus.df <- condz_dist_chr[[locus]] -->
+<!-- susierss.locus.snps <- condz_dist_locus.df$id -->
+<!-- susierss_detected_snps <- condz_dist_locus.df$id[which(condz_dist_locus.df$p_diff < 5e-8)] -->
+<!-- susierss_detected_flipped_snps <- condz_dist_locus.df$id[which(condz_dist_locus.df$logLR > 2 & abs(condz_dist_locus.df$z) > 2)] -->
+<!-- cat(sprintf("%d variants with susie_rss result in chr%s \n", length(susierss.locus.snps), CHR)) -->
+<!-- cat(sprintf("%d detected variants with susie_rss pvalue < 5e-8.\n", length(susierss_detected_snps))) -->
+<!-- cat(sprintf("%d detected variants with susie_rss allele flipped.\n", length(susierss_detected_flipped_snps))) -->
+<!-- ``` -->
+<!-- Compare SuSiE RSS with DENTIST result in this locus -->
+<!-- ```{r} -->
+<!-- cat(sprintf("%d variants with DENTIST result \n", length(dentist.locus.snps))) -->
+<!-- cat(sprintf("%d variants with susie_rss result \n", length(susierss.locus.snps))) -->
+<!-- cat(sprintf("%d variants with both DENTIST and susie_rss result \n", length(intersect(dentist.locus.snps, susierss.locus.snps)))) -->
+<!-- cat(sprintf("%d variants detected by both DENTIST and susie_rss (pvalue < 5e-8).\n", length(intersect(dentist_detected_snps, susierss_detected_snps)))) -->
+<!-- common.snps <- intersect(dentist.locus.snps, susierss.locus.snps) -->
+<!-- df_locus <- data.frame(rsID = common.snps, dentist.pval = NA, susie.pval = NA) -->
+<!-- m.dentist <- match(common.snps, dentist.locus.df$rsID) -->
+<!-- df_locus$dentist.pval <- dentist.locus.df$LP[m.dentist] -->
+<!-- m.susie <- match(common.snps, condz_dist_locus.df$id) -->
+<!-- df_locus$susie.pval <- -log10(condz_dist_locus.df$p_diff[m.susie]) -->
+<!-- df_locus$z <- condz_dist_locus.df$z[m.susie] -->
+<!-- df_locus$condmean <- condz_dist_locus.df$condmean[m.susie] -->
+<!-- df_locus$logLR <- condz_dist_locus.df$logLR[m.susie] -->
+<!-- df_locus$Freq_A1 <- dentist.chr.freq.df$Freq_A1[match(common.snps, dentist.chr.freq.df$RS_ID)] -->
+<!-- df_locus$MAF <- pmin(df_locus$Freq_A1, 1-df_locus$Freq_A1) -->
+<!-- m.sumstats <- match(common.snps, sumstats_hg38$snp) -->
+<!-- df_locus$p <- sumstats_hg38$p[m.sumstats] -->
+<!-- df_locus$locus <- sumstats_hg38$locus[m.sumstats] -->
+<!-- df_locus$freq_A1_GWAS <- sumstats_hg38$freq[m.sumstats] -->
+<!-- df_locus$MAF_GWAS <- pmin(df_locus$freq_A1_GWAS, 1-df_locus$freq_A1_GWAS) -->
+<!-- df_locus <- df_locus %>% dplyr::mutate(allele_flipping = ifelse(logLR > 2 & abs(z) > 2, 1, 0)) -->
+<!-- df_locus <- df_locus %>% dplyr::mutate(type = case_when(susie.pval > -log10(5e-8) & dentist.pval > -log10(5e-8) ~ "SuSiE & DENTIST",  -->
+<!--                                       susie.pval > -log10(5e-8) ~ "SuSiE only", -->
+<!--                                       dentist.pval > -log10(5e-8) ~ "DENTIST only", -->
+<!--                                       .default = "null")) -->
+<!-- df_locus$type <- factor(df_locus$type, levels = c("null",  "SuSiE only", "DENTIST only", "SuSiE & DENTIST")) -->
+<!-- table(df_locus$type) -->
+<!-- ``` -->
+<pre class="r"><code>df_locus &lt;- df[df$locus == locus,]
+# df_locus %&gt;% dplyr::arrange(desc(dentist.pval - susie.pval)) %&gt;% head()
+
+# scatter plot comparing DENTIST vs. SuSiE pvalues
 ggplot(df_locus, aes(x = dentist.pval, y = susie.pval)) +
   geom_point(alpha=0.6) +
   xlim(0, 100) + ylim(0, 100) +
@@ -1312,55 +1834,38 @@ ggplot(df_locus, aes(x = dentist.pval, y = susie.pval)) +
   geom_hline(yintercept = -log10(5e-8), col = &quot;red&quot;) +
   theme_bw()</code></pre>
 <pre><code># Warning: Removed 7 rows containing missing values (`geom_point()`).</code></pre>
-<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-26-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-32-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggplot(df_locus, 
+       aes(x = condmean, y = z, col = susie.pval)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1) + 
+  scale_colour_gradient(low = &quot;grey&quot;, high = &quot;blue&quot;, name = &quot;SuSiE -log10P&quot;) +
+  labs(x = &quot;Expected value from SuSiE&quot;, y = &quot;Observed z scores&quot;, title = paste0(trait, &quot; chr&quot;, CHR, &quot; locus&quot;, locus)) + 
+  theme_bw()</code></pre>
+<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-32-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggplot(df_locus %&gt;% dplyr::mutate(dentist.pval = ifelse(dentist.pval &gt; 10, 10, dentist.pval)), 
+       aes(x = condmean, y = z, col = dentist.pval)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1) + 
+  scale_colour_gradient(low = &quot;grey&quot;, high = &quot;blue&quot;, name = &quot;DENTIST -log10P \n(truncated at 10)&quot;) +
+  labs(x = &quot;Expected value from SuSiE&quot;, y = &quot;Observed z scores&quot;, title = paste0(trait, &quot; chr&quot;, CHR, &quot; locus&quot;, locus)) + 
+  theme_bw()</code></pre>
+<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-32-3.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>ggplot(df_locus, aes(x = condmean, y = z, col = type)) +
   geom_point(alpha=0.6) +
   geom_abline(intercept = 0, slope = 1) + 
   scale_colour_manual(values = c(&quot;null&quot; = &quot;grey&quot;, &quot;SuSiE only&quot; = &quot;green&quot;, &quot;DENTIST only&quot; = &quot;blue&quot;,  &quot;SuSiE &amp; DENTIST&quot; = &quot;red&quot;)) +
   labs(x = &quot;Expected value from SuSiE&quot;, y = &quot;Observed z scores&quot;, title = paste0(trait, &quot; chr&quot;, CHR, &quot; locus&quot;, locus)) + 
   theme_bw()</code></pre>
-<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-26-2.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>ggplot(df_locus, aes(x = condmean, y = z, col = factor(allele_flipping))) +
-  geom_point(alpha=0.6) +
-  geom_abline(intercept = 0, slope = 1) + 
-  scale_colour_manual(values = c(&quot;0&quot; = &quot;grey&quot;, &quot;1&quot; = &quot;red&quot;)) +
-  labs(x = &quot;Expected value&quot;, y = &quot;Observed z scores from SuSiE&quot;, 
-       color = &quot;Possible allele flipping from SuSiE&quot;, 
-       title = paste0(trait, &quot; chr&quot;, CHR, &quot; locus&quot;, locus)) +
-  theme_bw()</code></pre>
-<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-26-3.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>df_locus &lt;- df[df$locus == locus,]
-df_locus$dentist.pval[df_locus$dentist.pval &gt; 20] &lt;- 20
-ggplot(df_locus, aes(x = condmean, y = z, col = dentist.pval)) +
-  geom_point() +
-  geom_abline(intercept = 0, slope = 1) + 
-  scale_colour_gradient(low = &quot;grey&quot;, high = &quot;blue&quot;, name = &quot;DENTIST -log10P \n(truncated at 20)&quot;) +
-  labs(x = &quot;Expected value from SuSiE&quot;, y = &quot;Observed z scores&quot;, title = paste0(trait, &quot; chr&quot;, CHR, &quot; locus&quot;, locus)) + 
-  theme_bw()</code></pre>
-<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-26-4.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>df_locus$diff.pval &lt;- df_locus$dentist.pval - df_locus$susie.pval
-df_locus$diff.pval[df_locus$diff.pval &gt; 20] &lt;- 20
-ggplot(df_locus, aes(x = condmean, y = z, col = diff.pval)) +
-  geom_point(alpha=0.6) +
-  geom_abline(intercept = 0, slope = 1) + 
-  scale_colour_gradient(low = &quot;white&quot;, high = &quot;black&quot;, name = &quot;DENTIST(-log10P) - SuSiE(-log10P) \n(truncated at 20)&quot;) +
-  labs(x = &quot;Expected value from SuSiE&quot;, y = &quot;Observed z scores&quot;, title = paste0(trait, &quot; chr&quot;, CHR, &quot; locus&quot;, locus)) + 
-  theme_bw()</code></pre>
-<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-26-5.png" width="672" style="display: block; margin: auto;" /></p>
-<pre><code>#          rsID dentist.pval susie.pval        z  condmean     logLR Freq_A1
-# 1 rs145497962      224.489   7.882702 2.040401 0.3616731 -1.737776  0.6782
-# 2   rs2413273      224.489   7.902707 2.040401 0.3590065 -1.724259  0.6782
-# 3 rs139525177      217.742   7.631251 2.009997 0.3607189 -1.707332  0.6782
-# 4   rs9712887      213.424   7.444361 1.990288 0.3631225 -1.701616  0.6783
-# 5   rs9610147      209.023   7.262546 1.969997 0.3648455 -1.692495  0.6782
-# 6  rs61503891      189.943   6.745614 1.879430 0.3166993 -1.363404  0.6782
-#      MAF          p locus freq_A1_GWAS MAF_GWAS allele_flipping            type
-# 1 0.3218 0.04157000   956       0.3160   0.3160               0 SuSiE &amp; DENTIST
-# 2 0.3218 0.04008021   956       0.3156   0.3156               0 SuSiE &amp; DENTIST
-# 3 0.3218 0.04430982   956       0.3156   0.3156               0 SuSiE &amp; DENTIST
-# 4 0.3217 0.04562050   956       0.3159   0.3159               0 SuSiE &amp; DENTIST
-# 5 0.3218 0.04824030   956       0.3159   0.3159               0    DENTIST only
-# 6 0.3218 0.06007033   956       0.3159   0.3159               0    DENTIST only</code></pre>
+<p><img src="figure/detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.Rmd/unnamed-chunk-32-4.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code># ggplot(df_locus, aes(x = condmean, y = z, col = factor(allele_flipping))) +
+#   geom_point(alpha=0.6) +
+#   geom_abline(intercept = 0, slope = 1) + 
+#   scale_colour_manual(values = c(&quot;0&quot; = &quot;grey&quot;, &quot;1&quot; = &quot;red&quot;)) +
+#   labs(x = &quot;Expected value&quot;, y = &quot;Observed z scores from SuSiE&quot;, 
+#        color = &quot;Possible allele flipping from SuSiE&quot;, 
+#        title = paste0(trait, &quot; chr&quot;, CHR, &quot; locus&quot;, locus)) +
+#   theme_bw()</code></pre>
 </div>
 </div>
 <div id="genome-wide-results-1" class="section level3">
