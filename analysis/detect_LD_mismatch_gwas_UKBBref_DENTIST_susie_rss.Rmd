@@ -1,7 +1,7 @@
 ---
 title: "Detect LD mismatch between GWAS zscores and UKBB LD reference using DENTIST and SuSiE_RSS"
 author: "Kaixuan Luo"
-date: "2023-11-28"
+date: "`r Sys.Date()`"
 output:
   workflowr::wflow_html:
     code_folding: hide
@@ -74,6 +74,11 @@ trait <- "LDL"
 
 ```{r}
 sumstats <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/gwas/gwas_processed/LDL-ukb-d-30780_irnt.sumstats.RDS")
+# sumstats$z <- sumstats$beta/sumstats$se
+# z_snp <- sumstats[,c("ID", "A1", "A2", "z", "N")]
+# colnames(z_snp) <- c("id", "A1", "A2", "z", "ss")
+# z_snp <- z_snp[!(z_snp$id %in% z_snp$id[duplicated(z_snp$id)]),] #drop multiallelic variants (id not unique)
+
 sumstats <- makeGRangesFromDataFrame(sumstats, start.field = "pos", end.field = "pos", keep.extra.columns = T)
 sumstats_hg38 <- liftOver_hg19ToHg38(sumstats) %>% as.data.frame() %>%
     dplyr::rename(chr = seqnames, pos = start, snp = SNP) %>%
@@ -135,8 +140,7 @@ df$susie.pval <- -log10(condz_dist_chr.df$p_diff[m.susie])
 df$z <- condz_dist_chr.df$z[m.susie]
 df$condmean <- condz_dist_chr.df$condmean[m.susie]
 df$logLR <- condz_dist_chr.df$logLR[m.susie]
-m.dentist.freq <- match(common.snps, dentist.chr.freq.df$RS_ID)
-df$Freq_A1 <- dentist.chr.freq.df$Freq_A1[m.dentist.freq]
+df$Freq_A1 <- dentist.chr.freq.df$Freq_A1[match(common.snps, dentist.chr.freq.df$RS_ID)]
 df$MAF <- pmin(df$Freq_A1, 1-df$Freq_A1)
 
 m.sumstats <- match(common.snps, sumstats_hg38$snp)
@@ -166,10 +170,20 @@ ggplot(df, aes(x = dentist.pval, y = susie.pval)) +
   geom_hline(yintercept = -log10(5e-8), col = "red") +
   theme_bw()
 
-ggplot(df, aes(x = condmean, y = z, col = factor(allele_flipping))) +
+ggplot(df %>% dplyr::mutate(susie.pval = ifelse(susie.pval > 10, 10, susie.pval)), 
+       aes(x = condmean, y = z, col = susie.pval)) +
   geom_point(alpha=0.6) +
-  scale_colour_manual(values = c("0" = "grey", "1" = "red")) +
-  labs(x = "Expected value", y = "Observed z scores from SuSiE", color = "Possible allele flipping from SuSiE", title = paste0(trait, " chr", CHR)) +
+  geom_abline(intercept = 0, slope = 1) + 
+  scale_colour_gradient(low = "grey", high = "blue", name = "SuSiE -log10P \n(truncated at 10)") +
+  labs(x = "Expected value from SuSiE", y = "Observed z scores", title = paste0(trait, " chr", CHR)) + 
+  theme_bw()
+
+ggplot(df,
+       aes(x = condmean, y = z, col = dentist.pval)) +
+  geom_point(alpha=0.6) +
+  geom_abline(intercept = 0, slope = 1) + 
+  scale_colour_gradient(low = "grey", high = "blue", name = "DENTIST -log10P") +
+  labs(x = "Expected value from SuSiE", y = "Observed z scores", title = paste0(trait, " chr", CHR)) + 
   theme_bw()
 
 ggplot(df, aes(x = condmean, y = z, col = type)) +
@@ -179,6 +193,17 @@ ggplot(df, aes(x = condmean, y = z, col = type)) +
   labs(x = "Expected value from SuSiE", y = "Observed z scores", title = paste0(trait, " chr", CHR)) + 
   theme_bw()
 
+ggplot(df, aes(x = condmean, y = z, col = factor(allele_flipping))) +
+  geom_point(alpha=0.6) +
+  scale_colour_manual(values = c("0" = "grey", "1" = "red")) +
+  labs(x = "Expected value", y = "Observed z scores from SuSiE", color = "Possible allele flipping from SuSiE", 
+       title = paste0(trait, " chr", CHR)) +
+  theme_bw()
+
+```
+
+Allele frequency
+```{r, fig.width=6, fig.height=5}
 p1 <- ggplot(df[df$type == "SuSiE only",], aes(x = MAF)) +
   geom_histogram(show.legend = FALSE, fill = "green", color = "black") +
   ggtitle("SuSiE only") +
@@ -189,11 +214,11 @@ p2 <- ggplot(df[df$type == "null",], aes(x = MAF)) +
   ggtitle("null") +
   theme_bw()
 
-cowplot::plot_grid(p1, p2)
+cowplot::plot_grid(p1, p2, ncol = 1)
 ```
 
-
-```{r}
+Distribution of SuSiE only SNPs across loci
+```{r, fig.width=6, fig.height=3}
 locus_counts.df <- data.frame(locus = unique(df$locus[df$type != "null"]), 
                               n_dentist_only = 0, 
                               n_susie_only = 0, 
@@ -210,23 +235,117 @@ ggplot(locus_counts.df, aes(x = locus, y = n_susie_only)) +
   ggtitle("SuSiE only") +
   theme_bw()
 
-locus_counts.df %>% dplyr::arrange(desc(n_susie_only - n_dentist_only)) %>% head()
+# locus_counts.df %>% dplyr::arrange(desc(n_susie_only - n_dentist_only)) %>% head()
 ```
 
-Example locus
+#### Example locus
 ```{r}
 locus = "950"
 
-df_locus <- df[df$locus == locus,]
-df_locus %>% dplyr::arrange(desc(dentist.pval - susie.pval)) %>% head()
+region_df <- regions_df[regions_df$locus == locus,]
+print(region_df)
+target_bp <- round((region_df$start+region_df$stop)/2)
+radius <- max(abs(region_df$start - target_bp), abs(region_df$stop - target_bp))
 
+cat("target_BP:", target_bp, "radius:", radius, "\n")
+
+# ldref_res <- load_UKBB_R_snp_info(region_df, "/project2/mstephens/wcrouse/UKB_LDR_0.1", "ukb_b38_0.1")
+# length(ldref_res$R_snp_info$id)
+```
+
+<!-- load DENTIST results targeted at this locus -->
+<!-- ```{r} -->
+<!-- dentist.dir <- paste0("/project2/xinhe/shared_data/multigroup_ctwas/DENTIST/", trait) -->
+<!-- dentist.res.file <- file.path(dentist.dir, paste0("LDL-ukb-d-30780_irnt.ukb_chr", CHR, ".b38.target_25491949.radius_903713.niter10.DENTIST.full.txt")) -->
+<!-- dentist.locus.df <- data.table::fread(dentist.res.file) -->
+<!-- colnames(dentist.locus.df) <- c("rsID", "chisq", "LP", "ifDup") -->
+
+<!-- dentist.locus.snps <- dentist.locus.df$rsID -->
+<!-- dentist_detected_snps <- dentist.locus.df$rsID[which(dentist.locus.df$LP > -log10(5e-8))] -->
+<!-- cat(sprintf("%d variants with DENTIST result in chr%s \n", length(dentist.locus.snps), CHR)) -->
+<!-- cat(sprintf("%d detected variants with DENTIST pvalue < 5e-8.\n", length(dentist_detected_snps))) -->
+<!-- ``` -->
+
+<!-- Load SuSiE result for this locus -->
+<!-- ```{r} -->
+<!-- select_loci <- paste0("chr", CHR) -->
+<!-- susie_rss_dir <- paste0("/project2/xinhe/shared_data/multigroup_ctwas/ld_mismatch_susie_rss/", trait) -->
+<!-- condz_dist_chr <- readRDS(file.path(susie_rss_dir, paste0(trait, ".condz.dist.", select_loci, "loci.rds"))) -->
+<!-- condz_dist_locus.df <- condz_dist_chr[[locus]] -->
+
+<!-- susierss.locus.snps <- condz_dist_locus.df$id -->
+<!-- susierss_detected_snps <- condz_dist_locus.df$id[which(condz_dist_locus.df$p_diff < 5e-8)] -->
+<!-- susierss_detected_flipped_snps <- condz_dist_locus.df$id[which(condz_dist_locus.df$logLR > 2 & abs(condz_dist_locus.df$z) > 2)] -->
+<!-- cat(sprintf("%d variants with susie_rss result in chr%s \n", length(susierss.locus.snps), CHR)) -->
+<!-- cat(sprintf("%d detected variants with susie_rss pvalue < 5e-8.\n", length(susierss_detected_snps))) -->
+<!-- cat(sprintf("%d detected variants with susie_rss allele flipped.\n", length(susierss_detected_flipped_snps))) -->
+<!-- ``` -->
+
+<!-- Compare SuSiE RSS with DENTIST result in this locus -->
+<!-- ```{r} -->
+<!-- cat(sprintf("%d variants with DENTIST result \n", length(dentist.locus.snps))) -->
+<!-- cat(sprintf("%d variants with susie_rss result \n", length(susierss.locus.snps))) -->
+<!-- cat(sprintf("%d variants with both DENTIST and susie_rss result \n", length(intersect(dentist.locus.snps, susierss.locus.snps)))) -->
+<!-- cat(sprintf("%d variants detected by both DENTIST and susie_rss (pvalue < 5e-8).\n", length(intersect(dentist_detected_snps, susierss_detected_snps)))) -->
+
+<!-- common.snps <- intersect(dentist.locus.snps, susierss.locus.snps) -->
+<!-- df_locus <- data.frame(rsID = common.snps, dentist.pval = NA, susie.pval = NA) -->
+<!-- m.dentist <- match(common.snps, dentist.locus.df$rsID) -->
+<!-- df_locus$dentist.pval <- dentist.locus.df$LP[m.dentist] -->
+<!-- m.susie <- match(common.snps, condz_dist_locus.df$id) -->
+<!-- df_locus$susie.pval <- -log10(condz_dist_locus.df$p_diff[m.susie]) -->
+<!-- df_locus$z <- condz_dist_locus.df$z[m.susie] -->
+<!-- df_locus$condmean <- condz_dist_locus.df$condmean[m.susie] -->
+<!-- df_locus$logLR <- condz_dist_locus.df$logLR[m.susie] -->
+<!-- df_locus$Freq_A1 <- dentist.chr.freq.df$Freq_A1[match(common.snps, dentist.chr.freq.df$RS_ID)] -->
+<!-- df_locus$MAF <- pmin(df_locus$Freq_A1, 1-df_locus$Freq_A1) -->
+
+<!-- m.sumstats <- match(common.snps, sumstats_hg38$snp) -->
+<!-- df_locus$p <- sumstats_hg38$p[m.sumstats] -->
+<!-- df_locus$locus <- sumstats_hg38$locus[m.sumstats] -->
+<!-- df_locus$freq_A1_GWAS <- sumstats_hg38$freq[m.sumstats] -->
+<!-- df_locus$MAF_GWAS <- pmin(df_locus$freq_A1_GWAS, 1-df_locus$freq_A1_GWAS) -->
+
+<!-- df_locus <- df_locus %>% dplyr::mutate(allele_flipping = ifelse(logLR > 2 & abs(z) > 2, 1, 0)) -->
+
+<!-- df_locus <- df_locus %>% dplyr::mutate(type = case_when(susie.pval > -log10(5e-8) & dentist.pval > -log10(5e-8) ~ "SuSiE & DENTIST",  -->
+<!--                                       susie.pval > -log10(5e-8) ~ "SuSiE only", -->
+<!--                                       dentist.pval > -log10(5e-8) ~ "DENTIST only", -->
+<!--                                       .default = "null")) -->
+
+<!-- df_locus$type <- factor(df_locus$type, levels = c("null",  "SuSiE only", "DENTIST only", "SuSiE & DENTIST")) -->
+<!-- table(df_locus$type) -->
+<!-- ``` -->
+
+```{r}
+df_locus <- df[df$locus == locus,]
+# df_locus %>% dplyr::arrange(desc(dentist.pval - susie.pval)) %>% head()
+
+# scatter plot comparing DENTIST vs. SuSiE pvalues
 ggplot(df_locus, aes(x = dentist.pval, y = susie.pval)) +
   geom_point(alpha=0.6) +
-  xlim(0, 50) + ylim(0, 50) +
+  xlim(0, 50) + 
+  # ylim(0, 50) +
   labs(x = "DENTIST -log10P", y = "SuSiE RSS -log10P", title = paste0(trait, " chr", CHR, " locus", locus)) +
   geom_abline(intercept = 0, slope = 1) + 
   geom_vline(xintercept = -log10(5e-8), col = "red") +
   geom_hline(yintercept = -log10(5e-8), col = "red") +
+  theme_bw()
+
+ggplot(df_locus %>% dplyr::mutate(susie.pval = ifelse(susie.pval > 10, 10, susie.pval)), 
+       aes(x = condmean, y = z, col = susie.pval)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1) + 
+  scale_colour_gradient(low = "grey", high = "blue", name = "SuSiE -log10P \n(truncated at 10)") +
+  labs(x = "Expected value from SuSiE", y = "Observed z scores", title = paste0(trait, " chr", CHR, " locus", locus)) + 
+  theme_bw()
+
+ggplot(df_locus,
+       aes(x = condmean, y = z, col = dentist.pval)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1) + 
+  scale_colour_gradient(low = "grey", high = "blue", name = "DENTIST -log10P") +
+  labs(x = "Expected value from SuSiE", y = "Observed z scores", title = paste0(trait, " chr", CHR, " locus", locus)) + 
   theme_bw()
 
 ggplot(df_locus, aes(x = condmean, y = z, col = type)) +
@@ -236,30 +355,14 @@ ggplot(df_locus, aes(x = condmean, y = z, col = type)) +
   labs(x = "Expected value from SuSiE", y = "Observed z scores", title = paste0(trait, " chr", CHR, " locus", locus)) + 
   theme_bw()
 
-ggplot(df_locus, aes(x = condmean, y = z, col = factor(allele_flipping))) +
-  geom_point(alpha=0.6) +
-  geom_abline(intercept = 0, slope = 1) + 
-  scale_colour_manual(values = c("0" = "grey", "1" = "red")) +
-  labs(x = "Expected value", y = "Observed z scores from SuSiE", 
-       color = "Possible allele flipping from SuSiE", 
-       title = paste0(trait, " chr", CHR, " locus", locus)) +
-  theme_bw()
-
-ggplot(df_locus, aes(x = condmean, y = z, col = dentist.pval)) +
-  geom_point() +
-  geom_abline(intercept = 0, slope = 1) + 
-  scale_colour_gradient(low = "grey", high = "blue", name = "DENTIST -log10P") +
-  labs(x = "Expected value from SuSiE", y = "Observed z scores", title = paste0(trait, " chr", CHR, " locus", locus)) + 
-  theme_bw()
-
-df_locus$diff.pval <-  df_locus$susie.pval - df_locus$dentist.pval
-df_locus$diff.pval[df_locus$diff.pval > 20] <- 20
-ggplot(df_locus, aes(x = condmean, y = z, col = diff.pval)) +
-  geom_point(alpha=0.6) +
-  geom_abline(intercept = 0, slope = 1) + 
-  scale_colour_gradient(low = "white", high = "black", name = "SuSiE(-log10P) - DENTIST(-log10P) \n(truncated at 20)") +
-  labs(x = "Expected value from SuSiE", y = "Observed z scores", title = paste0(trait, " chr", CHR, " locus", locus)) + 
-  theme_bw()
+# ggplot(df_locus, aes(x = condmean, y = z, col = factor(allele_flipping))) +
+#   geom_point(alpha=0.6) +
+#   geom_abline(intercept = 0, slope = 1) +
+#   scale_colour_manual(values = c("0" = "grey", "1" = "red")) +
+#   labs(x = "Expected value", y = "Observed z scores from SuSiE",
+#        color = "Possible allele flipping from SuSiE",
+#        title = paste0(trait, " chr", CHR, " locus", locus)) +
+#   theme_bw()
 ```
 
 ### Genome-wide results
@@ -344,6 +447,11 @@ trait <- "aFib"
 
 ```{r}
 sumstats <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/gwas/gwas_processed/aFib-ebi-a-GCST006414.sumstats.RDS")
+# sumstats$z <- sumstats$beta/sumstats$se
+# z_snp <- sumstats[,c("ID", "A1", "A2", "z", "N")]
+# colnames(z_snp) <- c("id", "A1", "A2", "z", "ss")
+# z_snp <- z_snp[!(z_snp$id %in% z_snp$id[duplicated(z_snp$id)]),] #drop multiallelic variants (id not unique)
+
 sumstats <- makeGRangesFromDataFrame(sumstats, start.field = "pos", end.field = "pos", keep.extra.columns = T)
 sumstats_hg38 <- liftOver_hg19ToHg38(sumstats) %>% as.data.frame() %>%
     dplyr::rename(chr = seqnames, pos = start, snp = SNP) %>%
@@ -366,9 +474,9 @@ dentist_detected_snps <- dentist.chr.df$rsID[which(dentist.chr.df$LP > -log10(5e
 cat(sprintf("%d variants with DENTIST result in chr%s \n", length(dentist.chr.snps), CHR))
 cat(sprintf("%d detected variants with DENTIST pvalue < 5e-8.\n", length(dentist_detected_snps)))
 
-dentist.chr.short.snps <- read.table(file.path(dentist.dir, paste0("aFib-ebi-a-GCST006414.ukb_chr", CHR, ".b38.DENTIST.short.txt")))$V1
-length(dentist.chr.short.snps)
-setequal(dentist_detected_snps, dentist.chr.short.snps)
+# dentist.chr.short.snps <- read.table(file.path(dentist.dir, paste0("aFib-ebi-a-GCST006414.ukb_chr", CHR, ".b38.DENTIST.short.txt")))$V1
+# length(dentist.chr.short.snps)
+# setequal(dentist_detected_snps, dentist.chr.short.snps)
 ```
 
 load DENTIST results with one iteration
@@ -383,9 +491,9 @@ dentist_detected_snps <- dentist.chr.df$rsID[which(dentist.chr.df$LP > -log10(5e
 cat(sprintf("%d variants with DENTIST result in chr%s \n", length(dentist.chr.snps), CHR))
 cat(sprintf("%d detected variants with DENTIST pvalue < 5e-8.\n", length(dentist_detected_snps)))
 
-dentist.chr.short.snps <- read.table(file.path(dentist.dir, paste0("aFib-ebi-a-GCST006414.ukb_chr", CHR, ".b38.niter1.DENTIST.short.txt")))$V1
-length(dentist.chr.short.snps)
-setequal(dentist_detected_snps, dentist.chr.short.snps)
+# dentist.chr.short.snps <- read.table(file.path(dentist.dir, paste0("aFib-ebi-a-GCST006414.ukb_chr", CHR, ".b38.niter1.DENTIST.short.txt")))$V1
+# length(dentist.chr.short.snps)
+# setequal(dentist_detected_snps, dentist.chr.short.snps)
 ```
 
 Load Allele Frequency
@@ -425,8 +533,7 @@ df$susie.pval <- -log10(condz_dist_chr.df$p_diff[m.susie])
 df$z <- condz_dist_chr.df$z[m.susie]
 df$condmean <- condz_dist_chr.df$condmean[m.susie]
 df$logLR <- condz_dist_chr.df$logLR[m.susie]
-m.dentist.freq <- match(common.snps, dentist.chr.freq.df$RS_ID)
-df$Freq_A1 <- dentist.chr.freq.df$Freq_A1[m.dentist.freq]
+df$Freq_A1 <- dentist.chr.freq.df$Freq_A1[match(common.snps, dentist.chr.freq.df$RS_ID)]
 df$MAF <- pmin(df$Freq_A1, 1-df$Freq_A1)
 
 m.sumstats <- match(common.snps, sumstats_hg38$snp)
@@ -456,10 +563,20 @@ ggplot(df, aes(x = dentist.pval, y = susie.pval)) +
   geom_hline(yintercept = -log10(5e-8), col = "red") +
   theme_bw()
 
-ggplot(df, aes(x = condmean, y = z, col = factor(allele_flipping))) +
+ggplot(df %>% dplyr::mutate(susie.pval = ifelse(susie.pval > 10, 10, susie.pval)), 
+       aes(x = condmean, y = z, col = susie.pval)) +
   geom_point(alpha=0.6) +
-  scale_colour_manual(values = c("0" = "grey", "1" = "red")) +
-  labs(x = "Expected value", y = "Observed z scores from SuSiE", color = "Possible allele flipping from SuSiE", title = paste0(trait, " chr", CHR)) +
+  geom_abline(intercept = 0, slope = 1) + 
+  scale_colour_gradient(low = "grey", high = "blue", name = "SuSiE -log10P \n(truncated at 10)") +
+  labs(x = "Expected value from SuSiE", y = "Observed z scores", title = paste0(trait, " chr", CHR)) + 
+  theme_bw()
+
+ggplot(df %>% dplyr::mutate(dentist.pval = ifelse(dentist.pval > 10, 10, dentist.pval)),
+       aes(x = condmean, y = z, col = dentist.pval)) +
+  geom_point(alpha=0.6) +
+  geom_abline(intercept = 0, slope = 1) + 
+  scale_colour_gradient(low = "grey", high = "blue", name = "DENTIST -log10P \n(truncated at 10)") +
+  labs(x = "Expected value from SuSiE", y = "Observed z scores", title = paste0(trait, " chr", CHR)) + 
   theme_bw()
 
 ggplot(df, aes(x = condmean, y = z, col = type)) +
@@ -469,6 +586,16 @@ ggplot(df, aes(x = condmean, y = z, col = type)) +
   labs(x = "Expected value from SuSiE", y = "Observed z scores", title = paste0(trait, " chr", CHR)) + 
   theme_bw()
 
+ggplot(df, aes(x = condmean, y = z, col = factor(allele_flipping))) +
+  geom_point(alpha=0.6) +
+  scale_colour_manual(values = c("0" = "grey", "1" = "red")) +
+  labs(x = "Expected value", y = "Observed z scores from SuSiE",
+       color = "Possible allele flipping from SuSiE", title = paste0(trait, " chr", CHR)) +
+  theme_bw()
+```
+
+GWAS p-values
+```{r, fig.width=5, fig.height=4}
 ggplot(df, aes(x=type, y=-log10(p), fill=type)) +
   geom_boxplot(show.legend = FALSE) +
   scale_fill_manual(values = c("null" = "grey", "SuSiE only" = "green", "DENTIST only" = "blue",  "SuSiE & DENTIST" = "red")) +
@@ -478,12 +605,17 @@ ggplot(df[df$type != "null",], aes(x=type, y=-log10(p), fill=type)) +
   geom_boxplot(show.legend = FALSE) +
   scale_fill_manual(values = c("null" = "grey", "SuSiE only" = "green", "DENTIST only" = "blue",  "SuSiE & DENTIST" = "red")) +
   theme_bw()
+```
 
+Allele frequency
+```{r, fig.width=5, fig.height=3}
 ggplot(df, aes(x=type, y=MAF, fill=type)) +
   geom_boxplot(show.legend = FALSE) +
   scale_fill_manual(values = c("null" = "grey", "SuSiE only" = "green", "DENTIST only" = "blue",  "SuSiE & DENTIST" = "red")) +
   theme_bw()
+```
 
+```{r, fig.width=6, fig.height=4}
 p1 <- ggplot(df[df$type == "SuSiE only",], aes(x = MAF)) +
   geom_histogram(show.legend = FALSE, fill = "green", color = "black") +
   ggtitle("SuSiE only") +
@@ -507,8 +639,8 @@ p4 <- ggplot(df[df$type == "null",], aes(x = MAF)) +
 cowplot::plot_grid(p1, p2, p3, p4)
 ```
 
-
-```{r}
+Distribution of detected SNPs across loci
+```{r, fig.width=7, fig.height=5}
 locus_counts.df <- data.frame(locus = unique(df$locus[df$type != "null"]), 
                               n_dentist_only = 0, 
                               n_susie_only = 0, 
@@ -555,7 +687,7 @@ locus_counts.df %>% dplyr::arrange(desc(n_dentist_only - n_susie_only)) %>% head
 ```
 
 SNPs with large difference between DENTIST and SuSiE p-values
-```{r}
+```{r, fig.width=7, fig.height=5}
 diff_df <- df %>% dplyr::filter(abs(dentist.pval - susie.pval) > 10)
 table(diff_df$type)
 
@@ -603,16 +735,98 @@ p3 <- ggplot(locus_counts.df, aes(x = locus, y = n_dentist_susie)) +
 
 cowplot::plot_grid(p1, p2, p3, ncol = 1)
 
-locus_counts.df %>% dplyr::arrange(desc(n_dentist_only - n_susie_only)) %>% head()
+# locus_counts.df %>% dplyr::arrange(desc(n_dentist_only - n_susie_only)) %>% head()
 ```
 
-Example locus
+#### Example locus
 ```{r}
 locus = "956"
 
-df_locus <- df[df$locus == locus,]
-df_locus %>% dplyr::arrange(desc(dentist.pval - susie.pval)) %>% head()
+region_df <- regions_df[regions_df$locus == locus,]
+print(region_df)
+target_bp <- round((region_df$start+region_df$stop)/2)
+radius <- max(abs(region_df$start - target_bp), abs(region_df$stop - target_bp))
 
+cat("target_BP:", target_bp, "radius:", radius, "\n")
+
+# ldref_res <- load_UKBB_R_snp_info(region_df, "/project2/mstephens/wcrouse/UKB_LDR_0.1", "ukb_b38_0.1")
+# length(ldref_res$R_snp_info$id)
+```
+
+
+<!-- load DENTIST results targeted at this locus -->
+<!-- ```{r} -->
+<!-- dentist.dir <- paste0("/project2/xinhe/shared_data/multigroup_ctwas/DENTIST/", trait) -->
+<!-- dentist.res.file <- file.path(dentist.dir, paste0("aFib-ebi-a-GCST006414.ukb_chr", CHR, ".b38.target_34616958.radius_518034.niter10.DENTIST.full.txt")) -->
+<!-- dentist.locus.df <- data.table::fread(dentist.res.file) -->
+<!-- colnames(dentist.locus.df) <- c("rsID", "chisq", "LP", "ifDup") -->
+
+<!-- dentist.locus.snps <- dentist.locus.df$rsID -->
+<!-- dentist_detected_snps <- dentist.locus.df$rsID[which(dentist.locus.df$LP > -log10(5e-8))] -->
+<!-- cat(sprintf("%d variants with DENTIST result in chr%s \n", length(dentist.locus.snps), CHR)) -->
+<!-- cat(sprintf("%d detected variants with DENTIST pvalue < 5e-8.\n", length(dentist_detected_snps))) -->
+
+<!-- # dentist.locus.short.snps <- read.table(file.path(dentist.dir, paste0("aFib-ebi-a-GCST006414.ukb_chr", CHR, ".b38.target_34616958.radius_518034.niter10.DENTIST.short.txt")))$V1 -->
+<!-- # length(dentist.locus.short.snps) -->
+<!-- # setequal(dentist_detected_snps, dentist.locus.short.snps) -->
+<!-- ``` -->
+
+<!-- Load SuSiE result for this locus -->
+<!-- ```{r} -->
+<!-- select_loci <- paste0("chr", CHR) -->
+<!-- susie_rss_dir <- paste0("/project2/xinhe/shared_data/multigroup_ctwas/ld_mismatch_susie_rss/", trait) -->
+<!-- condz_dist_chr <- readRDS(file.path(susie_rss_dir, paste0(trait, ".condz.dist.", select_loci, "loci.rds"))) -->
+<!-- condz_dist_locus.df <- condz_dist_chr[[locus]] -->
+
+<!-- susierss.locus.snps <- condz_dist_locus.df$id -->
+<!-- susierss_detected_snps <- condz_dist_locus.df$id[which(condz_dist_locus.df$p_diff < 5e-8)] -->
+<!-- susierss_detected_flipped_snps <- condz_dist_locus.df$id[which(condz_dist_locus.df$logLR > 2 & abs(condz_dist_locus.df$z) > 2)] -->
+<!-- cat(sprintf("%d variants with susie_rss result in chr%s \n", length(susierss.locus.snps), CHR)) -->
+<!-- cat(sprintf("%d detected variants with susie_rss pvalue < 5e-8.\n", length(susierss_detected_snps))) -->
+<!-- cat(sprintf("%d detected variants with susie_rss allele flipped.\n", length(susierss_detected_flipped_snps))) -->
+<!-- ``` -->
+
+<!-- Compare SuSiE RSS with DENTIST result in this locus -->
+<!-- ```{r} -->
+<!-- cat(sprintf("%d variants with DENTIST result \n", length(dentist.locus.snps))) -->
+<!-- cat(sprintf("%d variants with susie_rss result \n", length(susierss.locus.snps))) -->
+<!-- cat(sprintf("%d variants with both DENTIST and susie_rss result \n", length(intersect(dentist.locus.snps, susierss.locus.snps)))) -->
+<!-- cat(sprintf("%d variants detected by both DENTIST and susie_rss (pvalue < 5e-8).\n", length(intersect(dentist_detected_snps, susierss_detected_snps)))) -->
+
+<!-- common.snps <- intersect(dentist.locus.snps, susierss.locus.snps) -->
+<!-- df_locus <- data.frame(rsID = common.snps, dentist.pval = NA, susie.pval = NA) -->
+<!-- m.dentist <- match(common.snps, dentist.locus.df$rsID) -->
+<!-- df_locus$dentist.pval <- dentist.locus.df$LP[m.dentist] -->
+<!-- m.susie <- match(common.snps, condz_dist_locus.df$id) -->
+<!-- df_locus$susie.pval <- -log10(condz_dist_locus.df$p_diff[m.susie]) -->
+<!-- df_locus$z <- condz_dist_locus.df$z[m.susie] -->
+<!-- df_locus$condmean <- condz_dist_locus.df$condmean[m.susie] -->
+<!-- df_locus$logLR <- condz_dist_locus.df$logLR[m.susie] -->
+<!-- df_locus$Freq_A1 <- dentist.chr.freq.df$Freq_A1[match(common.snps, dentist.chr.freq.df$RS_ID)] -->
+<!-- df_locus$MAF <- pmin(df_locus$Freq_A1, 1-df_locus$Freq_A1) -->
+
+<!-- m.sumstats <- match(common.snps, sumstats_hg38$snp) -->
+<!-- df_locus$p <- sumstats_hg38$p[m.sumstats] -->
+<!-- df_locus$locus <- sumstats_hg38$locus[m.sumstats] -->
+<!-- df_locus$freq_A1_GWAS <- sumstats_hg38$freq[m.sumstats] -->
+<!-- df_locus$MAF_GWAS <- pmin(df_locus$freq_A1_GWAS, 1-df_locus$freq_A1_GWAS) -->
+
+<!-- df_locus <- df_locus %>% dplyr::mutate(allele_flipping = ifelse(logLR > 2 & abs(z) > 2, 1, 0)) -->
+
+<!-- df_locus <- df_locus %>% dplyr::mutate(type = case_when(susie.pval > -log10(5e-8) & dentist.pval > -log10(5e-8) ~ "SuSiE & DENTIST",  -->
+<!--                                       susie.pval > -log10(5e-8) ~ "SuSiE only", -->
+<!--                                       dentist.pval > -log10(5e-8) ~ "DENTIST only", -->
+<!--                                       .default = "null")) -->
+
+<!-- df_locus$type <- factor(df_locus$type, levels = c("null",  "SuSiE only", "DENTIST only", "SuSiE & DENTIST")) -->
+<!-- table(df_locus$type) -->
+<!-- ``` -->
+
+```{r}
+df_locus <- df[df$locus == locus,]
+# df_locus %>% dplyr::arrange(desc(dentist.pval - susie.pval)) %>% head()
+
+# scatter plot comparing DENTIST vs. SuSiE pvalues
 ggplot(df_locus, aes(x = dentist.pval, y = susie.pval)) +
   geom_point(alpha=0.6) +
   xlim(0, 100) + ylim(0, 100) +
@@ -622,6 +836,22 @@ ggplot(df_locus, aes(x = dentist.pval, y = susie.pval)) +
   geom_hline(yintercept = -log10(5e-8), col = "red") +
   theme_bw()
 
+ggplot(df_locus, 
+       aes(x = condmean, y = z, col = susie.pval)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1) + 
+  scale_colour_gradient(low = "grey", high = "blue", name = "SuSiE -log10P") +
+  labs(x = "Expected value from SuSiE", y = "Observed z scores", title = paste0(trait, " chr", CHR, " locus", locus)) + 
+  theme_bw()
+
+ggplot(df_locus %>% dplyr::mutate(dentist.pval = ifelse(dentist.pval > 10, 10, dentist.pval)), 
+       aes(x = condmean, y = z, col = dentist.pval)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1) + 
+  scale_colour_gradient(low = "grey", high = "blue", name = "DENTIST -log10P \n(truncated at 10)") +
+  labs(x = "Expected value from SuSiE", y = "Observed z scores", title = paste0(trait, " chr", CHR, " locus", locus)) + 
+  theme_bw()
+
 ggplot(df_locus, aes(x = condmean, y = z, col = type)) +
   geom_point(alpha=0.6) +
   geom_abline(intercept = 0, slope = 1) + 
@@ -629,32 +859,15 @@ ggplot(df_locus, aes(x = condmean, y = z, col = type)) +
   labs(x = "Expected value from SuSiE", y = "Observed z scores", title = paste0(trait, " chr", CHR, " locus", locus)) + 
   theme_bw()
 
-ggplot(df_locus, aes(x = condmean, y = z, col = factor(allele_flipping))) +
-  geom_point(alpha=0.6) +
-  geom_abline(intercept = 0, slope = 1) + 
-  scale_colour_manual(values = c("0" = "grey", "1" = "red")) +
-  labs(x = "Expected value", y = "Observed z scores from SuSiE", 
-       color = "Possible allele flipping from SuSiE", 
-       title = paste0(trait, " chr", CHR, " locus", locus)) +
-  theme_bw()
+# ggplot(df_locus, aes(x = condmean, y = z, col = factor(allele_flipping))) +
+#   geom_point(alpha=0.6) +
+#   geom_abline(intercept = 0, slope = 1) + 
+#   scale_colour_manual(values = c("0" = "grey", "1" = "red")) +
+#   labs(x = "Expected value", y = "Observed z scores from SuSiE", 
+#        color = "Possible allele flipping from SuSiE", 
+#        title = paste0(trait, " chr", CHR, " locus", locus)) +
+#   theme_bw()
 
-df_locus <- df[df$locus == locus,]
-df_locus$dentist.pval[df_locus$dentist.pval > 20] <- 20
-ggplot(df_locus, aes(x = condmean, y = z, col = dentist.pval)) +
-  geom_point() +
-  geom_abline(intercept = 0, slope = 1) + 
-  scale_colour_gradient(low = "grey", high = "blue", name = "DENTIST -log10P \n(truncated at 20)") +
-  labs(x = "Expected value from SuSiE", y = "Observed z scores", title = paste0(trait, " chr", CHR, " locus", locus)) + 
-  theme_bw()
-
-df_locus$diff.pval <- df_locus$dentist.pval - df_locus$susie.pval
-df_locus$diff.pval[df_locus$diff.pval > 20] <- 20
-ggplot(df_locus, aes(x = condmean, y = z, col = diff.pval)) +
-  geom_point(alpha=0.6) +
-  geom_abline(intercept = 0, slope = 1) + 
-  scale_colour_gradient(low = "white", high = "black", name = "DENTIST(-log10P) - SuSiE(-log10P) \n(truncated at 20)") +
-  labs(x = "Expected value from SuSiE", y = "Observed z scores", title = paste0(trait, " chr", CHR, " locus", locus)) + 
-  theme_bw()
 ```
 
 ### Genome-wide results
