@@ -1,0 +1,528 @@
+---
+title: "Simulation Results using simulated (correlated)"
+author: "shengqian"
+date: "2023-12-3"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+```{r}
+source("/project2/xinhe/shengqian/cTWAS/cTWAS_analysis/analysis/simulation_help_functions.R")
+```
+
+## Simulation 1: Liver and three 95% correlated tissues
+
+### Shared effect size parameters
+
+30% PVE and 2.5e-4 prior inclusion for SNPs, 5% PVE and 0.015 prior inclusion for Liver, 1% PVE and 0.003 prior inclusion for other three mixed groups. 
+
+```{r}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_same_two_tissues/"
+runtag = "ukb-s80.45-3_corr"
+configtag <- 1
+simutags <- paste(1, 1:5, sep = "-")
+thin <- 0.1
+sample_size <- 45000
+PIP_threshold <- 0.8
+```
+
+```{r echo=FALSE}
+results_df <- data.frame(simutag=as.character(),
+                              n_causal=as.integer(),
+                              n_causal_combined=as.integer(),
+                              n_detected_pip=as.integer(),
+                              n_detected_pip_in_causal=as.integer(),
+                              n_detected_comb_pip=as.integer(),
+                              n_detected_comb_pip_in_causal=as.integer(),
+                              pve_snp=as.numeric(),
+                              pve_weight1=as.numeric(),
+                              pve_weight2=as.numeric(),
+                              prior_weight1=as.numeric(),
+                              prior_weight2=as.numeric(),
+                              prior_var_snp=as.numeric(),
+                              prior_var_weight1=as.numeric(),
+                              prior_var_weight2=as.numeric(),
+                              n_detected_twas=as.integer(),
+                              n_detected_twas_in_causal=as.integer(),
+                              n_detected_comb_twas=as.integer(),
+                              n_detected_comb_twas_in_causal=as.integer())
+
+for (i in 1:length(simutags)){
+  simutag <- simutags[i]
+  
+  #load genes with true simulated effect
+  load(paste0(results_dir, runtag, "_simu", simutag, "-pheno.Rd"))
+  true_genes <- unlist(sapply(1:22, function(x){phenores$batch[[x]]$id.cgene}))
+  true_genes_combined <- unique(sapply(true_genes, function(x){unlist(strsplit(x, "[|]"))[1]}))
+  
+  #load cTWAS results
+  ctwas_res <- data.table::fread(paste0(results_dir, runtag, "_simu", simutag, "_config", configtag, "_LDR.susieIrss.txt"))
+  ctwas_gene_res <- ctwas_res[ctwas_res$type!="SNP",]
+  
+  #number of causal genes
+  n_causal <- length(true_genes)
+  n_causal_combined <- length(true_genes_combined)
+  
+  #number of gene+tissue combinations with cTWAS PIP > threshold
+  n_ctwas_genes <- sum(ctwas_gene_res$susie_pip > PIP_threshold)
+  
+  #number of cTWAS genes that are causal
+  n_causal_detected <- sum(ctwas_gene_res$id[ctwas_gene_res$susie_pip > PIP_threshold] %in% true_genes)
+  
+  #collapse gene+tissues to genes and compute combined PIP
+  ctwas_gene_res$gene <- sapply(ctwas_gene_res$id, function(x){unlist(strsplit(x,"[|]"))[1]})
+  ctwas_gene_res_combined <- aggregate(ctwas_gene_res$susie_pip, by=list(ctwas_gene_res$gene), FUN=sum)
+  colnames(ctwas_gene_res_combined) <- c("gene", "pip_combined")
+  
+  #number of genes with combined PIP > threshold
+  n_ctwas_genes_combined <- sum(ctwas_gene_res_combined$pip_combined > PIP_threshold)
+  
+  #number of cTWAS genes using combined PIP that are causal
+  n_causal_detected_combined <- sum(ctwas_gene_res_combined$gene[ctwas_gene_res_combined$pip_combined > PIP_threshold] %in% true_genes_combined)
+  
+  #collect number of SNPs analyzed by cTWAS
+  ctwas_res_s1 <- data.table::fread(paste0(results_dir, runtag, "_simu", simutag, "_config", configtag, "_LDR.s1.susieIrss.txt"))
+  n_snps <- sum(ctwas_res_s1$type=="SNP")/thin
+  rm(ctwas_res_s1)
+  
+  #load estimated parameters
+  load(paste0(results_dir, runtag, "_simu", simutag, "_config", configtag, "_LDR.s2.susieIrssres.Rd"))
+  
+  #estimated group prior (all iterations)
+  estimated_group_prior_all <- group_prior_rec
+  estimated_group_prior_all["SNP",] <- estimated_group_prior_all["SNP",]*thin #adjust parameter to account for thin argument
+  
+  #estimated group prior variance (all iterations)
+  estimated_group_prior_var_all <- group_prior_var_rec
+  
+  #set group size
+  group_size <- c(table(ctwas_gene_res$type), structure(n_snps, names="SNP"))
+  group_size <- group_size[rownames(estimated_group_prior_all)]
+  
+  #estimated group PVE (all iterations)
+  estimated_group_pve_all <- estimated_group_prior_var_all*estimated_group_prior_all*group_size/sample_size #check PVE calculation
+  
+  #multitissue TWAS analysis with bonferroni adjusted threshold for z scores
+  load(paste0(results_dir, runtag, "_simu", simutag, "_config", configtag,"_LDR_z_gene.Rd"))
+  alpha <- 0.05
+  sig_thresh <- qnorm(1-(alpha/nrow(z_gene)/2), lower=T)
+  twas_genes <- z_gene$id[abs(z_gene$z)>sig_thresh]
+  twas_genes_combined <- unique(sapply(twas_genes, function(x){unlist(strsplit(x, "[|]"))[1]}))
+  
+  n_twas_genes <- length(twas_genes)
+  n_twas_genes_combined <- length(twas_genes_combined)
+  
+  n_twas_genes_in_causal <- sum(twas_genes %in% true_genes)
+  n_twas_genes_in_causal_combined <- sum(twas_genes_combined %in% true_genes_combined)
+
+  results_current <- data.frame(simutag=as.character(simutag),
+                                n_causal=as.integer(n_causal),
+                                n_causal_combined=as.integer(n_causal_combined),
+                                n_detected_pip=as.integer(n_ctwas_genes),
+                                n_detected_pip_in_causal=as.integer(n_causal_detected),
+                                n_detected_comb_pip=as.integer(n_ctwas_genes_combined),
+                                n_detected_comb_pip_in_causal=as.integer(n_causal_detected_combined),
+                                pve_snp=as.numeric(rev(estimated_group_pve_all["SNP",])[1]),
+                                pve_weight1=as.numeric(rev(estimated_group_pve_all["Liver",])[1]),
+                                pve_weight2=as.numeric(rev(estimated_group_pve_all["Liver_copy",])[1]),
+                                prior_snp=as.numeric(rev(estimated_group_prior_all["SNP",])[1]),
+                                prior_weight1=as.numeric(rev(estimated_group_prior_all["Liver",])[1]),
+                                prior_weight2=as.numeric(rev(estimated_group_prior_all["Liver_copy",])[1]),
+                                prior_var_snp=as.numeric(rev(estimated_group_prior_var_all["SNP",])[1]),
+                                prior_var_weight1=as.numeric(rev(estimated_group_prior_var_all["Liver",])[1]),
+                                prior_var_weight2=as.numeric(rev(estimated_group_prior_var_all["Liver_copy",])[1]),
+                                n_detected_twas=as.integer(n_twas_genes),
+                                n_detected_twas_in_causal=as.integer(n_twas_genes_in_causal),
+                                n_detected_comb_twas=as.integer(n_twas_genes_combined),
+                                n_detected_comb_twas_in_causal=as.integer(n_twas_genes_in_causal_combined))
+  
+  results_df <- rbind(results_df, results_current)
+}
+```
+
+```{r}
+#results using PIP threshold (gene+tissue)
+results_df[,c("simutag", "n_causal", "n_detected_pip", "n_detected_pip_in_causal")]
+
+#mean percent causal using PIP > 0.8
+sum(results_df$n_detected_pip_in_causal)/sum(results_df$n_detected_pip)
+
+#results using combined PIP threshold
+results_df[,c("simutag", "n_causal_combined", "n_detected_comb_pip", "n_detected_comb_pip_in_causal")]
+
+#mean percent causal using combined PIP > 0.8
+sum(results_df$n_detected_comb_pip_in_causal)/sum(results_df$n_detected_comb_pip)
+
+#prior inclusion and mean prior inclusion
+results_df[,c(which(colnames(results_df)=="simutag"), setdiff(grep("prior", names(results_df)), grep("prior_var", names(results_df))))]
+
+colMeans(results_df[,setdiff(grep("prior", names(results_df)), grep("prior_var", names(results_df)))])
+
+#prior variance and mean prior variance
+results_df[,c(which(colnames(results_df)=="simutag"), grep("prior_var", names(results_df)))]
+
+colMeans(results_df[,grep("prior_var", names(results_df))])
+
+#PVE and mean PVE
+results_df[,c(which(colnames(results_df)=="simutag"), grep("pve", names(results_df)))]
+
+colMeans(results_df[,grep("pve", names(results_df))])
+
+#TWAS results
+results_df[,c(which(colnames(results_df)=="simutag"), grep("twas", names(results_df)))]
+
+sum(results_df$n_detected_comb_twas_in_causal)/sum(results_df$n_detected_comb_twas)
+```
+
+```{r echo=FALSE}
+y1 <- results_df$prior_weight1
+y2 <- results_df$prior_weight2
+
+truth <- rbind(c(1,0.015),c(2,0))
+est <- rbind(cbind(1,y1),cbind(2,y2))
+plot_par_2(truth,est,xlabels = c("Liver","Liver_copy"),ylim=c(0,0.025),ylab="Prior inclusion")
+```
+
+```{r echo=FALSE}
+y1 <- results_df$prior_weight1/results_df$prior_snp
+y2 <- results_df$prior_weight2/results_df$prior_snp
+
+truth <- rbind(c(1,60),c(2,0))
+est <- rbind(cbind(1,y1),cbind(2,y2))
+plot_par_2(truth,est,xlabels = c("Liver","Liver_copy"),ylim=c(0,100),ylab="Enrichment")
+```
+
+```{r echo=FALSE}
+y1 <- results_df$pve_weight1
+y2 <- results_df$pve_weight2
+
+truth <- rbind(c(1,0.05),c(2,0))
+est <- rbind(cbind(1,y1),cbind(2,y2))
+plot_par_2(truth,est,xlabels = c("Liver","Liver_copy"),ylim=c(0,0.07),ylab="PVE")
+```
+
+```{r echo=FALSE}
+Liver_attr <- c()
+mix1_attr <- c()
+
+for (i in 1:length(simutags)){
+  simutag <- simutags[i]
+    
+  #load cTWAS results
+  ctwas_res <- data.table::fread(paste0(results_dir, runtag, "_simu", simutag, "_config", configtag, "_LDR.susieIrss.txt"))
+  ctwas_gene_res <- ctwas_res[ctwas_res$type!="SNP",]
+    
+  #collapse gene+tissues to genes and compute combined PIP
+  ctwas_gene_res$gene <- sapply(ctwas_gene_res$id, function(x){unlist(strsplit(x,"[|]"))[1]})
+    
+  df_Liver <- ctwas_gene_res[ctwas_gene_res$type=="Liver",]
+  df_mix1 <- ctwas_gene_res[ctwas_gene_res$type=="Liver_copy",]
+  
+  df_gene <- aggregate(ctwas_gene_res$susie_pip, by=list(ctwas_gene_res$gene), FUN=sum)
+  colnames(df_gene) <- c("gene", "combined_pip")
+  df_gene$Liver_pip <-0
+  df_gene$mix1_pip <-0
+    
+  for(i in df_gene$gene){
+    if(i %in% df_Liver$gene){
+      df_gene[df_gene$gene==i,"Liver_pip"] <- round(df_Liver[df_Liver$gene==i,"susie_pip"],3)
+    }
+  }
+    
+  for(i in df_gene$gene){
+    if(i %in% df_mix1$gene){
+      df_gene[df_gene$gene==i,"mix1_pip"] <- round(df_mix1[df_mix1$gene==i,"susie_pip"],3)
+    }
+  }
+  
+  df_gene$combined_pip <- round(df_gene$combined_pip,3)
+  #sort by combined PIP
+  df_gene <- df_gene[order(-df_gene$combined_pip),]
+  #genes with PIP>0.8 or 20 highest PIPs
+  df_gene <- df_gene[df_gene$combined_pip>0.8,]
+    
+  Liver_attr <- c(Liver_attr,df_gene$Liver_pip/df_gene$combined_pip)
+  mix1_attr <- c(mix1_attr,df_gene$mix1_pip/df_gene$combined_pip)
+}
+
+pip_df <- list(Liver_attr,mix1_attr)
+```
+
+```{r echo=FALSE}
+data <- data.frame(
+  tissue=c(rep("Liver",length(pip_df[[1]])), rep("mix1",length(pip_df[[2]]))),
+  attribution=c(pip_df[[1]],pip_df[[2]])
+)
+
+data$tissue <- factor(data$tissue, levels=unique(data$tissue))
+
+#pdf(file = "./primary_set2.pdf", width = 5, height = 5)
+ggbarplot(data, 
+          x = "tissue", 
+          y = "attribution", 
+          add = "mean_se", 
+          fill = "tissue", 
+          legend = "none", 
+          ylab="Proportion", 
+          xlab="",
+          palette = c("#7fc97f", "#beaed4")) + grids(linetype = "dashed") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+#dev.off()
+```
+
+### Separate effect size parameters
+
+For the cTWAS analysis, each tissue had its own prior inclusion parameter end effect size parameter. 
+
+```{r}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_same_two_tissues/"
+runtag = "ukb-s80.45-3_corr"
+configtag <- 2
+simutags <- paste(1, 1:5, sep = "-")
+thin <- 0.1
+sample_size <- 45000
+PIP_threshold <- 0.8
+```
+
+```{r}
+results_df <- data.frame(simutag=as.character(),
+                              n_causal=as.integer(),
+                              n_causal_combined=as.integer(),
+                              n_detected_pip=as.integer(),
+                              n_detected_pip_in_causal=as.integer(),
+                              n_detected_comb_pip=as.integer(),
+                              n_detected_comb_pip_in_causal=as.integer(),
+                              pve_snp=as.numeric(),
+                              pve_weight1=as.numeric(),
+                              pve_weight2=as.numeric(),
+                              prior_weight1=as.numeric(),
+                              prior_weight2=as.numeric(),
+                              prior_var_snp=as.numeric(),
+                              prior_var_weight1=as.numeric(),
+                              prior_var_weight2=as.numeric(),
+                              n_detected_twas=as.integer(),
+                              n_detected_twas_in_causal=as.integer(),
+                              n_detected_comb_twas=as.integer(),
+                              n_detected_comb_twas_in_causal=as.integer())
+
+for (i in 1:length(simutags)){
+  simutag <- simutags[i]
+  
+  #load genes with true simulated effect
+  load(paste0(results_dir, runtag, "_simu", simutag, "-pheno.Rd"))
+  true_genes <- unlist(sapply(1:22, function(x){phenores$batch[[x]]$id.cgene}))
+  true_genes_combined <- unique(sapply(true_genes, function(x){unlist(strsplit(x, "[|]"))[1]}))
+  
+  #load cTWAS results
+  ctwas_res <- data.table::fread(paste0(results_dir, runtag, "_simu", simutag, "_config", configtag, "_LDR.susieIrss.txt"))
+  ctwas_gene_res <- ctwas_res[ctwas_res$type!="SNP",]
+  
+  #number of causal genes
+  n_causal <- length(true_genes)
+  n_causal_combined <- length(true_genes_combined)
+  
+  #number of gene+tissue combinations with cTWAS PIP > threshold
+  n_ctwas_genes <- sum(ctwas_gene_res$susie_pip > PIP_threshold)
+  
+  #number of cTWAS genes that are causal
+  n_causal_detected <- sum(ctwas_gene_res$id[ctwas_gene_res$susie_pip > PIP_threshold] %in% true_genes)
+  
+  #collapse gene+tissues to genes and compute combined PIP
+  ctwas_gene_res$gene <- sapply(ctwas_gene_res$id, function(x){unlist(strsplit(x,"[|]"))[1]})
+  ctwas_gene_res_combined <- aggregate(ctwas_gene_res$susie_pip, by=list(ctwas_gene_res$gene), FUN=sum)
+  colnames(ctwas_gene_res_combined) <- c("gene", "pip_combined")
+  
+  #number of genes with combined PIP > threshold
+  n_ctwas_genes_combined <- sum(ctwas_gene_res_combined$pip_combined > PIP_threshold)
+  
+  #number of cTWAS genes using combined PIP that are causal
+  n_causal_detected_combined <- sum(ctwas_gene_res_combined$gene[ctwas_gene_res_combined$pip_combined > PIP_threshold] %in% true_genes_combined)
+  
+  #collect number of SNPs analyzed by cTWAS
+  ctwas_res_s1 <- data.table::fread(paste0(results_dir, runtag, "_simu", simutag, "_config", configtag, "_LDR.s1.susieIrss.txt"))
+  n_snps <- sum(ctwas_res_s1$type=="SNP")/thin
+  rm(ctwas_res_s1)
+  
+  #load estimated parameters
+  load(paste0(results_dir, runtag, "_simu", simutag, "_config", configtag, "_LDR.s2.susieIrssres.Rd"))
+  
+  #estimated group prior (all iterations)
+  estimated_group_prior_all <- group_prior_rec
+  estimated_group_prior_all["SNP",] <- estimated_group_prior_all["SNP",]*thin #adjust parameter to account for thin argument
+  
+  #estimated group prior variance (all iterations)
+  estimated_group_prior_var_all <- group_prior_var_rec
+  
+  #set group size
+  group_size <- c(table(ctwas_gene_res$type), structure(n_snps, names="SNP"))
+  group_size <- group_size[rownames(estimated_group_prior_all)]
+  
+  #estimated group PVE (all iterations)
+  estimated_group_pve_all <- estimated_group_prior_var_all*estimated_group_prior_all*group_size/sample_size #check PVE calculation
+  
+  #multitissue TWAS analysis with bonferroni adjusted threshold for z scores
+  load(paste0(results_dir, runtag, "_simu", simutag, "_config", configtag,"_LDR_z_gene.Rd"))
+  alpha <- 0.05
+  sig_thresh <- qnorm(1-(alpha/nrow(z_gene)/2), lower=T)
+  twas_genes <- z_gene$id[abs(z_gene$z)>sig_thresh]
+  twas_genes_combined <- unique(sapply(twas_genes, function(x){unlist(strsplit(x, "[|]"))[1]}))
+  
+  n_twas_genes <- length(twas_genes)
+  n_twas_genes_combined <- length(twas_genes_combined)
+  
+  n_twas_genes_in_causal <- sum(twas_genes %in% true_genes)
+  n_twas_genes_in_causal_combined <- sum(twas_genes_combined %in% true_genes_combined)
+
+  results_current <- data.frame(simutag=as.character(simutag),
+                                n_causal=as.integer(n_causal),
+                                n_causal_combined=as.integer(n_causal_combined),
+                                n_detected_pip=as.integer(n_ctwas_genes),
+                                n_detected_pip_in_causal=as.integer(n_causal_detected),
+                                n_detected_comb_pip=as.integer(n_ctwas_genes_combined),
+                                n_detected_comb_pip_in_causal=as.integer(n_causal_detected_combined),
+                                pve_snp=as.numeric(rev(estimated_group_pve_all["SNP",])[1]),
+                                pve_weight1=as.numeric(rev(estimated_group_pve_all["Liver",])[1]),
+                                pve_weight2=as.numeric(rev(estimated_group_pve_all["Liver_copy",])[1]),
+                                prior_snp=as.numeric(rev(estimated_group_prior_all["SNP",])[1]),
+                                prior_weight1=as.numeric(rev(estimated_group_prior_all["Liver",])[1]),
+                                prior_weight2=as.numeric(rev(estimated_group_prior_all["Liver_copy",])[1]),
+                                prior_var_snp=as.numeric(rev(estimated_group_prior_var_all["SNP",])[1]),
+                                prior_var_weight1=as.numeric(rev(estimated_group_prior_var_all["Liver",])[1]),
+                                prior_var_weight2=as.numeric(rev(estimated_group_prior_var_all["Liver_copy",])[1]),
+                                n_detected_twas=as.integer(n_twas_genes),
+                                n_detected_twas_in_causal=as.integer(n_twas_genes_in_causal),
+                                n_detected_comb_twas=as.integer(n_twas_genes_combined),
+                                n_detected_comb_twas_in_causal=as.integer(n_twas_genes_in_causal_combined))
+  
+  results_df <- rbind(results_df, results_current)
+}
+```
+
+```{r}
+#results using PIP threshold (gene+tissue)
+results_df[,c("simutag", "n_causal", "n_detected_pip", "n_detected_pip_in_causal")]
+
+#mean percent causal using PIP > 0.8
+sum(results_df$n_detected_pip_in_causal)/sum(results_df$n_detected_pip)
+
+#results using combined PIP threshold
+results_df[,c("simutag", "n_causal_combined", "n_detected_comb_pip", "n_detected_comb_pip_in_causal")]
+
+#mean percent causal using combined PIP > 0.8
+sum(results_df$n_detected_comb_pip_in_causal)/sum(results_df$n_detected_comb_pip)
+
+#prior inclusion and mean prior inclusion
+results_df[,c(which(colnames(results_df)=="simutag"), setdiff(grep("prior", names(results_df)), grep("prior_var", names(results_df))))]
+
+colMeans(results_df[,setdiff(grep("prior", names(results_df)), grep("prior_var", names(results_df)))])
+
+#prior variance and mean prior variance
+results_df[,c(which(colnames(results_df)=="simutag"), grep("prior_var", names(results_df)))]
+
+colMeans(results_df[,grep("prior_var", names(results_df))])
+
+#PVE and mean PVE
+results_df[,c(which(colnames(results_df)=="simutag"), grep("pve", names(results_df)))]
+
+colMeans(results_df[,grep("pve", names(results_df))])
+
+#TWAS results
+results_df[,c(which(colnames(results_df)=="simutag"), grep("twas", names(results_df)))]
+
+sum(results_df$n_detected_comb_twas_in_causal)/sum(results_df$n_detected_comb_twas)
+```
+
+```{r echo=FALSE}
+y1 <- results_df$prior_weight1
+y2 <- results_df$prior_weight2
+
+truth <- rbind(c(1,0.015),c(2,0))
+est <- rbind(cbind(1,y1),cbind(2,y2))
+plot_par_2(truth,est,xlabels = c("Liver","Liver_copy"),ylim=c(0,0.025),ylab="Prior inclusion")
+```
+
+```{r echo=FALSE}
+y1 <- results_df$prior_weight1/results_df$prior_snp
+y2 <- results_df$prior_weight2/results_df$prior_snp
+
+truth <- rbind(c(1,60),c(2,0))
+est <- rbind(cbind(1,y1),cbind(2,y2))
+plot_par_2(truth,est,xlabels = c("Liver","Liver_copy"),ylim=c(0,100),ylab="Enrichment")
+```
+
+```{r echo=FALSE}
+y1 <- results_df$pve_weight1
+y2 <- results_df$pve_weight2
+
+truth <- rbind(c(1,0.05),c(2,0))
+est <- rbind(cbind(1,y1),cbind(2,y2))
+plot_par_2(truth,est,xlabels = c("Liver","Liver_copy"),ylim=c(0,0.07),ylab="PVE")
+```
+
+```{r echo=FALSE}
+Liver_attr <- c()
+mix1_attr <- c()
+
+for (i in 1:length(simutags)){
+  simutag <- simutags[i]
+    
+  #load cTWAS results
+  ctwas_res <- data.table::fread(paste0(results_dir, runtag, "_simu", simutag, "_config", configtag, "_LDR.susieIrss.txt"))
+  ctwas_gene_res <- ctwas_res[ctwas_res$type!="SNP",]
+    
+  #collapse gene+tissues to genes and compute combined PIP
+  ctwas_gene_res$gene <- sapply(ctwas_gene_res$id, function(x){unlist(strsplit(x,"[|]"))[1]})
+    
+  df_Liver <- ctwas_gene_res[ctwas_gene_res$type=="Liver",]
+  df_mix1 <- ctwas_gene_res[ctwas_gene_res$type=="Liver_copy",]
+  
+  df_gene <- aggregate(ctwas_gene_res$susie_pip, by=list(ctwas_gene_res$gene), FUN=sum)
+  colnames(df_gene) <- c("gene", "combined_pip")
+  df_gene$Liver_pip <-0
+  df_gene$mix1_pip <-0
+    
+  for(i in df_gene$gene){
+    if(i %in% df_Liver$gene){
+      df_gene[df_gene$gene==i,"Liver_pip"] <- round(df_Liver[df_Liver$gene==i,"susie_pip"],3)
+    }
+  }
+    
+  for(i in df_gene$gene){
+    if(i %in% df_mix1$gene){
+      df_gene[df_gene$gene==i,"mix1_pip"] <- round(df_mix1[df_mix1$gene==i,"susie_pip"],3)
+    }
+  }
+  
+  df_gene$combined_pip <- round(df_gene$combined_pip,3)
+  #sort by combined PIP
+  df_gene <- df_gene[order(-df_gene$combined_pip),]
+  #genes with PIP>0.8 or 20 highest PIPs
+  df_gene <- df_gene[df_gene$combined_pip>0.8,]
+    
+  Liver_attr <- c(Liver_attr,df_gene$Liver_pip/df_gene$combined_pip)
+  mix1_attr <- c(mix1_attr,df_gene$mix1_pip/df_gene$combined_pip)
+}
+
+pip_df <- list(Liver_attr,mix1_attr)
+```
+
+```{r echo=FALSE}
+data <- data.frame(
+  tissue=c(rep("Liver",length(pip_df[[1]])), rep("mix1",length(pip_df[[2]]))),
+  attribution=c(pip_df[[1]],pip_df[[2]])
+)
+
+data$tissue <- factor(data$tissue, levels=unique(data$tissue))
+
+#pdf(file = "./primary_set2.pdf", width = 5, height = 5)
+ggbarplot(data, 
+          x = "tissue", 
+          y = "attribution", 
+          add = "mean_se", 
+          fill = "tissue", 
+          legend = "none", 
+          ylab="Proportion", 
+          xlab="",
+          palette = c("#7fc97f", "#beaed4")) + grids(linetype = "dashed") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+#dev.off()
+```
