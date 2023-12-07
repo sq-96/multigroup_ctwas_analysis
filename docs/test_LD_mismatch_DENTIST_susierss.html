@@ -534,15 +534,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistreebb0c18536c9be9ccc0dd5af198ae9dcb955a2d5atargetblankbb0c185a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree18b79efbabca7f7191c84ce7a0c5a7df5014cc55targetblank18b79efa">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/bb0c18536c9be9ccc0dd5af198ae9dcb955a2d5a" target="_blank">bb0c185</a>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/18b79efbabca7f7191c84ce7a0c5a7df5014cc55" target="_blank">18b79ef</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistreebb0c18536c9be9ccc0dd5af198ae9dcb955a2d5atargetblankbb0c185a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree18b79efbabca7f7191c84ce7a0c5a7df5014cc55targetblank18b79efa"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -552,7 +552,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/bb0c18536c9be9ccc0dd5af198ae9dcb955a2d5a" target="_blank">bb0c185</a>.
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/18b79efbabca7f7191c84ce7a0c5a7df5014cc55" target="_blank">18b79ef</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -623,6 +623,40 @@ Message
 Rmd
 </td>
 <td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/18b79efbabca7f7191c84ce7a0c5a7df5014cc55/analysis/test_LD_mismatch_DENTIST_susierss.Rmd" target="_blank">18b79ef</a>
+</td>
+<td>
+kevinlkx
+</td>
+<td>
+2023-12-07
+</td>
+<td>
+added documentations
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/sq-96/multigroup_ctwas_analysis/ced270ea467da40da871efc7f93f83c9265c098e/docs/test_LD_mismatch_DENTIST_susierss.html" target="_blank">ced270e</a>
+</td>
+<td>
+kevinlkx
+</td>
+<td>
+2023-12-07
+</td>
+<td>
+Build site.
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
 <a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/bb0c18536c9be9ccc0dd5af198ae9dcb955a2d5a/analysis/test_LD_mismatch_DENTIST_susierss.Rmd" target="_blank">bb0c185</a>
 </td>
 <td>
@@ -682,14 +716,9 @@ library(data.table)
 library(tidyverse)</code></pre>
 <div id="ldl" class="section level2">
 <h2>LDL</h2>
-<pre class="r"><code>trait &lt;- &quot;LDL&quot;</code></pre>
-<p>LD Regions (ldetect blocks)</p>
-<pre class="r"><code>regions &lt;- system.file(&quot;extdata/ldetect&quot;, &quot;EUR.b38.bed&quot;, package = &quot;ctwas&quot;)
-regions_df &lt;- read.table(regions, header = T)
-regions_df &lt;- regions_df %&gt;% dplyr::arrange(chr, start, stop) %&gt;% dplyr::mutate(locus = 1:nrow(regions_df))</code></pre>
-<div id="locus-950" class="section level3">
-<h3>Locus 950</h3>
 <ul>
+<li>LDL GWAS and LD reference panel are both from UKBB.</li>
+<li>Select one locus in chr22.</li>
 <li>Randomly changed the z-scores for 100 variants (50 with abs(z) &gt;
 2 and 50 with abs(z) &lt; 2).</li>
 <li>Randomly flipped the z-scores for 20 variants (10 with abs(z) &gt; 2
@@ -697,6 +726,13 @@ and 10 with abs(z) &lt; 2).</li>
 <li>Run DENTIST on the GWAS sumstats of the locus, with 2Mb vs. 1Mb
 window, or 1 iteration vs. 10 iterations.</li>
 </ul>
+<pre class="r"><code>trait &lt;- &quot;LDL&quot;</code></pre>
+<p>LD Regions (ldetect blocks)</p>
+<pre class="r"><code>regions &lt;- system.file(&quot;extdata/ldetect&quot;, &quot;EUR.b38.bed&quot;, package = &quot;ctwas&quot;)
+regions_df &lt;- read.table(regions, header = T)
+regions_df &lt;- regions_df %&gt;% dplyr::arrange(chr, start, stop) %&gt;% dplyr::mutate(locus = 1:nrow(regions_df))</code></pre>
+<div id="locus-950" class="section level3">
+<h3>Locus 950</h3>
 <pre class="r"><code>locus = &quot;950&quot;
 outdir &lt;- paste0(&quot;/project2/xinhe/shared_data/multigroup_ctwas/ld_mismatch_test/&quot;, trait)
 sumstats_hg38_locus &lt;- readRDS(file.path(outdir, paste0(trait, &quot;.test.locus&quot;, locus,&quot;.changed.sumstats.rds&quot;)))
