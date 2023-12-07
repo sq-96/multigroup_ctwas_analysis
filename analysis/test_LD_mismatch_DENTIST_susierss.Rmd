@@ -32,6 +32,11 @@ regions_df <- regions_df %>% dplyr::arrange(chr, start, stop) %>% dplyr::mutate(
 ```
 
 ### Locus 950
+
+ * Randomly changed the z-scores for 100 variants (50 with abs(z) > 2 and 50 with abs(z) < 2).
+ * Randomly flipped the z-scores for 20 variants (10 with abs(z) > 2 and 10 with abs(z) < 2).
+ * Run DENTIST on the GWAS sumstats of the locus, with 2Mb vs. 1Mb window, or 1 iteration vs. 10 iterations.
+
 ```{r}
 locus = "950"
 outdir <- paste0("/project2/xinhe/shared_data/multigroup_ctwas/ld_mismatch_test/", trait)
