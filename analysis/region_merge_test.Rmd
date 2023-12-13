@@ -22,8 +22,10 @@ configtag = 2
 
 ## PIP calibration
 ### PIP plot under different settings.
+UKBB individual genotype data. PredictedDB Liver weights. UKBB LD matrix. Gene PVE = 0.05 and SNP PVE = 0.3. 
 
-```{r pipplotfunc}
+
+```{r pipplotfunc echo=F}
 plot_PIP <- function(outputdir, configtag, runtag,  simutags, ...){
    phenofs <- paste0(outputdir, "ukb-s80.45-3", "_simu", simutags, "-pheno.Rd")
    susieIfs <- paste0(outputdir, runtag, "_simu",simutags, "_config", configtag,"_LDR.susieIrss.txt")
@@ -33,7 +35,7 @@ plot_PIP <- function(outputdir, configtag, runtag,  simutags, ...){
 }
 ```
 
-```{r pipplot, fig.width= 8, fig.height= 4}
+```{r pipplot, fig.width= 12, fig.height= 4, echo=F}
 simutaglist = list(paste(1, 1:5, sep = "-"), paste(1, 1:5, sep="-"), paste(1, 1:5, sep="-"))
 f1 <- plot_PIP(outputdir1, configtag, runtag, simutaglist[[1]], main = "old merge off")
 f2 <-  plot_PIP(outputdir2, configtag, runtag, simutaglist[[2]], main = "merge on")
