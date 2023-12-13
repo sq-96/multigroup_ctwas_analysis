@@ -29,7 +29,8 @@ suppressMessages(library(data.table))
 suppressMessages(library(RSQLite))
 suppressMessages(library(DT))
 suppressMessages(library(tools))
-suppressMessages(library(dbplyr))
+suppressMessages(library(dplyr))
+suppressMessages(library(tidyr))
 
 thin <- 0.1
 
@@ -120,6 +121,82 @@ process_gene_data <- function(ctwas_res, weight = NULL) {
   return(df_to_display)
 }
 
+process_ctwas_results <- function(ctwas_parameters, ctwas_res) {
+    # Process parameters
+    para <- cbind(ctwas_parameters$group_size,
+                  ctwas_parameters$group_prior,
+                  ctwas_parameters$group_prior_var,
+                  c(NA, ctwas_parameters$enrichment),
+                  ctwas_parameters$group_pve)
+    para <- as.data.frame(cbind(rownames(para), para))
+    colnames(para) <- c("group","group_size","group_prior","group_prior_var","enrichment","group_pve")
+
+    # Filter ctwas results for genes and high PIP
+    ctwas_res_gene <- ctwas_res[ctwas_res$type != "SNP",]
+    ctwas_res_gene_pip08 <- ctwas_res_gene[ctwas_res_gene$susie_pip > 0.8,]
+
+    # Create summary table
+    summary <- as.data.frame(table(ctwas_res_gene_pip08$type))
+    colnames(summary) <- c("weights", "#of genes with susiepip >0.8")
+
+    # Merge summary with parameters
+    summary <- merge(summary, para, by.x = "weights", by.y = "group", all.y = TRUE)
+
+    return(summary)
+}
+
+attributable_pip <- function(df, combined_pip_col) {
+  # Identify the relevant columns (those ending with '_nolnc')
+  relevant_cols <- names(df)[grepl("_nolnc$", names(df))]
+
+  # Create and rearrange columns dynamically
+  df <- df %>%
+    mutate(across(all_of(relevant_cols), 
+                  ~ .x / df[[combined_pip_col]] *100, 
+                  .names = "{.col}_Attributable_PIP (%)")) %>%
+    {
+      # Building the new column order
+      new_order <- unlist(lapply(relevant_cols, function(col) {
+        c(col, paste0(col, "_Attributable_PIP (%)"))
+      }))
+      select(., all_of(c("genename", combined_pip_col, new_order)))
+    }
+
+  df
+}
+
+
+plot_stacked_histogram <- function(df, genename_col, combined_pip_col, attributable_cols) {
+  
+  df[[genename_col]] <- factor(df[[genename_col]], levels = df[[genename_col]])
+  
+  long_df_attributable <- df %>%
+    select(all_of(c(genename_col, combined_pip_col, attributable_cols))) %>%
+    pivot_longer(
+      cols = all_of(attributable_cols),
+      names_to = "Tissue",
+      values_to = "Proportion"
+    ) %>%
+    mutate(Tissue = gsub("_Attributable_PIP \\(%\\)", "", Tissue))  # Modify Tissue names
+  
+  
+  # Calculate the absolute values for each segment
+  long_df_attributable <- long_df_attributable %>%
+    mutate(Absolute_Value = Proportion / 100 * long_df_attributable[[combined_pip_col]])
+  
+  # Create the plot
+  p <- ggplot(long_df_attributable, aes_string(x = genename_col, y = "Absolute_Value", fill = "Tissue")) +
+    geom_bar(stat = "identity") +
+    theme_minimal() +
+    labs(title = "Stacked Histogram of Combined PIP with Tissue Contributions",
+         x = "Gene Name",
+         y = "Combined PIP",
+         fill = "Tissue") +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  
+  return(p)
+}
+
 ```
 
 # aFib
@@ -138,18 +215,21 @@ ctwas_parameters <- ctwas:::ctwas_summarize_parameters(outputdir = outputdir,
                                                gwas_n = gwas_n,
                                                thin = thin)
 
-
-para <- cbind(ctwas_parameters$group_size,ctwas_parameters$group_prior,ctwas_parameters$group_prior_var,c(NA,ctwas_parameters$enrichment),ctwas_parameters$group_pve)
-colnames(para) <- c("group_size","group_prior","group_prior_var","enrichment","group_pve")
-
-DT::datatable(para,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Parameters'))
-
 ctwas_parameters$convergence_plot
 
-ctwas_res <- process_data(weight = weight,outputdir = outputdir,outname = outname,z_snp = z_snp,z_gene = z_gene,display_datatable = T)
+ctwas_res <- process_data(weight = weight,outputdir = outputdir,outname = outname,z_snp = z_snp,z_gene = z_gene)
+para <- process_ctwas_results(ctwas_parameters = ctwas_parameters,ctwas_res = ctwas_res)
+DT::datatable(para,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Parameters'))
 
 df_gene <- process_gene_data(ctwas_res = ctwas_res)
+
+df_gene <- attributable_pip(df_gene, "combined_pip")
+
 DT::datatable(df_gene,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Genes with combined pip > 0.8, 0 means pip=0; NA means no such gene in this tissue'),options = list(pageLength = 10) )
+
+attributable_columns <- colnames(df_gene)[seq(4,12,by=2)]
+
+plot_stacked_histogram(df_gene, "genename", "combined_pip", attributable_columns)
 
 table_show <- ctwas_res[ctwas_res$genename %in% df_gene$genename,]
 table_show <- rbind(table_show,ctwas_res[ctwas_res$type!="SNP" & ctwas_res$susie_pip > 0.8,])
@@ -169,28 +249,33 @@ weight <- "Whole_Blood,Cells_Cultured_fibroblasts,Adipose_Subcutaneous,Colon_Tra
 load(paste0(outputdir,outname,"_z_snp.Rd"))
 load(paste0(outputdir,outname,"_z_gene.Rd"))
 
-ctwas_parameters <- ctwas:::ctwas_summarize_parameters(outputdir = outputdir, 
-                                               outname = outname, 
-                                               gwas_n = gwas_n, 
+ctwas_parameters <- ctwas:::ctwas_summarize_parameters(outputdir = outputdir,
+                                               outname = outname,
+                                               gwas_n = gwas_n,
                                                thin = thin)
 
 
-para <- cbind(ctwas_parameters$group_size,ctwas_parameters$group_prior,ctwas_parameters$group_prior_var,c(NA,ctwas_parameters$enrichment),ctwas_parameters$group_pve)
-colnames(para) <- c("group_size","group_prior","group_prior_var","enrichment","group_pve")
-
-DT::datatable(para,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Parameters'))
-
 ctwas_parameters$convergence_plot
 
-ctwas_res <- process_data(weight = weight,outputdir = outputdir,outname = outname,z_snp = z_snp,z_gene = z_gene,display_datatable = T)
+ctwas_res <- process_data(weight = weight,outputdir = outputdir,outname = outname,z_snp = z_snp,z_gene = z_gene)
+para <- process_ctwas_results(ctwas_parameters = ctwas_parameters,ctwas_res = ctwas_res)
+DT::datatable(para,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Parameters'))
 
 df_gene <- process_gene_data(ctwas_res = ctwas_res)
+
+df_gene <- attributable_pip(df_gene, "combined_pip")
+
 DT::datatable(df_gene,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Genes with combined pip > 0.8, 0 means pip=0; NA means no such gene in this tissue'),options = list(pageLength = 10) )
+
+attributable_columns <- colnames(df_gene)[seq(4,12,by=2)]
+
+plot_stacked_histogram(df_gene, "genename", "combined_pip", attributable_columns)
 
 table_show <- ctwas_res[ctwas_res$genename %in% df_gene$genename,]
 table_show <- rbind(table_show,ctwas_res[ctwas_res$type!="SNP" & ctwas_res$susie_pip > 0.8,])
 table_show <- table_show[!duplicated(table_show$id),]
 DT::datatable(table_show,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Detailed table for genes with susiepip > 0.8 & combined pip >0.8'),options = list(pageLength = 5))
+
 
 ```
 
@@ -210,18 +295,21 @@ ctwas_parameters <- ctwas:::ctwas_summarize_parameters(outputdir = outputdir,
                                                gwas_n = gwas_n,
                                                thin = thin)
 
-
-para <- cbind(ctwas_parameters$group_size,ctwas_parameters$group_prior,ctwas_parameters$group_prior_var,c(NA,ctwas_parameters$enrichment),ctwas_parameters$group_pve)
-colnames(para) <- c("group_size","group_prior","group_prior_var","enrichment","group_pve")
-
-DT::datatable(para,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Parameters'))
-
 ctwas_parameters$convergence_plot
 
-ctwas_res <- process_data(weight = weight,outputdir = outputdir,outname = outname,z_snp = z_snp,z_gene = z_gene,display_datatable = T)
+ctwas_res <- process_data(weight = weight,outputdir = outputdir,outname = outname,z_snp = z_snp,z_gene = z_gene)
+para <- process_ctwas_results(ctwas_parameters = ctwas_parameters,ctwas_res = ctwas_res)
+DT::datatable(para,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Parameters'))
 
 df_gene <- process_gene_data(ctwas_res = ctwas_res)
+
+df_gene <- attributable_pip(df_gene, "combined_pip")
+
 DT::datatable(df_gene,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Genes with combined pip > 0.8, 0 means pip=0; NA means no such gene in this tissue'),options = list(pageLength = 10) )
+
+attributable_columns <- colnames(df_gene)[seq(4,12,by=2)]
+
+plot_stacked_histogram(df_gene, "genename", "combined_pip", attributable_columns)
 
 table_show <- ctwas_res[ctwas_res$genename %in% df_gene$genename,]
 table_show <- rbind(table_show,ctwas_res[ctwas_res$type!="SNP" & ctwas_res$susie_pip > 0.8,])
@@ -242,29 +330,32 @@ weight <- "Artery_Tibial,Spleen,Skin_Sun_Exposed_Lower_leg,Adipose_Subcutaneous,
 load(paste0(outputdir,outname,"_z_snp.Rd"))
 load(paste0(outputdir,outname,"_z_gene.Rd"))
 
-ctwas_parameters <- ctwas:::ctwas_summarize_parameters(outputdir = outputdir, 
-                                               outname = outname, 
-                                               gwas_n = gwas_n, 
+ctwas_parameters <- ctwas:::ctwas_summarize_parameters(outputdir = outputdir,
+                                               outname = outname,
+                                               gwas_n = gwas_n,
                                                thin = thin)
 
 
-para <- cbind(ctwas_parameters$group_size,ctwas_parameters$group_prior,ctwas_parameters$group_prior_var,c(NA,ctwas_parameters$enrichment),ctwas_parameters$group_pve)
-colnames(para) <- c("group_size","group_prior","group_prior_var","enrichment","group_pve")
-
-DT::datatable(para,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Parameters'))
-
 ctwas_parameters$convergence_plot
 
-ctwas_res <- process_data(weight = weight,outputdir = outputdir,outname = outname,z_snp = z_snp,z_gene = z_gene,display_datatable = T)
+ctwas_res <- process_data(weight = weight,outputdir = outputdir,outname = outname,z_snp = z_snp,z_gene = z_gene)
+para <- process_ctwas_results(ctwas_parameters = ctwas_parameters,ctwas_res = ctwas_res)
+DT::datatable(para,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Parameters'))
 
 df_gene <- process_gene_data(ctwas_res = ctwas_res)
+
+df_gene <- attributable_pip(df_gene, "combined_pip")
+
 DT::datatable(df_gene,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Genes with combined pip > 0.8, 0 means pip=0; NA means no such gene in this tissue'),options = list(pageLength = 10) )
+
+attributable_columns <- colnames(df_gene)[seq(4,12,by=2)]
+
+plot_stacked_histogram(df_gene, "genename", "combined_pip", attributable_columns)
 
 table_show <- ctwas_res[ctwas_res$genename %in% df_gene$genename,]
 table_show <- rbind(table_show,ctwas_res[ctwas_res$type!="SNP" & ctwas_res$susie_pip > 0.8,])
 table_show <- table_show[!duplicated(table_show$id),]
 DT::datatable(table_show,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Detailed table for genes with susiepip > 0.8 & combined pip >0.8'),options = list(pageLength = 5))
-
 
 ```
 
@@ -279,23 +370,26 @@ weight <- "Adrenal_Gland,Brain_Cerebellar_Hemisphere,Brain_Anterior_cingulate_co
 load(paste0(outputdir,outname,"_z_snp.Rd"))
 load(paste0(outputdir,outname,"_z_gene.Rd"))
 
-ctwas_parameters <- ctwas:::ctwas_summarize_parameters(outputdir = outputdir, 
-                                               outname = outname, 
-                                               gwas_n = gwas_n, 
+ctwas_parameters <- ctwas:::ctwas_summarize_parameters(outputdir = outputdir,
+                                               outname = outname,
+                                               gwas_n = gwas_n,
                                                thin = thin)
-
-
-para <- cbind(ctwas_parameters$group_size,ctwas_parameters$group_prior,ctwas_parameters$group_prior_var,c(NA,ctwas_parameters$enrichment),ctwas_parameters$group_pve)
-colnames(para) <- c("group_size","group_prior","group_prior_var","enrichment","group_pve")
-
-DT::datatable(para,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Parameters'))
 
 ctwas_parameters$convergence_plot
 
-ctwas_res <- process_data(weight = weight,outputdir = outputdir,outname = outname,z_snp = z_snp,z_gene = z_gene,display_datatable = T)
+ctwas_res <- process_data(weight = weight,outputdir = outputdir,outname = outname,z_snp = z_snp,z_gene = z_gene)
+para <- process_ctwas_results(ctwas_parameters = ctwas_parameters,ctwas_res = ctwas_res)
+DT::datatable(para,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Parameters'))
 
 df_gene <- process_gene_data(ctwas_res = ctwas_res)
+
+df_gene <- attributable_pip(df_gene, "combined_pip")
+
 DT::datatable(df_gene,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Genes with combined pip > 0.8, 0 means pip=0; NA means no such gene in this tissue'),options = list(pageLength = 10) )
+
+attributable_columns <- colnames(df_gene)[seq(4,12,by=2)]
+
+plot_stacked_histogram(df_gene, "genename", "combined_pip", attributable_columns)
 
 table_show <- ctwas_res[ctwas_res$genename %in% df_gene$genename,]
 table_show <- rbind(table_show,ctwas_res[ctwas_res$type!="SNP" & ctwas_res$susie_pip > 0.8,])
@@ -316,23 +410,27 @@ weight <- "Whole_Blood,Adipose_Subcutaneous,Esophagus_Muscularis,Colon_Transvers
 load(paste0(outputdir,outname,"_z_snp.Rd"))
 load(paste0(outputdir,outname,"_z_gene.Rd"))
 
-ctwas_parameters <- ctwas:::ctwas_summarize_parameters(outputdir = outputdir, 
-                                               outname = outname, 
-                                               gwas_n = gwas_n, 
+ctwas_parameters <- ctwas:::ctwas_summarize_parameters(outputdir = outputdir,
+                                               outname = outname,
+                                               gwas_n = gwas_n,
                                                thin = thin)
 
 
-para <- cbind(ctwas_parameters$group_size,ctwas_parameters$group_prior,ctwas_parameters$group_prior_var,c(NA,ctwas_parameters$enrichment),ctwas_parameters$group_pve)
-colnames(para) <- c("group_size","group_prior","group_prior_var","enrichment","group_pve")
-
-DT::datatable(para,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Parameters'))
-
 ctwas_parameters$convergence_plot
 
-ctwas_res <- process_data(weight = weight,outputdir = outputdir,outname = outname,z_snp = z_snp,z_gene = z_gene,display_datatable = T)
+ctwas_res <- process_data(weight = weight,outputdir = outputdir,outname = outname,z_snp = z_snp,z_gene = z_gene)
+para <- process_ctwas_results(ctwas_parameters = ctwas_parameters,ctwas_res = ctwas_res)
+DT::datatable(para,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Parameters'))
 
 df_gene <- process_gene_data(ctwas_res = ctwas_res)
+
+df_gene <- attributable_pip(df_gene, "combined_pip")
+
 DT::datatable(df_gene,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Genes with combined pip > 0.8, 0 means pip=0; NA means no such gene in this tissue'),options = list(pageLength = 10) )
+
+attributable_columns <- colnames(df_gene)[seq(4,12,by=2)]
+
+plot_stacked_histogram(df_gene, "genename", "combined_pip", attributable_columns)
 
 table_show <- ctwas_res[ctwas_res$genename %in% df_gene$genename,]
 table_show <- rbind(table_show,ctwas_res[ctwas_res$type!="SNP" & ctwas_res$susie_pip > 0.8,])

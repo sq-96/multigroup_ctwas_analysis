@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Kaixuan Luo" />
+
+<meta name="date" content="2023-12-07" />
+
+<title>Compare DENTIST and SuSiE_RSS for LD mismatch detection on example locus with manually changed z-scores</title>
+
+<script src="site_libs/header-attrs-2.20/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">multigroup_ctwas_analysis</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/sq-96/multigroup_ctwas_analysis">
+    <span class="fab fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Compare DENTIST and SuSiE_RSS for LD
+mismatch detection on example locus with manually changed z-scores</h1>
+<h4 class="author">Kaixuan Luo</h4>
+<h4 class="date">2023-12-07</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr <span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+</a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2023-12-07
+</p>
+<p>
+<strong>Checks:</strong> <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 7
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> 0
+</p>
+<p>
+<strong>Knit directory:</strong> <code>multigroup_ctwas_analysis/</code>
+<span class="glyphicon glyphicon-question-sign" aria-hidden="true"
+title="This is the local directory in which the code in this file was executed.">
+</span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version
+1.7.0). The <em>Checks</em> tab describes the reproducibility checks
+that were applied when the results were created. The <em>Past
+versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date
+</a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguptodate"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great! Since the R Markdown file has been committed to the Git
+repository, you know the exact version of the code that produced these
+results.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the
+global environment can affect the analysis in your R Markdown file in
+unknown ways. For reproduciblity it’s best to always run the code in an
+empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20231112code">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Seed:</strong>
+<code>set.seed(20231112)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20231112code"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20231112)</code> was run prior to running
+the code in the R Markdown file. Setting a seed ensures that any results
+that rely on randomness, e.g. subsampling or permutations, are
+reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Session information:</strong>
+recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package
+versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be
+confident that you successfully produced the results during this
+run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr
+project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree18b79efbabca7f7191c84ce7a0c5a7df5014cc55targetblank18b79efa">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/18b79efbabca7f7191c84ce7a0c5a7df5014cc55" target="_blank">18b79ef</a>
+</a>
+</p>
+</div>
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree18b79efbabca7f7191c84ce7a0c5a7df5014cc55targetblank18b79efa"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development
+and connecting the code version to the results is critical for
+reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/18b79efbabca7f7191c84ce7a0c5a7df5014cc55" target="_blank">18b79ef</a>.
+See the <em>Past versions</em> tab to see a history of the changes made
+to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for
+the analysis have been committed to Git prior to generating the results
+(you can use <code>wflow_publish</code> or
+<code>wflow_git_commit</code>). workflowr only checks the R Markdown
+file, but you know if there are other scripts or data files that it
+depends on. Below is the status of the Git repository when the results
+were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .Rhistory
+    Ignored:    .Rproj.user/
+
+Unstaged changes:
+    Modified:   analysis/detect_LD_mismatch_gwas_UKBBref_susie_rss.Rmd
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not
+included in this status report because it is ok for generated content to
+have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+
+<p>
+These are the previous versions of the repository in which changes were
+made to the R Markdown
+(<code>analysis/test_LD_mismatch_DENTIST_susierss.Rmd</code>) and HTML
+(<code>docs/test_LD_mismatch_DENTIST_susierss.html</code>) files. If
+you’ve configured a remote Git repository (see
+<code>?wflow_git_remote</code>), click on the hyperlinks in the table
+below to view the files as they were in that past version.
+</p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/18b79efbabca7f7191c84ce7a0c5a7df5014cc55/analysis/test_LD_mismatch_DENTIST_susierss.Rmd" target="_blank">18b79ef</a>
+</td>
+<td>
+kevinlkx
+</td>
+<td>
+2023-12-07
+</td>
+<td>
+added documentations
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/sq-96/multigroup_ctwas_analysis/ced270ea467da40da871efc7f93f83c9265c098e/docs/test_LD_mismatch_DENTIST_susierss.html" target="_blank">ced270e</a>
+</td>
+<td>
+kevinlkx
+</td>
+<td>
+2023-12-07
+</td>
+<td>
+Build site.
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/bb0c18536c9be9ccc0dd5af198ae9dcb955a2d5a/analysis/test_LD_mismatch_DENTIST_susierss.Rmd" target="_blank">bb0c185</a>
+</td>
+<td>
+kevinlkx
+</td>
+<td>
+2023-12-07
+</td>
+<td>
+test locus with manually changed z-scores
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/sq-96/multigroup_ctwas_analysis/78e8869553e8fb7726931cab30c89aa6216eddbf/docs/test_LD_mismatch_DENTIST_susierss.html" target="_blank">78e8869</a>
+</td>
+<td>
+kevinlkx
+</td>
+<td>
+2023-12-07
+</td>
+<td>
+Build site.
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/a36f9c8481cd377390993a8812b20fe803f00a0f/analysis/test_LD_mismatch_DENTIST_susierss.Rmd" target="_blank">a36f9c8</a>
+</td>
+<td>
+kevinlkx
+</td>
+<td>
+2023-12-07
+</td>
+<td>
+test locus with manually changed z-scores
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<p>Load packages and functions</p>
+<pre class="r"><code>library(ctwas)
+library(data.table)
+library(tidyverse)</code></pre>
+<div id="ldl" class="section level2">
+<h2>LDL</h2>
+<ul>
+<li>LDL GWAS and LD reference panel are both from UKBB.</li>
+<li>Select one locus in chr22.</li>
+<li>Randomly changed the z-scores for 100 variants (50 with abs(z) &gt;
+2 and 50 with abs(z) &lt; 2).</li>
+<li>Randomly flipped the z-scores for 20 variants (10 with abs(z) &gt; 2
+and 10 with abs(z) &lt; 2).</li>
+<li>Run DENTIST on the GWAS sumstats of the locus, with 2Mb vs. 1Mb
+window, or 1 iteration vs. 10 iterations.</li>
+</ul>
+<pre class="r"><code>trait &lt;- &quot;LDL&quot;</code></pre>
+<p>LD Regions (ldetect blocks)</p>
+<pre class="r"><code>regions &lt;- system.file(&quot;extdata/ldetect&quot;, &quot;EUR.b38.bed&quot;, package = &quot;ctwas&quot;)
+regions_df &lt;- read.table(regions, header = T)
+regions_df &lt;- regions_df %&gt;% dplyr::arrange(chr, start, stop) %&gt;% dplyr::mutate(locus = 1:nrow(regions_df))</code></pre>
+<div id="locus-950" class="section level3">
+<h3>Locus 950</h3>
+<pre class="r"><code>locus = &quot;950&quot;
+outdir &lt;- paste0(&quot;/project2/xinhe/shared_data/multigroup_ctwas/ld_mismatch_test/&quot;, trait)
+sumstats_hg38_locus &lt;- readRDS(file.path(outdir, paste0(trait, &quot;.test.locus&quot;, locus,&quot;.changed.sumstats.rds&quot;)))
+
+region_df &lt;- regions_df[regions_df$locus == locus,]
+print(region_df)
+
+locus_df &lt;- sumstats_hg38_locus</code></pre>
+<pre><code>#       chr    start     stop locus
+# 950 chr22 24588236 26395662   950</code></pre>
+<p>Load Allele Frequency</p>
+<pre class="r"><code>CHR=22
+dentist.dir &lt;- paste0(&quot;/project2/xinhe/shared_data/multigroup_ctwas/DENTIST/&quot;, trait)
+dentist.freq.df &lt;- data.table::fread(file.path(dentist.dir, paste0(&quot;LDL-ukb-d-30780_irnt.ukb_chr&quot;, CHR, &quot;.b38.frq&quot;)))
+
+locus_df$Freq_A1 &lt;- dentist.freq.df$Freq_A1[match(locus_df$snp, dentist.freq.df$RS_ID)]
+locus_df$MAF &lt;- pmin(locus_df$Freq_A1, 1-locus_df$Freq_A1)</code></pre>
+<p>SuSiE result</p>
+<pre class="r"><code>susie_original_res &lt;- readRDS(file.path(outdir, paste0(trait, &quot;.test.locus&quot;, locus,&quot;.original.condz.dist.rds&quot;)))
+susie_new_res &lt;- readRDS(file.path(outdir, paste0(trait, &quot;.test.locus&quot;, locus,&quot;.changed.condz.dist.rds&quot;)))
+
+stopifnot(all.equal(locus_df$snp, susie_original_res$id))
+stopifnot(all.equal(locus_df$snp, susie_new_res$id))
+
+locus_df$susie_original_LP &lt;- -log10(susie_original_res$p_diff)
+locus_df$susie_original_logLR &lt;- susie_original_res$logLR
+
+locus_df$susie_new_LP &lt;- -log10(susie_new_res$p_diff)
+locus_df$susie_new_logLR &lt;- susie_new_res$logLR</code></pre>
+<p>DENTIST result</p>
+<pre class="r"><code>dentist_res &lt;- data.table::fread(file.path(outdir, paste0(trait, &quot;.test.locus&quot;, locus, &quot;.original.DENTIST.full.txt&quot;)))
+colnames(dentist_res) &lt;- c(&quot;rsID&quot;, &quot;chisq&quot;, &quot;LP&quot;, &quot;ifDup&quot;)
+m &lt;- match(locus_df$snp, dentist_res$rsID)
+locus_df$dentist_original_LP &lt;- dentist_res$LP[m]
+
+dentist_res &lt;- data.table::fread(file.path(outdir, paste0(trait, &quot;.test.locus&quot;, locus, &quot;.original.10iters.DENTIST.full.txt&quot;)))
+colnames(dentist_res) &lt;- c(&quot;rsID&quot;, &quot;chisq&quot;, &quot;LP&quot;, &quot;ifDup&quot;)
+m &lt;- match(locus_df$snp, dentist_res$rsID)
+locus_df$dentist_original_10iters_LP &lt;- dentist_res$LP[m]
+
+dentist_res &lt;- data.table::fread(file.path(outdir, paste0(trait, &quot;.test.locus&quot;, locus, &quot;.original.1Mb.DENTIST.full.txt&quot;)))
+colnames(dentist_res) &lt;- c(&quot;rsID&quot;, &quot;chisq&quot;, &quot;LP&quot;, &quot;ifDup&quot;)
+m &lt;- match(locus_df$snp, dentist_res$rsID)
+locus_df$dentist_original_1Mb_LP &lt;- dentist_res$LP[m]
+
+dentist_res &lt;- data.table::fread(file.path(outdir, paste0(trait, &quot;.test.locus&quot;, locus, &quot;.original.1Mb.10iters.DENTIST.full.txt&quot;)))
+colnames(dentist_res) &lt;- c(&quot;rsID&quot;, &quot;chisq&quot;, &quot;LP&quot;, &quot;ifDup&quot;)
+m &lt;- match(locus_df$snp, dentist_res$rsID)
+locus_df$dentist_original_1Mb_10iters_LP &lt;- dentist_res$LP[m]</code></pre>
+<pre class="r"><code>dentist_res &lt;- data.table::fread(file.path(outdir, paste0(trait, &quot;.test.locus&quot;, locus, &quot;.changed.DENTIST.full.txt&quot;)))
+colnames(dentist_res) &lt;- c(&quot;rsID&quot;, &quot;chisq&quot;, &quot;LP&quot;, &quot;ifDup&quot;)
+m &lt;- match(locus_df$snp, dentist_res$rsID)
+locus_df$dentist_new_LP &lt;- dentist_res$LP[m]
+
+dentist_res &lt;- data.table::fread(file.path(outdir, paste0(trait, &quot;.test.locus&quot;, locus, &quot;.changed.10iters.DENTIST.full.txt&quot;)))
+colnames(dentist_res) &lt;- c(&quot;rsID&quot;, &quot;chisq&quot;, &quot;LP&quot;, &quot;ifDup&quot;)
+m &lt;- match(locus_df$snp, dentist_res$rsID)
+locus_df$dentist_new_10iters_LP &lt;- dentist_res$LP[m]
+
+dentist_res &lt;- data.table::fread(file.path(outdir, paste0(trait, &quot;.test.locus&quot;, locus, &quot;.changed.1Mb.DENTIST.full.txt&quot;)))
+colnames(dentist_res) &lt;- c(&quot;rsID&quot;, &quot;chisq&quot;, &quot;LP&quot;, &quot;ifDup&quot;)
+m &lt;- match(locus_df$snp, dentist_res$rsID)
+locus_df$dentist_new_1Mb_LP &lt;- dentist_res$LP[m]
+
+dentist_res &lt;- data.table::fread(file.path(outdir, paste0(trait, &quot;.test.locus&quot;, locus, &quot;.changed.1Mb.10iters.DENTIST.full.txt&quot;)))
+colnames(dentist_res) &lt;- c(&quot;rsID&quot;, &quot;chisq&quot;, &quot;LP&quot;, &quot;ifDup&quot;)
+m &lt;- match(locus_df$snp, dentist_res$rsID)
+locus_df$dentist_new_1Mb_10iters_LP &lt;- dentist_res$LP[m]</code></pre>
+<p>DENTIST vs. SuSiE on original data</p>
+<pre class="r"><code>p1 &lt;- ggplot(na.omit(locus_df), aes(x = dentist_original_10iters_LP, y = susie_original_LP)) +
+  geom_point(alpha=0.6) +
+  xlim(0, 100) + ylim(0, 100) +
+  labs(x = &quot;DENTIST original 2Mb window -log10P&quot;, y = &quot;SuSiE original -log10P&quot;, 
+       title = paste0(trait, &quot; locus&quot;, locus)) +
+  geom_abline(intercept = 0, slope = 1) + 
+  geom_vline(xintercept = -log10(5e-8), col = &quot;red&quot;) +
+  geom_hline(yintercept = -log10(5e-8), col = &quot;red&quot;) +
+  theme_bw()
+
+p2 &lt;- ggplot(na.omit(locus_df), aes(x = dentist_original_1Mb_10iters_LP, y = susie_original_LP)) +
+  geom_point(alpha=0.6) +
+  xlim(0, 100) + ylim(0, 100) +
+  labs(x = &quot;DENTIST original 1Mb window -log10P&quot;, y = &quot;SuSiE original -log10P&quot;, 
+       title = paste0(trait, &quot; locus&quot;, locus)) +
+  geom_abline(intercept = 0, slope = 1) + 
+  geom_vline(xintercept = -log10(5e-8), col = &quot;red&quot;) +
+  geom_hline(yintercept = -log10(5e-8), col = &quot;red&quot;) +
+  theme_bw()
+
+p3 &lt;- ggplot(na.omit(locus_df), aes(x = dentist_original_10iters_LP, y = dentist_original_LP)) +
+  geom_point(alpha=0.6) +
+  xlim(0, 100) + ylim(0, 100) +
+  labs(x = &quot;DENTIST original 2Mb window 10 iterations -log10P&quot;, 
+       y = &quot;DENTIST original 2Mb window 1 iteration -log10P&quot;, 
+       title = paste0(trait, &quot; locus&quot;, locus)) +
+  geom_abline(intercept = 0, slope = 1) + 
+  geom_vline(xintercept = -log10(5e-8), col = &quot;red&quot;) +
+  geom_hline(yintercept = -log10(5e-8), col = &quot;red&quot;) +
+  theme_bw()
+
+p4 &lt;- ggplot(na.omit(locus_df), aes(x = dentist_original_1Mb_10iters_LP, y = dentist_original_1Mb_LP)) +
+  geom_point(alpha=0.6) +
+  xlim(0, 100) + ylim(0, 100) +
+  labs(x = &quot;DENTIST original 2Mb window 10 iterations -log10P&quot;, 
+       y = &quot;DENTIST original 2Mb window 1 iteration -log10P&quot;, 
+       title = paste0(trait, &quot; locus&quot;, locus)) +
+  geom_abline(intercept = 0, slope = 1) + 
+  geom_vline(xintercept = -log10(5e-8), col = &quot;red&quot;) +
+  geom_hline(yintercept = -log10(5e-8), col = &quot;red&quot;) +
+  theme_bw()
+
+cowplot::plot_grid(p1, p2, p3, p4, 
+                   labels = c(&#39;A&#39;, &#39;B&#39;, &#39;C&#39;, &#39;D&#39;),
+                   align=&quot;hv&quot;)</code></pre>
+<pre><code># Warning: Removed 1 rows containing missing values (`geom_point()`).
+# Removed 1 rows containing missing values (`geom_point()`).</code></pre>
+<p><img src="figure/test_LD_mismatch_DENTIST_susierss.Rmd/unnamed-chunk-9-1.png" width="960" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-9-1">
+Past versions of unnamed-chunk-9-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-9-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/78e8869553e8fb7726931cab30c89aa6216eddbf/docs/figure/test_LD_mismatch_DENTIST_susierss.Rmd/unnamed-chunk-9-1.png" target="_blank">78e8869</a>
+</td>
+<td>
+kevinlkx
+</td>
+<td>
+2023-12-07
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>DENTIST 1 iteration vs. 10 iterations, 1Mb vs. 2Mb window</p>
+<pre class="r"><code>p1 &lt;- ggplot(na.omit(locus_df), aes(x = dentist_new_LP, y = dentist_new_10iters_LP, col = factor(changed))) +
+  geom_point(alpha=0.6) +
+  scale_colour_manual(values = c(&quot;0&quot; = &quot;black&quot;, &quot;1&quot; = &quot;red&quot;)) +
+  xlim(0, 100) + ylim(0, 100) +
+  labs(x = &quot;DENTIST 2Mb window 1 iterations -log10P&quot;, 
+       y = &quot;DENTIST 2Mb window 10 iteration -log10P&quot;, 
+       color = &quot;Mismatch&quot;, 
+       title = paste0(trait, &quot; locus&quot;, locus)) +
+  geom_abline(intercept = 0, slope = 1) + 
+  geom_vline(xintercept = -log10(5e-8), col = &quot;red&quot;) +
+  geom_hline(yintercept = -log10(5e-8), col = &quot;red&quot;) +
+  theme_bw()
+
+p2 &lt;- ggplot(na.omit(locus_df), aes(x = dentist_new_1Mb_LP, y = dentist_new_1Mb_10iters_LP, col = factor(changed))) +
+  geom_point(alpha=0.6) +
+  scale_colour_manual(values = c(&quot;0&quot; = &quot;black&quot;, &quot;1&quot; = &quot;red&quot;)) +
+  xlim(0, 100) + ylim(0, 100) +
+  labs(x = &quot;DENTIST 1Mb window 1 iterations -log10P&quot;, 
+       y = &quot;DENTIST 1Mb window 10 iteration -log10P&quot;, 
+       color = &quot;Mismatch&quot;, 
+       title = paste0(trait, &quot; locus&quot;, locus)) +
+  geom_abline(intercept = 0, slope = 1) + 
+  geom_vline(xintercept = -log10(5e-8), col = &quot;red&quot;) +
+  geom_hline(yintercept = -log10(5e-8), col = &quot;red&quot;) +
+  theme_bw()
+
+p3 &lt;- ggplot(na.omit(locus_df), aes(x = dentist_new_LP, y = dentist_new_1Mb_LP, col = factor(changed))) +
+  geom_point(alpha=0.6) +
+  scale_colour_manual(values = c(&quot;0&quot; = &quot;black&quot;, &quot;1&quot; = &quot;red&quot;)) +
+  xlim(0, 100) + ylim(0, 100) +
+  labs(x = &quot;DENTIST 2Mb window 1iteration -log10P&quot;, 
+       y = &quot;DENTIST 1Mb window 1iteration -log10P&quot;, 
+       color = &quot;Mismatch&quot;, 
+       title = paste0(trait, &quot; locus&quot;, locus)) +
+  geom_abline(intercept = 0, slope = 1) + 
+  geom_vline(xintercept = -log10(5e-8), col = &quot;red&quot;) +
+  geom_hline(yintercept = -log10(5e-8), col = &quot;red&quot;) +
+  theme_bw()
+
+p4 &lt;- ggplot(na.omit(locus_df), aes(x = dentist_new_10iters_LP, y = dentist_new_1Mb_10iters_LP, col = factor(changed))) +
+  geom_point(alpha=0.6) +
+  scale_colour_manual(values = c(&quot;0&quot; = &quot;black&quot;, &quot;1&quot; = &quot;red&quot;)) +
+  xlim(0, 100) + ylim(0, 100) +
+  labs(x = &quot;DENTIST 2Mb window 10 iterations -log10P&quot;, 
+       y = &quot;DENTIST 1Mb window 10 iterations -log10P&quot;, 
+       color = &quot;Mismatch&quot;, 
+       title = paste0(trait, &quot; locus&quot;, locus)) +
+  geom_abline(intercept = 0, slope = 1) + 
+  geom_vline(xintercept = -log10(5e-8), col = &quot;red&quot;) +
+  geom_hline(yintercept = -log10(5e-8), col = &quot;red&quot;) +
+  theme_bw()
+
+cowplot::plot_grid(p1, p2, p3, p4, 
+                   labels = c(&#39;A&#39;, &#39;B&#39;, &#39;C&#39;, &#39;D&#39;),
+                   align=&quot;hv&quot;)</code></pre>
+<pre><code># Warning: Removed 2 rows containing missing values (`geom_point()`).</code></pre>
+<pre><code># Warning: Removed 1 rows containing missing values (`geom_point()`).
+# Removed 1 rows containing missing values (`geom_point()`).</code></pre>
+<pre><code># Warning: Removed 2 rows containing missing values (`geom_point()`).</code></pre>
+<p><img src="figure/test_LD_mismatch_DENTIST_susierss.Rmd/unnamed-chunk-10-1.png" width="960" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-10-1">
+Past versions of unnamed-chunk-10-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-10-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/78e8869553e8fb7726931cab30c89aa6216eddbf/docs/figure/test_LD_mismatch_DENTIST_susierss.Rmd/unnamed-chunk-10-1.png" target="_blank">78e8869</a>
+</td>
+<td>
+kevinlkx
+</td>
+<td>
+2023-12-07
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>DENTIST vs. SuSiE RSS</p>
+<pre class="r"><code>p1 &lt;- ggplot(na.omit(locus_df), aes(x = dentist_new_LP, y = susie_new_LP, col = factor(changed))) +
+  geom_point(alpha=0.6) +
+  scale_colour_manual(values = c(&quot;0&quot; = &quot;black&quot;, &quot;1&quot; = &quot;red&quot;)) +
+  xlim(0, 100) + ylim(0, 100) +
+  labs(x = &quot;DENTIST 2Mb window 1 iteration -log10P&quot;, y = &quot;SuSiE -log10P&quot;, 
+       color = &quot;Mismatch&quot;, 
+       title = paste0(trait, &quot; locus&quot;, locus)) +
+  geom_abline(intercept = 0, slope = 1) + 
+  geom_vline(xintercept = -log10(5e-8), col = &quot;red&quot;) +
+  geom_hline(yintercept = -log10(5e-8), col = &quot;red&quot;) +
+  theme_bw()
+
+p2 &lt;- ggplot(na.omit(locus_df), aes(x = dentist_new_1Mb_LP, y = susie_new_LP, col = factor(changed))) +
+  geom_point(alpha=0.6) +
+  scale_colour_manual(values = c(&quot;0&quot; = &quot;black&quot;, &quot;1&quot; = &quot;red&quot;)) +
+  xlim(0, 100) + ylim(0, 100) +
+  labs(x = &quot;DENTIST 1Mb window 1 iteration -log10P&quot;, y = &quot;SuSiE -log10P&quot;, 
+       color = &quot;Mismatch&quot;, 
+       title = paste0(trait, &quot; locus&quot;, locus)) +
+  geom_abline(intercept = 0, slope = 1) + 
+  geom_vline(xintercept = -log10(5e-8), col = &quot;red&quot;) +
+  geom_hline(yintercept = -log10(5e-8), col = &quot;red&quot;) +
+  theme_bw()
+
+p3 &lt;- ggplot(na.omit(locus_df), aes(x = dentist_new_10iters_LP, y = susie_new_LP, col = factor(changed))) +
+  geom_point(alpha=0.6) +
+  scale_colour_manual(values = c(&quot;0&quot; = &quot;black&quot;, &quot;1&quot; = &quot;red&quot;)) +
+  xlim(0, 100) + ylim(0, 100) +
+  labs(x = &quot;DENTIST 2Mb window 10 iterations -log10P&quot;, y = &quot;SuSiE -log10P&quot;, 
+       color = &quot;Mismatch&quot;, 
+       title = paste0(trait, &quot; locus&quot;, locus)) +
+  geom_abline(intercept = 0, slope = 1) + 
+  geom_vline(xintercept = -log10(5e-8), col = &quot;red&quot;) +
+  geom_hline(yintercept = -log10(5e-8), col = &quot;red&quot;) +
+  theme_bw()
+
+p4 &lt;- ggplot(na.omit(locus_df), aes(x = dentist_new_1Mb_10iters_LP, y = susie_new_LP, col = factor(changed))) +
+  geom_point(alpha=0.6) +
+  scale_colour_manual(values = c(&quot;0&quot; = &quot;black&quot;, &quot;1&quot; = &quot;red&quot;)) +
+  xlim(0, 100) + ylim(0, 100) +
+  labs(x = &quot;DENTIST 1Mb window 10 iterations -log10P&quot;, y = &quot;SuSiE -log10P&quot;, 
+       color = &quot;Mismatch&quot;, 
+       title = paste0(trait, &quot; locus&quot;, locus)) +
+  geom_abline(intercept = 0, slope = 1) + 
+  geom_vline(xintercept = -log10(5e-8), col = &quot;red&quot;) +
+  geom_hline(yintercept = -log10(5e-8), col = &quot;red&quot;) +
+  theme_bw()
+
+cowplot::plot_grid(p1, p2, p3, p4, 
+                   labels = c(&#39;A&#39;, &#39;B&#39;, &#39;C&#39;, &#39;D&#39;),
+                   align=&quot;hv&quot;)</code></pre>
+<pre><code># Warning: Removed 2 rows containing missing values (`geom_point()`).
+# Removed 2 rows containing missing values (`geom_point()`).
+# Removed 2 rows containing missing values (`geom_point()`).
+# Removed 2 rows containing missing values (`geom_point()`).</code></pre>
+<p><img src="figure/test_LD_mismatch_DENTIST_susierss.Rmd/unnamed-chunk-11-1.png" width="960" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-11-1">
+Past versions of unnamed-chunk-11-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-11-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/78e8869553e8fb7726931cab30c89aa6216eddbf/docs/figure/test_LD_mismatch_DENTIST_susierss.Rmd/unnamed-chunk-11-1.png" target="_blank">78e8869</a>
+</td>
+<td>
+kevinlkx
+</td>
+<td>
+2023-12-07
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code># R version 4.2.0 (2022-04-22)
+# Platform: x86_64-pc-linux-gnu (64-bit)
+# Running under: CentOS Linux 7 (Core)
+# 
+# Matrix products: default
+# BLAS/LAPACK: /software/openblas-0.3.13-el7-x86_64/lib/libopenblas_haswellp-r0.3.13.so
+# 
+# locale:
+#  [1] LC_CTYPE=en_US.UTF-8 LC_NUMERIC=C         LC_TIME=C           
+#  [4] LC_COLLATE=C         LC_MONETARY=C        LC_MESSAGES=C       
+#  [7] LC_PAPER=C           LC_NAME=C            LC_ADDRESS=C        
+# [10] LC_TELEPHONE=C       LC_MEASUREMENT=C     LC_IDENTIFICATION=C 
+# 
+# attached base packages:
+# [1] stats     graphics  grDevices utils     datasets  methods   base     
+# 
+# other attached packages:
+#  [1] forcats_1.0.0     stringr_1.5.0     dplyr_1.1.0       purrr_1.0.1      
+#  [5] readr_2.1.4       tidyr_1.3.0       tibble_3.1.8      ggplot2_3.4.1    
+#  [9] tidyverse_1.3.2   data.table_1.14.6 ctwas_0.1.35      workflowr_1.7.0  
+# 
+# loaded via a namespace (and not attached):
+#  [1] httr_1.4.4          sass_0.4.5          jsonlite_1.8.4     
+#  [4] foreach_1.5.2       pgenlibr_0.3.3      logging_0.10-108   
+#  [7] modelr_0.1.10       bslib_0.4.2         assertthat_0.2.1   
+# [10] getPass_0.2-2       highr_0.10          googlesheets4_1.0.1
+# [13] cellranger_1.1.0    yaml_2.3.7          pillar_1.8.1       
+# [16] backports_1.4.1     lattice_0.20-45     glue_1.6.2         
+# [19] digest_0.6.31       promises_1.2.0.1    rvest_1.0.3        
+# [22] colorspace_2.1-0    cowplot_1.1.1       htmltools_0.5.4    
+# [25] httpuv_1.6.5        Matrix_1.5-3        pkgconfig_2.0.3    
+# [28] broom_1.0.3         haven_2.5.1         scales_1.2.1       
+# [31] processx_3.8.0      whisker_0.4         later_1.3.0        
+# [34] tzdb_0.3.0          timechange_0.2.0    git2r_0.30.1       
+# [37] googledrive_2.0.0   farver_2.1.1        generics_0.1.3     
+# [40] ellipsis_0.3.2      cachem_1.0.6        withr_2.5.0        
+# [43] cli_3.6.0           crayon_1.5.2        magrittr_2.0.3     
+# [46] readxl_1.4.2        evaluate_0.20       ps_1.7.2           
+# [49] fs_1.6.1            fansi_1.0.4         xml2_1.3.3         
+# [52] tools_4.2.0         hms_1.1.2           gargle_1.3.0       
+# [55] lifecycle_1.0.3     munsell_0.5.0       reprex_2.0.2       
+# [58] callr_3.7.3         compiler_4.2.0      jquerylib_0.1.4    
+# [61] rlang_1.0.6         grid_4.2.0          iterators_1.0.14   
+# [64] rstudioapi_0.14     labeling_0.4.2      rmarkdown_2.20     
+# [67] gtable_0.3.1        codetools_0.2-18    DBI_1.1.3          
+# [70] R6_2.5.1            lubridate_1.9.2     knitr_1.42         
+# [73] fastmap_1.1.0       utf8_1.2.3          rprojroot_2.0.3    
+# [76] stringi_1.7.12      Rcpp_1.0.10         vctrs_0.5.2        
+# [79] dbplyr_2.3.0        tidyselect_1.2.0    xfun_0.37</code></pre>
+</div>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

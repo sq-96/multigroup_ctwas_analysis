@@ -1,0 +1,319 @@
+---
+title: "Compare DENTIST and SuSiE_RSS for LD mismatch detection on example locus with manually changed z-scores"
+author: "Kaixuan Luo"
+date: "`r Sys.Date()`"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+---
+
+```{r knitr-opts, include=FALSE}
+knitr::opts_chunk$set(comment = "#", results = "hold")
+```
+
+Load packages and functions
+```{r packages, message=FALSE}
+library(ctwas)
+library(data.table)
+library(tidyverse)
+```
+
+## LDL
+
+ * LDL GWAS and LD reference panel are both from UKBB.
+ * Select one locus in chr22.
+ * Randomly changed the z-scores for 100 variants (50 with abs(z) > 2 and 50 with abs(z) < 2).
+ * Randomly flipped the z-scores for 20 variants (10 with abs(z) > 2 and 10 with abs(z) < 2).
+ * Run DENTIST on the GWAS sumstats of the locus, with 2Mb vs. 1Mb window, or 1 iteration vs. 10 iterations.
+ 
+```{r}
+trait <- "LDL"
+```
+
+LD Regions (ldetect blocks)
+```{r}
+regions <- system.file("extdata/ldetect", "EUR.b38.bed", package = "ctwas")
+regions_df <- read.table(regions, header = T)
+regions_df <- regions_df %>% dplyr::arrange(chr, start, stop) %>% dplyr::mutate(locus = 1:nrow(regions_df))
+```
+
+### Locus 950
+
+```{r}
+locus = "950"
+outdir <- paste0("/project2/xinhe/shared_data/multigroup_ctwas/ld_mismatch_test/", trait)
+sumstats_hg38_locus <- readRDS(file.path(outdir, paste0(trait, ".test.locus", locus,".changed.sumstats.rds")))
+
+region_df <- regions_df[regions_df$locus == locus,]
+print(region_df)
+
+locus_df <- sumstats_hg38_locus
+```
+
+Load Allele Frequency
+```{r}
+CHR=22
+dentist.dir <- paste0("/project2/xinhe/shared_data/multigroup_ctwas/DENTIST/", trait)
+dentist.freq.df <- data.table::fread(file.path(dentist.dir, paste0("LDL-ukb-d-30780_irnt.ukb_chr", CHR, ".b38.frq")))
+
+locus_df$Freq_A1 <- dentist.freq.df$Freq_A1[match(locus_df$snp, dentist.freq.df$RS_ID)]
+locus_df$MAF <- pmin(locus_df$Freq_A1, 1-locus_df$Freq_A1)
+```
+
+SuSiE result
+```{r}
+susie_original_res <- readRDS(file.path(outdir, paste0(trait, ".test.locus", locus,".original.condz.dist.rds")))
+susie_new_res <- readRDS(file.path(outdir, paste0(trait, ".test.locus", locus,".changed.condz.dist.rds")))
+
+stopifnot(all.equal(locus_df$snp, susie_original_res$id))
+stopifnot(all.equal(locus_df$snp, susie_new_res$id))
+
+locus_df$susie_original_LP <- -log10(susie_original_res$p_diff)
+locus_df$susie_original_logLR <- susie_original_res$logLR
+
+locus_df$susie_new_LP <- -log10(susie_new_res$p_diff)
+locus_df$susie_new_logLR <- susie_new_res$logLR
+```
+
+DENTIST result
+```{r}
+dentist_res <- data.table::fread(file.path(outdir, paste0(trait, ".test.locus", locus, ".original.DENTIST.full.txt")))
+colnames(dentist_res) <- c("rsID", "chisq", "LP", "ifDup")
+m <- match(locus_df$snp, dentist_res$rsID)
+locus_df$dentist_original_LP <- dentist_res$LP[m]
+
+dentist_res <- data.table::fread(file.path(outdir, paste0(trait, ".test.locus", locus, ".original.10iters.DENTIST.full.txt")))
+colnames(dentist_res) <- c("rsID", "chisq", "LP", "ifDup")
+m <- match(locus_df$snp, dentist_res$rsID)
+locus_df$dentist_original_10iters_LP <- dentist_res$LP[m]
+
+dentist_res <- data.table::fread(file.path(outdir, paste0(trait, ".test.locus", locus, ".original.1Mb.DENTIST.full.txt")))
+colnames(dentist_res) <- c("rsID", "chisq", "LP", "ifDup")
+m <- match(locus_df$snp, dentist_res$rsID)
+locus_df$dentist_original_1Mb_LP <- dentist_res$LP[m]
+
+dentist_res <- data.table::fread(file.path(outdir, paste0(trait, ".test.locus", locus, ".original.1Mb.10iters.DENTIST.full.txt")))
+colnames(dentist_res) <- c("rsID", "chisq", "LP", "ifDup")
+m <- match(locus_df$snp, dentist_res$rsID)
+locus_df$dentist_original_1Mb_10iters_LP <- dentist_res$LP[m]
+```
+
+```{r}
+dentist_res <- data.table::fread(file.path(outdir, paste0(trait, ".test.locus", locus, ".changed.DENTIST.full.txt")))
+colnames(dentist_res) <- c("rsID", "chisq", "LP", "ifDup")
+m <- match(locus_df$snp, dentist_res$rsID)
+locus_df$dentist_new_LP <- dentist_res$LP[m]
+
+dentist_res <- data.table::fread(file.path(outdir, paste0(trait, ".test.locus", locus, ".changed.10iters.DENTIST.full.txt")))
+colnames(dentist_res) <- c("rsID", "chisq", "LP", "ifDup")
+m <- match(locus_df$snp, dentist_res$rsID)
+locus_df$dentist_new_10iters_LP <- dentist_res$LP[m]
+
+dentist_res <- data.table::fread(file.path(outdir, paste0(trait, ".test.locus", locus, ".changed.1Mb.DENTIST.full.txt")))
+colnames(dentist_res) <- c("rsID", "chisq", "LP", "ifDup")
+m <- match(locus_df$snp, dentist_res$rsID)
+locus_df$dentist_new_1Mb_LP <- dentist_res$LP[m]
+
+dentist_res <- data.table::fread(file.path(outdir, paste0(trait, ".test.locus", locus, ".changed.1Mb.10iters.DENTIST.full.txt")))
+colnames(dentist_res) <- c("rsID", "chisq", "LP", "ifDup")
+m <- match(locus_df$snp, dentist_res$rsID)
+locus_df$dentist_new_1Mb_10iters_LP <- dentist_res$LP[m]
+```
+
+```{r, eval=FALSE, include=FALSE}
+table(locus_df$changed)
+table(locus_df$changed[!is.na(locus_df$dentist_original_LP)])
+
+table(locus_df$flipped)
+table(locus_df$flipped[!is.na(locus_df$dentist_original_LP)])
+
+locus_df$susie_original_flipped <- 0
+locus_df$susie_original_flipped[which(locus_df$susie_original_logLR > 2 & abs(locus_df$z) > 2)] <- 1
+locus_df$susie_new_flipped <- 0
+locus_df$susie_new_flipped[which(locus_df$susie_new_logLR > 2 & abs(locus_df$z) > 2)] <- 1
+
+locus_df$susie_original_detected <- 0
+locus_df$susie_original_detected[which(locus_df$susie_original_LP > -log10(5e-8))] <- 1
+locus_df$susie_new_detected <- 0
+locus_df$susie_new_detected[which(locus_df$susie_new_LP > -log10(5e-8))] <- 1
+
+locus_df$dentist_original_detected <- 0
+locus_df$dentist_original_detected[which(locus_df$dentist_original_LP > -log10(5e-8))] <- 1
+locus_df$dentist_original_1Mb_detected <- 0
+locus_df$dentist_original_1Mb_detected[which(locus_df$dentist_original_1Mb_LP > -log10(5e-8))] <- 1
+
+locus_df$dentist_new_detected <- 0
+locus_df$dentist_new_detected[which(locus_df$dentist_new_LP > -log10(5e-8))] <- 1
+locus_df$dentist_new_1Mb_detected <- 0
+locus_df$dentist_new_1Mb_detected[which(locus_df$dentist_new_1Mb_LP > -log10(5e-8))] <- 1
+
+locus_df %>% dplyr::filter(changed == 1) %>% select(z, new_z, p, susie_new_logLR,
+                                                    susie_new_detected, susie_new_flipped, 
+                                                    dentist_new_detected, dentist_new_1Mb_detected,
+                                                    susie_new_LP, dentist_new_LP, dentist_new_1Mb_LP)
+
+```
+
+DENTIST vs. SuSiE on original data
+```{r, fig.width=10, fig.height=8}
+p1 <- ggplot(na.omit(locus_df), aes(x = dentist_original_10iters_LP, y = susie_original_LP)) +
+  geom_point(alpha=0.6) +
+  xlim(0, 100) + ylim(0, 100) +
+  labs(x = "DENTIST original 2Mb window -log10P", y = "SuSiE original -log10P", 
+       title = paste0(trait, " locus", locus)) +
+  geom_abline(intercept = 0, slope = 1) + 
+  geom_vline(xintercept = -log10(5e-8), col = "red") +
+  geom_hline(yintercept = -log10(5e-8), col = "red") +
+  theme_bw()
+
+p2 <- ggplot(na.omit(locus_df), aes(x = dentist_original_1Mb_10iters_LP, y = susie_original_LP)) +
+  geom_point(alpha=0.6) +
+  xlim(0, 100) + ylim(0, 100) +
+  labs(x = "DENTIST original 1Mb window -log10P", y = "SuSiE original -log10P", 
+       title = paste0(trait, " locus", locus)) +
+  geom_abline(intercept = 0, slope = 1) + 
+  geom_vline(xintercept = -log10(5e-8), col = "red") +
+  geom_hline(yintercept = -log10(5e-8), col = "red") +
+  theme_bw()
+
+p3 <- ggplot(na.omit(locus_df), aes(x = dentist_original_10iters_LP, y = dentist_original_LP)) +
+  geom_point(alpha=0.6) +
+  xlim(0, 100) + ylim(0, 100) +
+  labs(x = "DENTIST original 2Mb window 10 iterations -log10P", 
+       y = "DENTIST original 2Mb window 1 iteration -log10P", 
+       title = paste0(trait, " locus", locus)) +
+  geom_abline(intercept = 0, slope = 1) + 
+  geom_vline(xintercept = -log10(5e-8), col = "red") +
+  geom_hline(yintercept = -log10(5e-8), col = "red") +
+  theme_bw()
+
+p4 <- ggplot(na.omit(locus_df), aes(x = dentist_original_1Mb_10iters_LP, y = dentist_original_1Mb_LP)) +
+  geom_point(alpha=0.6) +
+  xlim(0, 100) + ylim(0, 100) +
+  labs(x = "DENTIST original 2Mb window 10 iterations -log10P", 
+       y = "DENTIST original 2Mb window 1 iteration -log10P", 
+       title = paste0(trait, " locus", locus)) +
+  geom_abline(intercept = 0, slope = 1) + 
+  geom_vline(xintercept = -log10(5e-8), col = "red") +
+  geom_hline(yintercept = -log10(5e-8), col = "red") +
+  theme_bw()
+
+cowplot::plot_grid(p1, p2, p3, p4, 
+                   labels = c('A', 'B', 'C', 'D'),
+                   align="hv")
+```
+
+DENTIST 1 iteration vs. 10 iterations, 1Mb vs. 2Mb window
+```{r, fig.width=10, fig.height=8}
+p1 <- ggplot(na.omit(locus_df), aes(x = dentist_new_LP, y = dentist_new_10iters_LP, col = factor(changed))) +
+  geom_point(alpha=0.6) +
+  scale_colour_manual(values = c("0" = "black", "1" = "red")) +
+  xlim(0, 100) + ylim(0, 100) +
+  labs(x = "DENTIST 2Mb window 1 iterations -log10P", 
+       y = "DENTIST 2Mb window 10 iteration -log10P", 
+       color = "Mismatch", 
+       title = paste0(trait, " locus", locus)) +
+  geom_abline(intercept = 0, slope = 1) + 
+  geom_vline(xintercept = -log10(5e-8), col = "red") +
+  geom_hline(yintercept = -log10(5e-8), col = "red") +
+  theme_bw()
+
+p2 <- ggplot(na.omit(locus_df), aes(x = dentist_new_1Mb_LP, y = dentist_new_1Mb_10iters_LP, col = factor(changed))) +
+  geom_point(alpha=0.6) +
+  scale_colour_manual(values = c("0" = "black", "1" = "red")) +
+  xlim(0, 100) + ylim(0, 100) +
+  labs(x = "DENTIST 1Mb window 1 iterations -log10P", 
+       y = "DENTIST 1Mb window 10 iteration -log10P", 
+       color = "Mismatch", 
+       title = paste0(trait, " locus", locus)) +
+  geom_abline(intercept = 0, slope = 1) + 
+  geom_vline(xintercept = -log10(5e-8), col = "red") +
+  geom_hline(yintercept = -log10(5e-8), col = "red") +
+  theme_bw()
+
+p3 <- ggplot(na.omit(locus_df), aes(x = dentist_new_LP, y = dentist_new_1Mb_LP, col = factor(changed))) +
+  geom_point(alpha=0.6) +
+  scale_colour_manual(values = c("0" = "black", "1" = "red")) +
+  xlim(0, 100) + ylim(0, 100) +
+  labs(x = "DENTIST 2Mb window 1iteration -log10P", 
+       y = "DENTIST 1Mb window 1iteration -log10P", 
+       color = "Mismatch", 
+       title = paste0(trait, " locus", locus)) +
+  geom_abline(intercept = 0, slope = 1) + 
+  geom_vline(xintercept = -log10(5e-8), col = "red") +
+  geom_hline(yintercept = -log10(5e-8), col = "red") +
+  theme_bw()
+
+p4 <- ggplot(na.omit(locus_df), aes(x = dentist_new_10iters_LP, y = dentist_new_1Mb_10iters_LP, col = factor(changed))) +
+  geom_point(alpha=0.6) +
+  scale_colour_manual(values = c("0" = "black", "1" = "red")) +
+  xlim(0, 100) + ylim(0, 100) +
+  labs(x = "DENTIST 2Mb window 10 iterations -log10P", 
+       y = "DENTIST 1Mb window 10 iterations -log10P", 
+       color = "Mismatch", 
+       title = paste0(trait, " locus", locus)) +
+  geom_abline(intercept = 0, slope = 1) + 
+  geom_vline(xintercept = -log10(5e-8), col = "red") +
+  geom_hline(yintercept = -log10(5e-8), col = "red") +
+  theme_bw()
+
+cowplot::plot_grid(p1, p2, p3, p4, 
+                   labels = c('A', 'B', 'C', 'D'),
+                   align="hv")
+```
+
+DENTIST vs. SuSiE RSS
+```{r, fig.width=10, fig.height=8}
+p1 <- ggplot(na.omit(locus_df), aes(x = dentist_new_LP, y = susie_new_LP, col = factor(changed))) +
+  geom_point(alpha=0.6) +
+  scale_colour_manual(values = c("0" = "black", "1" = "red")) +
+  xlim(0, 100) + ylim(0, 100) +
+  labs(x = "DENTIST 2Mb window 1 iteration -log10P", y = "SuSiE -log10P", 
+       color = "Mismatch", 
+       title = paste0(trait, " locus", locus)) +
+  geom_abline(intercept = 0, slope = 1) + 
+  geom_vline(xintercept = -log10(5e-8), col = "red") +
+  geom_hline(yintercept = -log10(5e-8), col = "red") +
+  theme_bw()
+
+p2 <- ggplot(na.omit(locus_df), aes(x = dentist_new_1Mb_LP, y = susie_new_LP, col = factor(changed))) +
+  geom_point(alpha=0.6) +
+  scale_colour_manual(values = c("0" = "black", "1" = "red")) +
+  xlim(0, 100) + ylim(0, 100) +
+  labs(x = "DENTIST 1Mb window 1 iteration -log10P", y = "SuSiE -log10P", 
+       color = "Mismatch", 
+       title = paste0(trait, " locus", locus)) +
+  geom_abline(intercept = 0, slope = 1) + 
+  geom_vline(xintercept = -log10(5e-8), col = "red") +
+  geom_hline(yintercept = -log10(5e-8), col = "red") +
+  theme_bw()
+
+p3 <- ggplot(na.omit(locus_df), aes(x = dentist_new_10iters_LP, y = susie_new_LP, col = factor(changed))) +
+  geom_point(alpha=0.6) +
+  scale_colour_manual(values = c("0" = "black", "1" = "red")) +
+  xlim(0, 100) + ylim(0, 100) +
+  labs(x = "DENTIST 2Mb window 10 iterations -log10P", y = "SuSiE -log10P", 
+       color = "Mismatch", 
+       title = paste0(trait, " locus", locus)) +
+  geom_abline(intercept = 0, slope = 1) + 
+  geom_vline(xintercept = -log10(5e-8), col = "red") +
+  geom_hline(yintercept = -log10(5e-8), col = "red") +
+  theme_bw()
+
+p4 <- ggplot(na.omit(locus_df), aes(x = dentist_new_1Mb_10iters_LP, y = susie_new_LP, col = factor(changed))) +
+  geom_point(alpha=0.6) +
+  scale_colour_manual(values = c("0" = "black", "1" = "red")) +
+  xlim(0, 100) + ylim(0, 100) +
+  labs(x = "DENTIST 1Mb window 10 iterations -log10P", y = "SuSiE -log10P", 
+       color = "Mismatch", 
+       title = paste0(trait, " locus", locus)) +
+  geom_abline(intercept = 0, slope = 1) + 
+  geom_vline(xintercept = -log10(5e-8), col = "red") +
+  geom_hline(yintercept = -log10(5e-8), col = "red") +
+  theme_bw()
+
+cowplot::plot_grid(p1, p2, p3, p4, 
+                   labels = c('A', 'B', 'C', 'D'),
+                   align="hv")
+```
+
