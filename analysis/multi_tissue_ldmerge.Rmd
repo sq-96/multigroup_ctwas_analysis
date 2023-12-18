@@ -439,3 +439,18 @@ DT::datatable(table_show,caption = htmltools::tags$caption( style = 'caption-sid
 
 
 ```
+
+
+
+# Literature supports
+
+```{r}
+
+dat <- readxl::read_excel("/project/xinhe/xsun/ctwas/3.multi_tissue/data/trait-celltype_pair.xlsx")
+dat <- as.data.frame(t(dat))
+colnames(dat) <- dat[1,]
+dat <- dat[-1,]
+rownames(dat)[4] <- "filter the last row using MESH"
+DT::datatable(dat,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Literature supports'),options = list(pageLength = 11))
+
+```
