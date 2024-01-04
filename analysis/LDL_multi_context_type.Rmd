@@ -19,7 +19,7 @@ ctwas_parameters <- ctwas:::ctwas_summarize_parameters(outputdir = outputdir,
 ```
 
 ### Group Size
-```{r echo=FALSE}
+```{r,echo=FALSE,fig.width= 5,fig.height=5}
 #Group Size
 df <- data.frame(group=names(ctwas_parameters$group_size)[-1],
                 values=as.vector(ctwas_parameters$group_size)[-1])
@@ -36,7 +36,7 @@ p
 ```
 
 ### Group PVE
-```{r echo=FALSE}
+```{r,echo=FALSE,fig.width= 5,fig.height=5}
 df <- data.frame(group=names(ctwas_parameters$group_pve),
                 values=as.vector(ctwas_parameters$group_pve))
 
@@ -50,8 +50,9 @@ p <- ggplot(df, aes(x=reorder(group, -values), y=values, fill=group)) +
 
 p
 ```
+
 ### Attributed PVE
-```{r}
+```{r,echo=FALSE,fig.width= 5,fig.height=5}
 df <- data.frame(group=names(ctwas_parameters$attributable_pve),
                 values=as.vector(ctwas_parameters$attributable_pve))
 
@@ -63,7 +64,7 @@ pie(df$values,labels = df$group,col = colors, cex=1, radius = 1,init.angle=-80)
 ```
 
 ### Convergence Plot
-```{r,out.width="50%"}
+```{r,echo=F,out.width="100%"}
 #pdf(file = "./primary_set2.pdf", width = 5, height = 5)
 ctwas_parameters$convergence_plot
 ```
@@ -88,7 +89,6 @@ ctwas_gene_S_res <- ctwas_gene_res[ctwas_gene_res$context=="Splicing",]
 
 gene_info <- data.frame()
 for(i in unique(ctwas_gene_E_res$tissue)){
-  print(i)
   sqlite <- RSQLite::dbDriver("SQLite")
   db = RSQLite::dbConnect(sqlite, paste0("/project/xinhe/shengqian/cTWAS_analysis/data/",i,"_Expression.db"))
   query <- function(...) RSQLite::dbGetQuery(db, ...)
@@ -147,7 +147,8 @@ for(i in unique(df_gene$group)){
 #sort by combined PIP
 data <- data[order(-data$combined_pip),]
 #genes with PIP>0.8 or 20 highest PIPs
-head(data, max(sum(data$combined_pip>0.8), 20))
+#head(data, max(sum(data$combined_pip>0.8), 20))
+DT::datatable(head(data, max(sum(data$combined_pip>0.8), 20)))
 ```
 ```{r echo=FALSE}
 plot_df <- data[data$combined_pip>0.8,]
@@ -197,7 +198,7 @@ plot_stacked_histogram <- function(df, genename_col, combined_pip_col, attributa
 ```
 
 ### Context/Type Contributions
-```{r}
+```{r fig.width= 10, fig.height= 5}
 plot_stacked_histogram(plot_df,"genename","combined_pip",colnames(plot_df)[3:10])
 ```
 
