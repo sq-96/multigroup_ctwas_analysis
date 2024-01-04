@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>LDL - Context/Type</title>
+
+<script src="site_libs/header-attrs-2.19/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">multigroup_ctwas_analysis</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/sq-96/multigroup_ctwas_analysis">
+    <span class="fab fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">LDL - Context/Type</h1>
+<h4 class="date">2023-1-4</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span> workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2024-01-04
+</p>
+<p>
+<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 1
+</p>
+<p>
+<strong>Knit directory:</strong> <code>multigroup_ctwas_analysis/</code> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="This is the local directory in which the code in this file was executed."> </span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a> analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version 1.7.0). The <em>Checks</em> tab describes the reproducibility checks that were applied when the results were created. The <em>Past versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges"> <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted changes </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguncommittedchanges" class="panel-collapse collapse">
+<div class="panel-body">
+<p>The R Markdown is untracked by Git. To know which version of the R Markdown file created these results, you’ll want to first commit it to the Git repo. If you’re still working on the analysis, you can ignore this warning. When you’re finished, you can run <code>wflow_publish</code> to commit the R Markdown file and build the HTML.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the global environment can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it’s best to always run the code in an empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20231112code"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Seed:</strong> <code>set.seed(20231112)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20231112code" class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20231112)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Session information:</strong> recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be confident that you successfully produced the results during this run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree4d024a0074cd7d6b13114302842b2acca551efd8targetblank4d024a0a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/4d024a0074cd7d6b13114302842b2acca551efd8" target="_blank">4d024a0</a> </a>
+</p>
+</div>
+<div id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree4d024a0074cd7d6b13114302842b2acca551efd8targetblank4d024a0a" class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version <a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/4d024a0074cd7d6b13114302842b2acca551efd8" target="_blank">4d024a0</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
+</p>
+<pre><code>
+Untracked files:
+    Untracked:  analysis/LDL_multi_context_type.Rmd
+
+Unstaged changes:
+    Modified:   analysis/index.Rmd
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+<p>
+There are no past versions. Publish this analysis with <code>wflow_publish()</code> to start tracking its development.
+</p>
+<hr>
+</div>
+</div>
+</div>
+<div id="load-ctwas-results" class="section level3">
+<h3>Load ctwas results</h3>
+<pre class="r"><code>outputdir &lt;- &quot;/project/xinhe/shengqian/cTWAS_analysis/data/LDL_multi_context/&quot;
+outname &lt;- &quot;LDL_multi_context_ctwas&quot;
+gwas_n &lt;- 343621
+thin &lt;- 0.1
+
+ctwas_parameters &lt;- ctwas:::ctwas_summarize_parameters(outputdir = outputdir, 
+                                               outname = outname, 
+                                               gwas_n = 343621, 
+                                               thin = 0.1,
+                                               plot_estimates = T)</code></pre>
+</div>
+<div id="group-size" class="section level3">
+<h3>Group Size</h3>
+<p><img src="figure/LDL_multi_context_type.Rmd/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="group-pve" class="section level3">
+<h3>Group PVE</h3>
+<p><img src="figure/LDL_multi_context_type.Rmd/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /> ### Attributed PVE</p>
+<pre class="r"><code>df &lt;- data.frame(group=names(ctwas_parameters$attributable_pve),
+                values=as.vector(ctwas_parameters$attributable_pve))
+
+df &lt;- df[order(-df$values),]
+
+colors &lt;- c(&quot;#a6cee3&quot;, &quot;#1f78b4&quot;, &quot;#b2df8a&quot;, &quot;#33a02c&quot;, &quot;#fb9a99&quot;, &quot;#e31a1c&quot;, &quot;#fdbf6f&quot;, &quot;#ff7f00&quot;, &quot;#cab2d6&quot;,&quot;#6a3d9a&quot;)
+
+pie(df$values,labels = df$group,col = colors, cex=1, radius = 1,init.angle=-80)</code></pre>
+<p><img src="figure/LDL_multi_context_type.Rmd/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="convergence-plot" class="section level3">
+<h3>Convergence Plot</h3>
+<pre class="r"><code>#pdf(file = &quot;./primary_set2.pdf&quot;, width = 5, height = 5)
+ctwas_parameters$convergence_plot</code></pre>
+<p><img src="figure/LDL_multi_context_type.Rmd/unnamed-chunk-5-1.png" width="50%" style="display: block; margin: auto;" /></p>
+<pre><code>[1] &quot;Spleen&quot;
+[1] &quot;Lung&quot;
+[1] &quot;Colon&quot;
+[1] &quot;Liver&quot;</code></pre>
+</div>
+<div id="top-genes-by-combined-pip" class="section level3">
+<h3>Top genes by combined PIP</h3>
+<pre><code>          genename combined_pip Spleen_Expression Lung_Expression
+16588        VAMP5    1.8244530             0.001           0.000
+16039        TRIM5    1.7150632             0.175           0.133
+4102       DNAJC13    1.6224270             0.657           0.176
+10321        PCSK9    1.6048124             0.619           0.986
+31           ABCA1    1.5686989             0.002           0.001
+7574         LIMS2    1.4330754             0.021           0.012
+3889         DDX56    1.3126878             0.017           0.016
+365         ACVR1C    1.2446500             0.008           0.141
+2305        CCDC57    1.2385690             0.020           0.020
+3042         CNIH4    1.2005980             0.040           0.013
+320           ACP6    1.1927146             0.217           0.205
+10789         PLTP    1.1611372             0.031           0.021
+10426         PELO    1.1218081             0.780           0.094
+16032       TRIM39    1.0979781             0.000           0.000
+15448        TIMD4    1.0939430             0.946           0.003
+13916       SH3TC1    1.0935722             0.736           0.008
+3610          CTSH    1.0879287             0.008           0.281
+16752        WDR27    1.0793411             0.013           0.011
+15092        TACC1    1.0670535             0.000           0.009
+8485         MARC1    1.0642873             0.004           0.000
+11304        PSRC1    1.0563961             0.010           0.008
+1662      C10orf88    1.0562504             0.246           0.762
+16205       TTC39B    1.0543432             0.005           0.007
+5275          FLT3    1.0483146             0.016           0.987
+1142         ASAP3    1.0478189             0.005           0.004
+53           ABCC4    1.0456764             0.014           0.817
+4650        ERGIC3    1.0435640             0.007           0.005
+10509         PHC1    1.0281595             0.007           0.010
+5114        FBXO38    1.0263868             0.123           0.080
+7110          KDSR    1.0230070             0.199           0.160
+3725       CYP4F12    1.0155852             0.000           0.006
+6423           HPR    1.0131937             0.004           0.004
+9293         NADK2    1.0093383             0.007           0.010
+6762        INSIG2    1.0071979             0.002           0.003
+5982         GSK3B    1.0057857             0.000           0.000
+15830         TNKS    1.0036095             0.000           0.003
+9222        MYO15B    1.0029568             0.002           0.006
+9693        NPC1L1    1.0004111             0.000           0.005
+10662         PKN3    0.9990344             0.994           0.002
+7315         KMT2E    0.9980883             0.998           0.000
+4797         FADS1    0.9955479             0.003           0.003
+3698        CYP2A6    0.9941171             0.000           0.245
+5523          GAS6    0.9918818             0.016           0.003
+3360       CSNK1G3    0.9868994             0.007           0.015
+11481        RAB21    0.9864251             0.009           0.956
+14877       STAT5B    0.9831948             0.228           0.001
+8810          MITF    0.9812969             0.947           0.000
+9267       N4BP2L1    0.9784502             0.000           0.000
+14739      SPTY2D1    0.9779263             0.000           0.302
+11550        RAD50    0.9776362             0.016           0.009
+13205  RP4-781K5.7    0.9757274             0.000           0.240
+6216           HFE    0.9753941             0.000           0.003
+40           ABCA8    0.9750629             0.000           0.000
+688           ALLC    0.9745101             0.000           0.000
+8255         LRRK2    0.9735601             0.006           0.005
+6741         INHBB    0.9729682             0.000           0.000
+9673          NOS3    0.9723873             0.324           0.295
+2729          CETP    0.9715805             0.499           0.454
+10374         PDHB    0.9670002             0.056           0.057
+8160         LRCH4    0.9637487             0.000           0.000
+3407  CTB-50L17.10    0.9615927             0.004           0.004
+10318        PCSK5    0.9611218             0.000           0.000
+11042      PPP2R5C    0.9585389             0.017           0.000
+7252       KLHDC7A    0.9585156             0.000           0.031
+1581          BRD9    0.9565264             0.023           0.021
+13976        SIPA1    0.9494691             0.226           0.155
+2379         CCND2    0.9471263             0.169           0.153
+4830       FAM118A    0.9376198             0.000           0.011
+15099       TADA2A    0.9365668             0.060           0.057
+14083     SLC22A18    0.9327347             0.002           0.002
+14605          SP4    0.9258587             0.000           0.000
+5455        GABBR1    0.9214557             0.000           0.000
+5414          FUT2    0.9211738             0.196           0.178
+14781         SRRT    0.9211596             0.010           0.078
+1585          BRI3    0.9167971             0.000           0.009
+14947        STX1A    0.9163234             0.000           0.000
+10923         POP7    0.9145666             0.000           0.000
+473         ADHFE1    0.9081246             0.025           0.012
+13683       SEC16B    0.9038678             0.000           0.000
+11775        REPS1    0.9026148             0.000           0.000
+2928        CLDN23    0.9020676             0.010           0.016
+7177        KIF13B    0.8993315             0.000           0.031
+288           ACCS    0.8982564             0.013           0.017
+10721         PLEC    0.8919409             0.009           0.000
+7808     LINC01184    0.8851570             0.305           0.278
+10192        PARP9    0.8838711             0.105           0.096
+13871        SGMS1    0.8836002             0.000           0.000
+6294         HLA-C    0.8809969             0.000           0.000
+11151        PRMT6    0.8804493             0.000           0.000
+3639       CWF19L1    0.8801483             0.154           0.157
+16728        WBP1L    0.8769088             0.009           0.010
+494          ADRB1    0.8727861             0.848           0.006
+16560        USP53    0.8727390             0.092           0.005
+162     AC007950.2    0.8665539             0.000           0.004
+14076      SLC22A1    0.8555095             0.855           0.000
+11015      PPP1R21    0.8536091             0.020           0.006
+4974         FAM3D    0.8517663             0.000           0.171
+9738          NQO2    0.8505984             0.015           0.012
+15192       TBC1D4    0.8309885             0.007           0.029
+16737        WDFY2    0.8265101             0.058           0.021
+16884      XPNPEP3    0.8191832             0.423           0.029
+16068         TRMO    0.8156541             0.010           0.006
+9261          MZF1    0.8119399             0.009           0.000
+10952        PPCDC    0.8013035             0.040           0.089
+      Colon_Expression Liver_Expression Spleen_Splicing Lung_Splicing
+16588            0.001            0.978           0.001         0.723
+16039            0.000            0.487           0.281         0.254
+4102             0.161            0.143           0.064         0.317
+10321            0.000            0.000           0.000         0.000
+31               0.000            0.995           0.014         0.015
+7574             0.030            0.089           0.481         0.458
+3889             0.005            0.716           0.151         0.201
+365              0.144            0.951           0.000         0.000
+2305             0.024            0.019           0.398         0.338
+3042             0.012            0.124           0.053         0.918
+320              0.015            0.223           0.014         0.311
+10789            0.001            0.933           0.090         0.077
+10426            0.096            0.051           0.025         0.029
+16032            0.000            0.970           0.064         0.058
+15448            0.103            0.000           0.019         0.000
+13916            0.119            0.030           0.068         0.062
+3610             0.106            0.342           0.056         0.198
+16752            0.010            0.036           0.330         0.328
+15092            0.009            0.020           0.364         0.184
+8485             0.987            0.073           0.000         0.000
+11304            0.009            0.988           0.000         0.042
+1662             0.008            0.023           0.016         0.000
+16205            0.006            0.943           0.021         0.043
+5275             0.012            0.033           0.000         0.000
+1142             0.005            0.936           0.026         0.047
+53               0.026            0.107           0.026         0.049
+4650             0.000            0.000           0.418         0.238
+10509            0.025            0.047           0.430         0.260
+5114             0.088            0.034           0.310         0.287
+7110             0.165            0.482           0.005         0.004
+3725             0.005            0.022           0.042         0.024
+6423             0.005            1.000           0.000         0.000
+9293             0.007            0.020           0.000         0.246
+6762             0.002            1.000           0.000         0.000
+5982             0.254            0.752           0.000         0.000
+15830            0.003            0.987           0.006         0.005
+9222             0.004            0.009           0.303         0.291
+9693             0.000            0.995           0.000         0.000
+10662            0.000            0.000           0.003         0.000
+7315             0.000            0.000           0.000         0.000
+4797             0.000            0.990           0.000         0.000
+3698             0.000            0.749           0.000         0.000
+5523             0.000            0.956           0.015         0.000
+3360             0.007            0.957           0.000         0.000
+11481            0.006            0.016           0.000         0.000
+14877            0.150            0.597           0.003         0.003
+8810             0.008            0.025           0.000         0.000
+9267             0.000            0.008           0.005         0.956
+14739            0.010            0.666           0.000         0.000
+11550            0.008            0.023           0.066         0.354
+13205            0.000            0.736           0.000         0.000
+6216             0.963            0.009           0.000         0.000
+40               0.184            0.000           0.216         0.318
+688              0.017            0.957           0.000         0.000
+8255             0.006            0.921           0.021         0.005
+6741             0.000            0.973           0.000         0.000
+9673             0.302            0.031           0.010         0.009
+2729             0.014            0.005           0.000         0.000
+10374            0.006            0.155           0.395         0.124
+8160             0.000            0.000           0.128         0.295
+3407             0.003            0.426           0.262         0.233
+10318            0.000            0.010           0.465         0.420
+11042            0.000            0.047           0.368         0.209
+7252             0.079            0.849           0.000         0.000
+1581             0.022            0.062           0.287         0.247
+13976            0.186            0.006           0.173         0.158
+2379             0.157            0.468           0.000         0.000
+4830             0.000            0.076           0.354         0.226
+15099            0.056            0.160           0.172         0.220
+14083            0.002            0.000           0.305         0.165
+14605            0.003            0.923           0.000         0.000
+5455             0.000            0.000           0.490         0.431
+5414             0.000            0.548           0.000         0.000
+14781            0.080            0.678           0.023         0.020
+1585             0.007            0.712           0.000         0.110
+14947            0.000            0.000           0.000         0.823
+10923            0.000            0.915           0.000         0.000
+473              0.062            0.041           0.326         0.087
+13683            0.007            0.079           0.190         0.123
+11775            0.000            0.326           0.082         0.207
+2928             0.010            0.866           0.000         0.000
+7177             0.000            0.000           0.290         0.261
+288              0.011            0.035           0.252         0.223
+10721            0.732            0.010           0.038         0.082
+7808             0.189            0.000           0.034         0.031
+10192            0.098            0.291           0.070         0.089
+13871            0.022            0.858           0.000         0.004
+6294             0.000            0.000           0.595         0.007
+11151            0.057            0.824           0.000         0.000
+3639             0.117            0.340           0.031         0.050
+16728            0.008            0.793           0.017         0.025
+494              0.000            0.018           0.000         0.000
+16560            0.065            0.356           0.138         0.034
+162              0.850            0.012           0.000         0.000
+14076            0.001            0.000           0.000         0.000
+11015            0.005            0.019           0.058         0.525
+4974             0.006            0.675           0.000         0.000
+9738             0.013            0.041           0.211         0.244
+15192            0.017            0.749           0.005         0.009
+16737            0.044            0.025           0.161         0.207
+16884            0.030            0.015           0.099         0.089
+16068            0.007            0.060           0.086         0.610
+9261             0.087            0.528           0.062         0.041
+10952            0.092            0.275           0.145         0.100
+      Colon_Splicing Liver_Splicing
+16588          0.119          0.002
+16039          0.031          0.354
+4102           0.036          0.069
+10321          0.000          0.000
+31             0.527          0.015
+7574           0.054          0.289
+3889           0.017          0.190
+365            0.000          0.000
+2305           0.048          0.372
+3042           0.006          0.036
+320            0.034          0.175
+10789          0.006          0.001
+10426          0.003          0.043
+16032          0.007          0.000
+15448          0.000          0.023
+13916          0.007          0.064
+3610           0.005          0.091
+16752          0.037          0.315
+15092          0.049          0.432
+8485           0.000          0.000
+11304          0.000          0.000
+1662           0.001          0.000
+16205          0.005          0.026
+5275           0.000          0.000
+1142           0.007          0.019
+53             0.006          0.000
+4650           0.028          0.347
+10509          0.013          0.236
+5114           0.040          0.064
+7110           0.000          0.006
+3725           0.046          0.871
+6423           0.000          0.000
+9293           0.054          0.665
+6762           0.000          0.000
+5982           0.000          0.000
+15830          0.001          0.000
+9222           0.046          0.342
+9693           0.000          0.000
+10662          0.001          0.000
+7315           0.000          0.000
+4797           0.000          0.000
+3698           0.000          0.000
+5523           0.002          0.000
+3360           0.000          0.000
+11481          0.000          0.000
+14877          0.001          0.000
+8810           0.000          0.000
+9267           0.006          0.003
+14739          0.000          0.000
+11550          0.056          0.445
+13205          0.000          0.000
+6216           0.000          0.000
+40             0.047          0.210
+688            0.000          0.000
+8255           0.004          0.006
+6741           0.000          0.000
+9673           0.001          0.000
+2729           0.000          0.000
+10374          0.014          0.160
+8160           0.013          0.528
+3407           0.007          0.023
+10318          0.066          0.000
+11042          0.038          0.279
+7252           0.000          0.000
+1581           0.029          0.267
+13976          0.035          0.010
+2379           0.000          0.000
+4830           0.035          0.234
+15099          0.032          0.181
+14083          0.044          0.412
+14605          0.000          0.000
+5455           0.000          0.000
+5414           0.000          0.000
+14781          0.002          0.028
+1585           0.019          0.061
+14947          0.094          0.000
+10923          0.000          0.000
+473            0.111          0.243
+13683          0.051          0.454
+11775          0.011          0.277
+2928           0.000          0.000
+7177           0.031          0.286
+288            0.031          0.316
+10721          0.014          0.008
+7808           0.006          0.042
+10192          0.008          0.127
+13871          0.000          0.000
+6294           0.000          0.279
+11151          0.000          0.000
+3639           0.004          0.027
+16728          0.003          0.014
+494            0.000          0.000
+16560          0.015          0.167
+162            0.000          0.000
+14076          0.000          0.000
+11015          0.008          0.212
+4974           0.000          0.000
+9738           0.027          0.288
+15192          0.002          0.012
+16737          0.022          0.287
+16884          0.010          0.124
+16068          0.010          0.027
+9261           0.007          0.077
+10952          0.008          0.053</code></pre>
+</div>
+<div id="contexttype-contributions" class="section level3">
+<h3>Context/Type Contributions</h3>
+<pre class="r"><code>plot_stacked_histogram(plot_df,&quot;genename&quot;,&quot;combined_pip&quot;,colnames(plot_df)[3:10])</code></pre>
+<pre><code>Warning: `aes_string()` was deprecated in ggplot2 3.0.0.
+ℹ Please use tidy evaluation ideoms with `aes()`
+This warning is displayed once every 8 hours.
+Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+generated.</code></pre>
+<p><img src="figure/LDL_multi_context_type.Rmd/unnamed-chunk-12-1.png" width="672" style="display: block; margin: auto;" /></p>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span> Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.1.0 (2021-05-18)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: CentOS Linux 7 (Core)
+
+Matrix products: default
+BLAS/LAPACK: /software/openblas-0.3.13-el7-x86_64/lib/libopenblas_haswellp-r0.3.13.so
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+
+attached base packages:
+[1] tools     stats     graphics  grDevices utils     datasets  methods  
+[8] base     
+
+other attached packages:
+[1] tidyr_1.3.0       dplyr_1.0.10      DT_0.26           RSQLite_2.2.19   
+[5] data.table_1.14.6 ctwas_0.1.40      cowplot_1.1.1     ggplot2_3.4.0    
+[9] workflowr_1.7.0  
+
+loaded via a namespace (and not attached):
+ [1] Rcpp_1.0.9        lattice_0.20-44   getPass_0.2-2     ps_1.7.2         
+ [5] assertthat_0.2.1  rprojroot_2.0.3   digest_0.6.31     foreach_1.5.2    
+ [9] utf8_1.2.2        R6_2.5.1          evaluate_0.19     httr_1.4.4       
+[13] highr_0.9         pillar_1.8.1      rlang_1.1.1       rstudioapi_0.14  
+[17] whisker_0.4.1     callr_3.7.3       jquerylib_0.1.4   blob_1.2.3       
+[21] Matrix_1.3-3      rmarkdown_2.19    labeling_0.4.2    stringr_1.5.0    
+[25] htmlwidgets_1.6.0 bit_4.0.5         munsell_0.5.0     compiler_4.1.0   
+[29] httpuv_1.6.7      xfun_0.35         pkgconfig_2.0.3   htmltools_0.5.4  
+[33] tidyselect_1.2.0  tibble_3.1.8      logging_0.10-108  codetools_0.2-18 
+[37] fansi_1.0.3       crayon_1.5.2      withr_2.5.0       later_1.3.0      
+[41] grid_4.1.0        jsonlite_1.8.4    gtable_0.3.1      lifecycle_1.0.3  
+[45] DBI_1.1.3         git2r_0.30.1      magrittr_2.0.3    scales_1.2.1     
+[49] cli_3.6.1         stringi_1.7.8     cachem_1.0.6      farver_2.1.0     
+[53] fs_1.5.2          promises_1.2.0.1  pgenlibr_0.3.2    bslib_0.4.1      
+[57] vctrs_0.6.3       generics_0.1.3    iterators_1.0.14  bit64_4.0.5      
+[61] glue_1.6.2        purrr_1.0.2       processx_3.8.0    fastmap_1.1.0    
+[65] yaml_2.3.6        colorspace_2.0-3  memoise_2.0.1     knitr_1.41       
+[69] sass_0.4.4       </code></pre>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
