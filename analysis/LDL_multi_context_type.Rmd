@@ -30,13 +30,13 @@ p <- ggplot(df, aes(x=reorder(group, -values), y=values, fill=group)) +
      ylab("Group Size") +
      xlab("")+
      theme_bw()+
-     theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1), axis.text=element_text(size=20), axis.title.y = element_text(size=20),legend.position = "none")
+     theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),legend.position = "none")
 
 p
 ```
 
 ### Group PVE
-```{r,echo=FALSE,fig.width= 5,fig.height=5}
+```{r,echo=FALSE,fig.width= 8,fig.height=5}
 df <- data.frame(group=names(ctwas_parameters$group_pve),
                 values=as.vector(ctwas_parameters$group_pve))
 
@@ -46,7 +46,7 @@ p <- ggplot(df, aes(x=reorder(group, -values), y=values, fill=group)) +
      ylab("PVE") +
      xlab("")+
      theme_minimal()+
-     theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1), axis.text=element_text(size=12))
+     theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),legend.position = "none")
 
 p
 ```
@@ -64,7 +64,7 @@ pie(df$values,labels = df$group,col = colors, cex=1, radius = 1,init.angle=-80)
 ```
 
 ### Convergence Plot
-```{r,echo=F,out.width="100%"}
+```{r,echo=F,fig.width=10,fig.height=6}
 #pdf(file = "./primary_set2.pdf", width = 5, height = 5)
 ctwas_parameters$convergence_plot
 ```
@@ -100,16 +100,20 @@ for(i in unique(ctwas_gene_E_res$tissue)){
 gene_info <- unique(gene_info)
 ctwas_gene_E_res$genename <- gene_info[sapply(ctwas_gene_E_res$gene_id, match, gene_info$gene),"genename"]
 
-intron_info <- data.frame()
+splicing_info <- data.frame()
 for(i in unique(ctwas_gene_S_res$tissue)){
-  intron_info_tmp <- get(load(paste0("/project/xinhe/shengqian/cTWAS_analysis/data/",i,"_Splicing_Mapping.RData")))
-  intron_info <- rbind(intron_info,intron_info_tmp)
+  print(i)
+  splicing_info_tmp <- get(load(paste0("/project/xinhe/shengqian/cTWAS_analysis/data/",i,"_Splicing_Mapping.RData")))
+  print(dim(splicing_info_tmp))
+  splicing_info <- rbind(splicing_info,splicing_info_tmp)
+  print(dim(splicing_info))
 }
-intron_info <- unique(intron_info)
-ctwas_gene_S_res$genename <- intron_info[sapply(ctwas_gene_S_res$gene_id, match, intron_info$gene), "genename"]
+splicing_info <- unique(splicing_info)
+ctwas_gene_S_res$genename <- splicing_info[sapply(ctwas_gene_S_res$gene_id, match, splicing_info$gene), "genename"]
 
 ctwas_gene_res <- rbind(ctwas_gene_E_res,ctwas_gene_S_res)
 ctwas_gene_res <- na.omit(ctwas_gene_res)
+#ctwas_gene_res <- na.omit(ctwas_gene_res)
 #head(ctwas_gene_res[order(-ctwas_gene_res$susie_pip),], max(sum(ctwas_gene_res$susie_pip>0.8), 20))
 ```
 
@@ -187,10 +191,10 @@ plot_stacked_histogram <- function(df, genename_col, combined_pip_col, attributa
     geom_bar(stat = "identity") +
     theme_minimal() +
     labs(title = "Stacked Histogram of Combined PIP with Context/Type Contributions",
-         x = "Gene Name",
+         x = "",
          y = "Combined PIP",
          fill = "Tissue") +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+    theme(axis.text.x = element_blank())+
     scale_fill_manual(values=c("#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6","#6a3d9a"))
   
   return(p)
