@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+<meta name="date" content="2023-12-30" />
+
+<title>LDL - Liver and Adipose - E and S</title>
+
+<script src="site_libs/header-attrs-2.19/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/htmlwidgets-1.6.0/htmlwidgets.js"></script>
+<link href="site_libs/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet" />
+<script src="site_libs/datatables-binding-0.26/datatables.js"></script>
+<link href="site_libs/dt-core-1.12.1/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="site_libs/dt-core-1.12.1/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="site_libs/dt-core-1.12.1/js/jquery.dataTables.min.js"></script>
+<link href="site_libs/crosstalk-1.2.0/css/crosstalk.min.css" rel="stylesheet" />
+<script src="site_libs/crosstalk-1.2.0/js/crosstalk.min.js"></script>
+<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">multigroup_ctwas_analysis</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/sq-96/multigroup_ctwas_analysis">
+    <span class="fab fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">LDL - Liver and Adipose - E and S</h1>
+<h4 class="date">2023-12-30</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span> workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2024-01-04
+</p>
+<p>
+<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 1
+</p>
+<p>
+<strong>Knit directory:</strong> <code>multigroup_ctwas_analysis/</code> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="This is the local directory in which the code in this file was executed."> </span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a> analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version 1.7.0). The <em>Checks</em> tab describes the reproducibility checks that were applied when the results were created. The <em>Past versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges"> <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted changes </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguncommittedchanges" class="panel-collapse collapse">
+<div class="panel-body">
+<p>The R Markdown file has unstaged changes. To know which version of the R Markdown file created these results, you’ll want to first commit it to the Git repo. If you’re still working on the analysis, you can ignore this warning. When you’re finished, you can run <code>wflow_publish</code> to commit the R Markdown file and build the HTML.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the global environment can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it’s best to always run the code in an empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20231112code"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Seed:</strong> <code>set.seed(20231112)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20231112code" class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20231112)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Session information:</strong> recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be confident that you successfully produced the results during this run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree44e9618e7a1231328e86238342d66ad3b6b9f484targetblank44e9618a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/44e9618e7a1231328e86238342d66ad3b6b9f484" target="_blank">44e9618</a> </a>
+</p>
+</div>
+<div id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree44e9618e7a1231328e86238342d66ad3b6b9f484targetblank44e9618a" class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version <a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/44e9618e7a1231328e86238342d66ad3b6b9f484" target="_blank">44e9618</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    analysis/figure/
+
+Unstaged changes:
+    Modified:   analysis/LDL_Liver_Adipose_E_S.Rmd
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+
+<p>
+These are the previous versions of the repository in which changes were made to the R Markdown (<code>analysis/LDL_Liver_Adipose_E_S.Rmd</code>) and HTML (<code>docs/LDL_Liver_Adipose_E_S.html</code>) files. If you’ve configured a remote Git repository (see <code>?wflow_git_remote</code>), click on the hyperlinks in the table below to view the files as they were in that past version.
+</p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/690e29e15d480b7e7ace2b66134a96939ee5a64d/analysis/LDL_Liver_Adipose_E_S.Rmd" target="_blank">690e29e</a>
+</td>
+<td>
+sq-96
+</td>
+<td>
+2024-01-03
+</td>
+<td>
+update
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<div id="load-ctwas-results" class="section level3">
+<h3>Load ctwas results</h3>
+<pre class="r"><code>outputdir &lt;- &quot;/project/xinhe/shengqian/cTWAS_analysis/data/test_context/&quot;
+outname &lt;- &quot;test_context_ctwas&quot;
+gwas_n &lt;- 343621
+thin &lt;- 0.1
+
+ctwas_parameters &lt;- ctwas:::ctwas_summarize_parameters(outputdir = outputdir, 
+                                               outname = outname, 
+                                               gwas_n = 343621, 
+                                               thin = 0.1,
+                                               plot_estimates = T)</code></pre>
+</div>
+<div id="group-size" class="section level3">
+<h3>Group Size</h3>
+<p><img src="figure/LDL_Liver_Adipose_E_S.Rmd/unnamed-chunk-2-1.png" width="480" style="display: block; margin: auto;" /></p>
+</div>
+<div id="group-pve" class="section level3">
+<h3>Group PVE</h3>
+<p><img src="figure/LDL_Liver_Adipose_E_S.Rmd/unnamed-chunk-3-1.png" width="768" style="display: block; margin: auto;" /></p>
+</div>
+<div id="attributed-pve" class="section level3">
+<h3>Attributed PVE</h3>
+<p><img src="figure/LDL_Liver_Adipose_E_S.Rmd/unnamed-chunk-4-1.png" width="480" style="display: block; margin: auto;" /></p>
+</div>
+<div id="convergence-plot" class="section level3">
+<h3>Convergence Plot</h3>
+<p><img src="figure/LDL_Liver_Adipose_E_S.Rmd/unnamed-chunk-5-1.png" width="960" style="display: block; margin: auto;" /></p>
+</div>
+<div id="top-genes-by-combined-pip" class="section level3">
+<h3>Top genes by combined PIP</h3>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-4de263013227ca78a293" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-4de263013227ca78a293">{"x":{"filter":"none","vertical":false,"data":[["31","15118","14597","3558","427","12384","13792","2794","2120","330","15093","3294","285","10786","9293","3408","5906","9580","4279","7415","8406","638","12758","3325","8469","14755","1059","8843","7503","9573","3383","1076","4737","6542","13700","5915","14591","13495","5077","6227","6872","5794","6944","37","6605","9841","5505","14400","9503","4412","10178","14476","4855","6666","4444","4984","1547","6207","13399","13358","1476","5832","3097","10486","13296","12652","2237","10098","2188","2150","9409","10593","9969","2691","8439","9452","7333","15253","5018","11956","8882","12556","4445","9406","10190","1210","13234","14399","1473","4572","3136","13998","14301","3067","13563","255","12584","147","1902","10197"],["ABCA1","VAMP5","TRIM5","DDX56","ADHFE1","SEC16B","TBC1D4","CNIH4","CCDC57","ACVR1C","USP53","CTSH","ACP6","REPS1","PARP9","CYP4F12","HP","PHC1","ERGIC3","LRCH4","MYO15B","ALLC","SLC22A18","CWF19L1","NADK2","TTC39B","ASAP3","NPC1L1","LRRK2","PGS1","CYP2A6","ASGR1","FCGRT","KDSR","TACC1","HPR","TRIM39","STAT5B","GAS6","INSIG2","LDLR","HLA-C","LIMS2","ABCA8","KIF13B","PLTP","GSK3B","TNKS","PELO","FADS1","PRKD2","TPD52","FLOT2","KLHDC7A","FAM117B","FUT2","C10orf88","INHBB","SRRT","SPTY2D1","BRI3","HMGCR","CSNK1G3","R3HDM2","SPHK2","SIPA1","CD163","PPP6R2","CCND2","CCDC92","PCSK9","RALGDS","POP7","CLDN23","MZF1","PDGFD","LIPC","WBP1L","GABBR1","RP4-781K5.7","NQO2","SGMS1","FAM118A","PCSK5","PRMT6","ATP8B1","SP4","TNK2","BRD9","FAM3D","CTB-50L17.10","THOP1","TMEM57","CRTC3","STX1A","ACCS","SH3BP2","AC007950.2","CALD1","PROCA1"],[2.03656832258026,1.88106453673052,1.68203347301211,1.6356047250826,1.31833853763271,1.30125587489183,1.26517747761026,1.1843381747538,1.18167415336144,1.1705169815906,1.14276074216753,1.1338068295779,1.11386940096348,1.1049041272324,1.09511742461937,1.09222944469712,1.09131998941239,1.0864845642093,1.07873999803978,1.07330226082064,1.06563696187901,1.04892730020939,1.04527635120009,1.04504912669748,1.04161348621005,1.04145498793974,1.02761571110568,1.02720938074995,1.02692438216234,1.02386805770335,1.01982789951816,1.01947401302203,1.01442218877542,1.00857586279213,1.00715224459607,1.00642664419561,1.00615353983557,1.00563105902724,1.00345416198478,1.00273169774881,1.00000000025704,0.999619594504525,0.997436549318405,0.994052107752475,0.992577334167971,0.988791878952126,0.98801951572402,0.985561030221197,0.983526178536365,0.983020776222774,0.980705937080782,0.977876020069954,0.974359101000154,0.973206258533563,0.972172648502446,0.968294968986699,0.967464182338592,0.959602765713151,0.956388244286119,0.956215842804057,0.95456860738305,0.953281183612913,0.947865636043573,0.947516082310646,0.936775853119078,0.936015018055756,0.927191166653651,0.92136831228759,0.920127287058943,0.913899100417153,0.913622014465764,0.908751591629082,0.90409973925115,0.901018349070089,0.894636010950527,0.893469542694474,0.884447422001158,0.883592381725722,0.873753441490278,0.86787051004011,0.865509525211099,0.863876507414244,0.863760422405262,0.863308752100472,0.860580823391722,0.853424321035303,0.851342834341874,0.84450606240674,0.838422432110837,0.831585165907209,0.830165255825666,0.830037585791664,0.824133127800396,0.820769886177161,0.817782829225481,0.811117965470087,0.806063720367726,0.802846775662087,0.801923434079227,0.800618571646434],[0,0.999,0,0.005,0.012,0,0.342,0.016,0.022,0.205,0.026,0.1,0.027,0.028,0,0.015,0.008,0.035,0.044,0.002,0.004,0,0.003,0.223,0.008,0.006,0.005,0.195,0.008,0.008,0.005,0.02,0.01,0.15,0.01,0.006,0,0.004,0.011,0.003,0,0,0.011,0.074,0,0.002,0,0,0.486,0,0.001,0.956,0.004,0.192,0.972,0,0.167,0,0.041,0.188,0.01,0,0.017,0.018,0.249,0.853,0,0,0.18,0.695,0.914,0,0,0.005,0.006,0,0.004,0.019,0,0,0.011,0,0.007,0,0,0.007,0.007,0.012,0,0,0.003,0,0.005,0.007,0.034,0.013,0.021,0.786,0.116,0.772],[0.992,0.007,0.823,0.921,0.047,0.097,0.873,0.337,0.035,0.965,0.49,0.511,0.417,0.374,0.435,0.034,0,0.056,0,0.009,0.013,0.957,0,0.721,0.031,0.958,0.94,0.806,0.921,0.037,0.985,0,0.016,0.841,0.028,1,0.955,0.98,0.983,1,0,0,0.156,0,0,0.978,0.988,0.981,0.447,0.973,0.962,0.022,0,0.781,0,0.968,0.801,0.96,0.809,0.768,0.838,0,0.931,0,0.036,0.014,0.023,0.046,0.741,0.065,0,0,0.904,0.896,0.712,0,0.024,0.822,0,0.868,0.057,0.861,0.123,0.017,0.861,0.026,0.844,0,0.097,0.832,0.693,0,0.042,0.637,0,0.053,0.134,0.017,0.459,0.029],[0.991,0.868,0.007,0.217,0.851,0.28,0.032,0.746,0.467,0,0.313,0.343,0.258,0.323,0.145,0.069,0.012,0.955,0.577,0.147,0.477,0,0.222,0.063,0.306,0.037,0.042,0,0.07,0.648,0,0,0.981,0.008,0.374,0,0.051,0.021,0.003,0,0,0.444,0.411,0.014,0.341,0.003,0,0.005,0.009,0.01,0.005,0,0.248,0,0,0,0,0,0.034,0,0.009,0.953,0,0.446,0.196,0.028,0.905,0.308,0,0.108,0,0.469,0,0,0.037,0.893,0,0.021,0.874,0,0.242,0.003,0.338,0.847,0,0.821,0,0.244,0.214,0,0.106,0.242,0.305,0.126,0.784,0.238,0.157,0,0.076,0],[0.054,0.007,0.852,0.492,0.408,0.924,0.018,0.085,0.658,0,0.314,0.18,0.412,0.38,0.515,0.975,1.071,0.041,0.458,0.915,0.572,0.092,0.819,0.038,0.696,0.04,0.041,0.026,0.029,0.331,0.03,1,0.007,0.009,0.595,0,0,0,0.006,0,1,0.555,0.419,0.906,0.651,0.006,0,0,0.042,0,0.013,0,0.723,0,0,0,0,0,0.072,0,0.097,0,0,0.483,0.456,0.041,0,0.568,0,0.046,0,0.44,0,0,0.139,0,0.856,0.021,0,0,0.555,0,0.395,0,0,0,0,0.588,0.527,0,0.029,0.588,0.473,0.051,0,0.507,0.494,0,0.15,0]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>genename<\/th>\n      <th>combined_pip<\/th>\n      <th>Adipose_Expression<\/th>\n      <th>Liver_Expression<\/th>\n      <th>Adipose_Splicing<\/th>\n      <th>Liver_Splicing<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[2,3,4,5,6]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="contexttype-contributions" class="section level3">
+<h3>Context/Type Contributions</h3>
+<pre class="r"><code>plot_stacked_histogram(plot_df,&quot;genename&quot;,&quot;combined_pip&quot;,colnames(plot_df)[3:6])</code></pre>
+<pre><code>Warning: `aes_string()` was deprecated in ggplot2 3.0.0.
+ℹ Please use tidy evaluation ideoms with `aes()`
+This warning is displayed once every 8 hours.
+Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+generated.</code></pre>
+<p><img src="figure/LDL_Liver_Adipose_E_S.Rmd/unnamed-chunk-12-1.png" width="960" style="display: block; margin: auto;" /></p>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span> Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.1.0 (2021-05-18)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: CentOS Linux 7 (Core)
+
+Matrix products: default
+BLAS/LAPACK: /software/openblas-0.3.13-el7-x86_64/lib/libopenblas_haswellp-r0.3.13.so
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+
+attached base packages:
+[1] tools     stats     graphics  grDevices utils     datasets  methods  
+[8] base     
+
+other attached packages:
+[1] tidyr_1.3.0       dplyr_1.0.10      DT_0.26           RSQLite_2.2.19   
+[5] data.table_1.14.6 ctwas_0.1.40      cowplot_1.1.1     ggplot2_3.4.0    
+[9] workflowr_1.7.0  
+
+loaded via a namespace (and not attached):
+ [1] Rcpp_1.0.9        lattice_0.20-44   getPass_0.2-2     ps_1.7.2         
+ [5] assertthat_0.2.1  rprojroot_2.0.3   digest_0.6.31     foreach_1.5.2    
+ [9] utf8_1.2.2        R6_2.5.1          evaluate_0.19     httr_1.4.4       
+[13] highr_0.9         pillar_1.8.1      rlang_1.1.1       rstudioapi_0.14  
+[17] whisker_0.4.1     callr_3.7.3       jquerylib_0.1.4   blob_1.2.3       
+[21] Matrix_1.3-3      rmarkdown_2.19    labeling_0.4.2    stringr_1.5.0    
+[25] htmlwidgets_1.6.0 bit_4.0.5         munsell_0.5.0     compiler_4.1.0   
+[29] httpuv_1.6.7      xfun_0.35         pkgconfig_2.0.3   htmltools_0.5.4  
+[33] tidyselect_1.2.0  tibble_3.1.8      logging_0.10-108  codetools_0.2-18 
+[37] fansi_1.0.3       crayon_1.5.2      withr_2.5.0       later_1.3.0      
+[41] grid_4.1.0        jsonlite_1.8.4    gtable_0.3.1      lifecycle_1.0.3  
+[45] DBI_1.1.3         git2r_0.30.1      magrittr_2.0.3    scales_1.2.1     
+[49] cli_3.6.1         stringi_1.7.8     cachem_1.0.6      farver_2.1.0     
+[53] fs_1.5.2          promises_1.2.0.1  pgenlibr_0.3.2    bslib_0.4.1      
+[57] ellipsis_0.3.2    vctrs_0.6.3       generics_0.1.3    iterators_1.0.14 
+[61] bit64_4.0.5       glue_1.6.2        purrr_1.0.2       crosstalk_1.2.0  
+[65] processx_3.8.0    fastmap_1.1.0     yaml_2.3.6        colorspace_2.0-3 
+[69] memoise_2.0.1     knitr_1.41        sass_0.4.4       </code></pre>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
