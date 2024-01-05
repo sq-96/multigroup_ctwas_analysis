@@ -102,11 +102,8 @@ ctwas_gene_E_res$genename <- gene_info[sapply(ctwas_gene_E_res$gene_id, match, g
 
 splicing_info <- data.frame()
 for(i in unique(ctwas_gene_S_res$tissue)){
-  print(i)
   splicing_info_tmp <- get(load(paste0("/project/xinhe/shengqian/cTWAS_analysis/data/",i,"_Splicing_Mapping.RData")))
-  print(dim(splicing_info_tmp))
   splicing_info <- rbind(splicing_info,splicing_info_tmp)
-  print(dim(splicing_info))
 }
 splicing_info <- unique(splicing_info)
 ctwas_gene_S_res$genename <- splicing_info[sapply(ctwas_gene_S_res$gene_id, match, splicing_info$gene), "genename"]
