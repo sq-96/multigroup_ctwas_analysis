@@ -1,0 +1,468 @@
+---
+title: "Enrichment analysis -- enriched pathways"
+author: "XSun"
+date: "2024-01-08"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+    toc: true
+---
+
+# Overview
+
+We performed gene set enrichment analysis for the [genes with susie pip > 0.8](https://sq-96.github.io/multigroup_ctwas_analysis/multi_tissue_ldmerge.html) using logistic susie(https://karltayeb.github.io/logistic-susie-gsea/index.html) and susie. 
+
+## Logistic Susie
+
+We binarize the response variable Y based on our selected gene list(genes with susie pip>0.8 from multi-tissue ctwas analysis). Y is a n*1 vector (n=#of genes)
+
+The explanatory variable X indicate if the gene is part of a specific pathway. X is a n*m matrix, n=#of genes, m=# of pathways
+
+## Susie
+
+The response variable Y is the outcome of MAGMA (z-score of each gene).
+
+The explanatory variable X is the same with logistic susie
+
+## Pathways 
+
+The pathways are from Go Biological Process (gobp), Go Molecular Function (gomf), Go Cellular Component (gocc) and KEGG.
+
+## Functions
+
+```{r warning=F,message=FALSE}
+library(gseasusie)
+library(tidyverse)
+create_pip_datatable <- function(linear_fit) {
+  pip <- linear_fit$pip
+  pip <- as.data.frame(cbind(names(pip), pip))
+  rownames(pip) <- seq(1, nrow(pip), by = 1)
+  pip <- pip[order(as.numeric(pip$pip), decreasing = TRUE), ]
+  colnames(pip) <- c("pwy", "PIP")
+
+  DT::datatable(pip, 
+                caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', 
+                                                  'Susie PIPs'), 
+                options = list(pageLength = 10))
+}
+
+
+```
+
+# aFib
+
+## Go Biological Process
+
+### Logistice Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/aFib-ebi-a-GCST006414_cutoff08_gobp.rdata")
+gseasusie::enrichment_volcano(logistic.fit, ora)
+gseasusie::interactive_table(logistic.fit, ora)
+```
+
+### Susie
+
+```{r warning=F,message=FALSE}
+create_pip_datatable(linear_fit = linear.fit)
+```
+
+
+## Go Molecular Function
+
+### Logistice Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/aFib-ebi-a-GCST006414_cutoff08_gocc.rdata")
+gseasusie::enrichment_volcano(logistic.fit, ora)
+gseasusie::interactive_table(logistic.fit, ora)
+```
+
+### Susie
+
+```{r warning=F,message=FALSE}
+create_pip_datatable(linear_fit = linear.fit)
+```
+
+
+## Cellular Component
+
+### Logistice Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/aFib-ebi-a-GCST006414_cutoff08_gocc.rdata")
+gseasusie::enrichment_volcano(logistic.fit, ora)
+gseasusie::interactive_table(logistic.fit, ora)
+```
+
+### Susie
+
+```{r warning=F,message=FALSE}
+create_pip_datatable(linear_fit = linear.fit)
+```
+
+## KEGG
+
+### Logistice Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/aFib-ebi-a-GCST006414_cutoff08_kegg.rdata")
+gseasusie::enrichment_volcano(logistic.fit, ora)
+gseasusie::interactive_table(logistic.fit, ora)
+```
+
+### Susie
+
+```{r warning=F,message=FALSE}
+create_pip_datatable(linear_fit = linear.fit)
+```
+
+
+# IBD
+
+## Go Biological Process
+
+### Logistice Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/IBD-ebi-a-GCST004131_cutoff08_gobp.rdata")
+gseasusie::enrichment_volcano(logistic.fit, ora)
+gseasusie::interactive_table(logistic.fit, ora)
+```
+
+### Susie
+
+```{r warning=F,message=FALSE}
+create_pip_datatable(linear_fit = linear.fit)
+```
+
+
+## Go Molecular Function
+
+### Logistice Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/IBD-ebi-a-GCST004131_cutoff08_gocc.rdata")
+gseasusie::enrichment_volcano(logistic.fit, ora)
+gseasusie::interactive_table(logistic.fit, ora)
+```
+
+### Susie
+
+```{r warning=F,message=FALSE}
+create_pip_datatable(linear_fit = linear.fit)
+```
+
+
+## Cellular Component
+
+### Logistice Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/IBD-ebi-a-GCST004131_cutoff08_gocc.rdata")
+gseasusie::enrichment_volcano(logistic.fit, ora)
+gseasusie::interactive_table(logistic.fit, ora)
+```
+
+### Susie
+
+```{r warning=F,message=FALSE}
+create_pip_datatable(linear_fit = linear.fit)
+```
+
+## KEGG
+
+### Logistice Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/IBD-ebi-a-GCST004131_cutoff08_kegg.rdata")
+gseasusie::enrichment_volcano(logistic.fit, ora)
+gseasusie::interactive_table(logistic.fit, ora)
+```
+
+### Susie
+
+```{r warning=F,message=FALSE}
+create_pip_datatable(linear_fit = linear.fit)
+```
+
+
+
+# LDL
+
+## Go Biological Process
+
+### Logistice Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/LDL-ukb-d-30780_irnt_cutoff08_gobp.rdata")
+gseasusie::enrichment_volcano(logistic.fit, ora)
+gseasusie::interactive_table(logistic.fit, ora)
+```
+
+### Susie
+
+```{r warning=F,message=FALSE}
+create_pip_datatable(linear_fit = linear.fit)
+```
+
+
+## Go Molecular Function
+
+### Logistice Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/LDL-ukb-d-30780_irnt_cutoff08_gocc.rdata")
+gseasusie::enrichment_volcano(logistic.fit, ora)
+gseasusie::interactive_table(logistic.fit, ora)
+```
+
+### Susie
+
+```{r warning=F,message=FALSE}
+create_pip_datatable(linear_fit = linear.fit)
+```
+
+
+## Cellular Component
+
+### Logistice Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/LDL-ukb-d-30780_irnt_cutoff08_gocc.rdata")
+gseasusie::enrichment_volcano(logistic.fit, ora)
+gseasusie::interactive_table(logistic.fit, ora)
+```
+
+### Susie
+
+```{r warning=F,message=FALSE}
+create_pip_datatable(linear_fit = linear.fit)
+```
+
+## KEGG
+
+### Logistice Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/LDL-ukb-d-30780_irnt_cutoff08_kegg.rdata")
+gseasusie::enrichment_volcano(logistic.fit, ora)
+gseasusie::interactive_table(logistic.fit, ora)
+```
+
+### Susie
+
+```{r warning=F,message=FALSE}
+create_pip_datatable(linear_fit = linear.fit)
+```
+
+
+
+# SBP
+
+## Go Biological Process
+
+### Logistice Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/SBP-ukb-a-360_cutoff08_gobp.rdata")
+gseasusie::enrichment_volcano(logistic.fit, ora)
+gseasusie::interactive_table(logistic.fit, ora)
+```
+
+### Susie
+
+```{r warning=F,message=FALSE}
+create_pip_datatable(linear_fit = linear.fit)
+```
+
+
+## Go Molecular Function
+
+### Logistice Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/SBP-ukb-a-360_cutoff08_gocc.rdata")
+gseasusie::enrichment_volcano(logistic.fit, ora)
+gseasusie::interactive_table(logistic.fit, ora)
+```
+
+### Susie
+
+```{r warning=F,message=FALSE}
+create_pip_datatable(linear_fit = linear.fit)
+```
+
+
+## Cellular Component
+
+### Logistice Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/SBP-ukb-a-360_cutoff08_gocc.rdata")
+gseasusie::enrichment_volcano(logistic.fit, ora)
+gseasusie::interactive_table(logistic.fit, ora)
+```
+
+### Susie
+
+```{r warning=F,message=FALSE}
+create_pip_datatable(linear_fit = linear.fit)
+```
+
+## KEGG
+
+### Logistice Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/SBP-ukb-a-360_cutoff08_kegg.rdata")
+gseasusie::enrichment_volcano(logistic.fit, ora)
+gseasusie::interactive_table(logistic.fit, ora)
+```
+
+### Susie
+
+```{r warning=F,message=FALSE}
+create_pip_datatable(linear_fit = linear.fit)
+```
+
+
+
+# SCZ
+
+## Go Biological Process
+
+### Logistice Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/SCZ-ieu-b-5102_cutoff08_gobp.rdata")
+gseasusie::enrichment_volcano(logistic.fit, ora)
+gseasusie::interactive_table(logistic.fit, ora)
+```
+
+### Susie
+
+```{r warning=F,message=FALSE}
+create_pip_datatable(linear_fit = linear.fit)
+```
+
+
+## Go Molecular Function
+
+### Logistice Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/SCZ-ieu-b-5102_cutoff08_gocc.rdata")
+gseasusie::enrichment_volcano(logistic.fit, ora)
+gseasusie::interactive_table(logistic.fit, ora)
+```
+
+### Susie
+
+```{r warning=F,message=FALSE}
+create_pip_datatable(linear_fit = linear.fit)
+```
+
+
+## Cellular Component
+
+### Logistice Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/SCZ-ieu-b-5102_cutoff08_gocc.rdata")
+gseasusie::enrichment_volcano(logistic.fit, ora)
+gseasusie::interactive_table(logistic.fit, ora)
+```
+
+### Susie
+
+```{r warning=F,message=FALSE}
+create_pip_datatable(linear_fit = linear.fit)
+```
+
+## KEGG
+
+### Logistice Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/SCZ-ieu-b-5102_cutoff08_kegg.rdata")
+gseasusie::enrichment_volcano(logistic.fit, ora)
+gseasusie::interactive_table(logistic.fit, ora)
+```
+
+### Susie
+
+```{r warning=F,message=FALSE}
+create_pip_datatable(linear_fit = linear.fit)
+```
+
+
+
+# WBC
+
+## Go Biological Process
+
+### Logistice Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/WBC-ieu-b-30_cutoff08_gobp.rdata")
+gseasusie::enrichment_volcano(logistic.fit, ora)
+gseasusie::interactive_table(logistic.fit, ora)
+```
+
+### Susie
+
+```{r warning=F,message=FALSE}
+create_pip_datatable(linear_fit = linear.fit)
+```
+
+
+## Go Molecular Function
+
+### Logistice Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/WBC-ieu-b-30_cutoff08_gocc.rdata")
+gseasusie::enrichment_volcano(logistic.fit, ora)
+gseasusie::interactive_table(logistic.fit, ora)
+```
+
+### Susie
+
+```{r warning=F,message=FALSE}
+create_pip_datatable(linear_fit = linear.fit)
+```
+
+
+## Cellular Component
+
+### Logistice Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/WBC-ieu-b-30_cutoff08_gocc.rdata")
+gseasusie::enrichment_volcano(logistic.fit, ora)
+gseasusie::interactive_table(logistic.fit, ora)
+```
+
+### Susie
+
+```{r warning=F,message=FALSE}
+create_pip_datatable(linear_fit = linear.fit)
+```
+
+## KEGG
+
+### Logistice Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/WBC-ieu-b-30_cutoff08_kegg.rdata")
+gseasusie::enrichment_volcano(logistic.fit, ora)
+gseasusie::interactive_table(logistic.fit, ora)
+```
+
+### Susie
+
+```{r warning=F,message=FALSE}
+create_pip_datatable(linear_fit = linear.fit)
+```
+
