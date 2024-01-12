@@ -1,0 +1,820 @@
+---
+title: "Validation for multi-tissue results"
+author: "XSun"
+date: "2024-01-11"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+    toc: true
+---
+
+
+# Overview
+
+We validate [genes with susie pip > 0.8](https://sq-96.github.io/multigroup_ctwas_analysis/multi_tissue_ldmerge.html) by some trait-related pathways. Pathways are selected using MAGMA. Due to the correlation among candidate pathways, we employ SuSiE and logistic SuSiE to fine-map the pathways.
+
+## Model
+
+The model is $y=X*w$
+
+y is an n-dimensional vector representing gene-trait associations (n = number of genes). 
+
+ - For SuSiE, y consists of z-scores computed by MAGMA
+ - for logistic SuSiE, y is a binary vector indicating gene-trait relationships (genes with FDR < 0.05 as per MAGMA are marked 1).
+
+X is an n×m matrix (m = number of pathways) indicating gene membership in specific pathways.
+
+## Benchmarks
+
+The model fitting results in pathway weights, from which we predict gene labels $\hat{y}$. We then categorize genes based on these new labels. 
+
+- For SuSiE, we compute the p-values from the new labels(z-scores), then compute FDR. Genes with FDR < 0.5 are considered benchmarks. 
+- For logistic SuSiE, genes with labels > 0.5 are considered benchmarks.
+
+## Testing genes
+
+Genes from ctwas results are divided into two groups based on their SuSiE PIPs: high (>0.8) and moderate (0.8 > PIP > 0.5). 
+
+## Fisher exact test
+
+We assess whether high-PIP genes are more enriched in our benchmarks than moderate-PIP genes using Fisher exact tests. 
+
+The testing matrix is: 
+
+```{r}
+
+fisher_matrix <- matrix(c("n1","n2","n3","n4"),nrow = 2,ncol = 2)
+rownames(fisher_matrix) <- c("#included","#notincluded")
+colnames(fisher_matrix) <- c("pip08","pip05")
+
+print(fisher_matrix)
+```
+
+## Pathways
+
+The pathways are from Go Biological Process (gobp), Go Molecular Function (gomf), Go Cellular Component (gocc) and KEGG.
+
+
+## Functions
+
+```{r warning=F,message=FALSE}
+library(gseasusie)
+library(tidyverse)
+
+coeftable_linear<- function(linear_fit) {
+  coef <- susieR::coef.susie(linear_fit)
+  coef <- as.data.frame(cbind(names(coef), coef))
+  colnames(coef) <- c("pwy", "beta")
+  
+  DT::datatable(coef, 
+                caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', 
+                                                  'Correct coef for linear fitting'), 
+                options = list(pageLength = 5))
+}
+
+```
+
+
+# aFib-ebi-a-GCST006414
+
+## Susie & Logistic Susie results
+
+### Go Biological Process
+
+#### Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/aFib-ebi-a-GCST006414_gobp.rdata")
+gseasusie::enrichment_volcano(linear.fit, linear.ora)
+print("please not the beta column in the table below is not correct, the beta is calculated from colSums(fit$alpha * fit$mu)\n but for linear fit, it missed a scale factor. Others are correct")
+gseasusie::interactive_table(linear.fit, linear.ora)
+coeftable_linear(linear_fit = linear.fit)
+```
+
+#### Logistice Susie
+
+```{r warning=F,message=FALSE}
+gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
+gseasusie::interactive_table(logistic.fit, logistic.ora)
+```
+
+
+### Go Molecular Function
+
+#### Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/aFib-ebi-a-GCST006414_gomf.rdata")
+gseasusie::enrichment_volcano(linear.fit, linear.ora)
+print("please not the beta column in the table below is not correct, the beta is calculated from colSums(fit$alpha * fit$mu)\n but for linear fit, it missed a scale factor. Others are correct")
+gseasusie::interactive_table(linear.fit, linear.ora)
+coeftable_linear(linear_fit = linear.fit)
+```
+
+#### Logistice Susie
+
+```{r warning=F,message=FALSE}
+gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
+gseasusie::interactive_table(logistic.fit, logistic.ora)
+```
+
+
+### Go Cellular Component
+
+#### Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/aFib-ebi-a-GCST006414_gocc.rdata")
+
+gseasusie::enrichment_volcano(linear.fit, linear.ora)
+print("please not the beta column in the table below is not correct, the beta is calculated from colSums(fit$alpha * fit$mu)\n but for linear fit, it missed a scale factor. Others are correct")
+gseasusie::interactive_table(linear.fit, linear.ora)
+coeftable_linear(linear_fit = linear.fit)
+
+```
+
+#### Logistice Susie
+
+```{r warning=F,message=FALSE}
+gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
+gseasusie::interactive_table(logistic.fit, logistic.ora)
+```
+
+
+### KEGG
+
+#### Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/aFib-ebi-a-GCST006414_kegg.rdata")
+gseasusie::enrichment_volcano(linear.fit, linear.ora)
+print("please not the beta column in the table below is not correct, the beta is calculated from colSums(fit$alpha * fit$mu)\n but for linear fit, it missed a scale factor. Others are correct")
+gseasusie::interactive_table(linear.fit, linear.ora)
+coeftable_linear(linear_fit = linear.fit)
+```
+
+#### Logistice Susie
+
+```{r warning=F,message=FALSE}
+gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
+gseasusie::interactive_table(logistic.fit, logistic.ora)
+```
+
+## Validation
+
+```{r}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher/fisher_aFib-ebi-a-GCST006414_linearsusie.rdata")
+
+DT::datatable(df_all, 
+                caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', 
+                                                  'Gene labels'), 
+                options = list(pageLength = 5))
+
+```
+
+
+### Susie
+
+```{r}
+DT::datatable(linear_selected, 
+                caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', 
+                                                  'Benchmark genes'), 
+                options = list(pageLength = 5))
+print(fisher_matrix)
+print(fisher_result)
+```
+
+
+### Logistic Susie
+
+```{r}
+
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher/fisher_aFib-ebi-a-GCST006414_logisusie.rdata")
+DT::datatable(linear_selected, 
+                caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', 
+                                                  'Benchmark genes'), 
+                options = list(pageLength = 5))
+print(fisher_matrix)
+print(fisher_result)
+```
+
+
+# IBD-ebi-a-GCST004131
+## Susie & Logistic Susie results
+
+### Go Biological Process
+
+#### Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/IBD-ebi-a-GCST004131_gobp.rdata")
+gseasusie::enrichment_volcano(linear.fit, linear.ora)
+print("please not the beta column in the table below is not correct, the beta is calculated from colSums(fit$alpha * fit$mu)\n but for linear fit, it missed a scale factor. Others are correct")
+gseasusie::interactive_table(linear.fit, linear.ora)
+coeftable_linear(linear_fit = linear.fit)
+```
+
+#### Logistice Susie
+
+```{r warning=F,message=FALSE}
+gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
+gseasusie::interactive_table(logistic.fit, logistic.ora)
+```
+
+
+### Go Molecular Function
+
+#### Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/IBD-ebi-a-GCST004131_gomf.rdata")
+gseasusie::enrichment_volcano(linear.fit, linear.ora)
+print("please not the beta column in the table below is not correct, the beta is calculated from colSums(fit$alpha * fit$mu)\n but for linear fit, it missed a scale factor. Others are correct")
+gseasusie::interactive_table(linear.fit, linear.ora)
+coeftable_linear(linear_fit = linear.fit)
+```
+
+#### Logistice Susie
+
+```{r warning=F,message=FALSE}
+gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
+gseasusie::interactive_table(logistic.fit, logistic.ora)
+```
+
+
+### Go Cellular Component
+
+#### Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/IBD-ebi-a-GCST004131_gocc.rdata")
+
+gseasusie::enrichment_volcano(linear.fit, linear.ora)
+print("please not the beta column in the table below is not correct, the beta is calculated from colSums(fit$alpha * fit$mu)\n but for linear fit, it missed a scale factor. Others are correct")
+gseasusie::interactive_table(linear.fit, linear.ora)
+coeftable_linear(linear_fit = linear.fit)
+
+```
+
+#### Logistice Susie
+
+```{r warning=F,message=FALSE}
+gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
+gseasusie::interactive_table(logistic.fit, logistic.ora)
+```
+
+
+### KEGG
+
+#### Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/IBD-ebi-a-GCST004131_kegg.rdata")
+gseasusie::enrichment_volcano(linear.fit, linear.ora)
+print("please not the beta column in the table below is not correct, the beta is calculated from colSums(fit$alpha * fit$mu)\n but for linear fit, it missed a scale factor. Others are correct")
+gseasusie::interactive_table(linear.fit, linear.ora)
+coeftable_linear(linear_fit = linear.fit)
+```
+
+#### Logistice Susie
+
+```{r warning=F,message=FALSE}
+gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
+gseasusie::interactive_table(logistic.fit, logistic.ora)
+```
+
+## Validation
+
+```{r}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher/fisher_IBD-ebi-a-GCST004131_linearsusie.rdata")
+
+DT::datatable(df_all, 
+                caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', 
+                                                  'Gene labels'), 
+                options = list(pageLength = 5))
+
+```
+
+
+### Susie
+
+```{r}
+DT::datatable(linear_selected, 
+                caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', 
+                                                  'Benchmark genes'), 
+                options = list(pageLength = 5))
+print(fisher_matrix)
+print(fisher_result)
+```
+
+
+### Logistic Susie
+
+```{r}
+
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher/fisher_IBD-ebi-a-GCST004131_logisusie.rdata")
+DT::datatable(linear_selected, 
+                caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', 
+                                                  'Benchmark genes'), 
+                options = list(pageLength = 5))
+print(fisher_matrix)
+print(fisher_result)
+```
+
+
+# LDL-ukb-d-30780_irnt
+## Susie & Logistic Susie results
+
+### Go Biological Process
+
+#### Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/LDL-ukb-d-30780_irnt_gobp.rdata")
+gseasusie::enrichment_volcano(linear.fit, linear.ora)
+print("please not the beta column in the table below is not correct, the beta is calculated from colSums(fit$alpha * fit$mu)\n but for linear fit, it missed a scale factor. Others are correct")
+gseasusie::interactive_table(linear.fit, linear.ora)
+coeftable_linear(linear_fit = linear.fit)
+```
+
+#### Logistice Susie
+
+```{r warning=F,message=FALSE}
+gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
+gseasusie::interactive_table(logistic.fit, logistic.ora)
+```
+
+
+### Go Molecular Function
+
+#### Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/LDL-ukb-d-30780_irnt_gomf.rdata")
+gseasusie::enrichment_volcano(linear.fit, linear.ora)
+print("please not the beta column in the table below is not correct, the beta is calculated from colSums(fit$alpha * fit$mu)\n but for linear fit, it missed a scale factor. Others are correct")
+gseasusie::interactive_table(linear.fit, linear.ora)
+coeftable_linear(linear_fit = linear.fit)
+```
+
+#### Logistice Susie
+
+```{r warning=F,message=FALSE}
+gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
+gseasusie::interactive_table(logistic.fit, logistic.ora)
+```
+
+
+### Go Cellular Component
+
+#### Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/LDL-ukb-d-30780_irnt_gocc.rdata")
+
+gseasusie::enrichment_volcano(linear.fit, linear.ora)
+print("please not the beta column in the table below is not correct, the beta is calculated from colSums(fit$alpha * fit$mu)\n but for linear fit, it missed a scale factor. Others are correct")
+gseasusie::interactive_table(linear.fit, linear.ora)
+coeftable_linear(linear_fit = linear.fit)
+
+```
+
+#### Logistice Susie
+
+```{r warning=F,message=FALSE}
+gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
+gseasusie::interactive_table(logistic.fit, logistic.ora)
+```
+
+
+### KEGG
+
+#### Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/LDL-ukb-d-30780_irnt_kegg.rdata")
+gseasusie::enrichment_volcano(linear.fit, linear.ora)
+print("please not the beta column in the table below is not correct, the beta is calculated from colSums(fit$alpha * fit$mu)\n but for linear fit, it missed a scale factor. Others are correct")
+gseasusie::interactive_table(linear.fit, linear.ora)
+coeftable_linear(linear_fit = linear.fit)
+```
+
+#### Logistice Susie
+
+```{r warning=F,message=FALSE}
+gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
+gseasusie::interactive_table(logistic.fit, logistic.ora)
+```
+
+## Validation
+
+```{r}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher/fisher_LDL-ukb-d-30780_irnt_linearsusie.rdata")
+
+DT::datatable(df_all, 
+                caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', 
+                                                  'Gene labels'), 
+                options = list(pageLength = 5))
+
+```
+
+
+### Susie
+
+```{r}
+DT::datatable(linear_selected, 
+                caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', 
+                                                  'Benchmark genes'), 
+                options = list(pageLength = 5))
+print(fisher_matrix)
+print(fisher_result)
+```
+
+
+### Logistic Susie
+
+```{r}
+
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher/fisher_LDL-ukb-d-30780_irnt_logisusie.rdata")
+DT::datatable(linear_selected, 
+                caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', 
+                                                  'Benchmark genes'), 
+                options = list(pageLength = 5))
+print(fisher_matrix)
+print(fisher_result)
+```
+
+
+# SBP-ukb-a-360
+
+## Susie & Logistic Susie results
+
+### Go Biological Process
+
+#### Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/SBP-ukb-a-360_gobp.rdata")
+gseasusie::enrichment_volcano(linear.fit, linear.ora)
+print("please not the beta column in the table below is not correct, the beta is calculated from colSums(fit$alpha * fit$mu)\n but for linear fit, it missed a scale factor. Others are correct")
+gseasusie::interactive_table(linear.fit, linear.ora)
+coeftable_linear(linear_fit = linear.fit)
+```
+
+#### Logistice Susie
+
+```{r warning=F,message=FALSE}
+gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
+gseasusie::interactive_table(logistic.fit, logistic.ora)
+```
+
+
+### Go Molecular Function
+
+#### Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/SBP-ukb-a-360_gomf.rdata")
+gseasusie::enrichment_volcano(linear.fit, linear.ora)
+print("please not the beta column in the table below is not correct, the beta is calculated from colSums(fit$alpha * fit$mu)\n but for linear fit, it missed a scale factor. Others are correct")
+gseasusie::interactive_table(linear.fit, linear.ora)
+coeftable_linear(linear_fit = linear.fit)
+```
+
+#### Logistice Susie
+
+```{r warning=F,message=FALSE}
+gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
+gseasusie::interactive_table(logistic.fit, logistic.ora)
+```
+
+
+### Go Cellular Component
+
+#### Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/SBP-ukb-a-360_gocc.rdata")
+
+gseasusie::enrichment_volcano(linear.fit, linear.ora)
+print("please not the beta column in the table below is not correct, the beta is calculated from colSums(fit$alpha * fit$mu)\n but for linear fit, it missed a scale factor. Others are correct")
+gseasusie::interactive_table(linear.fit, linear.ora)
+coeftable_linear(linear_fit = linear.fit)
+
+```
+
+#### Logistice Susie
+
+```{r warning=F,message=FALSE}
+gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
+gseasusie::interactive_table(logistic.fit, logistic.ora)
+```
+
+
+### KEGG
+
+#### Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/SBP-ukb-a-360_kegg.rdata")
+gseasusie::enrichment_volcano(linear.fit, linear.ora)
+print("please not the beta column in the table below is not correct, the beta is calculated from colSums(fit$alpha * fit$mu)\n but for linear fit, it missed a scale factor. Others are correct")
+gseasusie::interactive_table(linear.fit, linear.ora)
+coeftable_linear(linear_fit = linear.fit)
+```
+
+#### Logistice Susie
+
+```{r warning=F,message=FALSE}
+gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
+gseasusie::interactive_table(logistic.fit, logistic.ora)
+```
+
+## Validation
+
+```{r}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher/fisher_SBP-ukb-a-360_linearsusie.rdata")
+
+DT::datatable(df_all, 
+                caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', 
+                                                  'Gene labels'), 
+                options = list(pageLength = 5))
+
+```
+
+
+### Susie
+
+```{r}
+DT::datatable(linear_selected, 
+                caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', 
+                                                  'Benchmark genes'), 
+                options = list(pageLength = 5))
+print(fisher_matrix)
+print(fisher_result)
+```
+
+
+### Logistic Susie
+
+```{r}
+
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher/fisher_SBP-ukb-a-360_logisusie.rdata")
+DT::datatable(linear_selected, 
+                caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', 
+                                                  'Benchmark genes'), 
+                options = list(pageLength = 5))
+print(fisher_matrix)
+print(fisher_result)
+```
+
+
+
+# SCZ-ieu-b-5102
+
+## Susie & Logistic Susie results
+
+### Go Biological Process
+
+#### Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/SCZ-ieu-b-5102_gobp.rdata")
+gseasusie::enrichment_volcano(linear.fit, linear.ora)
+print("please not the beta column in the table below is not correct, the beta is calculated from colSums(fit$alpha * fit$mu)\n but for linear fit, it missed a scale factor. Others are correct")
+gseasusie::interactive_table(linear.fit, linear.ora)
+coeftable_linear(linear_fit = linear.fit)
+```
+
+#### Logistice Susie
+
+```{r warning=F,message=FALSE}
+gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
+gseasusie::interactive_table(logistic.fit, logistic.ora)
+```
+
+
+### Go Molecular Function
+
+#### Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/SCZ-ieu-b-5102_gomf.rdata")
+gseasusie::enrichment_volcano(linear.fit, linear.ora)
+print("please not the beta column in the table below is not correct, the beta is calculated from colSums(fit$alpha * fit$mu)\n but for linear fit, it missed a scale factor. Others are correct")
+gseasusie::interactive_table(linear.fit, linear.ora)
+coeftable_linear(linear_fit = linear.fit)
+```
+
+#### Logistice Susie
+
+```{r warning=F,message=FALSE}
+gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
+gseasusie::interactive_table(logistic.fit, logistic.ora)
+```
+
+
+### Go Cellular Component
+
+#### Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/SCZ-ieu-b-5102_gocc.rdata")
+
+gseasusie::enrichment_volcano(linear.fit, linear.ora)
+print("please not the beta column in the table below is not correct, the beta is calculated from colSums(fit$alpha * fit$mu)\n but for linear fit, it missed a scale factor. Others are correct")
+gseasusie::interactive_table(linear.fit, linear.ora)
+coeftable_linear(linear_fit = linear.fit)
+
+```
+
+#### Logistice Susie
+
+```{r warning=F,message=FALSE}
+gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
+gseasusie::interactive_table(logistic.fit, logistic.ora)
+```
+
+
+### KEGG
+
+#### Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/SCZ-ieu-b-5102_kegg.rdata")
+gseasusie::enrichment_volcano(linear.fit, linear.ora)
+print("please not the beta column in the table below is not correct, the beta is calculated from colSums(fit$alpha * fit$mu)\n but for linear fit, it missed a scale factor. Others are correct")
+gseasusie::interactive_table(linear.fit, linear.ora)
+coeftable_linear(linear_fit = linear.fit)
+```
+
+#### Logistice Susie
+
+```{r warning=F,message=FALSE}
+gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
+gseasusie::interactive_table(logistic.fit, logistic.ora)
+```
+
+## Validation
+
+```{r}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher/fisher_SCZ-ieu-b-5102_linearsusie.rdata")
+
+DT::datatable(df_all, 
+                caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', 
+                                                  'Gene labels'), 
+                options = list(pageLength = 5))
+
+```
+
+
+### Susie
+
+```{r}
+DT::datatable(linear_selected, 
+                caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', 
+                                                  'Benchmark genes'), 
+                options = list(pageLength = 5))
+print(fisher_matrix)
+print(fisher_result)
+```
+
+
+### Logistic Susie
+
+```{r}
+
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher/fisher_SCZ-ieu-b-5102_logisusie.rdata")
+DT::datatable(linear_selected, 
+                caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', 
+                                                  'Benchmark genes'), 
+                options = list(pageLength = 5))
+print(fisher_matrix)
+print(fisher_result)
+```
+
+
+# WBC-ieu-b-30
+
+## Susie & Logistic Susie results
+
+### Go Biological Process
+
+#### Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/WBC-ieu-b-30_gobp.rdata")
+gseasusie::enrichment_volcano(linear.fit, linear.ora)
+print("please not the beta column in the table below is not correct, the beta is calculated from colSums(fit$alpha * fit$mu)\n but for linear fit, it missed a scale factor. Others are correct")
+gseasusie::interactive_table(linear.fit, linear.ora)
+coeftable_linear(linear_fit = linear.fit)
+```
+
+#### Logistice Susie
+
+```{r warning=F,message=FALSE}
+gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
+gseasusie::interactive_table(logistic.fit, logistic.ora)
+```
+
+
+### Go Molecular Function
+
+#### Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/WBC-ieu-b-30_gomf.rdata")
+gseasusie::enrichment_volcano(linear.fit, linear.ora)
+print("please not the beta column in the table below is not correct, the beta is calculated from colSums(fit$alpha * fit$mu)\n but for linear fit, it missed a scale factor. Others are correct")
+gseasusie::interactive_table(linear.fit, linear.ora)
+coeftable_linear(linear_fit = linear.fit)
+```
+
+#### Logistice Susie
+
+```{r warning=F,message=FALSE}
+gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
+gseasusie::interactive_table(logistic.fit, logistic.ora)
+```
+
+
+### Go Cellular Component
+
+#### Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/WBC-ieu-b-30_gocc.rdata")
+
+gseasusie::enrichment_volcano(linear.fit, linear.ora)
+print("please not the beta column in the table below is not correct, the beta is calculated from colSums(fit$alpha * fit$mu)\n but for linear fit, it missed a scale factor. Others are correct")
+gseasusie::interactive_table(linear.fit, linear.ora)
+coeftable_linear(linear_fit = linear.fit)
+
+```
+
+#### Logistice Susie
+
+```{r warning=F,message=FALSE}
+gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
+gseasusie::interactive_table(logistic.fit, logistic.ora)
+```
+
+
+### KEGG
+
+#### Susie
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/WBC-ieu-b-30_kegg.rdata")
+gseasusie::enrichment_volcano(linear.fit, linear.ora)
+print("please not the beta column in the table below is not correct, the beta is calculated from colSums(fit$alpha * fit$mu)\n but for linear fit, it missed a scale factor. Others are correct")
+gseasusie::interactive_table(linear.fit, linear.ora)
+coeftable_linear(linear_fit = linear.fit)
+```
+
+#### Logistice Susie
+
+```{r warning=F,message=FALSE}
+gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
+gseasusie::interactive_table(logistic.fit, logistic.ora)
+```
+
+## Validation
+
+```{r}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher/fisher_WBC-ieu-b-30_linearsusie.rdata")
+
+DT::datatable(df_all, 
+                caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', 
+                                                  'Gene labels'), 
+                options = list(pageLength = 5))
+
+```
+
+
+### Susie
+
+```{r}
+DT::datatable(linear_selected, 
+                caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', 
+                                                  'Benchmark genes'), 
+                options = list(pageLength = 5))
+print(fisher_matrix)
+print(fisher_result)
+```
+
+
+### Logistic Susie
+
+```{r}
+
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher/fisher_WBC-ieu-b-30_logisusie.rdata")
+DT::datatable(linear_selected, 
+                caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', 
+                                                  'Benchmark genes'), 
+                options = list(pageLength = 5))
+print(fisher_matrix)
+print(fisher_result)
+```
+
+
