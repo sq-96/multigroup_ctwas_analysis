@@ -60,18 +60,198 @@ The pathways are from Go Biological Process (gobp), Go Molecular Function (gomf)
 ```{r warning=F,message=FALSE}
 library(gseasusie)
 library(tidyverse)
+library(GO.db)
 
-coeftable_linear<- function(linear_fit) {
-  coef <- susieR::coef.susie(linear_fit)
+
+# coeftable_linear<- function(linear_fit) {
+#   coef <- susieR::coef.susie(linear_fit)
+#   coef <- as.data.frame(cbind(names(coef), coef))
+#   colnames(coef) <- c("pwy", "beta")
+#   rownames(coef) <- seq(1,nrow(coef),by=1)
+#   DT::datatable(coef, 
+#                 caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', 
+#                                                   'Correct coef for linear fitting'), 
+#                 options = list(pageLength = 5))
+# }
+
+color_sign = function(value) {
+  if (value > 0) {
+    color <- "#008000"
+  } else if (value < 0) {
+    color <- "#e00000"
+  } else {
+    color <- "#777"
+  }
+  list(color = color)
+}
+
+
+getGOTermName <- function(go_id) {
+  result <- try(Term(GOTERM[[go_id]]), silent = TRUE)
+  if (class(result) == "try-error") {
+    return(NA)
+  } else {
+    return(result)
+  }
+}
+
+getKEGGPathwayName <- function(kegg_id) {
+  result <- try(KEGGREST::keggGet(kegg_id)[[1]]$NAME, silent = TRUE)
+  if (class(result) == "try-error") {
+    return(NA)
+  } else {
+    return(result)
+  }
+}
+
+interactive_table_linear_susie <- function(fit, ora) {
+  
+  fit <- fit
+  ora <- ora
+  
+  res <- gseasusie:::get_gene_set_summary(fit) %>%
+    dplyr::left_join(ora)
+  
+  coef <- susieR::coef.susie(fit)
   coef <- as.data.frame(cbind(names(coef), coef))
   colnames(coef) <- c("pwy", "beta")
   rownames(coef) <- seq(1,nrow(coef),by=1)
-  DT::datatable(coef, 
-                caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', 
-                                                  'Correct coef for linear fitting'), 
-                options = list(pageLength = 5))
+  
+  res_updated <- res %>%
+    # Ensure 'beta' in 'res' is of type double
+    mutate(beta = as.numeric(beta)) %>%
+    left_join(coef %>%
+                # Ensure 'beta' in 'coef' is of type double
+                mutate(beta = as.numeric(beta)), 
+              by = c("geneSet" = "pwy")) %>%
+    # Combine the two 'beta' columns, choosing 'coef' values first
+    mutate(beta = coalesce(beta.y, beta.x)) %>%
+    # Explicitly use `select` from `dplyr`
+    dplyr::select(-beta.y, -beta.x)
+  
+  res <- res_updated
+  
+  csdat <- gseasusie:::get_credible_set_summary(fit) %>%
+    dplyr::left_join(ora) %>%
+    dplyr::filter(in_cs, active_cs) %>%
+    dplyr::select(geneSet, component, in_cs) %>%
+    distinct()
+  
+  dt <- res %>% 
+    dplyr::filter(overlap > 0) %>%
+    dplyr::mutate(
+      logOddsRatio = log(oddsRatio),
+      nlog10pFishersExact = -log10(pFishersExact)
+    ) %>%
+    dplyr::left_join(csdat) %>%
+    dplyr::arrange(dplyr::desc(nlog10pFishersExact)) %>%
+    dplyr::mutate(
+      fisherRank = dplyr::row_number(),
+      in_cs = dplyr::if_else(is.na(in_cs), FALSE, in_cs)) %>%
+    dplyr::select(geneSet, beta, pip, overlap, geneSetSize, logOddsRatio, nlog10pFishersExact, in_cs, component, fisherRank) %>%
+    dplyr::mutate(dplyr::across(!where(is.numeric) , as.factor))
+  
+  
+  if(grepl("GO",dt$geneSet[1])) {
+      dt <- dt %>%
+      dplyr::filter(!is.na(component)) %>% #### only show CS
+      dplyr::mutate(goTermName = sapply(as.character(geneSet), getGOTermName)) %>% # extract Go term names
+      dplyr::select(geneSet, goTermName, everything()) # re-order
+  }else if (grepl("hsa",dt$geneSet[1])) {
+      dt <- dt %>%
+      dplyr::filter(!is.na(component)) %>% #### only show CS
+      dplyr::mutate(KEGGPathwayName = sapply(as.character(geneSet), getKEGGPathwayName)) %>% # extract Go term names
+      dplyr::select(geneSet, KEGGPathwayName, everything()) # re-order
+  }
+  
+  dt %>%
+    dplyr::select(-c(in_cs)) %>%
+    reactable::reactable(
+      filterable=TRUE,
+      minRows=10,
+      columns = list(
+        pip = reactable::colDef(format = reactable::colFormat(digits = 3)),
+        logOddsRatio = reactable::colDef(style= function(value){color_sign(value)},
+                                         format = reactable::colFormat(digits = 3)),
+        beta = reactable::colDef(style= function(value){color_sign(value)},
+                                 format = reactable::colFormat(digits = 3)),
+        nlog10pFishersExact = reactable::colDef(format = reactable::colFormat(digits = 3))
+      ),
+      rowStyle = function(index){
+        if(dt$in_cs[index] == TRUE){
+          list(background = "#e5f5e0")
+        }
+      },
+      defaultSorted = list(nlog10pFishersExact='desc')
+    )
+  
+  
+  
 }
 
+interactive_table_logistic_susie <- function(fit, ora) {
+  
+  fit <- fit
+  ora <- ora
+  
+  res <- gseasusie:::get_gene_set_summary(fit) %>%
+    dplyr::left_join(ora)
+  
+  csdat <- gseasusie:::get_credible_set_summary(fit) %>%
+    dplyr::left_join(ora) %>%
+    dplyr::filter(in_cs, active_cs) %>%
+    dplyr::select(geneSet, component, in_cs) %>%
+    distinct()
+  
+  dt <- res %>% 
+    dplyr::filter(overlap > 0) %>%
+    dplyr::mutate(
+      logOddsRatio = log(oddsRatio),
+      nlog10pFishersExact = -log10(pFishersExact)
+    ) %>%
+    dplyr::left_join(csdat) %>%
+    dplyr::arrange(dplyr::desc(nlog10pFishersExact)) %>%
+    dplyr::mutate(
+      fisherRank = dplyr::row_number(),
+      in_cs = dplyr::if_else(is.na(in_cs), FALSE, in_cs)) %>%
+    dplyr::select(geneSet, beta, pip, overlap, geneSetSize, logOddsRatio, nlog10pFishersExact, in_cs, component, fisherRank) %>%
+    dplyr::mutate(dplyr::across(!where(is.numeric) , as.factor))
+  
+  
+  if(grepl("GO",dt$geneSet[1])) {
+      dt <- dt %>%
+      dplyr::filter(!is.na(component)) %>% #### only show CS
+      dplyr::mutate(goTermName = sapply(as.character(geneSet), getGOTermName)) %>% # extract Go term names
+      dplyr::select(geneSet, goTermName, everything()) # re-order
+  }else if (grepl("hsa",dt$geneSet[1])) {
+      dt <- dt %>%
+      dplyr::filter(!is.na(component)) %>% #### only show CS
+      dplyr::mutate(KEGGPathwayName = sapply(as.character(geneSet), getKEGGPathwayName)) %>% # extract Go term names
+      dplyr::select(geneSet, KEGGPathwayName, everything()) # re-order
+  }
+  
+  dt %>%
+    dplyr::select(-c(in_cs)) %>%
+    reactable::reactable(
+      filterable=TRUE,
+      minRows=10,
+      columns = list(
+        pip = reactable::colDef(format = reactable::colFormat(digits = 3)),
+        logOddsRatio = reactable::colDef(style= function(value){color_sign(value)},
+                                         format = reactable::colFormat(digits = 3)),
+        beta = reactable::colDef(style= function(value){color_sign(value)},
+                                 format = reactable::colFormat(digits = 3)),
+        nlog10pFishersExact = reactable::colDef(format = reactable::colFormat(digits = 3))
+      ),
+      rowStyle = function(index){
+        if(dt$in_cs[index] == TRUE){
+          list(background = "#e5f5e0")
+        }
+      },
+      defaultSorted = list(nlog10pFishersExact='desc')
+    )
+  
+}
 ```
 
 
@@ -86,16 +266,14 @@ coeftable_linear<- function(linear_fit) {
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/aFib-ebi-a-GCST006414_gobp.rdata")
 gseasusie::enrichment_volcano(linear.fit, linear.ora)
-print("please not the beta column (computed by logistic susie package) in the table below is not correct for linear susie, the beta is calculated from colSums(fit$alpha * fit$mu) but for linear fit, it misses a scale factor. Other columns are correct")
-gseasusie::interactive_table(linear.fit, linear.ora)
-coeftable_linear(linear_fit = linear.fit)
+interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
 ```
 
 #### Logistice Susie
 
 ```{r warning=F,message=FALSE}
 gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-gseasusie::interactive_table(logistic.fit, logistic.ora)
+interactive_table_logistic_susie(logistic.fit, logistic.ora)
 ```
 
 
@@ -106,16 +284,14 @@ gseasusie::interactive_table(logistic.fit, logistic.ora)
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/aFib-ebi-a-GCST006414_gomf.rdata")
 gseasusie::enrichment_volcano(linear.fit, linear.ora)
-print("please not the beta column (computed by logistic susie package) in the table below is not correct for linear susie, the beta is calculated from colSums(fit$alpha * fit$mu) but for linear fit, it misses a scale factor. Other columns are correctt")
-gseasusie::interactive_table(linear.fit, linear.ora)
-coeftable_linear(linear_fit = linear.fit)
+interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
 ```
 
 #### Logistice Susie
 
 ```{r warning=F,message=FALSE}
 gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-gseasusie::interactive_table(logistic.fit, logistic.ora)
+interactive_table_logistic_susie(logistic.fit, logistic.ora)
 ```
 
 
@@ -127,9 +303,9 @@ gseasusie::interactive_table(logistic.fit, logistic.ora)
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/aFib-ebi-a-GCST006414_gocc.rdata")
 
 gseasusie::enrichment_volcano(linear.fit, linear.ora)
-print("please not the beta column (computed by logistic susie package) in the table below is not correct for linear susie, the beta is calculated from colSums(fit$alpha * fit$mu) but for linear fit, it misses a scale factor. Other columns are correctt")
-gseasusie::interactive_table(linear.fit, linear.ora)
-coeftable_linear(linear_fit = linear.fit)
+
+
+interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
 
 ```
 
@@ -137,7 +313,7 @@ coeftable_linear(linear_fit = linear.fit)
 
 ```{r warning=F,message=FALSE}
 gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-gseasusie::interactive_table(logistic.fit, logistic.ora)
+interactive_table_logistic_susie(logistic.fit, logistic.ora)
 ```
 
 
@@ -148,16 +324,16 @@ gseasusie::interactive_table(logistic.fit, logistic.ora)
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/aFib-ebi-a-GCST006414_kegg.rdata")
 gseasusie::enrichment_volcano(linear.fit, linear.ora)
-print("please not the beta column (computed by logistic susie package) in the table below is not correct for linear susie, the beta is calculated from colSums(fit$alpha * fit$mu) but for linear fit, it misses a scale factor. Other columns are correctt")
-gseasusie::interactive_table(linear.fit, linear.ora)
-coeftable_linear(linear_fit = linear.fit)
+
+
+interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
 ```
 
 #### Logistice Susie
 
 ```{r warning=F,message=FALSE}
 gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-gseasusie::interactive_table(logistic.fit, logistic.ora)
+interactive_table_logistic_susie(logistic.fit, logistic.ora)
 ```
 
 ## Validation
@@ -209,16 +385,16 @@ print(fisher_result)
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/IBD-ebi-a-GCST004131_gobp.rdata")
 gseasusie::enrichment_volcano(linear.fit, linear.ora)
-print("please not the beta column (computed by logistic susie package) in the table below is not correct for linear susie, the beta is calculated from colSums(fit$alpha * fit$mu) but for linear fit, it misses a scale factor. Other columns are correctt")
-gseasusie::interactive_table(linear.fit, linear.ora)
-coeftable_linear(linear_fit = linear.fit)
+
+
+interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
 ```
 
 #### Logistice Susie
 
 ```{r warning=F,message=FALSE}
 gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-gseasusie::interactive_table(logistic.fit, logistic.ora)
+interactive_table_logistic_susie(logistic.fit, logistic.ora)
 ```
 
 
@@ -229,16 +405,16 @@ gseasusie::interactive_table(logistic.fit, logistic.ora)
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/IBD-ebi-a-GCST004131_gomf.rdata")
 gseasusie::enrichment_volcano(linear.fit, linear.ora)
-print("please not the beta column (computed by logistic susie package) in the table below is not correct for linear susie, the beta is calculated from colSums(fit$alpha * fit$mu) but for linear fit, it misses a scale factor. Other columns are correctt")
-gseasusie::interactive_table(linear.fit, linear.ora)
-coeftable_linear(linear_fit = linear.fit)
+
+
+interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
 ```
 
 #### Logistice Susie
 
 ```{r warning=F,message=FALSE}
 gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-gseasusie::interactive_table(logistic.fit, logistic.ora)
+interactive_table_logistic_susie(logistic.fit, logistic.ora)
 ```
 
 
@@ -250,9 +426,9 @@ gseasusie::interactive_table(logistic.fit, logistic.ora)
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/IBD-ebi-a-GCST004131_gocc.rdata")
 
 gseasusie::enrichment_volcano(linear.fit, linear.ora)
-print("please not the beta column (computed by logistic susie package) in the table below is not correct for linear susie, the beta is calculated from colSums(fit$alpha * fit$mu) but for linear fit, it misses a scale factor. Other columns are correctt")
-gseasusie::interactive_table(linear.fit, linear.ora)
-coeftable_linear(linear_fit = linear.fit)
+
+
+interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
 
 ```
 
@@ -260,7 +436,7 @@ coeftable_linear(linear_fit = linear.fit)
 
 ```{r warning=F,message=FALSE}
 gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-gseasusie::interactive_table(logistic.fit, logistic.ora)
+interactive_table_logistic_susie(logistic.fit, logistic.ora)
 ```
 
 
@@ -271,16 +447,16 @@ gseasusie::interactive_table(logistic.fit, logistic.ora)
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/IBD-ebi-a-GCST004131_kegg.rdata")
 gseasusie::enrichment_volcano(linear.fit, linear.ora)
-print("please not the beta column (computed by logistic susie package) in the table below is not correct for linear susie, the beta is calculated from colSums(fit$alpha * fit$mu) but for linear fit, it misses a scale factor. Other columns are correctt")
-gseasusie::interactive_table(linear.fit, linear.ora)
-coeftable_linear(linear_fit = linear.fit)
+
+
+interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
 ```
 
 #### Logistice Susie
 
 ```{r warning=F,message=FALSE}
 gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-gseasusie::interactive_table(logistic.fit, logistic.ora)
+interactive_table_logistic_susie(logistic.fit, logistic.ora)
 ```
 
 ## Validation
@@ -332,16 +508,16 @@ print(fisher_result)
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/LDL-ukb-d-30780_irnt_gobp.rdata")
 gseasusie::enrichment_volcano(linear.fit, linear.ora)
-print("please not the beta column (computed by logistic susie package) in the table below is not correct for linear susie, the beta is calculated from colSums(fit$alpha * fit$mu) but for linear fit, it misses a scale factor. Other columns are correctt")
-gseasusie::interactive_table(linear.fit, linear.ora)
-coeftable_linear(linear_fit = linear.fit)
+
+
+interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
 ```
 
 #### Logistice Susie
 
 ```{r warning=F,message=FALSE}
 gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-gseasusie::interactive_table(logistic.fit, logistic.ora)
+interactive_table_logistic_susie(logistic.fit, logistic.ora)
 ```
 
 
@@ -352,16 +528,16 @@ gseasusie::interactive_table(logistic.fit, logistic.ora)
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/LDL-ukb-d-30780_irnt_gomf.rdata")
 gseasusie::enrichment_volcano(linear.fit, linear.ora)
-print("please not the beta column (computed by logistic susie package) in the table below is not correct for linear susie, the beta is calculated from colSums(fit$alpha * fit$mu) but for linear fit, it misses a scale factor. Other columns are correctt")
-gseasusie::interactive_table(linear.fit, linear.ora)
-coeftable_linear(linear_fit = linear.fit)
+
+
+interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
 ```
 
 #### Logistice Susie
 
 ```{r warning=F,message=FALSE}
 gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-gseasusie::interactive_table(logistic.fit, logistic.ora)
+interactive_table_logistic_susie(logistic.fit, logistic.ora)
 ```
 
 
@@ -373,9 +549,9 @@ gseasusie::interactive_table(logistic.fit, logistic.ora)
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/LDL-ukb-d-30780_irnt_gocc.rdata")
 
 gseasusie::enrichment_volcano(linear.fit, linear.ora)
-print("please not the beta column (computed by logistic susie package) in the table below is not correct for linear susie, the beta is calculated from colSums(fit$alpha * fit$mu) but for linear fit, it misses a scale factor. Other columns are correctt")
-gseasusie::interactive_table(linear.fit, linear.ora)
-coeftable_linear(linear_fit = linear.fit)
+
+
+interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
 
 ```
 
@@ -383,7 +559,7 @@ coeftable_linear(linear_fit = linear.fit)
 
 ```{r warning=F,message=FALSE}
 gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-gseasusie::interactive_table(logistic.fit, logistic.ora)
+interactive_table_logistic_susie(logistic.fit, logistic.ora)
 ```
 
 
@@ -394,16 +570,16 @@ gseasusie::interactive_table(logistic.fit, logistic.ora)
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/LDL-ukb-d-30780_irnt_kegg.rdata")
 gseasusie::enrichment_volcano(linear.fit, linear.ora)
-print("please not the beta column (computed by logistic susie package) in the table below is not correct for linear susie, the beta is calculated from colSums(fit$alpha * fit$mu) but for linear fit, it misses a scale factor. Other columns are correctt")
-gseasusie::interactive_table(linear.fit, linear.ora)
-coeftable_linear(linear_fit = linear.fit)
+
+
+interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
 ```
 
 #### Logistice Susie
 
 ```{r warning=F,message=FALSE}
 gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-gseasusie::interactive_table(logistic.fit, logistic.ora)
+interactive_table_logistic_susie(logistic.fit, logistic.ora)
 ```
 
 ## Validation
@@ -456,16 +632,16 @@ print(fisher_result)
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/SBP-ukb-a-360_gobp.rdata")
 gseasusie::enrichment_volcano(linear.fit, linear.ora)
-print("please not the beta column (computed by logistic susie package) in the table below is not correct for linear susie, the beta is calculated from colSums(fit$alpha * fit$mu) but for linear fit, it misses a scale factor. Other columns are correctt")
-gseasusie::interactive_table(linear.fit, linear.ora)
-coeftable_linear(linear_fit = linear.fit)
+
+
+interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
 ```
 
 #### Logistice Susie
 
 ```{r warning=F,message=FALSE}
 gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-gseasusie::interactive_table(logistic.fit, logistic.ora)
+interactive_table_logistic_susie(logistic.fit, logistic.ora)
 ```
 
 
@@ -476,16 +652,16 @@ gseasusie::interactive_table(logistic.fit, logistic.ora)
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/SBP-ukb-a-360_gomf.rdata")
 gseasusie::enrichment_volcano(linear.fit, linear.ora)
-print("please not the beta column (computed by logistic susie package) in the table below is not correct for linear susie, the beta is calculated from colSums(fit$alpha * fit$mu) but for linear fit, it misses a scale factor. Other columns are correctt")
-gseasusie::interactive_table(linear.fit, linear.ora)
-coeftable_linear(linear_fit = linear.fit)
+
+
+interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
 ```
 
 #### Logistice Susie
 
 ```{r warning=F,message=FALSE}
 gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-gseasusie::interactive_table(logistic.fit, logistic.ora)
+interactive_table_logistic_susie(logistic.fit, logistic.ora)
 ```
 
 
@@ -497,9 +673,9 @@ gseasusie::interactive_table(logistic.fit, logistic.ora)
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/SBP-ukb-a-360_gocc.rdata")
 
 gseasusie::enrichment_volcano(linear.fit, linear.ora)
-print("please not the beta column (computed by logistic susie package) in the table below is not correct for linear susie, the beta is calculated from colSums(fit$alpha * fit$mu) but for linear fit, it misses a scale factor. Other columns are correctt")
-gseasusie::interactive_table(linear.fit, linear.ora)
-coeftable_linear(linear_fit = linear.fit)
+
+
+interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
 
 ```
 
@@ -507,7 +683,7 @@ coeftable_linear(linear_fit = linear.fit)
 
 ```{r warning=F,message=FALSE}
 gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-gseasusie::interactive_table(logistic.fit, logistic.ora)
+interactive_table_logistic_susie(logistic.fit, logistic.ora)
 ```
 
 
@@ -518,16 +694,16 @@ gseasusie::interactive_table(logistic.fit, logistic.ora)
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/SBP-ukb-a-360_kegg.rdata")
 gseasusie::enrichment_volcano(linear.fit, linear.ora)
-print("please not the beta column (computed by logistic susie package) in the table below is not correct for linear susie, the beta is calculated from colSums(fit$alpha * fit$mu) but for linear fit, it misses a scale factor. Other columns are correctt")
-gseasusie::interactive_table(linear.fit, linear.ora)
-coeftable_linear(linear_fit = linear.fit)
+
+
+interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
 ```
 
 #### Logistice Susie
 
 ```{r warning=F,message=FALSE}
 gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-gseasusie::interactive_table(logistic.fit, logistic.ora)
+interactive_table_logistic_susie(logistic.fit, logistic.ora)
 ```
 
 ## Validation
@@ -581,16 +757,16 @@ print(fisher_result)
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/SCZ-ieu-b-5102_gobp.rdata")
 gseasusie::enrichment_volcano(linear.fit, linear.ora)
-print("please not the beta column (computed by logistic susie package) in the table below is not correct for linear susie, the beta is calculated from colSums(fit$alpha * fit$mu) but for linear fit, it misses a scale factor. Other columns are correctt")
-gseasusie::interactive_table(linear.fit, linear.ora)
-coeftable_linear(linear_fit = linear.fit)
+
+
+interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
 ```
 
 #### Logistice Susie
 
 ```{r warning=F,message=FALSE}
 gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-gseasusie::interactive_table(logistic.fit, logistic.ora)
+interactive_table_logistic_susie(logistic.fit, logistic.ora)
 ```
 
 
@@ -601,16 +777,16 @@ gseasusie::interactive_table(logistic.fit, logistic.ora)
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/SCZ-ieu-b-5102_gomf.rdata")
 gseasusie::enrichment_volcano(linear.fit, linear.ora)
-print("please not the beta column (computed by logistic susie package) in the table below is not correct for linear susie, the beta is calculated from colSums(fit$alpha * fit$mu) but for linear fit, it misses a scale factor. Other columns are correctt")
-gseasusie::interactive_table(linear.fit, linear.ora)
-coeftable_linear(linear_fit = linear.fit)
+
+
+interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
 ```
 
 #### Logistice Susie
 
 ```{r warning=F,message=FALSE}
 gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-gseasusie::interactive_table(logistic.fit, logistic.ora)
+interactive_table_logistic_susie(logistic.fit, logistic.ora)
 ```
 
 
@@ -622,9 +798,9 @@ gseasusie::interactive_table(logistic.fit, logistic.ora)
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/SCZ-ieu-b-5102_gocc.rdata")
 
 gseasusie::enrichment_volcano(linear.fit, linear.ora)
-print("please not the beta column (computed by logistic susie package) in the table below is not correct for linear susie, the beta is calculated from colSums(fit$alpha * fit$mu) but for linear fit, it misses a scale factor. Other columns are correctt")
-gseasusie::interactive_table(linear.fit, linear.ora)
-coeftable_linear(linear_fit = linear.fit)
+
+
+interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
 
 ```
 
@@ -632,7 +808,7 @@ coeftable_linear(linear_fit = linear.fit)
 
 ```{r warning=F,message=FALSE}
 gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-gseasusie::interactive_table(logistic.fit, logistic.ora)
+interactive_table_logistic_susie(logistic.fit, logistic.ora)
 ```
 
 
@@ -643,16 +819,16 @@ gseasusie::interactive_table(logistic.fit, logistic.ora)
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/SCZ-ieu-b-5102_kegg.rdata")
 gseasusie::enrichment_volcano(linear.fit, linear.ora)
-print("please not the beta column (computed by logistic susie package) in the table below is not correct for linear susie, the beta is calculated from colSums(fit$alpha * fit$mu) but for linear fit, it misses a scale factor. Other columns are correctt")
-gseasusie::interactive_table(linear.fit, linear.ora)
-coeftable_linear(linear_fit = linear.fit)
+
+
+interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
 ```
 
 #### Logistice Susie
 
 ```{r warning=F,message=FALSE}
 gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-gseasusie::interactive_table(logistic.fit, logistic.ora)
+interactive_table_logistic_susie(logistic.fit, logistic.ora)
 ```
 
 ## Validation
@@ -705,16 +881,16 @@ print(fisher_result)
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/WBC-ieu-b-30_gobp.rdata")
 gseasusie::enrichment_volcano(linear.fit, linear.ora)
-print("please not the beta column (computed by logistic susie package) in the table below is not correct for linear susie, the beta is calculated from colSums(fit$alpha * fit$mu) but for linear fit, it misses a scale factor. Other columns are correctt")
-gseasusie::interactive_table(linear.fit, linear.ora)
-coeftable_linear(linear_fit = linear.fit)
+
+
+interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
 ```
 
 #### Logistice Susie
 
 ```{r warning=F,message=FALSE}
 gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-gseasusie::interactive_table(logistic.fit, logistic.ora)
+interactive_table_logistic_susie(logistic.fit, logistic.ora)
 ```
 
 
@@ -725,16 +901,16 @@ gseasusie::interactive_table(logistic.fit, logistic.ora)
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/WBC-ieu-b-30_gomf.rdata")
 gseasusie::enrichment_volcano(linear.fit, linear.ora)
-print("please not the beta column (computed by logistic susie package) in the table below is not correct for linear susie, the beta is calculated from colSums(fit$alpha * fit$mu) but for linear fit, it misses a scale factor. Other columns are correctt")
-gseasusie::interactive_table(linear.fit, linear.ora)
-coeftable_linear(linear_fit = linear.fit)
+
+
+interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
 ```
 
 #### Logistice Susie
 
 ```{r warning=F,message=FALSE}
 gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-gseasusie::interactive_table(logistic.fit, logistic.ora)
+interactive_table_logistic_susie(logistic.fit, logistic.ora)
 ```
 
 
@@ -746,9 +922,9 @@ gseasusie::interactive_table(logistic.fit, logistic.ora)
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/WBC-ieu-b-30_gocc.rdata")
 
 gseasusie::enrichment_volcano(linear.fit, linear.ora)
-print("please not the beta column (computed by logistic susie package) in the table below is not correct for linear susie, the beta is calculated from colSums(fit$alpha * fit$mu) but for linear fit, it misses a scale factor. Other columns are correctt")
-gseasusie::interactive_table(linear.fit, linear.ora)
-coeftable_linear(linear_fit = linear.fit)
+
+
+interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
 
 ```
 
@@ -756,7 +932,7 @@ coeftable_linear(linear_fit = linear.fit)
 
 ```{r warning=F,message=FALSE}
 gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-gseasusie::interactive_table(logistic.fit, logistic.ora)
+interactive_table_logistic_susie(logistic.fit, logistic.ora)
 ```
 
 
@@ -767,16 +943,16 @@ gseasusie::interactive_table(logistic.fit, logistic.ora)
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/WBC-ieu-b-30_kegg.rdata")
 gseasusie::enrichment_volcano(linear.fit, linear.ora)
-print("please not the beta column (computed by logistic susie package) in the table below is not correct for linear susie, the beta is calculated from colSums(fit$alpha * fit$mu) but for linear fit, it misses a scale factor. Other columns are correctt")
-gseasusie::interactive_table(linear.fit, linear.ora)
-coeftable_linear(linear_fit = linear.fit)
+
+
+interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
 ```
 
 #### Logistice Susie
 
 ```{r warning=F,message=FALSE}
 gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-gseasusie::interactive_table(logistic.fit, logistic.ora)
+interactive_table_logistic_susie(logistic.fit, logistic.ora)
 ```
 
 ## Validation
