@@ -28,7 +28,7 @@ X is an n×m matrix (m = number of pathways) indicating gene membership in speci
 
 The model fitting results in pathway weights, from which we predict gene labels $\hat{y}$. We then categorize genes based on these new labels. 
 
-- For SuSiE, we compute the p-values from the new labels(z-scores), then compute FDR. Genes with FDR < 0.5 are considered benchmarks. 
+- For SuSiE, we compute the p-values from the new labels(z-scores), then compute FDR. Genes with FDR < 0.05 are considered benchmarks. 
 - For logistic SuSiE, genes with labels > 0.5 are considered benchmarks.
 
 ## Testing genes
@@ -164,28 +164,28 @@ interactive_table_linear_susie <- function(fit, ora) {
       dplyr::select(geneSet, KEGGPathwayName, everything()) # re-order
   }
   
-  dt %>%
-    dplyr::select(-c(in_cs)) %>%
-    reactable::reactable(
-      filterable=TRUE,
-      minRows=10,
-      columns = list(
-        pip = reactable::colDef(format = reactable::colFormat(digits = 3)),
-        logOddsRatio = reactable::colDef(style= function(value){color_sign(value)},
-                                         format = reactable::colFormat(digits = 3)),
-        beta = reactable::colDef(style= function(value){color_sign(value)},
-                                 format = reactable::colFormat(digits = 3)),
-        nlog10pFishersExact = reactable::colDef(format = reactable::colFormat(digits = 3))
-      ),
-      rowStyle = function(index){
-        if(dt$in_cs[index] == TRUE){
-          list(background = "#e5f5e0")
-        }
-      },
-      defaultSorted = list(nlog10pFishersExact='desc')
-    )
-  
-  
+  # dt %>%
+  #   dplyr::select(-c(in_cs)) %>%
+  #   reactable::reactable(
+  #     filterable=TRUE,
+  #     minRows=1,
+  #     columns = list(
+  #       pip = reactable::colDef(format = reactable::colFormat(digits = 3)),
+  #       logOddsRatio = reactable::colDef(style= function(value){color_sign(value)},
+  #                                        format = reactable::colFormat(digits = 3)),
+  #       beta = reactable::colDef(style= function(value){color_sign(value)},
+  #                                format = reactable::colFormat(digits = 3)),
+  #       nlog10pFishersExact = reactable::colDef(format = reactable::colFormat(digits = 3))
+  #     ),
+  #     rowStyle = function(index){
+  #       if(dt$in_cs[index] == TRUE){
+  #         list(background = "#e5f5e0")
+  #       }
+  #     },
+  #     defaultSorted = list(nlog10pFishersExact='desc')
+  #   )
+  # 
+  DT::datatable(dt,options = list(pageLength=10))
   
 }
 
