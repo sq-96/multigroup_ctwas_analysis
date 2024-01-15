@@ -386,7 +386,7 @@ div.tocify {
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2024-01-03
+<strong>Last updated:</strong> 2024-01-15
 </p>
 <p>
 <strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 1
@@ -477,21 +477,25 @@ This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a> analysi
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree690e29e15d480b7e7ace2b66134a96939ee5a64dtargetblank690e29ea"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/690e29e15d480b7e7ace2b66134a96939ee5a64d" target="_blank">690e29e</a> </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree3158ac3f7f269f8331d1e3fb269c196973eaa855targetblank3158ac3a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/3158ac3f7f269f8331d1e3fb269c196973eaa855" target="_blank">3158ac3</a> </a>
 </p>
 </div>
-<div id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree690e29e15d480b7e7ace2b66134a96939ee5a64dtargetblank690e29ea" class="panel-collapse collapse">
+<div id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree3158ac3f7f269f8331d1e3fb269c196973eaa855targetblank3158ac3a" class="panel-collapse collapse">
 <div class="panel-body">
 <p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility.
 </p>
 <p>
-The results in this page were generated with repository version <a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/690e29e15d480b7e7ace2b66134a96939ee5a64d" target="_blank">690e29e</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
+The results in this page were generated with repository version <a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/3158ac3f7f269f8331d1e3fb269c196973eaa855" target="_blank">3158ac3</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
 </p>
 <p>
 Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
 </p>
 <pre><code>
+Untracked files:
+    Untracked:  analysis/simulation_E_S_one_tissue.Rmd
+    Untracked:  analysis/simulation_seven_brain_tissues_correlated.Rmd
+
 Unstaged changes:
     Modified:   analysis/simulation_seven_tissues_correlated.Rmd
 
@@ -532,6 +536,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/4d024a0074cd7d6b13114302842b2acca551efd8/analysis/simulation_seven_tissues_correlated.Rmd" target="_blank">4d024a0</a>
+</td>
+<td>
+sq-96
+</td>
+<td>
+2024-01-03
+</td>
+<td>
+update
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/sq-96/multigroup_ctwas_analysis/4d024a0074cd7d6b13114302842b2acca551efd8/docs/simulation_seven_tissues_correlated.html" target="_blank">4d024a0</a>
+</td>
+<td>
+sq-96
+</td>
+<td>
+2024-01-03
+</td>
+<td>
+update
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -641,186 +679,64 @@ update
 </div>
 </div>
 </div>
-<pre class="r"><code>library(ctwas)
-library(data.table)
-source(&quot;/project/xinhe/shengqian/cTWAS_simulation/summarize_basic_plots.R&quot;)</code></pre>
+<p>A simulation of seven correlated tissues is conducted to evaluate cTWAS performance (parameter estimation, PIP calibration …). Seven tissues used in this simulation are Artery Aorta, Spleen, Skin (not sun exposed suprapubic), Lung, Adipose Subcutaneous, Pancreas, Heart Artial Appendage. Pairwise correlation of gene expression are with 0.6-0.8. The first three tissues are set to be causal and the other four tissues are non-causal.</p>
+<p>It current has two settings: * 3% PVE, 0.9% <span class="math inline">\(\pi\)</span> for causal tissues, 0.5% PVE, 0.15% <span class="math inline">\(\pi\)</span> for non-causal tissues and 30% PVE, 2.5e-4 <span class="math inline">\(\pi\)</span> for SNP. * 3% PVE, 0.9% <span class="math inline">\(\pi\)</span> for causal tissues, 0% PVE, 0% <span class="math inline">\(\pi\)</span> for non-causal tissues and 30% PVE, 2.5e-4 <span class="math inline">\(\pi\)</span> for SNP.</p>
+<p>We observed that cTWAS always tend to overestimate PVE of non-causal tissues because parameters won’t be shrunk exactly to 0. Therefore, we assign non-zero (but very low) PVE to non-causal tissues in the first setting to check if it helps simulation results.</p>
 <pre><code>
 Attaching package: &#39;ggpubr&#39;</code></pre>
 <pre><code>The following object is masked from &#39;package:cowplot&#39;:
 
     get_legend</code></pre>
-<pre class="r"><code>source(&quot;/project/xinhe/shengqian/cTWAS_simulation/summarize_ctwas_plots.R&quot;)</code></pre>
 <pre><code>
 Attaching package: &#39;plyr&#39;</code></pre>
 <pre><code>The following object is masked from &#39;package:ggpubr&#39;:
 
     mutate</code></pre>
-<pre class="r"><code>source(&quot;/project2/xinhe/shengqian/cTWAS/cTWAS_analysis/analysis/simulation_help_functions.R&quot;)
-plot_PIP &lt;- function(configtag, runtag,  simutags, ...){
-   phenofs &lt;- paste0(results_dir, runtag, &quot;_simu&quot;, simutags, &quot;-pheno.Rd&quot;)
-   susieIfs &lt;- paste0(results_dir, runtag, &quot;_simu&quot;,simutags, &quot;_config&quot;, configtag,&quot;_LDR&quot;,&quot;.susieIrss.txt&quot;)
-   f1 &lt;- caliPIP_plot(phenofs, susieIfs, ...) 
-   return(f1)
-}</code></pre>
-<div id="simulation-1-three-causal-tissues-and-four-non-causal-tissues" class="section level2">
-<h2>Simulation 1: Three causal tissues and four non-causal tissues</h2>
-<p>30% PVE and 2.5e-4 prior inclusion for SNPs, 3% PVE and 0.009 prior inclusion for Brain Cerebellum, Brain Hippocampus and Brain Caudate basal ganglia. 0% PVE for other tissues.</p>
-<div id="shared-effect-size-parameters" class="section level3">
-<h3>Shared effect size parameters</h3>
+<div id="simulation-1-3-pve-for-causal-tissues-and-0.5-pve-for-non-causal-tissues." class="section level2">
+<h2>Simulation 1: 3% PVE for Causal Tissues and 0.5% PVE for Non-causal Tissues.</h2>
+<div id="shared-prior-variance-parameters" class="section level3">
+<h3>Shared Prior Variance Parameters</h3>
 <p>For the cTWAS analysis, tissues shared an effect size parameter.</p>
-<pre class="r"><code>results_dir &lt;- &quot;/project/xinhe/shengqian/cTWAS_simulation/simulation_correlated_seven_tissues/&quot;
-runtag = &quot;ukb-s80.45-3_7corr&quot;
-configtag &lt;- 1
-
-simutags &lt;- paste(1, 1:5, sep = &quot;-&quot;)
-thin &lt;- 0.1
-
-sample_size &lt;- 45000
-PIP_threshold &lt;- 0.8</code></pre>
-<pre class="r"><code>results_df &lt;- get_sim_joint_res(results_dir,runtag,configtag,simutags,thin,sample_size,PIP_threshold)</code></pre>
-<pre class="r"><code>#results using PIP threshold (gene+tissue)
-results_df[,c(&quot;simutag&quot;, &quot;n_causal&quot;, &quot;n_detected_pip&quot;, &quot;n_detected_pip_in_causal&quot;)]</code></pre>
-<pre><code>  simutag n_causal n_detected_pip n_detected_pip_in_causal
-1     1-1      211             10                        8
-2     1-2      233             32                       28
-3     1-3      215             21                       18
-4     1-4      212             30                       29
-5     1-5      254             17                       16</code></pre>
-<pre class="r"><code>#mean percent causal using PIP &gt; 0.8
-sum(results_df$n_detected_pip_in_causal)/sum(results_df$n_detected_pip)</code></pre>
-<pre><code>[1] 0.9</code></pre>
-<pre class="r"><code>#results using combined PIP threshold
-results_df[,c(&quot;simutag&quot;, &quot;n_causal_combined&quot;, &quot;n_detected_comb_pip&quot;, &quot;n_detected_comb_pip_in_causal&quot;)]</code></pre>
+<div id="results-using-combined-pip-threshold" class="section level4">
+<h4>Results using Combined PIP Threshold</h4>
 <pre><code>  simutag n_causal_combined n_detected_comb_pip n_detected_comb_pip_in_causal
-1     1-1               209                  40                            36
-2     1-2               232                  69                            55
-3     1-3               212                  40                            37
-4     1-4               212                  56                            52
-5     1-5               253                  49                            43</code></pre>
-<pre class="r"><code>#mean percent causal using combined PIP &gt; 0.8
-sum(results_df$n_detected_comb_pip_in_causal)/sum(results_df$n_detected_comb_pip)</code></pre>
-<pre><code>[1] 0.8779528</code></pre>
-<pre class="r"><code>#prior inclusion and mean prior inclusion
-results_df[,c(which(colnames(results_df)==&quot;simutag&quot;), setdiff(grep(&quot;prior&quot;, names(results_df)), grep(&quot;prior_var&quot;, names(results_df))))]</code></pre>
-<pre><code>  simutag    prior_SNP prior_Brain_Cerebellum prior_Brain_Hippocampus
-1     1-1 0.0002395754            0.004483670            0.0068481880
-2     1-2 0.0002427045            0.007869741            0.0132591028
-3     1-3 0.0002355897            0.006018338            0.0003961507
-4     1-4 0.0002386003            0.004966132            0.0113152506
-5     1-5 0.0002455809            0.005096201            0.0106738503
-  prior_Brain_Caudate_basal_ganglia prior_Brain_Cerebellar_Hemisphere
-1                       0.000748970                      4.543431e-03
-2                       0.012492771                      1.787225e-06
-3                       0.012111091                      4.935098e-04
-4                       0.007530475                      3.052034e-04
-5                       0.009940482                      1.602602e-03
-  prior_Brain_Cortex prior_Brain_Hypothalamus prior_Brain_Putamen_basal_ganglia
-1       2.754072e-06             0.0034925487                      0.0026968720
-2       1.488891e-03             0.0025931239                      0.0003692669
-3       2.332537e-03             0.0009549596                      0.0020164558
-4       1.487342e-05             0.0002722532                      0.0051363722
-5       4.787281e-03             0.0031010995                      0.0003623928</code></pre>
-<pre class="r"><code>colMeans(results_df[,setdiff(grep(&quot;prior&quot;, names(results_df)), grep(&quot;prior_var&quot;, names(results_df)))])</code></pre>
-<pre><code>                        prior_SNP            prior_Brain_Cerebellum 
-                     0.0002404102                      0.0056868163 
-          prior_Brain_Hippocampus prior_Brain_Caudate_basal_ganglia 
-                     0.0084985085                      0.0085647577 
-prior_Brain_Cerebellar_Hemisphere                prior_Brain_Cortex 
-                     0.0013893067                      0.0017252673 
-         prior_Brain_Hypothalamus prior_Brain_Putamen_basal_ganglia 
-                     0.0020827970                      0.0021162719 </code></pre>
-<pre class="r"><code>#prior variance and mean prior variance
-results_df[,c(which(colnames(results_df)==&quot;simutag&quot;), grep(&quot;prior_var&quot;, names(results_df)))]</code></pre>
-<pre><code>  simutag prior_var_SNP prior_var_Brain_Cerebellum prior_var_Brain_Hippocampus
-1     1-1      8.664607                   22.16341                    22.16341
-2     1-2      8.468107                   17.40351                    17.40351
-3     1-3      8.053270                   15.65865                    15.65865
-4     1-4      9.213080                   16.77674                    16.77674
-5     1-5      8.160598                   16.02897                    16.02897
-  prior_var_Brain_Caudate_basal_ganglia prior_var_Brain_Cerebellar_Hemisphere
-1                              22.16341                              22.16341
-2                              17.40351                              17.40351
-3                              15.65865                              15.65865
-4                              16.77674                              16.77674
-5                              16.02897                              16.02897
-  prior_var_Brain_Cortex prior_var_Brain_Hypothalamus
-1               22.16341                     22.16341
-2               17.40351                     17.40351
-3               15.65865                     15.65865
-4               16.77674                     16.77674
-5               16.02897                     16.02897
-  prior_var_Brain_Putamen_basal_ganglia
-1                              22.16341
-2                              17.40351
-3                              15.65865
-4                              16.77674
-5                              16.02897</code></pre>
-<pre class="r"><code>colMeans(results_df[,grep(&quot;prior_var&quot;, names(results_df))])</code></pre>
-<pre><code>                        prior_var_SNP            prior_var_Brain_Cerebellum 
-                             8.511932                             17.606253 
-          prior_var_Brain_Hippocampus prior_var_Brain_Caudate_basal_ganglia 
-                            17.606253                             17.606253 
-prior_var_Brain_Cerebellar_Hemisphere                prior_var_Brain_Cortex 
-                            17.606253                             17.606253 
-         prior_var_Brain_Hypothalamus prior_var_Brain_Putamen_basal_ganglia 
-                            17.606253                             17.606253 </code></pre>
-<pre class="r"><code>#PVE and mean PVE
-results_df[,c(which(colnames(results_df)==&quot;simutag&quot;), grep(&quot;pve&quot;, names(results_df)))]</code></pre>
-<pre><code>  simutag   pve_SNP pve_Brain_Cerebellum pve_Brain_Hippocampus
-1     1-1 0.2443557           0.01942860           0.026851422
-2     1-2 0.2419332           0.02677741           0.040823104
-3     1-3 0.2233366           0.01842478           0.001097412
-4     1-4 0.2587660           0.01628910           0.033583565
-5     1-5 0.2359109           0.01597068           0.030267860
-  pve_Brain_Caudate_basal_ganglia pve_Brain_Cerebellar_Hemisphere
-1                     0.003170917                    1.911470e-02
-2                     0.041531674                    5.904227e-06
-3                     0.036226089                    1.466889e-03
-4                     0.024133137                    9.719500e-04
-5                     0.030436649                    4.876164e-03
-  pve_Brain_Cortex pve_Brain_Hypothalamus pve_Brain_Putamen_basal_ganglia
-1     1.189866e-05           0.0137061600                     0.011161401
-2     5.051098e-03           0.0079909213                     0.001200049
-3     7.119819e-03           0.0026477446                     0.005896100
-4     4.864122e-05           0.0008087556                     0.016091104
-5     1.495824e-02           0.0088015269                     0.001084693</code></pre>
-<pre class="r"><code>colMeans(results_df[,grep(&quot;pve&quot;, names(results_df))])</code></pre>
-<pre><code>                        pve_SNP            pve_Brain_Cerebellum 
-                    0.240860492                     0.019378117 
-          pve_Brain_Hippocampus pve_Brain_Caudate_basal_ganglia 
-                    0.026524673                     0.027099693 
-pve_Brain_Cerebellar_Hemisphere                pve_Brain_Cortex 
-                    0.005287121                     0.005437939 
-         pve_Brain_Hypothalamus pve_Brain_Putamen_basal_ganglia 
-                    0.006791022                     0.007086669 </code></pre>
-<pre class="r"><code>#TWAS results
-results_df[,c(which(colnames(results_df)==&quot;simutag&quot;), grep(&quot;twas&quot;, names(results_df)))]</code></pre>
+1     1-1               312                  78                            70
+2     1-2               345                  88                            77
+3     1-3               323                  60                            58
+4     1-4               320                  59                            56
+5     1-5               302                  55                            51</code></pre>
+<pre><code>[1] 0.9176471</code></pre>
+</div>
+<div id="twas-results" class="section level4">
+<h4>TWAS results</h4>
 <pre><code>  simutag n_detected_twas n_detected_twas_in_causal n_detected_comb_twas
-1     1-1             545                        58                  190
-2     1-2             830                        72                  275
-3     1-3             494                        61                  168
-4     1-4             701                        70                  246
-5     1-5             535                        56                  184
+1     1-1             647                        81                  235
+2     1-2             871                        95                  321
+3     1-3             547                        74                  195
+4     1-4             583                        64                  227
+5     1-5             569                        75                  217
   n_detected_comb_twas_in_causal
-1                             62
-2                             75
-3                             60
-4                             72
-5                             58</code></pre>
-<pre class="r"><code>sum(results_df$n_detected_comb_twas_in_causal)/sum(results_df$n_detected_comb_twas)</code></pre>
-<pre><code>[1] 0.3076199</code></pre>
-<pre class="r"><code>y1 &lt;- results_df$prior_Brain_Cerebellum
-y2 &lt;- results_df$prior_Brain_Hippocampus
-y3 &lt;- results_df$prior_Brain_Caudate_basal_ganglia
-y4 &lt;- results_df$prior_Brain_Cerebellar_Hemisphere
-y5 &lt;- results_df$prior_Brain_Cortex
-y6 &lt;- results_df$prior_Brain_Hypothalamus
-y7 &lt;- results_df$prior_Brain_Putamen_basal_ganglia
+1                             84
+2                             98
+3                             77
+4                             64
+5                             76</code></pre>
+<pre><code>[1] 0.3338912</code></pre>
+</div>
+<div id="estimated-prior-inclusion-probability" class="section level4">
+<h4>Estimated Prior Inclusion Probability</h4>
+<pre class="r"><code>y1 &lt;- results_df$prior_mashr_Artery_Aorta
+y2 &lt;- results_df$prior_mashr_Spleen
+y3 &lt;- results_df$prior_mashr_Skin_Not_Sun_Exposed_Suprapubic
+y4 &lt;- results_df$prior_mashr_Lung
+y5 &lt;- results_df$prior_mashr_Adipose_Subcutaneous
+y6 &lt;- results_df$prior_mashr_Pancreas
+y7 &lt;- results_df$prior_mashr_Heart_Atrial_Appendage
 
 
-truth &lt;- rbind(c(1,0.009),c(2,0.009),c(3,0.009),c(4,0),c(5,0),c(6,0),c(7,0))
+truth &lt;- rbind(c(1,0.009),c(2,0.009),c(3,0.009),c(4,0.0015),c(5,0.0015),c(6,0.0015),c(7,0.0015))
 est &lt;- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6),cbind(7,y7))
-plot_par_7(truth,est,xlabels = c(&quot;Cerebellum&quot;,&quot;Hippocampus&quot;,&quot;Caudate&quot;,&quot;Cerebellar&quot;,&quot;Cortex&quot;,&quot;Hypothalamus&quot;,&quot;Putamen&quot;),ylim=c(0,0.025),ylab=&quot;Prior inclusion&quot;)</code></pre>
+plot_par_7(truth,est,xlabels = c(&quot;Artery&quot;,&quot;Spleen&quot;,&quot;Skin&quot;,&quot;Lung&quot;,&quot;Adipose&quot;,&quot;Pancreas&quot;,&quot;Heart&quot;),ylim=c(0,0.025),ylab=&quot;Prior inclusion&quot;)</code></pre>
 <p><img src="figure/simulation_seven_tissues_correlated.Rmd/unnamed-chunk-5-1.png" width="960" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-5-1">
@@ -844,6 +760,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/4d024a0074cd7d6b13114302842b2acca551efd8/docs/figure/simulation_seven_tissues_correlated.Rmd/unnamed-chunk-5-1.png" target="_blank">4d024a0</a>
+</td>
+<td>
+sq-96
+</td>
+<td>
+2024-01-03
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/690e29e15d480b7e7ace2b66134a96939ee5a64d/docs/figure/simulation_seven_tissues_correlated.Rmd/unnamed-chunk-5-1.png" target="_blank">690e29e</a>
@@ -870,18 +797,21 @@ sq-96
 </table>
 </div>
 </div>
-<pre class="r"><code>y1 &lt;- results_df$pve_Brain_Cerebellum
-y2 &lt;- results_df$pve_Brain_Hippocampus
-y3 &lt;- results_df$pve_Brain_Caudate_basal_ganglia
-y4 &lt;- results_df$pve_Brain_Cerebellar_Hemisphere
-y5 &lt;- results_df$pve_Brain_Cortex
-y6 &lt;- results_df$pve_Brain_Hypothalamus
-y7 &lt;- results_df$pve_Brain_Putamen_basal_ganglia
+</div>
+<div id="estimated-pve" class="section level4">
+<h4>Estimated PVE</h4>
+<pre class="r"><code>y1 &lt;- results_df$pve_mashr_Artery_Aorta
+y2 &lt;- results_df$pve_mashr_Spleen
+y3 &lt;- results_df$pve_mashr_Skin_Not_Sun_Exposed_Suprapubic
+y4 &lt;- results_df$pve_mashr_Lung
+y5 &lt;- results_df$pve_mashr_Adipose_Subcutaneous
+y6 &lt;- results_df$pve_mashr_Pancreas
+y7 &lt;- results_df$pve_mashr_Heart_Atrial_Appendage
 
 
-truth &lt;- rbind(c(1,0.03),c(2,0.03),c(3,0.03),c(4,0),c(5,0),c(6,0),c(7,0))
+truth &lt;- rbind(c(1,0.03),c(2,0.03),c(3,0.03),c(4,0.005),c(5,0.005),c(6,0.005),c(7,0.005))
 est &lt;- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6),cbind(7,y7))
-plot_par_7(truth,est,xlabels = c(&quot;Cerebellum&quot;,&quot;Hippocampus&quot;,&quot;Caudate&quot;,&quot;Cerebellar&quot;,&quot;Cortex&quot;,&quot;Hypothalamus&quot;,&quot;Putamen&quot;),ylim=c(0,0.06),ylab=&quot;PVE&quot;)</code></pre>
+plot_par_7(truth,est,xlabels = c(&quot;Artery&quot;,&quot;Spleen&quot;,&quot;Skin&quot;,&quot;Lung&quot;,&quot;Adipose&quot;,&quot;Pancreas&quot;,&quot;Heart&quot;),ylim=c(0,0.06),ylab=&quot;PVE&quot;)</code></pre>
 <p><img src="figure/simulation_seven_tissues_correlated.Rmd/unnamed-chunk-6-1.png" width="960" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-6-1">
@@ -905,6 +835,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/4d024a0074cd7d6b13114302842b2acca551efd8/docs/figure/simulation_seven_tissues_correlated.Rmd/unnamed-chunk-6-1.png" target="_blank">4d024a0</a>
+</td>
+<td>
+sq-96
+</td>
+<td>
+2024-01-03
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/690e29e15d480b7e7ace2b66134a96939ee5a64d/docs/figure/simulation_seven_tissues_correlated.Rmd/unnamed-chunk-6-1.png" target="_blank">690e29e</a>
@@ -931,6 +872,9 @@ sq-96
 </table>
 </div>
 </div>
+</div>
+<div id="pip-calibration-plot" class="section level4">
+<h4>PIP Calibration Plot</h4>
 <pre class="r"><code>f1 &lt;- plot_PIP(configtag, runtag, paste(1, 1:5, sep = &quot;-&quot;), main = &quot;&quot;)</code></pre>
 <pre><code>Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
 ℹ Please use `linewidth` instead.
@@ -993,162 +937,50 @@ sq-96
 </div>
 </div>
 </div>
+</div>
 <div id="separate-effect-size-parameters" class="section level3">
 <h3>Separate effect size parameters</h3>
 <p>For the cTWAS analysis, each tissue had its own prior inclusion parameter and effect size parameter.</p>
-<pre class="r"><code>results_dir &lt;- &quot;/project/xinhe/shengqian/cTWAS_simulation/simulation_correlated_seven_tissues/&quot;
-runtag = &quot;ukb-s80.45-3_7corr&quot;
-configtag &lt;- 2
-
-simutags &lt;- paste(1, 1:5, sep = &quot;-&quot;)
-thin &lt;- 0.1
-
-sample_size &lt;- 45000
-PIP_threshold &lt;- 0.8</code></pre>
-<pre class="r"><code>results_df &lt;- get_sim_joint_res(results_dir,runtag,configtag,simutags,thin,sample_size,PIP_threshold)</code></pre>
-<pre class="r"><code>#results using PIP threshold (gene+tissue)
-results_df[,c(&quot;simutag&quot;, &quot;n_causal&quot;, &quot;n_detected_pip&quot;, &quot;n_detected_pip_in_causal&quot;)]</code></pre>
-<pre><code>  simutag n_causal n_detected_pip n_detected_pip_in_causal
-1     1-1      211             11                        8
-2     1-2      233             33                       29
-3     1-3      215             24                       21
-4     1-4      212             30                       29
-5     1-5      254             16                       15</code></pre>
-<pre class="r"><code>#mean percent causal using PIP &gt; 0.8
-sum(results_df$n_detected_pip_in_causal)/sum(results_df$n_detected_pip)</code></pre>
-<pre><code>[1] 0.8947368</code></pre>
-<pre class="r"><code>#results using combined PIP threshold
-results_df[,c(&quot;simutag&quot;, &quot;n_causal_combined&quot;, &quot;n_detected_comb_pip&quot;, &quot;n_detected_comb_pip_in_causal&quot;)]</code></pre>
+<div id="results-using-combined-pip-threshold-1" class="section level4">
+<h4>Results using Combined PIP Threshold</h4>
 <pre><code>  simutag n_causal_combined n_detected_comb_pip n_detected_comb_pip_in_causal
-1     1-1               209                  41                            36
-2     1-2               232                  72                            57
-3     1-3               212                  41                            38
-4     1-4               212                  54                            50
-5     1-5               253                  49                            41</code></pre>
-<pre class="r"><code>#mean percent causal using combined PIP &gt; 0.8
-sum(results_df$n_detected_comb_pip_in_causal)/sum(results_df$n_detected_comb_pip)</code></pre>
-<pre><code>[1] 0.8638132</code></pre>
-<pre class="r"><code>#prior inclusion and mean prior inclusion
-results_df[,c(which(colnames(results_df)==&quot;simutag&quot;), setdiff(grep(&quot;prior&quot;, names(results_df)), grep(&quot;prior_var&quot;, names(results_df))))]</code></pre>
-<pre><code>  simutag    prior_SNP prior_Brain_Cerebellum prior_Brain_Hippocampus
-1     1-1 0.0002388188            0.004553117            0.0067204279
-2     1-2 0.0002383224            0.008350487            0.0121854702
-3     1-3 0.0002294211            0.006668920            0.0003872109
-4     1-4 0.0002357946            0.003410703            0.0112904059
-5     1-5 0.0002320507            0.003101128            0.0205486027
-  prior_Brain_Caudate_basal_ganglia prior_Brain_Cerebellar_Hemisphere
-1                       0.001041899                      0.0043737070
-2                       0.012236224                      0.0005124543
-3                       0.010046520                      0.0016055117
-4                       0.008177793                      0.0009211086
-5                       0.009264066                      0.0009420104
-  prior_Brain_Cortex prior_Brain_Hypothalamus prior_Brain_Putamen_basal_ganglia
-1        0.000484178             0.0037810618                       0.002623404
-2        0.002434187             0.0019239138                       0.003480012
-3        0.005639370             0.0015970038                       0.002961637
-4        0.000370470             0.0003570503                       0.006688261
-5        0.004062700             0.0049716004                       0.002879252</code></pre>
-<pre class="r"><code>colMeans(results_df[,setdiff(grep(&quot;prior&quot;, names(results_df)), grep(&quot;prior_var&quot;, names(results_df)))])</code></pre>
-<pre><code>                        prior_SNP            prior_Brain_Cerebellum 
-                     0.0002348815                      0.0052168710 
-          prior_Brain_Hippocampus prior_Brain_Caudate_basal_ganglia 
-                     0.0102264235                      0.0081533005 
-prior_Brain_Cerebellar_Hemisphere                prior_Brain_Cortex 
-                     0.0016709584                      0.0025981809 
-         prior_Brain_Hypothalamus prior_Brain_Putamen_basal_ganglia 
-                     0.0025261260                      0.0037265131 </code></pre>
-<pre class="r"><code>#prior variance and mean prior variance
-results_df[,c(which(colnames(results_df)==&quot;simutag&quot;), grep(&quot;prior_var&quot;, names(results_df)))]</code></pre>
-<pre><code>  simutag prior_var_SNP prior_var_Brain_Cerebellum prior_var_Brain_Hippocampus
-1     1-1      8.683177                   21.22213                   23.507837
-2     1-2      8.594290                   14.60871                   19.860611
-3     1-3      8.182719                   12.49572                   43.785247
-4     1-4      9.302851                   30.96215                   16.422893
-5     1-5      8.539146                   31.75806                    5.129005
-  prior_var_Brain_Caudate_basal_ganglia prior_var_Brain_Cerebellar_Hemisphere
-1                              14.85855                             25.591868
-2                              17.92465                              0.862841
-3                              21.65575                              4.287568
-4                              14.25179                              4.583603
-5                              17.58322                             43.927529
-  prior_var_Brain_Cortex prior_var_Brain_Hypothalamus
-1              0.8232463                    15.015413
-2              4.6919025                    29.792984
-3              6.3542669                     5.761578
-4              2.6826180                    14.362451
-5             29.4854636                     5.940242
-  prior_var_Brain_Putamen_basal_ganglia
-1                             25.579367
-2                              3.511273
-3                              9.979775
-4                             11.867409
-5                              3.332750</code></pre>
-<pre class="r"><code>colMeans(results_df[,grep(&quot;prior_var&quot;, names(results_df))])</code></pre>
-<pre><code>                        prior_var_SNP            prior_var_Brain_Cerebellum 
-                             8.660437                             22.209353 
-          prior_var_Brain_Hippocampus prior_var_Brain_Caudate_basal_ganglia 
-                            21.741118                             17.254791 
-prior_var_Brain_Cerebellar_Hemisphere                prior_var_Brain_Cortex 
-                            15.850682                              8.807499 
-         prior_var_Brain_Hypothalamus prior_var_Brain_Putamen_basal_ganglia 
-                            14.174534                             10.854115 </code></pre>
-<pre class="r"><code>#PVE and mean PVE
-results_df[,c(which(colnames(results_df)==&quot;simutag&quot;), grep(&quot;pve&quot;, names(results_df)))]</code></pre>
-<pre><code>  simutag   pve_SNP pve_Brain_Cerebellum pve_Brain_Hippocampus
-1     1-1 0.2441061           0.01889163           0.027948899
-2     1-2 0.2411050           0.02385036           0.042814415
-3     1-3 0.2209848           0.01629251           0.002999373
-4     1-4 0.2582150           0.02064650           0.032803057
-5     1-5 0.2332538           0.01925506           0.018645348
-  pve_Brain_Caudate_basal_ganglia pve_Brain_Cerebellar_Hemisphere
-1                     0.002957235                    2.124705e-02
-2                     0.041896900                    8.393305e-05
-3                     0.041559736                    1.306687e-03
-4                     0.022263289                    8.014286e-04
-5                     0.031116012                    7.854879e-03
-  pve_Brain_Cortex pve_Brain_Hypothalamus pve_Brain_Putamen_basal_ganglia
-1     7.769999e-05           0.0100528192                     0.012530743
-2     2.226328e-03           0.0101493080                     0.002281746
-3     6.985253e-03           0.0016292369                     0.005519178
-4     1.937305e-04           0.0009080186                     0.014821460
-5     2.335118e-02           0.0052292231                     0.001791861</code></pre>
-<pre class="r"><code>colMeans(results_df[,grep(&quot;pve&quot;, names(results_df))])</code></pre>
-<pre><code>                        pve_SNP            pve_Brain_Cerebellum 
-                    0.239532928                     0.019787215 
-          pve_Brain_Hippocampus pve_Brain_Caudate_basal_ganglia 
-                    0.025042218                     0.027958635 
-pve_Brain_Cerebellar_Hemisphere                pve_Brain_Cortex 
-                    0.006258796                     0.006566838 
-         pve_Brain_Hypothalamus pve_Brain_Putamen_basal_ganglia 
-                    0.005593721                     0.007388997 </code></pre>
-<pre class="r"><code>#TWAS results
-results_df[,c(which(colnames(results_df)==&quot;simutag&quot;), grep(&quot;twas&quot;, names(results_df)))]</code></pre>
+1     1-1               312                  76                            68
+2     1-2               345                  88                            76
+3     1-3               323                  62                            59
+4     1-4               320                  56                            53
+5     1-5               302                  54                            50</code></pre>
+<pre><code>[1] 0.9107143</code></pre>
+</div>
+<div id="twas-results-1" class="section level4">
+<h4>TWAS results</h4>
 <pre><code>  simutag n_detected_twas n_detected_twas_in_causal n_detected_comb_twas
-1     1-1             545                        58                  190
-2     1-2             830                        72                  275
-3     1-3             494                        61                  168
-4     1-4             701                        70                  246
-5     1-5             535                        56                  184
+1     1-1             647                        81                  235
+2     1-2             871                        95                  321
+3     1-3             547                        74                  195
+4     1-4             583                        64                  227
+5     1-5             569                        75                  217
   n_detected_comb_twas_in_causal
-1                             62
-2                             75
-3                             60
-4                             72
-5                             58</code></pre>
-<pre class="r"><code>sum(results_df$n_detected_comb_twas_in_causal)/sum(results_df$n_detected_comb_twas)</code></pre>
-<pre><code>[1] 0.3076199</code></pre>
-<pre class="r"><code>y1 &lt;- results_df$prior_Brain_Cerebellum
-y2 &lt;- results_df$prior_Brain_Hippocampus
-y3 &lt;- results_df$prior_Brain_Caudate_basal_ganglia
-y4 &lt;- results_df$prior_Brain_Cerebellar_Hemisphere
-y5 &lt;- results_df$prior_Brain_Cortex
-y6 &lt;- results_df$prior_Brain_Hypothalamus
-y7 &lt;- results_df$prior_Brain_Putamen_basal_ganglia
+1                             84
+2                             98
+3                             77
+4                             64
+5                             76</code></pre>
+<pre><code>[1] 0.3338912</code></pre>
+</div>
+<div id="estimated-prior-inclusion-probability-1" class="section level4">
+<h4>Estimated Prior Inclusion Probability</h4>
+<pre class="r"><code>y1 &lt;- results_df$prior_mashr_Artery_Aorta
+y2 &lt;- results_df$prior_mashr_Spleen
+y3 &lt;- results_df$prior_mashr_Skin_Not_Sun_Exposed_Suprapubic
+y4 &lt;- results_df$prior_mashr_Lung
+y5 &lt;- results_df$prior_mashr_Adipose_Subcutaneous
+y6 &lt;- results_df$prior_mashr_Pancreas
+y7 &lt;- results_df$prior_mashr_Heart_Atrial_Appendage
 
 
-truth &lt;- rbind(c(1,0.009),c(2,0.009),c(3,0.009),c(4,0),c(5,0),c(6,0),c(7,0))
+truth &lt;- rbind(c(1,0.009),c(2,0.009),c(3,0.009),c(4,0.0015),c(5,0.0015),c(6,0.0015),c(7,0.0015))
 est &lt;- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6),cbind(7,y7))
-plot_par_7(truth,est,xlabels = c(&quot;Cerebellum&quot;,&quot;Hippocampus&quot;,&quot;Caudate&quot;,&quot;Cerebellar&quot;,&quot;Cortex&quot;,&quot;Hypothalamus&quot;,&quot;Putamen&quot;),ylim=c(0,0.025),ylab=&quot;Prior inclusion&quot;)</code></pre>
+plot_par_7(truth,est,xlabels = c(&quot;Artery&quot;,&quot;Spleen&quot;,&quot;Skin&quot;,&quot;Lung&quot;,&quot;Adipose&quot;,&quot;Pancreas&quot;,&quot;Heart&quot;),ylim=c(0,0.025),ylab=&quot;Prior inclusion&quot;)</code></pre>
 <p><img src="figure/simulation_seven_tissues_correlated.Rmd/unnamed-chunk-11-1.png" width="960" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-11-1">
@@ -1172,6 +1004,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/4d024a0074cd7d6b13114302842b2acca551efd8/docs/figure/simulation_seven_tissues_correlated.Rmd/unnamed-chunk-11-1.png" target="_blank">4d024a0</a>
+</td>
+<td>
+sq-96
+</td>
+<td>
+2024-01-03
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/690e29e15d480b7e7ace2b66134a96939ee5a64d/docs/figure/simulation_seven_tissues_correlated.Rmd/unnamed-chunk-11-1.png" target="_blank">690e29e</a>
@@ -1198,18 +1041,21 @@ sq-96
 </table>
 </div>
 </div>
-<pre class="r"><code>y1 &lt;- results_df$pve_Brain_Cerebellum
-y2 &lt;- results_df$pve_Brain_Hippocampus
-y3 &lt;- results_df$pve_Brain_Caudate_basal_ganglia
-y4 &lt;- results_df$pve_Brain_Cerebellar_Hemisphere
-y5 &lt;- results_df$pve_Brain_Cortex
-y6 &lt;- results_df$pve_Brain_Hypothalamus
-y7 &lt;- results_df$pve_Brain_Putamen_basal_ganglia
+</div>
+<div id="estimated-pve-1" class="section level4">
+<h4>Estimated PVE</h4>
+<pre class="r"><code>y1 &lt;- results_df$pve_mashr_Artery_Aorta
+y2 &lt;- results_df$pve_mashr_Spleen
+y3 &lt;- results_df$pve_mashr_Skin_Not_Sun_Exposed_Suprapubic
+y4 &lt;- results_df$pve_mashr_Lung
+y5 &lt;- results_df$pve_mashr_Adipose_Subcutaneous
+y6 &lt;- results_df$pve_mashr_Pancreas
+y7 &lt;- results_df$pve_mashr_Heart_Atrial_Appendage
 
 
-truth &lt;- rbind(c(1,0.03),c(2,0.03),c(3,0.03),c(4,0),c(5,0),c(6,0),c(7,0))
+truth &lt;- rbind(c(1,0.03),c(2,0.03),c(3,0.03),c(4,0.005),c(5,0.005),c(6,0.005),c(7,0.005))
 est &lt;- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6),cbind(7,y7))
-plot_par_7(truth,est,xlabels = c(&quot;Cerebellum&quot;,&quot;Hippocampus&quot;,&quot;Caudate&quot;,&quot;Cerebellar&quot;,&quot;Cortex&quot;,&quot;Hypothalamus&quot;,&quot;Putamen&quot;),ylim=c(0,0.06),ylab=&quot;PVE&quot;)</code></pre>
+plot_par_7(truth,est,xlabels = c(&quot;Artery&quot;,&quot;Spleen&quot;,&quot;Skin&quot;,&quot;Lung&quot;,&quot;Adipose&quot;,&quot;Pancreas&quot;,&quot;Heart&quot;),ylim=c(0,0.06),ylab=&quot;PVE&quot;)</code></pre>
 <p><img src="figure/simulation_seven_tissues_correlated.Rmd/unnamed-chunk-12-1.png" width="960" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-12-1">
@@ -1233,6 +1079,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/4d024a0074cd7d6b13114302842b2acca551efd8/docs/figure/simulation_seven_tissues_correlated.Rmd/unnamed-chunk-12-1.png" target="_blank">4d024a0</a>
+</td>
+<td>
+sq-96
+</td>
+<td>
+2024-01-03
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/690e29e15d480b7e7ace2b66134a96939ee5a64d/docs/figure/simulation_seven_tissues_correlated.Rmd/unnamed-chunk-12-1.png" target="_blank">690e29e</a>
@@ -1259,6 +1116,9 @@ sq-96
 </table>
 </div>
 </div>
+</div>
+<div id="pip-calibration-plot-1" class="section level4">
+<h4>PIP Calibration Plot</h4>
 <pre class="r"><code>f1 &lt;- plot_PIP(configtag, runtag, paste(1, 1:5, sep = &quot;-&quot;), main = &quot;&quot;)
 f1</code></pre>
 <p><img src="figure/simulation_seven_tissues_correlated.Rmd/unnamed-chunk-13-1.png" width="384" style="display: block; margin: auto;" /></p>
@@ -1310,6 +1170,145 @@ sq-96
 </table>
 </div>
 </div>
+</div>
+</div>
+</div>
+<div id="simulation-2-3-pve-for-causal-tissues-and-0-pve-for-non-causal-tissues." class="section level2">
+<h2>Simulation 2: 3% PVE for Causal Tissues and 0% PVE for Non-causal Tissues.</h2>
+<div id="shared-prior-variance-parameters-1" class="section level3">
+<h3>Shared Prior Variance Parameters</h3>
+<p>For the cTWAS analysis, tissues shared an effect size parameter.</p>
+<div id="results-using-combined-pip-threshold-2" class="section level4">
+<h4>Results using Combined PIP Threshold</h4>
+<pre><code>  simutag n_causal_combined n_detected_comb_pip n_detected_comb_pip_in_causal
+1     2-1               250                  66                            58
+2     2-2               274                  51                            44
+3     2-3               261                  50                            44
+4     2-4               246                  51                            39
+5     2-5               255                  43                            40</code></pre>
+<pre><code>[1] 0.862069</code></pre>
+</div>
+<div id="twas-results-2" class="section level4">
+<h4>TWAS results</h4>
+<pre><code>  simutag n_detected_twas n_detected_twas_in_causal n_detected_comb_twas
+1     2-1             499                        57                  181
+2     2-2             528                        61                  203
+3     2-3             631                        58                  225
+4     2-4             494                        51                  189
+5     2-5             506                        54                  194
+  n_detected_comb_twas_in_causal
+1                             57
+2                             61
+3                             60
+4                             52
+5                             56</code></pre>
+<pre><code>[1] 0.2883065</code></pre>
+</div>
+<div id="estimated-prior-inclusion-probability-2" class="section level4">
+<h4>Estimated Prior Inclusion Probability</h4>
+<pre class="r"><code>y1 &lt;- results_df$prior_mashr_Artery_Aorta
+y2 &lt;- results_df$prior_mashr_Spleen
+y3 &lt;- results_df$prior_mashr_Skin_Not_Sun_Exposed_Suprapubic
+y4 &lt;- results_df$prior_mashr_Lung
+y5 &lt;- results_df$prior_mashr_Adipose_Subcutaneous
+y6 &lt;- results_df$prior_mashr_Pancreas
+y7 &lt;- results_df$prior_mashr_Heart_Atrial_Appendage
+
+
+truth &lt;- rbind(c(1,0.009),c(2,0.009),c(3,0.009),c(4,0),c(5,0),c(6,0),c(7,0))
+est &lt;- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6),cbind(7,y7))
+plot_par_7(truth,est,xlabels = c(&quot;Artery&quot;,&quot;Spleen&quot;,&quot;Skin&quot;,&quot;Lung&quot;,&quot;Adipose&quot;,&quot;Pancreas&quot;,&quot;Heart&quot;),ylim=c(0,0.025),ylab=&quot;Prior inclusion&quot;)</code></pre>
+<p><img src="figure/simulation_seven_tissues_correlated.Rmd/unnamed-chunk-17-1.png" width="960" style="display: block; margin: auto;" /></p>
+</div>
+<div id="estimated-pve-2" class="section level4">
+<h4>Estimated PVE</h4>
+<pre class="r"><code>y1 &lt;- results_df$pve_mashr_Artery_Aorta
+y2 &lt;- results_df$pve_mashr_Spleen
+y3 &lt;- results_df$pve_mashr_Skin_Not_Sun_Exposed_Suprapubic
+y4 &lt;- results_df$pve_mashr_Lung
+y5 &lt;- results_df$pve_mashr_Adipose_Subcutaneous
+y6 &lt;- results_df$pve_mashr_Pancreas
+y7 &lt;- results_df$pve_mashr_Heart_Atrial_Appendage
+
+
+truth &lt;- rbind(c(1,0.03),c(2,0.03),c(3,0.03),c(4,0),c(5,0),c(6,0),c(7,0))
+est &lt;- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6),cbind(7,y7))
+plot_par_7(truth,est,xlabels = c(&quot;Artery&quot;,&quot;Spleen&quot;,&quot;Skin&quot;,&quot;Lung&quot;,&quot;Adipose&quot;,&quot;Pancreas&quot;,&quot;Heart&quot;),ylim=c(0,0.06),ylab=&quot;PVE&quot;)</code></pre>
+<p><img src="figure/simulation_seven_tissues_correlated.Rmd/unnamed-chunk-18-1.png" width="960" style="display: block; margin: auto;" /></p>
+</div>
+<div id="pip-calibration-plot-2" class="section level4">
+<h4>PIP Calibration Plot</h4>
+<pre class="r"><code>f1 &lt;- plot_PIP(configtag, runtag, paste(2, 1:5, sep = &quot;-&quot;), main = &quot;&quot;)
+f1</code></pre>
+<p><img src="figure/simulation_seven_tissues_correlated.Rmd/unnamed-chunk-19-1.png" width="384" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="separate-effect-size-parameters-1" class="section level3">
+<h3>Separate effect size parameters</h3>
+<p>For the cTWAS analysis, each tissue had its own prior inclusion parameter and effect size parameter.</p>
+<div id="results-using-combined-pip-threshold-3" class="section level4">
+<h4>Results using Combined PIP Threshold</h4>
+<pre><code>  simutag n_causal_combined n_detected_comb_pip n_detected_comb_pip_in_causal
+1     2-1               250                  63                            56
+2     2-2               274                  50                            43
+3     2-3               261                  48                            41
+4     2-4               246                  51                            39
+5     2-5               255                  41                            39</code></pre>
+<pre><code>[1] 0.8616601</code></pre>
+</div>
+<div id="twas-results-3" class="section level4">
+<h4>TWAS results</h4>
+<pre><code>  simutag n_detected_twas n_detected_twas_in_causal n_detected_comb_twas
+1     2-1             499                        57                  181
+2     2-2             528                        61                  203
+3     2-3             631                        58                  225
+4     2-4             494                        51                  189
+5     2-5             506                        54                  194
+  n_detected_comb_twas_in_causal
+1                             57
+2                             61
+3                             60
+4                             52
+5                             56</code></pre>
+<pre><code>[1] 0.2883065</code></pre>
+</div>
+<div id="estimated-prior-inclusion-probability-3" class="section level4">
+<h4>Estimated Prior Inclusion Probability</h4>
+<pre class="r"><code>y1 &lt;- results_df$prior_mashr_Artery_Aorta
+y2 &lt;- results_df$prior_mashr_Spleen
+y3 &lt;- results_df$prior_mashr_Skin_Not_Sun_Exposed_Suprapubic
+y4 &lt;- results_df$prior_mashr_Lung
+y5 &lt;- results_df$prior_mashr_Adipose_Subcutaneous
+y6 &lt;- results_df$prior_mashr_Pancreas
+y7 &lt;- results_df$prior_mashr_Heart_Atrial_Appendage
+
+
+truth &lt;- rbind(c(1,0.009),c(2,0.009),c(3,0.009),c(4,0),c(5,0),c(6,0),c(7,0))
+est &lt;- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6),cbind(7,y7))
+plot_par_7(truth,est,xlabels = c(&quot;Artery&quot;,&quot;Spleen&quot;,&quot;Skin&quot;,&quot;Lung&quot;,&quot;Adipose&quot;,&quot;Pancreas&quot;,&quot;Heart&quot;),ylim=c(0,0.025),ylab=&quot;Prior inclusion&quot;)</code></pre>
+<p><img src="figure/simulation_seven_tissues_correlated.Rmd/unnamed-chunk-23-1.png" width="960" style="display: block; margin: auto;" /></p>
+</div>
+<div id="estimated-pve-3" class="section level4">
+<h4>Estimated PVE</h4>
+<pre class="r"><code>y1 &lt;- results_df$pve_mashr_Artery_Aorta
+y2 &lt;- results_df$pve_mashr_Spleen
+y3 &lt;- results_df$pve_mashr_Skin_Not_Sun_Exposed_Suprapubic
+y4 &lt;- results_df$pve_mashr_Lung
+y5 &lt;- results_df$pve_mashr_Adipose_Subcutaneous
+y6 &lt;- results_df$pve_mashr_Pancreas
+y7 &lt;- results_df$pve_mashr_Heart_Atrial_Appendage
+
+
+truth &lt;- rbind(c(1,0.03),c(2,0.03),c(3,0.03),c(4,0),c(5,0),c(6,0),c(7,0))
+est &lt;- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6),cbind(7,y7))
+plot_par_7(truth,est,xlabels = c(&quot;Artery&quot;,&quot;Spleen&quot;,&quot;Skin&quot;,&quot;Lung&quot;,&quot;Adipose&quot;,&quot;Pancreas&quot;,&quot;Heart&quot;),ylim=c(0,0.06),ylab=&quot;PVE&quot;)</code></pre>
+<p><img src="figure/simulation_seven_tissues_correlated.Rmd/unnamed-chunk-24-1.png" width="960" style="display: block; margin: auto;" /></p>
+</div>
+<div id="pip-calibration-plot-3" class="section level4">
+<h4>PIP Calibration Plot</h4>
+<pre class="r"><code>f1 &lt;- plot_PIP(configtag, runtag, paste(2, 1:5, sep = &quot;-&quot;), main = &quot;&quot;)
+f1</code></pre>
+<p><img src="figure/simulation_seven_tissues_correlated.Rmd/unnamed-chunk-25-1.png" width="384" style="display: block; margin: auto;" /></p>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
@@ -1338,7 +1337,7 @@ attached base packages:
 
 other attached packages:
 [1] plyr_1.8.8        ggpubr_0.6.0      plotrix_3.8-4     cowplot_1.1.1    
-[5] ggplot2_3.4.0     data.table_1.14.6 ctwas_0.1.35      workflowr_1.7.0  
+[5] ggplot2_3.4.0     data.table_1.14.6 ctwas_0.1.40      workflowr_1.7.0  
 
 loaded via a namespace (and not attached):
  [1] Rcpp_1.0.9       lattice_0.20-44  tidyr_1.3.0      getPass_0.2-2   
@@ -1360,6 +1359,7 @@ loaded via a namespace (and not attached):
 [65] glue_1.6.2       purrr_1.0.2      abind_1.4-5      processx_3.8.0  
 [69] fastmap_1.1.0    yaml_2.3.6       colorspace_2.0-3 rstatix_0.7.2   
 [73] knitr_1.41       sass_0.4.4      </code></pre>
+</div>
 </div>
 </div>
 </div>
