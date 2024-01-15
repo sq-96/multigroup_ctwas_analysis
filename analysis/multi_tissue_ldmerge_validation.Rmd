@@ -230,27 +230,27 @@ interactive_table_logistic_susie <- function(fit, ora) {
       dplyr::select(geneSet, KEGGPathwayName, everything()) # re-order
   }
   
-  dt %>%
-    dplyr::select(-c(in_cs)) %>%
-    reactable::reactable(
-      filterable=TRUE,
-      minRows=10,
-      columns = list(
-        pip = reactable::colDef(format = reactable::colFormat(digits = 3)),
-        logOddsRatio = reactable::colDef(style= function(value){color_sign(value)},
-                                         format = reactable::colFormat(digits = 3)),
-        beta = reactable::colDef(style= function(value){color_sign(value)},
-                                 format = reactable::colFormat(digits = 3)),
-        nlog10pFishersExact = reactable::colDef(format = reactable::colFormat(digits = 3))
-      ),
-      rowStyle = function(index){
-        if(dt$in_cs[index] == TRUE){
-          list(background = "#e5f5e0")
-        }
-      },
-      defaultSorted = list(nlog10pFishersExact='desc')
-    )
-  
+  # dt %>%
+  #   dplyr::select(-c(in_cs)) %>%
+  #   reactable::reactable(
+  #     filterable=TRUE,
+  #     minRows=10,
+  #     columns = list(
+  #       pip = reactable::colDef(format = reactable::colFormat(digits = 3)),
+  #       logOddsRatio = reactable::colDef(style= function(value){color_sign(value)},
+  #                                        format = reactable::colFormat(digits = 3)),
+  #       beta = reactable::colDef(style= function(value){color_sign(value)},
+  #                                format = reactable::colFormat(digits = 3)),
+  #       nlog10pFishersExact = reactable::colDef(format = reactable::colFormat(digits = 3))
+  #     ),
+  #     rowStyle = function(index){
+  #       if(dt$in_cs[index] == TRUE){
+  #         list(background = "#e5f5e0")
+  #       }
+  #     },
+  #     defaultSorted = list(nlog10pFishersExact='desc')
+  #   )
+  DT::datatable(dt,options = list(pageLength=10))
 }
 ```
 
