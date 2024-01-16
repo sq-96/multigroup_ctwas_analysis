@@ -9,11 +9,6 @@ editor_options:
 
 A simulation of seven correlated tissues is conducted to evaluate cTWAS performance (parameter estimation, PIP calibration ...). Seven tissues used in this simulation are Artery Aorta, Spleen, Skin (not sun exposed suprapubic), Lung, Adipose Subcutaneous, Pancreas, Heart Artial Appendage. Pairwise correlation of gene expression are with 0.6-0.8. The first three tissues are set to be causal and the other four tissues are non-causal. 
 
-```{r echo=FALSE}
-load("/project/xinhe/xsun/ctwas/1.matching_tissue/data/tissue_cor.rdata")
-lat[colnames(lat)%in%c("Artery_Aorta","Spleen","Skin_Not_Sun_Exposed_Suprapubic","Lung","Adipose_Subcutaneous","Pancreas","Heart_Atrial_Appendage"),rownames(lat)%in%c("Artery_Aorta","Spleen","Skin_Not_Sun_Exposed_Suprapubic","Lung","Adipose_Subcutaneous","Pancreas","Heart_Atrial_Appendage")]
-```
-
 It current has two settings:
 
 * 3% PVE, 0.9% $\pi$ for causal tissues, 0.5% PVE, 0.15% $\pi$ for non-causal tissues and 30% PVE, 2.5e-4 $\pi$ for SNP. 
@@ -35,16 +30,16 @@ plot_PIP <- function(configtag, runtag,  simutags, ...){
 }
 ```
 
-## Simulation 1: 3% PVE for Causal Tissues and 0.5% PVE for Non-causal Tissues. 
+### Simulation 1: 3% PVE for Causal Tissues and 0.5% PVE for Non-causal Tissues. 
 
 ### Shared Prior Variance Parameters
 
 For the cTWAS analysis, tissues shared an effect size parameter. 
 
 ```{r echo=FALSE}
-results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_correlated_seven_tissues/"
-runtag = "ukb-s80.45-3_7corr"
-configtag <- 1
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_E_S_three_tissues/"
+runtag = "ukb-s80.45"
+configtag <- 2
 
 simutags <- paste(1, 1:5, sep = "-")
 thin <- 0.1
@@ -62,34 +57,38 @@ results_df[,c("simutag", "n_causal_combined", "n_detected_comb_pip", "n_detected
 sum(results_df$n_detected_comb_pip_in_causal)/sum(results_df$n_detected_comb_pip)
 ```
 
+### TWAS results
+```{r echo=FALSE}
+results_df[,c(which(colnames(results_df)=="simutag"), grep("twas", names(results_df)))]
+sum(results_df$n_detected_comb_twas_in_causal)/sum(results_df$n_detected_comb_twas)
+```
+
 ### Estimated Prior Inclusion Probability
 ```{r, fig.width= 10, fig.height= 5, message=FALSE, warning=FALSE, echo=FALSE}
-y1 <- results_df$prior_mashr_Artery_Aorta
-y2 <- results_df$prior_mashr_Spleen
-y3 <- results_df$prior_mashr_Skin_Not_Sun_Exposed_Suprapubic
-y4 <- results_df$prior_mashr_Lung
-y5 <- results_df$prior_mashr_Adipose_Subcutaneous
-y6 <- results_df$prior_mashr_Pancreas
-y7 <- results_df$prior_mashr_Heart_Atrial_Appendage
+y1 <- results_df$prior_Liver_Expression
+y2 <- results_df$prior_Liver_Splicing
+y3 <- results_df$prior_Lung_Expression
+y4 <- results_df$prior_Lung_Splicing
+y5 <- results_df$prior_Spleen_Expression
+y6 <- results_df$prior_Spleen_Splicing
 
-truth <- rbind(c(1,0.009),c(2,0.009),c(3,0.009),c(4,0.0015),c(5,0.0015),c(6,0.0015),c(7,0.0015))
-est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6),cbind(7,y7))
-plot_par_7(truth,est,xlabels = c("Artery","Spleen","Skin","Lung","Adipose","Pancreas","Heart"),ylim=c(0,0.025),ylab="Prior inclusion")
+truth <- rbind(c(1,0.003),c(2,0.003),c(3,0.003),c(4,0.003),c(5,0.003),c(6,0.003))
+est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6))
+plot_par_6(truth,est,xlabels = c("Liver_E","Liver_S","Lung_E","Lung_S","Spleen_E","Spleen_S"),ylim=c(0,0.025),ylab="Prior inclusion")
 ```
 
 ### Estimated PVE
 ```{r, fig.width= 10, fig.height= 5, message=FALSE, warning=FALSE, echo=FALSE}
-y1 <- results_df$pve_mashr_Artery_Aorta
-y2 <- results_df$pve_mashr_Spleen
-y3 <- results_df$pve_mashr_Skin_Not_Sun_Exposed_Suprapubic
-y4 <- results_df$pve_mashr_Lung
-y5 <- results_df$pve_mashr_Adipose_Subcutaneous
-y6 <- results_df$pve_mashr_Pancreas
-y7 <- results_df$pve_mashr_Heart_Atrial_Appendage
+y1 <- results_df$pve_Liver_Expression
+y2 <- results_df$pve_Liver_Splicing
+y3 <- results_df$pve_Lung_Expression
+y4 <- results_df$pve_Lung_Splicing
+y5 <- results_df$pve_Spleen_Expression
+y6 <- results_df$pve_Spleen_Splicing
 
-truth <- rbind(c(1,0.03),c(2,0.03),c(3,0.03),c(4,0.005),c(5,0.005),c(6,0.005),c(7,0.005))
-est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6),cbind(7,y7))
-plot_par_7(truth,est,xlabels = c("Artery","Spleen","Skin","Lung","Adipose","Pancreas","Heart"),ylim=c(0,0.06),ylab="PVE")
+truth <- rbind(c(1,0.01),c(2,0.01),c(3,0.01),c(4,0.01),c(5,0.01),c(6,0.01))
+est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6))
+plot_par_6(truth,est,xlabels = c("Liver_E","Liver_S","Lung_E","Lung_S","Spleen_E","Spleen_S"),ylim=c(0,0.06),ylab="PVE")
 ```
 
 #### PIP Calibration Plot
@@ -122,6 +121,12 @@ results_df[,c("simutag", "n_causal_combined", "n_detected_comb_pip", "n_detected
 sum(results_df$n_detected_comb_pip_in_causal)/sum(results_df$n_detected_comb_pip)
 ```
 
+### TWAS results
+```{r echo=FALSE}
+results_df[,c(which(colnames(results_df)=="simutag"), grep("twas", names(results_df)))]
+sum(results_df$n_detected_comb_twas_in_causal)/sum(results_df$n_detected_comb_twas)
+```
+
 ### Estimated Prior Inclusion Probability
 ```{r, fig.width= 10, fig.height= 5}
 y1 <- results_df$prior_mashr_Artery_Aorta
@@ -131,6 +136,7 @@ y4 <- results_df$prior_mashr_Lung
 y5 <- results_df$prior_mashr_Adipose_Subcutaneous
 y6 <- results_df$prior_mashr_Pancreas
 y7 <- results_df$prior_mashr_Heart_Atrial_Appendage
+
 
 truth <- rbind(c(1,0.009),c(2,0.009),c(3,0.009),c(4,0.0015),c(5,0.0015),c(6,0.0015),c(7,0.0015))
 est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6),cbind(7,y7))
@@ -147,6 +153,7 @@ y5 <- results_df$pve_mashr_Adipose_Subcutaneous
 y6 <- results_df$pve_mashr_Pancreas
 y7 <- results_df$pve_mashr_Heart_Atrial_Appendage
 
+
 truth <- rbind(c(1,0.03),c(2,0.03),c(3,0.03),c(4,0.005),c(5,0.005),c(6,0.005),c(7,0.005))
 est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6),cbind(7,y7))
 plot_par_7(truth,est,xlabels = c("Artery","Spleen","Skin","Lung","Adipose","Pancreas","Heart"),ylim=c(0,0.06),ylab="PVE")
@@ -158,9 +165,13 @@ f1 <- plot_PIP(configtag, runtag, paste(1, 1:5, sep = "-"), main = "")
 f1
 ```
 
+
 ## Simulation 2: 3% PVE for Causal Tissues and 0% PVE for Non-causal Tissues. 
 
 ### Shared Prior Variance Parameters
+
+For the cTWAS analysis, tissues shared an effect size parameter. 
+
 ```{r echo=FALSE}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_correlated_seven_tissues/"
 runtag = "ukb-s80.45-3_7corr"
@@ -182,6 +193,12 @@ results_df[,c("simutag", "n_causal_combined", "n_detected_comb_pip", "n_detected
 sum(results_df$n_detected_comb_pip_in_causal)/sum(results_df$n_detected_comb_pip)
 ```
 
+### TWAS results
+```{r echo=FALSE}
+results_df[,c(which(colnames(results_df)=="simutag"), grep("twas", names(results_df)))]
+sum(results_df$n_detected_comb_twas_in_causal)/sum(results_df$n_detected_comb_twas)
+```
+
 ### Estimated Prior Inclusion Probability
 ```{r, fig.width= 10, fig.height= 5}
 y1 <- results_df$prior_mashr_Artery_Aorta
@@ -191,6 +208,7 @@ y4 <- results_df$prior_mashr_Lung
 y5 <- results_df$prior_mashr_Adipose_Subcutaneous
 y6 <- results_df$prior_mashr_Pancreas
 y7 <- results_df$prior_mashr_Heart_Atrial_Appendage
+
 
 truth <- rbind(c(1,0.009),c(2,0.009),c(3,0.009),c(4,0),c(5,0),c(6,0),c(7,0))
 est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6),cbind(7,y7))
@@ -207,6 +225,7 @@ y5 <- results_df$pve_mashr_Adipose_Subcutaneous
 y6 <- results_df$pve_mashr_Pancreas
 y7 <- results_df$pve_mashr_Heart_Atrial_Appendage
 
+
 truth <- rbind(c(1,0.03),c(2,0.03),c(3,0.03),c(4,0),c(5,0),c(6,0),c(7,0))
 est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6),cbind(7,y7))
 plot_par_7(truth,est,xlabels = c("Artery","Spleen","Skin","Lung","Adipose","Pancreas","Heart"),ylim=c(0,0.06),ylab="PVE")
@@ -219,6 +238,9 @@ f1
 ```
 
 ### Separate effect size parameters
+
+For the cTWAS analysis, each tissue had its own prior inclusion parameter and effect size parameter. 
+
 ```{r echo=FALSE}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_correlated_seven_tissues/"
 runtag = "ukb-s80.45-3_7corr"
@@ -240,6 +262,12 @@ results_df[,c("simutag", "n_causal_combined", "n_detected_comb_pip", "n_detected
 sum(results_df$n_detected_comb_pip_in_causal)/sum(results_df$n_detected_comb_pip)
 ```
 
+### TWAS results
+```{r echo=FALSE}
+results_df[,c(which(colnames(results_df)=="simutag"), grep("twas", names(results_df)))]
+sum(results_df$n_detected_comb_twas_in_causal)/sum(results_df$n_detected_comb_twas)
+```
+
 ### Estimated Prior Inclusion Probability
 ```{r, fig.width= 10, fig.height= 5}
 y1 <- results_df$prior_mashr_Artery_Aorta
@@ -265,6 +293,7 @@ y4 <- results_df$pve_mashr_Lung
 y5 <- results_df$pve_mashr_Adipose_Subcutaneous
 y6 <- results_df$pve_mashr_Pancreas
 y7 <- results_df$pve_mashr_Heart_Atrial_Appendage
+
 
 truth <- rbind(c(1,0.03),c(2,0.03),c(3,0.03),c(4,0),c(5,0),c(6,0),c(7,0))
 est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6),cbind(7,y7))
