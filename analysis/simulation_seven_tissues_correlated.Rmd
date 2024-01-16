@@ -11,7 +11,10 @@ A simulation of seven correlated tissues is conducted to evaluate cTWAS performa
 
 ```{r echo=FALSE}
 load("/project/xinhe/xsun/ctwas/1.matching_tissue/data/tissue_cor.rdata")
-lat[colnames(lat)%in%c("Artery_Aorta","Spleen","Skin_Not_Sun_Exposed_Suprapubic","Lung","Adipose_Subcutaneous","Pancreas","Heart_Atrial_Appendage"),rownames(lat)%in%c("Artery_Aorta","Spleen","Skin_Not_Sun_Exposed_Suprapubic","Lung","Adipose_Subcutaneous","Pancreas","Heart_Atrial_Appendage")]
+data <- lat[colnames(lat)%in%c("Artery_Aorta","Spleen","Skin_Not_Sun_Exposed_Suprapubic","Lung","Adipose_Subcutaneous","Pancreas","Heart_Atrial_Appendage"),rownames(lat)%in%c("Artery_Aorta","Spleen","Skin_Not_Sun_Exposed_Suprapubic","Lung","Adipose_Subcutaneous","Pancreas","Heart_Atrial_Appendage")]
+colnames(data) <- c("Artery","Spleen","Skin","Lung","Adipose","Pancreas","Heart")
+rownames(data) <- c("Artery","Spleen","Skin","Lung","Adipose","Pancreas","Heart")
+data <- round(data,3)
 ```
 
 It current has two settings:
@@ -19,7 +22,9 @@ It current has two settings:
 * 3% PVE, 0.9% $\pi$ for causal tissues, 0.5% PVE, 0.15% $\pi$ for non-causal tissues and 30% PVE, 2.5e-4 $\pi$ for SNP. 
 * 3% PVE, 0.9% $\pi$ for causal tissues, 0% PVE, 0% $\pi$ for non-causal tissues and 30% PVE, 2.5e-4 $\pi$ for SNP.
 
-We observed that cTWAS always tend to overestimate PVE of non-causal tissues because parameters won't be shrunk exactly to 0. Therefore, we assign non-zero (but very low) PVE to non-causal tissues in the first setting to check if it helps simulation results. 
+We observed that cTWAS always tend to overestimate PVE of non-causal tissues because parameters won't be shrunk exactly to 0. Therefore, we assign non-zero (but very low) PVE to non-causal tissues (the first setting) to check if it helps simulation results. 
+
+Conclusion: It seems that for tissues with moderate correlation (0.6-0.8), Assigning non-zero (but very low) PVE to non-causal tissues does not outperform zero PVE case (the second simulation). cTWAS estimates parameters more accurately in the second simulation (estimated PVE very close to 0) and has lower false positive rates in the PIP calibration plot.
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 library(ctwas)
@@ -39,8 +44,6 @@ plot_PIP <- function(configtag, runtag,  simutags, ...){
 
 ### Shared Prior Variance Parameters
 
-For the cTWAS analysis, tissues shared an effect size parameter. 
-
 ```{r echo=FALSE}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_correlated_seven_tissues/"
 runtag = "ukb-s80.45-3_7corr"
@@ -55,6 +58,13 @@ PIP_threshold <- 0.8
 results_df <- get_sim_joint_res(results_dir,runtag,configtag,simutags,thin,sample_size,PIP_threshold)
 ```
 
+### Results using PIP Threshold
+```{r echo=FALSE}
+results_df[,c("simutag", "n_causal", "n_detected_pip", "n_detected_pip_in_causal")]
+#mean percent causal using combined PIP > 0.8
+sum(results_df$n_detected_pip_in_causal)/sum(results_df$n_detected_pip)
+```
+
 ### Results using Combined PIP Threshold
 ```{r echo=FALSE}
 results_df[,c("simutag", "n_causal_combined", "n_detected_comb_pip", "n_detected_comb_pip_in_causal")]
@@ -63,7 +73,7 @@ sum(results_df$n_detected_comb_pip_in_causal)/sum(results_df$n_detected_comb_pip
 ```
 
 ### Estimated Prior Inclusion Probability
-```{r, fig.width= 10, fig.height= 5, message=FALSE, warning=FALSE, echo=FALSE}
+```{r, fig.width= 8, fig.height= 5, message=FALSE, warning=FALSE, echo=FALSE}
 y1 <- results_df$prior_mashr_Artery_Aorta
 y2 <- results_df$prior_mashr_Spleen
 y3 <- results_df$prior_mashr_Skin_Not_Sun_Exposed_Suprapubic
@@ -78,7 +88,7 @@ plot_par_7(truth,est,xlabels = c("Artery","Spleen","Skin","Lung","Adipose","Panc
 ```
 
 ### Estimated PVE
-```{r, fig.width= 10, fig.height= 5, message=FALSE, warning=FALSE, echo=FALSE}
+```{r, fig.width= 8, fig.height= 5, message=FALSE, warning=FALSE, echo=FALSE}
 y1 <- results_df$pve_mashr_Artery_Aorta
 y2 <- results_df$pve_mashr_Spleen
 y3 <- results_df$pve_mashr_Skin_Not_Sun_Exposed_Suprapubic
@@ -92,14 +102,13 @@ est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6
 plot_par_7(truth,est,xlabels = c("Artery","Spleen","Skin","Lung","Adipose","Pancreas","Heart"),ylim=c(0,0.06),ylab="PVE")
 ```
 
-#### PIP Calibration Plot
+### PIP Calibration Plot
 ```{r, fig.width= 4, fig.height= 4, message=FALSE, warning=FALSE, echo=FALSE}
 f1 <- plot_PIP(configtag, runtag, paste(1, 1:5, sep = "-"), main = "")
 f1
 ```
 
 ### Separate effect size parameters
-For the cTWAS analysis, each tissue had its own prior inclusion parameter and effect size parameter. 
 
 ```{r echo=FALSE}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_correlated_seven_tissues/"
@@ -115,6 +124,13 @@ PIP_threshold <- 0.8
 results_df <- get_sim_joint_res(results_dir,runtag,configtag,simutags,thin,sample_size,PIP_threshold)
 ```
 
+### Results using PIP Threshold
+```{r echo=FALSE}
+results_df[,c("simutag", "n_causal", "n_detected_pip", "n_detected_pip_in_causal")]
+#mean percent causal using combined PIP > 0.8
+sum(results_df$n_detected_pip_in_causal)/sum(results_df$n_detected_pip)
+```
+
 ### Results using Combined PIP Threshold
 ```{r echo=FALSE}
 results_df[,c("simutag", "n_causal_combined", "n_detected_comb_pip", "n_detected_comb_pip_in_causal")]
@@ -123,7 +139,7 @@ sum(results_df$n_detected_comb_pip_in_causal)/sum(results_df$n_detected_comb_pip
 ```
 
 ### Estimated Prior Inclusion Probability
-```{r, fig.width= 10, fig.height= 5}
+```{r, fig.width= 8, fig.height= 5, echo=FALSE}
 y1 <- results_df$prior_mashr_Artery_Aorta
 y2 <- results_df$prior_mashr_Spleen
 y3 <- results_df$prior_mashr_Skin_Not_Sun_Exposed_Suprapubic
@@ -138,7 +154,7 @@ plot_par_7(truth,est,xlabels = c("Artery","Spleen","Skin","Lung","Adipose","Panc
 ```
 
 ### Estimated PVE
-```{r, fig.width= 10, fig.height= 5}
+```{r, fig.width= 8, fig.height= 5, echo=FALSE}
 y1 <- results_df$pve_mashr_Artery_Aorta
 y2 <- results_df$pve_mashr_Spleen
 y3 <- results_df$pve_mashr_Skin_Not_Sun_Exposed_Suprapubic
@@ -153,7 +169,7 @@ plot_par_7(truth,est,xlabels = c("Artery","Spleen","Skin","Lung","Adipose","Panc
 ```
 
 ### PIP Calibration Plot
-```{r, fig.width= 4, fig.height= 4}
+```{r, fig.width= 4, fig.height= 4, echo=FALSE}
 f1 <- plot_PIP(configtag, runtag, paste(1, 1:5, sep = "-"), main = "")
 f1
 ```
@@ -175,6 +191,13 @@ PIP_threshold <- 0.8
 results_df <- get_sim_joint_res(results_dir,runtag,configtag,simutags,thin,sample_size,PIP_threshold)
 ```
 
+### Results using PIP Threshold
+```{r echo=FALSE}
+results_df[,c("simutag", "n_causal", "n_detected_pip", "n_detected_pip_in_causal")]
+#mean percent causal using combined PIP > 0.8
+sum(results_df$n_detected_pip_in_causal)/sum(results_df$n_detected_pip)
+```
+
 ### Results using Combined PIP Threshold
 ```{r echo=FALSE}
 results_df[,c("simutag", "n_causal_combined", "n_detected_comb_pip", "n_detected_comb_pip_in_causal")]
@@ -183,7 +206,7 @@ sum(results_df$n_detected_comb_pip_in_causal)/sum(results_df$n_detected_comb_pip
 ```
 
 ### Estimated Prior Inclusion Probability
-```{r, fig.width= 10, fig.height= 5}
+```{r, fig.width= 8, fig.height= 5, echo=FALSE}
 y1 <- results_df$prior_mashr_Artery_Aorta
 y2 <- results_df$prior_mashr_Spleen
 y3 <- results_df$prior_mashr_Skin_Not_Sun_Exposed_Suprapubic
@@ -198,7 +221,7 @@ plot_par_7(truth,est,xlabels = c("Artery","Spleen","Skin","Lung","Adipose","Panc
 ```
 
 ### Estimated PVE
-```{r, fig.width= 10, fig.height= 5}
+```{r, fig.width= 8, fig.height= 5, echo=FALSE}
 y1 <- results_df$pve_mashr_Artery_Aorta
 y2 <- results_df$pve_mashr_Spleen
 y3 <- results_df$pve_mashr_Skin_Not_Sun_Exposed_Suprapubic
@@ -213,7 +236,7 @@ plot_par_7(truth,est,xlabels = c("Artery","Spleen","Skin","Lung","Adipose","Panc
 ```
 
 ### PIP Calibration Plot
-```{r, fig.width= 4, fig.height= 4}
+```{r, fig.width= 4, fig.height= 4, echo=FALSE}
 f1 <- plot_PIP(configtag, runtag, paste(2, 1:5, sep = "-"), main = "")
 f1
 ```
@@ -233,6 +256,13 @@ PIP_threshold <- 0.8
 results_df <- get_sim_joint_res(results_dir,runtag,configtag,simutags,thin,sample_size,PIP_threshold)
 ```
 
+### Results using PIP Threshold
+```{r echo=FALSE}
+results_df[,c("simutag", "n_causal", "n_detected_pip", "n_detected_pip_in_causal")]
+#mean percent causal using combined PIP > 0.8
+sum(results_df$n_detected_pip_in_causal)/sum(results_df$n_detected_pip)
+```
+
 ### Results using Combined PIP Threshold
 ```{r echo=FALSE}
 results_df[,c("simutag", "n_causal_combined", "n_detected_comb_pip", "n_detected_comb_pip_in_causal")]
@@ -241,7 +271,7 @@ sum(results_df$n_detected_comb_pip_in_causal)/sum(results_df$n_detected_comb_pip
 ```
 
 ### Estimated Prior Inclusion Probability
-```{r, fig.width= 10, fig.height= 5}
+```{r, fig.width= 8, fig.height= 5, echo=FALSE}
 y1 <- results_df$prior_mashr_Artery_Aorta
 y2 <- results_df$prior_mashr_Spleen
 y3 <- results_df$prior_mashr_Skin_Not_Sun_Exposed_Suprapubic
@@ -257,7 +287,7 @@ plot_par_7(truth,est,xlabels = c("Artery","Spleen","Skin","Lung","Adipose","Panc
 ```
 
 ### Estimated PVE
-```{r, fig.width= 10, fig.height= 5}
+```{r, fig.width= 8, fig.height= 5, echo=FALSE}
 y1 <- results_df$pve_mashr_Artery_Aorta
 y2 <- results_df$pve_mashr_Spleen
 y3 <- results_df$pve_mashr_Skin_Not_Sun_Exposed_Suprapubic
@@ -272,7 +302,7 @@ plot_par_7(truth,est,xlabels = c("Artery","Spleen","Skin","Lung","Adipose","Panc
 ```
 
 ### PIP Calibration Plot
-```{r, fig.width= 4, fig.height= 4}
+```{r, fig.width= 4, fig.height= 4, echo=FALSE}
 f1 <- plot_PIP(configtag, runtag, paste(2, 1:5, sep = "-"), main = "")
 f1
 ```
