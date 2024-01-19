@@ -17,6 +17,7 @@ knitr::opts_chunk$set(comment = "#", results = "hold")
 ```{r packages, message=FALSE}
 library(ctwas)
 library(ggplot2)
+library(tidyverse)
 ```
 
 ```{r, eval=FALSE}
@@ -301,6 +302,7 @@ ctwas_none_filtering_parameters <- ctwas_summarize_parameters(outputdir = output
 
 ctwas_none_filtering_parameters
 ```
+
 ```{r}
 # load cTWAS results
 ctwas_res <- data.table::fread(paste0(outputdir, outname, ".susieIrss.txt"), header=T)
@@ -547,6 +549,39 @@ ctwas_locus_plot(ctwas_res = ctwas_dentist_res,
                  outname = outname)
 ```
 
+cTWAS results for CAV1 and CAV2
+
+```{r}
+cat("without filtering: \n")
+ctwas_none_filtering_res %>% 
+  filter(region_tag1 == 7, region_tag2 == 70, genename %in% c("CAV1", "CAV2")) %>%
+  arrange(genename)
+
+cat("DENTIST filtering: \n")
+ctwas_dentist_res %>% 
+  filter(region_tag1 == 7, region_tag2 == 70, genename %in% c("CAV1", "CAV2")) %>%
+  arrange(genename)
+```
+
+Top cTWAS SNPs or genes.
+
+rs75148240 has PIP of 1 before filtering, but was not in the cTWAS results after DENTIST filtering.
+
+```{r}
+cat("without filtering: \n")
+ctwas_none_filtering_res %>% 
+  filter(region_tag1 == 7, region_tag2 == 70) %>%
+  arrange(desc(susie_pip)) %>% head()
+
+cat("DENTIST filtering: \n")
+ctwas_dentist_res %>% 
+  filter(region_tag1 == 7, region_tag2 == 70) %>%
+  arrange(desc(susie_pip)) %>% head()
+
+ctwas_dentist_res %>% filter(id %in% "rs75148240")
+```
+
+
 ### AGAP5 locus
 
 AGAP5 gene PIP increased significantly after SuSiE filtering.
@@ -597,6 +632,24 @@ ctwas_locus_plot(ctwas_res = ctwas_susie_res,
                  outname = outname)
 ```
 
+Top cTWAS SNPs or genes.
+
+rs113478919 has PIP of 0.9 before filtering, but was not in the cTWAS results after SuSiE filtering.
+
+```{r}
+cat("without filtering: \n")
+ctwas_none_filtering_res %>% 
+  filter(region_tag1 == 10, region_tag2 == 49) %>%
+  arrange(desc(susie_pip)) %>% head()
+
+cat("SuSiE filtering: \n")
+ctwas_susie_res %>% 
+  filter(region_tag1 == 10, region_tag2 == 49) %>%
+  arrange(desc(susie_pip)) %>% head()
+
+ctwas_susie_res %>% filter(id %in% "rs113478919")
+```
+
 ### C9orf3 locus
 
 C9orf3 gene PIP decreased significantly after DENTIST filtering.
@@ -643,4 +696,17 @@ ctwas_locus_plot(ctwas_res = ctwas_susie_res,
                  legend_side="left", #the position of the panel
                  outputdir = outputdir,
                  outname = outname)
+```
+
+Top cTWAS SNPs or genes 
+```{r}
+cat("without filtering: \n")
+ctwas_none_filtering_res %>% 
+  filter(region_tag1 == 9, region_tag2 == 48) %>%
+  arrange(desc(susie_pip)) %>% head()
+
+cat("SuSiE filtering: \n")
+ctwas_susie_res %>% 
+  filter(region_tag1 == 9, region_tag2 == 48) %>%
+  arrange(desc(susie_pip)) %>% head()
 ```
