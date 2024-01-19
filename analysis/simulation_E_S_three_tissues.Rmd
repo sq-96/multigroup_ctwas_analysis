@@ -39,15 +39,15 @@ For the cTWAS analysis, tissues shared an effect size parameter.
 ```{r echo=FALSE}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_E_S_three_tissues/"
 runtag = "ukb-s80.45"
-configtag <- 2
+configtag <- 1
 
-simutags <- paste(1, 1:5, sep = "-")
+simutags <- paste(2, 1:5, sep = "-")
 thin <- 0.1
 
 sample_size <- 45000
 PIP_threshold <- 0.8
 
-results_df <- get_sim_joint_res(results_dir,runtag,configtag,simutags,thin,sample_size,PIP_threshold)
+#results_df <- get_sim_joint_res(results_dir,runtag,configtag,simutags,thin,sample_size,PIP_threshold)
 ```
 
 ### Results using Combined PIP Threshold
@@ -72,7 +72,7 @@ y4 <- results_df$prior_Lung_Splicing
 y5 <- results_df$prior_Spleen_Expression
 y6 <- results_df$prior_Spleen_Splicing
 
-truth <- rbind(c(1,0.003),c(2,0.003),c(3,0.003),c(4,0.003),c(5,0.003),c(6,0.003))
+truth <- rbind(c(1,0.009),c(2,0.009),c(3,0.009),c(4,0),c(5,0),c(6,0))
 est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6))
 plot_par_6(truth,est,xlabels = c("Liver_E","Liver_S","Lung_E","Lung_S","Spleen_E","Spleen_S"),ylim=c(0,0.025),ylab="Prior inclusion")
 ```
@@ -86,14 +86,14 @@ y4 <- results_df$pve_Lung_Splicing
 y5 <- results_df$pve_Spleen_Expression
 y6 <- results_df$pve_Spleen_Splicing
 
-truth <- rbind(c(1,0.01),c(2,0.01),c(3,0.01),c(4,0.01),c(5,0.01),c(6,0.01))
+truth <- rbind(c(1,0.03),c(2,0.03),c(3,0.03),c(4,0),c(5,0),c(6,0))
 est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6))
 plot_par_6(truth,est,xlabels = c("Liver_E","Liver_S","Lung_E","Lung_S","Spleen_E","Spleen_S"),ylim=c(0,0.06),ylab="PVE")
 ```
 
 #### PIP Calibration Plot
 ```{r, fig.width= 4, fig.height= 4, message=FALSE, warning=FALSE, echo=FALSE}
-f1 <- plot_PIP(configtag, runtag, paste(1, 1:5, sep = "-"), main = "")
+f1 <- plot_PIP(configtag, runtag, paste(3, 1:5, sep = "-"), main = "")
 f1
 ```
 

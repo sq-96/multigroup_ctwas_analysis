@@ -31,6 +31,7 @@ Conclusion: It seems that for tissues with moderate correlation (0.6-0.8), Assig
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 library(ctwas)
 library(data.table)
+require(latex2exp)
 source("/project/xinhe/shengqian/cTWAS_simulation/summarize_basic_plots.R")
 source("/project/xinhe/shengqian/cTWAS_simulation/summarize_ctwas_plots.R")
 source("/project2/xinhe/shengqian/cTWAS/cTWAS_analysis/analysis/simulation_help_functions.R")
@@ -38,6 +39,12 @@ plot_PIP <- function(configtag, runtag,  simutags, ...){
    phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
    susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_config", configtag,"_LDR",".susieIrss.txt")
    f1 <- caliPIP_plot(phenofs, susieIfs, ...) 
+   return(f1)
+}
+plot_PIP_combined <- function(configtag, runtag,  simutags, ...){
+   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
+   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_config", configtag,"_LDR",".susieIrss.txt")
+   f1 <- caliPIP_plot_combined(phenofs, susieIfs, ...) 
    return(f1)
 }
 ```
@@ -57,7 +64,8 @@ thin <- 0.1
 sample_size <- 45000
 PIP_threshold <- 0.8
 
-results_df <- get_sim_joint_res(results_dir,runtag,configtag,simutags,thin,sample_size,PIP_threshold)
+results_df <- get_sim_joint_res(results_dir,runtag,configtag,simutags,thin,sample_size,PIP_threshold)[[1]]
+group_size <- get_sim_joint_res(results_dir,runtag,configtag,simutags,thin,sample_size,PIP_threshold)[[2]]
 ```
 
 ### Results using PIP Threshold
@@ -104,10 +112,49 @@ est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6
 plot_par_7(truth,est,xlabels = c("Artery","Spleen","Skin","Lung","Adipose","Pancreas","Heart"),ylim=c(0,0.06),ylab="PVE")
 ```
 
+### Estimated Prior Variance
+```{r, fig.width= 8, fig.height= 5, message=FALSE, warning=FALSE, echo=FALSE}
+y1 <- results_df$prior_var_mashr_Artery_Aorta
+y2 <- results_df$prior_var_mashr_Spleen
+y3 <- results_df$prior_var_mashr_Skin_Not_Sun_Exposed_Suprapubic
+y4 <- results_df$prior_var_mashr_Lung
+y5 <- results_df$prior_var_mashr_Adipose_Subcutaneous
+y6 <- results_df$prior_var_mashr_Pancreas
+y7 <- results_df$prior_var_mashr_Heart_Atrial_Appendage
+
+t1 <- 0.03*sample_size/(group_size[2]*0.009)
+t2 <- 0.03*sample_size/(group_size[3]*0.009)
+t3 <- 0.03*sample_size/(group_size[4]*0.009)
+t4 <- 0.005*sample_size/(group_size[5]*0.0015)
+t5 <- 0.005*sample_size/(group_size[6]*0.0015)
+t6 <- 0.005*sample_size/(group_size[7]*0.0015)
+t7 <- 0.005*sample_size/(group_size[8]*0.0015)
+
+truth <- rbind(c(1,t1),c(2,t2),c(3,t3),c(4,t4),c(5,t5),c(6,t6),c(7,t7))
+est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6),cbind(7,y7))
+plot_par_7(truth,est,xlabels = c("Artery","Spleen","Skin","Lung","Adipose","Pancreas","Heart"),ylim=c(0,30),ylab=TeX("$sigma^2$"))
+```
+
+### Estimated Enrichment
+```{r, fig.width= 8, fig.height= 5, message=FALSE, warning=FALSE, echo=FALSE}
+y1 <- results_df$pve_mashr_Artery_Aorta/results_df$prior_SNP
+y2 <- results_df$pve_mashr_Spleen/results_df$prior_SNP
+y3 <- results_df$pve_mashr_Skin_Not_Sun_Exposed_Suprapubic/results_df$prior_SNP
+y4 <- results_df$pve_mashr_Lung/results_df$prior_SNP
+y5 <- results_df$pve_mashr_Adipose_Subcutaneous/results_df$prior_SNP
+y6 <- results_df$pve_mashr_Pancreas/results_df$prior_SNP
+y7 <- results_df$pve_mashr_Heart_Atrial_Appendage/results_df$prior_SNP
+
+truth <- rbind(c(1,120),c(2,120),c(3,120),c(4,20),c(5,20),c(6,20),c(7,20))
+est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6),cbind(7,y7))
+plot_par_7(truth,est,xlabels = c("Artery","Spleen","Skin","Lung","Adipose","Pancreas","Heart"),ylim=c(0,250),ylab= TeX("Enrichment $\\pi_G/\\pi_V$"))
+```
+
 ### PIP Calibration Plot
-```{r, fig.width= 4, fig.height= 4, message=FALSE, warning=FALSE, echo=FALSE}
-f1 <- plot_PIP(configtag, runtag, paste(1, 1:5, sep = "-"), main = "")
-f1
+```{r, fig.width= 8, fig.height= 4, echo=FALSE}
+f1 <- plot_PIP(configtag, runtag, simutags, main = "Expression Trait PIP Calibration")
+f2 <-  plot_PIP_combined(configtag, runtag, simutags, main = "Gene PIP Calibration")
+gridExtra::grid.arrange(f1, f2, ncol =2)
 ```
 
 ### Separate effect size parameters
@@ -124,6 +171,8 @@ sample_size <- 45000
 PIP_threshold <- 0.8
 
 results_df <- get_sim_joint_res(results_dir,runtag,configtag,simutags,thin,sample_size,PIP_threshold)
+group_size <- results_df[[2]]
+results_df <- results_df[[1]]
 ```
 
 ### Results using PIP Threshold
@@ -170,10 +219,49 @@ est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6
 plot_par_7(truth,est,xlabels = c("Artery","Spleen","Skin","Lung","Adipose","Pancreas","Heart"),ylim=c(0,0.06),ylab="PVE")
 ```
 
+### Estimated Prior Variance
+```{r, fig.width= 8, fig.height= 5, message=FALSE, warning=FALSE, echo=FALSE}
+y1 <- results_df$prior_var_mashr_Artery_Aorta
+y2 <- results_df$prior_var_mashr_Spleen
+y3 <- results_df$prior_var_mashr_Skin_Not_Sun_Exposed_Suprapubic
+y4 <- results_df$prior_var_mashr_Lung
+y5 <- results_df$prior_var_mashr_Adipose_Subcutaneous
+y6 <- results_df$prior_var_mashr_Pancreas
+y7 <- results_df$prior_var_mashr_Heart_Atrial_Appendage
+
+t1 <- 0.03*sample_size/(group_size[2]*0.009)
+t2 <- 0.03*sample_size/(group_size[3]*0.009)
+t3 <- 0.03*sample_size/(group_size[4]*0.009)
+t4 <- 0.005*sample_size/(group_size[5]*0.0015)
+t5 <- 0.005*sample_size/(group_size[6]*0.0015)
+t6 <- 0.005*sample_size/(group_size[7]*0.0015)
+t7 <- 0.005*sample_size/(group_size[8]*0.0015)
+
+truth <- rbind(c(1,t1),c(2,t2),c(3,t3),c(4,t4),c(5,t5),c(6,t6),c(7,t7))
+est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6),cbind(7,y7))
+plot_par_7(truth,est,xlabels = c("Artery","Spleen","Skin","Lung","Adipose","Pancreas","Heart"),ylim=c(0,30),ylab=TeX("$sigma^2$"))
+```
+
+### Estimated Enrichment
+```{r, fig.width= 8, fig.height= 5, message=FALSE, warning=FALSE, echo=FALSE}
+y1 <- results_df$pve_mashr_Artery_Aorta/results_df$prior_SNP
+y2 <- results_df$pve_mashr_Spleen/results_df$prior_SNP
+y3 <- results_df$pve_mashr_Skin_Not_Sun_Exposed_Suprapubic/results_df$prior_SNP
+y4 <- results_df$pve_mashr_Lung/results_df$prior_SNP
+y5 <- results_df$pve_mashr_Adipose_Subcutaneous/results_df$prior_SNP
+y6 <- results_df$pve_mashr_Pancreas/results_df$prior_SNP
+y7 <- results_df$pve_mashr_Heart_Atrial_Appendage/results_df$prior_SNP
+
+truth <- rbind(c(1,120),c(2,120),c(3,120),c(4,20),c(5,20),c(6,20),c(7,20))
+est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6),cbind(7,y7))
+plot_par_7(truth,est,xlabels = c("Artery","Spleen","Skin","Lung","Adipose","Pancreas","Heart"),ylim=c(0,250),ylab= TeX("Enrichment $\\pi_G/\\pi_V$"))
+```
+
 ### PIP Calibration Plot
-```{r, fig.width= 4, fig.height= 4, echo=FALSE}
-f1 <- plot_PIP(configtag, runtag, paste(1, 1:5, sep = "-"), main = "")
-f1
+```{r, fig.width= 8, fig.height= 4, echo=FALSE}
+f1 <- plot_PIP(configtag, runtag, simutags, main = "Expression Trait PIP Calibration")
+f2 <-  plot_PIP_combined(configtag, runtag, simutags, main = "Gene PIP Calibration")
+gridExtra::grid.arrange(f1, f2, ncol =2)
 ```
 
 ## Simulation 2: 3% PVE for Causal Tissues and 0% PVE for Non-causal Tissues. 
@@ -191,6 +279,8 @@ sample_size <- 45000
 PIP_threshold <- 0.8
 
 results_df <- get_sim_joint_res(results_dir,runtag,configtag,simutags,thin,sample_size,PIP_threshold)
+group_size <- results_df[[2]]
+results_df <- results_df[[1]]
 ```
 
 ### Results using PIP Threshold
@@ -237,10 +327,49 @@ est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6
 plot_par_7(truth,est,xlabels = c("Artery","Spleen","Skin","Lung","Adipose","Pancreas","Heart"),ylim=c(0,0.06),ylab="PVE")
 ```
 
+### Estimated Prior Variance
+```{r, fig.width= 8, fig.height= 5, message=FALSE, warning=FALSE, echo=FALSE}
+y1 <- results_df$prior_var_mashr_Artery_Aorta
+y2 <- results_df$prior_var_mashr_Spleen
+y3 <- results_df$prior_var_mashr_Skin_Not_Sun_Exposed_Suprapubic
+y4 <- results_df$prior_var_mashr_Lung
+y5 <- results_df$prior_var_mashr_Adipose_Subcutaneous
+y6 <- results_df$prior_var_mashr_Pancreas
+y7 <- results_df$prior_var_mashr_Heart_Atrial_Appendage
+
+t1 <- 0.03*sample_size/(group_size[2]*0.009)
+t2 <- 0.03*sample_size/(group_size[3]*0.009)
+t3 <- 0.03*sample_size/(group_size[4]*0.009)
+t4 <- 0*sample_size/(group_size[5]*0)
+t5 <- 0*sample_size/(group_size[6]*0)
+t6 <- 0*sample_size/(group_size[7]*0)
+t7 <- 0*sample_size/(group_size[8]*0)
+
+truth <- rbind(c(1,t1),c(2,t2),c(3,t3),c(4,t4),c(5,t5),c(6,t6),c(7,t7))
+est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6),cbind(7,y7))
+plot_par_7(truth,est,xlabels = c("Artery","Spleen","Skin","Lung","Adipose","Pancreas","Heart"),ylim=c(0,30),ylab=TeX("$sigma^2$"))
+```
+
+### Estimated Enrichment
+```{r, fig.width= 8, fig.height= 5, message=FALSE, warning=FALSE, echo=FALSE}
+y1 <- results_df$pve_mashr_Artery_Aorta/results_df$prior_SNP
+y2 <- results_df$pve_mashr_Spleen/results_df$prior_SNP
+y3 <- results_df$pve_mashr_Skin_Not_Sun_Exposed_Suprapubic/results_df$prior_SNP
+y4 <- results_df$pve_mashr_Lung/results_df$prior_SNP
+y5 <- results_df$pve_mashr_Adipose_Subcutaneous/results_df$prior_SNP
+y6 <- results_df$pve_mashr_Pancreas/results_df$prior_SNP
+y7 <- results_df$pve_mashr_Heart_Atrial_Appendage/results_df$prior_SNP
+
+truth <- rbind(c(1,120),c(2,120),c(3,120),c(4,0),c(5,0),c(6,0),c(7,0))
+est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6),cbind(7,y7))
+plot_par_7(truth,est,xlabels = c("Artery","Spleen","Skin","Lung","Adipose","Pancreas","Heart"),ylim=c(0,250),ylab= TeX("Enrichment $\\pi_G/\\pi_V$"))
+```
+
 ### PIP Calibration Plot
-```{r, fig.width= 4, fig.height= 4, echo=FALSE}
-f1 <- plot_PIP(configtag, runtag, paste(2, 1:5, sep = "-"), main = "")
-f1
+```{r, fig.width= 8, fig.height= 4, echo=FALSE}
+f1 <- plot_PIP(configtag, runtag, simutags, main = "Expression Trait PIP Calibration")
+f2 <-  plot_PIP_combined(configtag, runtag, simutags, main = "Gene PIP Calibration")
+gridExtra::grid.arrange(f1, f2, ncol =2)
 ```
 
 ### Separate effect size parameters
@@ -256,6 +385,8 @@ sample_size <- 45000
 PIP_threshold <- 0.8
 
 results_df <- get_sim_joint_res(results_dir,runtag,configtag,simutags,thin,sample_size,PIP_threshold)
+group_size <- results_df[[2]]
+results_df <- results_df[[1]]
 ```
 
 ### Results using PIP Threshold
@@ -288,6 +419,44 @@ est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6
 plot_par_7(truth,est,xlabels = c("Artery","Spleen","Skin","Lung","Adipose","Pancreas","Heart"),ylim=c(0,0.025),ylab="Prior inclusion")
 ```
 
+### Estimated Prior Variance
+```{r, fig.width= 8, fig.height= 5, message=FALSE, warning=FALSE, echo=FALSE}
+y1 <- results_df$prior_var_mashr_Artery_Aorta
+y2 <- results_df$prior_var_mashr_Spleen
+y3 <- results_df$prior_var_mashr_Skin_Not_Sun_Exposed_Suprapubic
+y4 <- results_df$prior_var_mashr_Lung
+y5 <- results_df$prior_var_mashr_Adipose_Subcutaneous
+y6 <- results_df$prior_var_mashr_Pancreas
+y7 <- results_df$prior_var_mashr_Heart_Atrial_Appendage
+
+t1 <- 0.03*sample_size/(group_size[2]*0.009)
+t2 <- 0.03*sample_size/(group_size[3]*0.009)
+t3 <- 0.03*sample_size/(group_size[4]*0.009)
+t4 <- 0*sample_size/(group_size[5]*0)
+t5 <- 0*sample_size/(group_size[6]*0)
+t6 <- 0*sample_size/(group_size[7]*0)
+t7 <- 0*sample_size/(group_size[8]*0)
+
+truth <- rbind(c(1,t1),c(2,t2),c(3,t3),c(4,t4),c(5,t5),c(6,t6),c(7,t7))
+est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6),cbind(7,y7))
+plot_par_7(truth,est,xlabels = c("Artery","Spleen","Skin","Lung","Adipose","Pancreas","Heart"),ylim=c(0,60),ylab=TeX("$sigma^2$"))
+```
+
+### Estimated Enrichment
+```{r, fig.width= 8, fig.height= 5, message=FALSE, warning=FALSE, echo=FALSE}
+y1 <- results_df$pve_mashr_Artery_Aorta/results_df$prior_SNP
+y2 <- results_df$pve_mashr_Spleen/results_df$prior_SNP
+y3 <- results_df$pve_mashr_Skin_Not_Sun_Exposed_Suprapubic/results_df$prior_SNP
+y4 <- results_df$pve_mashr_Lung/results_df$prior_SNP
+y5 <- results_df$pve_mashr_Adipose_Subcutaneous/results_df$prior_SNP
+y6 <- results_df$pve_mashr_Pancreas/results_df$prior_SNP
+y7 <- results_df$pve_mashr_Heart_Atrial_Appendage/results_df$prior_SNP
+
+truth <- rbind(c(1,120),c(2,120),c(3,120),c(4,0),c(5,0),c(6,0),c(7,0))
+est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6),cbind(7,y7))
+plot_par_7(truth,est,xlabels = c("Artery","Spleen","Skin","Lung","Adipose","Pancreas","Heart"),ylim=c(0,250),ylab= TeX("Enrichment $\\pi_G/\\pi_V$"))
+```
+
 ### Estimated PVE
 ```{r, fig.width= 8, fig.height= 5, echo=FALSE}
 y1 <- results_df$pve_mashr_Artery_Aorta
@@ -304,7 +473,8 @@ plot_par_7(truth,est,xlabels = c("Artery","Spleen","Skin","Lung","Adipose","Panc
 ```
 
 ### PIP Calibration Plot
-```{r, fig.width= 4, fig.height= 4, echo=FALSE}
-f1 <- plot_PIP(configtag, runtag, paste(2, 1:5, sep = "-"), main = "")
-f1
+```{r, fig.width= 8, fig.height= 4, echo=FALSE}
+f1 <- plot_PIP(configtag, runtag, simutags, main = "Expression Trait PIP Calibration")
+f2 <-  plot_PIP_combined(configtag, runtag, simutags, main = "Gene PIP Calibration")
+gridExtra::grid.arrange(f1, f2, ncol =2)
 ```
