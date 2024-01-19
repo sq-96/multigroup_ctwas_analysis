@@ -12,7 +12,6 @@ A simulation of seven correlated tissues is conducted to evaluate cTWAS performa
 ```{r echo=FALSE}
 load("/project/xinhe/xsun/ctwas/1.matching_tissue/data/tissue_cor.rdata")
 data <- lat[colnames(lat)%in%c("Artery_Aorta","Spleen","Skin_Not_Sun_Exposed_Suprapubic","Lung","Adipose_Subcutaneous","Pancreas","Heart_Atrial_Appendage"),rownames(lat)%in%c("Artery_Aorta","Spleen","Skin_Not_Sun_Exposed_Suprapubic","Lung","Adipose_Subcutaneous","Pancreas","Heart_Atrial_Appendage")]
-c("Adipose","Lung","Artery","Heart","Skin","Spleen","Pancreas")
 colnames(data) <- c("Adipose","Lung","Artery","Heart","Skin","Spleen","Pancreas")
 rownames(data) <- c("Adipose","Lung","Artery","Heart","Skin","Spleen","Pancreas")
 data <- round(data,3)
@@ -151,7 +150,7 @@ plot_par_7(truth,est,xlabels = c("Artery","Spleen","Skin","Lung","Adipose","Panc
 ```
 
 ### PIP Calibration Plot
-```{r, fig.width= 8, fig.height= 4, echo=FALSE}
+```{r, fig.width= 8, fig.height= 4, echo=FALSE, warning=FALSE}
 f1 <- plot_PIP(configtag, runtag, simutags, main = "Expression Trait PIP Calibration")
 f2 <-  plot_PIP_combined(configtag, runtag, simutags, main = "Gene PIP Calibration")
 gridExtra::grid.arrange(f1, f2, ncol =2)
@@ -258,7 +257,7 @@ plot_par_7(truth,est,xlabels = c("Artery","Spleen","Skin","Lung","Adipose","Panc
 ```
 
 ### PIP Calibration Plot
-```{r, fig.width= 8, fig.height= 4, echo=FALSE}
+```{r, fig.width= 8, fig.height= 4, echo=FALSE, warning=FALSE}
 f1 <- plot_PIP(configtag, runtag, simutags, main = "Expression Trait PIP Calibration")
 f2 <-  plot_PIP_combined(configtag, runtag, simutags, main = "Gene PIP Calibration")
 gridExtra::grid.arrange(f1, f2, ncol =2)
@@ -366,7 +365,7 @@ plot_par_7(truth,est,xlabels = c("Artery","Spleen","Skin","Lung","Adipose","Panc
 ```
 
 ### PIP Calibration Plot
-```{r, fig.width= 8, fig.height= 4, echo=FALSE}
+```{r, fig.width= 8, fig.height= 4, echo=FALSE, warning=FALSE}
 f1 <- plot_PIP(configtag, runtag, simutags, main = "Expression Trait PIP Calibration")
 f2 <-  plot_PIP_combined(configtag, runtag, simutags, main = "Gene PIP Calibration")
 gridExtra::grid.arrange(f1, f2, ncol =2)
@@ -473,7 +472,7 @@ plot_par_7(truth,est,xlabels = c("Artery","Spleen","Skin","Lung","Adipose","Panc
 ```
 
 ### PIP Calibration Plot
-```{r, fig.width= 8, fig.height= 4, echo=FALSE}
+```{r, fig.width= 8, fig.height= 4, echo=FALSE, warning=FALSE}
 f1 <- plot_PIP(configtag, runtag, simutags, main = "Expression Trait PIP Calibration")
 f2 <-  plot_PIP_combined(configtag, runtag, simutags, main = "Gene PIP Calibration")
 gridExtra::grid.arrange(f1, f2, ncol =2)
