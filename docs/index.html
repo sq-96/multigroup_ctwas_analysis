@@ -13,7 +13,7 @@
 
 <title>Home</title>
 
-<script src="site_libs/header-attrs-2.14/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.19/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
@@ -153,11 +153,15 @@ $(document).ready(function () {
     href = "index.html";
   var menuAnchor = $('a[href="' + href + '"]');
 
-  // mark it active
-  menuAnchor.tab('show');
-
-  // if it's got a parent navbar menu mark it active as well
-  menuAnchor.closest('li.dropdown').addClass('active');
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
 
   // Navbar adjustments
   var navHeight = $(".navbar").first().height() + 15;
@@ -186,8 +190,8 @@ $(document).ready(function () {
   border-radius: 4px;
 }
 
-.tabset-dropdown > .nav-tabs > li.active:before {
-  content: "";
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
   font-family: 'Glyphicons Halflings';
   display: inline-block;
   padding: 10px;
@@ -195,16 +199,9 @@ $(document).ready(function () {
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
-  content: "&#xe258;";
-  border: none;
-}
-
-.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
-  content: "";
+  content: "\e258";
   font-family: 'Glyphicons Halflings';
-  display: inline-block;
-  padding: 10px;
-  border-right: 1px solid #ddd;
+  border: none;
 }
 
 .tabset-dropdown > .nav-tabs > li.active {
@@ -291,9 +288,7 @@ $(document).ready(function () {
 
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
-<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
-workflowr <span class="glyphicon glyphicon-ok text-success"
-aria-hidden="true"></span>
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span> workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span>
 </button>
 </p>
 <div id="workflowr-report" class="collapse">
@@ -302,9 +297,7 @@ aria-hidden="true"></span>
 <a data-toggle="tab" href="#summary">Summary</a>
 </li>
 <li>
-<a data-toggle="tab" href="#checks"> Checks <span
-class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
-</a>
+<a data-toggle="tab" href="#checks"> Checks <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> </a>
 </li>
 <li>
 <a data-toggle="tab" href="#versions">Past versions</a>
@@ -313,27 +306,17 @@ class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2024-01-12
+<strong>Last updated:</strong> 2024-01-19
 </p>
 <p>
-<strong>Checks:</strong> <span
-class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 2
-<span class="glyphicon glyphicon-exclamation-sign text-danger"
-aria-hidden="true"></span> 0
+<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 1 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 1
 </p>
 <p>
-<strong>Knit directory:</strong> <code>multigroup_ctwas_analysis/</code>
-<span class="glyphicon glyphicon-question-sign" aria-hidden="true"
-title="This is the local directory in which the code in this file was executed.">
-</span>
+<strong>Knit directory:</strong> <code>multigroup_ctwas_analysis/</code> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="This is the local directory in which the code in this file was executed."> </span>
 </p>
 <p>
-This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a>
-analysis was created with <a
-  href="https://github.com/workflowr/workflowr">workflowr</a> (version
-1.7.0). The <em>Checks</em> tab describes the reproducibility checks
-that were applied when the results were created. The <em>Past
-versions</em> tab lists the development history.
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a> analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version 1.7.0). The <em>Checks</em> tab describes the reproducibility checks that were applied when the results were created. The <em>Past versions</em> tab lists the development history.
 </p>
 <hr>
 </div>
@@ -342,62 +325,42 @@ versions</em> tab lists the development history.
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate">
-<span class="glyphicon glyphicon-ok text-success"
-aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date
-</a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges"> <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted changes </a>
 </p>
 </div>
-<div id="strongRMarkdownfilestronguptodate"
-class="panel-collapse collapse">
+<div id="strongRMarkdownfilestronguncommittedchanges" class="panel-collapse collapse">
 <div class="panel-body">
-<p>Great! Since the R Markdown file has been committed to the Git
-repository, you know the exact version of the code that produced these
-results.</p>
+<p>The R Markdown file has unstaged changes. To know which version of the R Markdown file created these results, you’ll want to first commit it to the Git repo. If you’re still working on the analysis, you can ignore this warning. When you’re finished, you can run <code>wflow_publish</code> to commit the R Markdown file and build the HTML.</p>
 </div>
 </div>
 </div>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistreefbfef8f40335acb87adda3499f59c78ac0c60e01targetblankfbfef8fa">
-<span class="glyphicon glyphicon-ok text-success"
-aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/fbfef8f40335acb87adda3499f59c78ac0c60e01" target="_blank">fbfef8f</a>
-</a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree653fefa47f4e64973fe25637eadd1d6dab5e2a34targetblank653fefaa"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/653fefa47f4e64973fe25637eadd1d6dab5e2a34" target="_blank">653fefa</a> </a>
 </p>
 </div>
-<div
-id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistreefbfef8f40335acb87adda3499f59c78ac0c60e01targetblankfbfef8fa"
-class="panel-collapse collapse">
+<div id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree653fefa47f4e64973fe25637eadd1d6dab5e2a34targetblank653fefaa" class="panel-collapse collapse">
 <div class="panel-body">
 <p>
-Great! You are using Git for version control. Tracking code development
-and connecting the code version to the results is critical for
-reproducibility.
+Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility.
 </p>
 <p>
-The results in this page were generated with repository version
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/fbfef8f40335acb87adda3499f59c78ac0c60e01" target="_blank">fbfef8f</a>.
-See the <em>Past versions</em> tab to see a history of the changes made
-to the R Markdown and HTML files.
+The results in this page were generated with repository version <a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/653fefa47f4e64973fe25637eadd1d6dab5e2a34" target="_blank">653fefa</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
 </p>
 <p>
-Note that you need to be careful to ensure that all relevant files for
-the analysis have been committed to Git prior to generating the results
-(you can use <code>wflow_publish</code> or
-<code>wflow_git_commit</code>). workflowr only checks the R Markdown
-file, but you know if there are other scripts or data files that it
-depends on. Below is the status of the Git repository when the results
-were generated:
+Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
 </p>
 <pre><code>
-working directory clean
+Unstaged changes:
+    Modified:   analysis/index.Rmd
+    Modified:   analysis/simulation_E_S_three_tissues.Rmd
+    Modified:   analysis/simulation_seven_tissues_correlated.Rmd
+    Modified:   analysis/simulation_seven_tissues_uncorrelated.Rmd
+
 </code></pre>
 <p>
-Note that any generated files, e.g. HTML, png, CSS, etc., are not
-included in this status report because it is ok for generated content to
-have uncommitted changes.
+Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes.
 </p>
 </div>
 </div>
@@ -408,11 +371,7 @@ have uncommitted changes.
 <div id="versions" class="tab-pane fade">
 
 <p>
-These are the previous versions of the repository in which changes were
-made to the R Markdown (<code>analysis/index.Rmd</code>) and HTML
-(<code>docs/index.html</code>) files. If you’ve configured a remote Git
-repository (see <code>?wflow_git_remote</code>), click on the hyperlinks
-in the table below to view the files as they were in that past version.
+These are the previous versions of the repository in which changes were made to the R Markdown (<code>analysis/index.Rmd</code>) and HTML (<code>docs/index.html</code>) files. If you’ve configured a remote Git repository (see <code>?wflow_git_remote</code>), click on the hyperlinks in the table below to view the files as they were in that past version.
 </p>
 <div class="table-responsive">
 <table class="table table-condensed table-hover">
@@ -436,6 +395,23 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/sq-96/multigroup_ctwas_analysis/d6fa98797aec5b4147b851f6f8b4f8db07256a7a/docs/index.html" target="_blank">d6fa987</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2024-01-12
+</td>
+<td>
+update
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -1278,72 +1254,52 @@ Start workflowr project.
 </div>
 <div id="data" class="section level1">
 <h1>Data</h1>
-<p><a
-href="https://sq-96.github.io/multigroup_ctwas_analysis/data.html">link</a></p>
+<p><a href="https://sq-96.github.io/multigroup_ctwas_analysis/data.html">link</a></p>
 </div>
 <div id="ld-mismatch-diagnosis" class="section level1">
 <h1>LD mismatch diagnosis</h1>
 <ul>
-<li><a href="detect_LD_mismatch_gwas_UKBBref_susie_rss.html">LD mismatch
-diagnosis using SuSiE_RSS</a></li>
-<li><a
-href="detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.html">Detect LD
-mismatch for LDL and aFib using DENTIST vs. SuSiE_RSS</a></li>
-<li><a href="test_LD_mismatch_DENTIST_susierss.html">Compare DENTIST and
-SuSiE_RSS for LD mismatch detection on example locus with manually
-changed z-scores</a></li>
+<li><a href="detect_LD_mismatch_gwas_UKBBref_susie_rss.html">LD mismatch diagnosis using SuSiE_RSS</a></li>
+<li><a href="detect_LD_mismatch_gwas_UKBBref_DENTIST_susie_rss.html">Detect LD mismatch for LDL and aFib using DENTIST vs. SuSiE_RSS</a></li>
+<li><a href="test_LD_mismatch_DENTIST_susierss.html">Compare DENTIST and SuSiE_RSS for LD mismatch detection on example locus with manually changed z-scores</a></li>
 </ul>
 </div>
 <div id="multi-tissue" class="section level1">
 <h1>Multi-tissue</h1>
 <ul>
-<li><a
-href="https://sq-96.github.io/multigroup_ctwas_analysis/matching_tissue.html">Deciding
-the matching tissue</a></li>
-<li><a
-href="https://sq-96.github.io/multigroup_ctwas_analysis/multi_tissue_ldmerge.html">Multi-tissue
-analysis, merging the LD blocks</a></li>
-<li><a
-href="https://sq-96.github.io/multigroup_ctwas_analysis/multi_tissue_ldmerge_validation.html">Validation</a></li>
-<li><a
-href="https://sq-96.github.io/multigroup_ctwas_analysis/multi_tissue_ldmerge_enriched_pwy.html">Enrichment
-analysis – enriched pathways</a></li>
-<li>LDL ten tissues analysis <a
-href="https://sq-96.github.io/multigroup_ctwas_analysis/LDL_ten_tissues.html">link</a></li>
+<li><a href="https://sq-96.github.io/multigroup_ctwas_analysis/matching_tissue.html">Deciding the matching tissue</a></li>
+<li><a href="https://sq-96.github.io/multigroup_ctwas_analysis/multi_tissue_ldmerge.html">Multi-tissue analysis, merging the LD blocks</a></li>
+<li><a href="https://sq-96.github.io/multigroup_ctwas_analysis/multi_tissue_ldmerge_validation.html">Validation</a></li>
+<li><a href="https://sq-96.github.io/multigroup_ctwas_analysis/multi_tissue_ldmerge_enriched_pwy.html">Enrichment analysis – enriched pathways</a></li>
+<li>LDL ten tissues analysis <a href="https://sq-96.github.io/multigroup_ctwas_analysis/LDL_ten_tissues.html">link</a></li>
 </ul>
 </div>
 <div id="single-qtl-analysis" class="section level1">
 <h1>Single QTL analysis</h1>
 <ul>
-<li>APA QTL analysis <a
-href="https://sq-96.github.io/multigroup_ctwas_analysis/apa_weights_analysis.html">link</a></li>
-<li>histone QTL analysis <a
-href="https://sq-96.github.io/multigroup_ctwas_analysis/histone_weights_analysis.html">link</a></li>
+<li>APA QTL analysis <a href="https://sq-96.github.io/multigroup_ctwas_analysis/apa_weights_analysis.html">link</a></li>
+<li>histone QTL analysis <a href="https://sq-96.github.io/multigroup_ctwas_analysis/histone_weights_analysis.html">link</a></li>
 </ul>
 </div>
 <div id="simulation-results" class="section level1">
 <h1>Simulation results</h1>
 <ul>
-<li>seven uncorrelated tissues simulations <a
-href="https://sq-96.github.io/multigroup_ctwas_analysis/simulation_seven_tissues_uncorrelated.html">link</a></li>
-<li>seven correlated tissues simulations <a
-href="https://sq-96.github.io/multigroup_ctwas_analysis/simulation_seven_tissues_correlated.html">link</a></li>
+<li>seven uncorrelated tissues simulations <a href="https://sq-96.github.io/multigroup_ctwas_analysis/simulation_seven_tissues_uncorrelated.html">link</a></li>
+<li>seven correlated tissues simulations <a href="https://sq-96.github.io/multigroup_ctwas_analysis/simulation_seven_tissues_correlated.html">link</a></li>
+<li>E and S three tissues simulations <a href="https://sq-96.github.io/multigroup_ctwas_analysis/simulation_E_S_three_tissues.html">link</a></li>
 </ul>
 </div>
 <div id="region-merge" class="section level1">
 <h1>Region Merge</h1>
 <ul>
-<li>Test region merge <a
-href="https://sq-96.github.io/multigroup_ctwas_analysis/region_merge_test.html">link</a></li>
+<li>Test region merge <a href="https://sq-96.github.io/multigroup_ctwas_analysis/region_merge_test.html">link</a></li>
 </ul>
 </div>
 <div id="multi-omics-and-multi-tissues-analysis" class="section level1">
 <h1>Multi omics and multi tissues analysis</h1>
 <ul>
-<li>LDL - Liver and Adipose - Expression and Splicing <a
-href="https://sq-96.github.io/multigroup_ctwas_analysis/LDL_Liver_Adipose_E_S.html">link</a></li>
-<li>LDL - Multi contexts/types <a
-href="https://sq-96.github.io/multigroup_ctwas_analysis/LDL_multi_context_type.html">link</a></li>
+<li>LDL - Liver and Adipose - Expression and Splicing <a href="https://sq-96.github.io/multigroup_ctwas_analysis/LDL_Liver_Adipose_E_S.html">link</a></li>
+<li>LDL - Multi contexts/types <a href="https://sq-96.github.io/multigroup_ctwas_analysis/LDL_multi_context_type.html">link</a></li>
 </ul>
 </div>
 
