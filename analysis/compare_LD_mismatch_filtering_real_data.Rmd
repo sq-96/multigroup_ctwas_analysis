@@ -1,0 +1,646 @@
+---
+title: "Compare LD mismatch filterng on real data"
+author: "Kaixuan Luo"
+date: "`r Sys.Date()`"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+    toc: true
+---
+
+```{r knitr-opts, include=FALSE}
+knitr::opts_chunk$set(comment = "#", results = "hold")
+```
+
+## Load packages and functions
+
+```{r packages, message=FALSE}
+library(ctwas)
+library(ggplot2)
+```
+
+```{r, eval=FALSE}
+# This section requires internet connections
+library(biomaRt)
+
+# download all entries for ensembl on all chromosomes
+ensembl <- useEnsembl(biomart="ENSEMBL_MART_ENSEMBL", dataset="hsapiens_gene_ensembl")
+
+G_list <- getBM(filters= "chromosome_name", attributes= c("hgnc_symbol","chromosome_name","start_position","end_position","gene_biotype", "ensembl_gene_id", "strand"), values=1:22, mart=ensembl)
+
+table(G_list$chromosome_name)
+
+# subset to protein coding genes and fix empty gene names
+G_list <- G_list[G_list$gene_biotype %in% c("protein_coding"),]
+G_list$hgnc_symbol[G_list$hgnc_symbol==""] <- "-"
+
+# set TSS based on start/end position and strand
+G_list$tss <- G_list[,c("end_position", "start_position")][cbind(1:nrow(G_list),G_list$strand/2+1.5)]
+
+save(G_list, file="/project2/xinhe/kevinluo/cTWAS/data/G_list_allchrs.RData")
+```
+
+## LDL
+
+```{r}
+trait <- "LDL"
+tissue <- "Liver"
+gwas_name <- "LDL-ukb-d-30780_irnt"
+gwas_n <- 343621
+thin <- 0.1
+max_snp_region <- 20000
+
+tissue <- R.utils::capitalize(tissue)
+ld_R_dir <- "/project2/mstephens/wcrouse/UKB_LDR_0.1/"
+```
+
+Weight
+```{r}
+weight_name <- paste0("mashr_", tissue, "_nolnc")
+weight <- paste0("/project2/xinhe/shared_data/multigroup_ctwas/weights/predictdb_nolnc/", weight_name, ".db")
+cat("weight: \n")
+print(weight)
+
+# Preharmonize prediction models and LD reference
+strand_ambig_action <- "drop"
+outputdir <- paste0("/project2/xinhe/kevinluo/cTWAS/multigroup/cTWAS_filter_ld_mismatch/", trait, "/")
+weight <- file.path(outputdir, paste0(weight_name, "_harmonized_weights_", strand_ambig_action, ".db"))
+cat("harmonized weight: \n")
+print(weight)
+```
+
+### Without filtering
+```{r}
+outputdir <- paste0("/project2/xinhe/kevinluo/cTWAS/multigroup/cTWAS_filter_ld_mismatch/", trait, "/")
+filter_method <- "none"
+outname <- paste0(trait, ".", tissue, ".", filter_method, "_filter")
+
+ctwas_none_filtering_parameters <- ctwas_summarize_parameters(outputdir = outputdir,
+                                                              outname = outname,
+                                                              gwas_n = gwas_n,
+                                                              thin = thin)
+
+ctwas_none_filtering_parameters
+```
+```{r}
+# load cTWAS results
+ctwas_res <- data.table::fread(paste0(outputdir, outname, ".susieIrss.txt"), header=T)
+load(file.path(outputdir, paste0(outname, "_z_snp_harmonized_", strand_ambig_action, ".Rd")))
+load(file.path(outputdir, paste0(outname, "_z_gene.Rd")))
+
+# load gene information from PredictDB
+sqlite <- RSQLite::dbDriver("SQLite")
+db = RSQLite::dbConnect(sqlite, weight)
+query <- function(...) RSQLite::dbGetQuery(db, ...)
+gene_info <- query("select gene, genename, gene_type from extra")
+RSQLite::dbDisconnect(db)
+
+# add gene names to cTWAS results
+ctwas_res$genename[ctwas_res$type=="gene"] <- gene_info$genename[match(ctwas_res$id[ctwas_res$type=="gene"], gene_info$gene)]
+
+# add z-scores to cTWAS results
+ctwas_res$z[ctwas_res$type=="SNP"] <- z_snp$z[match(ctwas_res$id[ctwas_res$type=="SNP"], z_snp$id)]
+ctwas_res$z[ctwas_res$type=="gene"] <- z_gene$z[match(ctwas_res$id[ctwas_res$type=="gene"], z_gene$id)]
+
+# display the genes with PIP > 0.8
+ctwas_res <- ctwas_res[order(-ctwas_res$susie_pip),]
+ctwas_none_filtering_gene_res <- ctwas_res[ctwas_res$type=="gene",]
+ctwas_none_filtering_highpip_gene_res <- ctwas_res[ctwas_res$type=="gene" & ctwas_res$susie_pip > 0.8,]
+
+cat(length(unique(ctwas_none_filtering_highpip_gene_res$genename)), "genes with PIP > 0.8. \n")
+
+# update the position for each gene to the TSS.
+load(file="/project2/xinhe/kevinluo/cTWAS/data/G_list_allchrs.RData")
+
+# remove the version number from the ensembl IDs
+ctwas_res$ensembl <- NA
+ctwas_res$ensembl[ctwas_res$type=="gene"] <-  sapply(ctwas_res$id[ctwas_res$type=="gene"], function(x){unlist(strsplit(x, "[.]"))[1]})
+
+#update the gene positions to TSS
+ctwas_res$pos[ctwas_res$type=="gene"] <- G_list$tss[match(ctwas_res$ensembl[ctwas_res$type=="gene"], G_list$ensembl_gene_id)]
+
+ctwas_none_filtering_res <- ctwas_res
+
+```
+
+### DENTIST filtering
+
+```{r}
+outputdir <- paste0("/project2/xinhe/kevinluo/cTWAS/multigroup/cTWAS_filter_ld_mismatch/", trait, "/")
+filter_method <- "DENTIST"
+outname <- paste0(trait, ".", tissue, ".", filter_method, "_filter")
+
+ctwas_dentist_parameters <- ctwas_summarize_parameters(outputdir = outputdir,
+                                                       outname = outname,
+                                                       gwas_n = gwas_n,
+                                                       thin = thin)
+
+ctwas_dentist_parameters
+```
+
+```{r}
+# load cTWAS results
+ctwas_res <- data.table::fread(paste0(outputdir, outname, ".susieIrss.txt"), header=T)
+load(file.path(outputdir, paste0(outname, "_z_snp_harmonized_", strand_ambig_action, ".Rd")))
+load(file.path(outputdir, paste0(outname, "_z_gene.Rd")))
+
+# load gene information from PredictDB
+sqlite <- RSQLite::dbDriver("SQLite")
+db = RSQLite::dbConnect(sqlite, weight)
+query <- function(...) RSQLite::dbGetQuery(db, ...)
+gene_info <- query("select gene, genename, gene_type from extra")
+RSQLite::dbDisconnect(db)
+
+# add gene names to cTWAS results
+ctwas_res$genename[ctwas_res$type=="gene"] <- gene_info$genename[match(ctwas_res$id[ctwas_res$type=="gene"], gene_info$gene)]
+
+# add z-scores to cTWAS results
+ctwas_res$z[ctwas_res$type=="SNP"] <- z_snp$z[match(ctwas_res$id[ctwas_res$type=="SNP"], z_snp$id)]
+ctwas_res$z[ctwas_res$type=="gene"] <- z_gene$z[match(ctwas_res$id[ctwas_res$type=="gene"], z_gene$id)]
+
+# display the genes with PIP > 0.8
+ctwas_res <- ctwas_res[order(-ctwas_res$susie_pip),]
+ctwas_dentist_gene_res <- ctwas_res[ctwas_res$type=="gene",]
+ctwas_dentist_highpip_gene_res <- ctwas_res[ctwas_res$type=="gene" & ctwas_res$susie_pip > 0.8,]
+
+cat(length(unique(ctwas_dentist_highpip_gene_res$genename)), "genes with PIP > 0.8. \n")
+
+# update the position for each gene to the TSS.
+load(file="/project2/xinhe/kevinluo/cTWAS/data/G_list_allchrs.RData")
+
+# remove the version number from the ensembl IDs
+ctwas_res$ensembl <- NA
+ctwas_res$ensembl[ctwas_res$type=="gene"] <-  sapply(ctwas_res$id[ctwas_res$type=="gene"], function(x){unlist(strsplit(x, "[.]"))[1]})
+
+#update the gene positions to TSS
+ctwas_res$pos[ctwas_res$type=="gene"] <- G_list$tss[match(ctwas_res$ensembl[ctwas_res$type=="gene"], G_list$ensembl_gene_id)]
+
+ctwas_dentist_res <- ctwas_res
+```
+
+### SuSiE filtering
+```{r}
+outputdir <- paste0("/project2/xinhe/kevinluo/cTWAS/multigroup/cTWAS_filter_ld_mismatch/", trait, "/")
+filter_method <- "SuSiE"
+outname <- paste0(trait, ".", tissue, ".", filter_method, "_filter")
+
+ctwas_susie_parameters <- ctwas_summarize_parameters(outputdir = outputdir,
+                                                     outname = outname,
+                                                     gwas_n = gwas_n,
+                                                     thin = thin)
+
+ctwas_susie_parameters
+```
+
+```{r}
+# load cTWAS results
+ctwas_res <- data.table::fread(paste0(outputdir, outname, ".susieIrss.txt"), header=T)
+load(file.path(outputdir, paste0(outname, "_z_snp_harmonized_", strand_ambig_action, ".Rd")))
+load(file.path(outputdir, paste0(outname, "_z_gene.Rd")))
+
+# load gene information from PredictDB
+sqlite <- RSQLite::dbDriver("SQLite")
+db = RSQLite::dbConnect(sqlite, weight)
+query <- function(...) RSQLite::dbGetQuery(db, ...)
+gene_info <- query("select gene, genename, gene_type from extra")
+RSQLite::dbDisconnect(db)
+
+# add gene names to cTWAS results
+ctwas_res$genename[ctwas_res$type=="gene"] <- gene_info$genename[match(ctwas_res$id[ctwas_res$type=="gene"], gene_info$gene)]
+
+# add z-scores to cTWAS results
+ctwas_res$z[ctwas_res$type=="SNP"] <- z_snp$z[match(ctwas_res$id[ctwas_res$type=="SNP"], z_snp$id)]
+ctwas_res$z[ctwas_res$type=="gene"] <- z_gene$z[match(ctwas_res$id[ctwas_res$type=="gene"], z_gene$id)]
+
+# display the genes with PIP > 0.8
+ctwas_res <- ctwas_res[order(-ctwas_res$susie_pip),]
+ctwas_susie_gene_res <- ctwas_res[ctwas_res$type=="gene",]
+ctwas_susie_highpip_gene_res <- ctwas_res[ctwas_res$type=="gene" & ctwas_res$susie_pip > 0.8,]
+
+cat(length(unique(ctwas_susie_highpip_gene_res$genename)), "genes with PIP > 0.8. \n")
+
+# update the position for each gene to the TSS.
+load(file="/project2/xinhe/kevinluo/cTWAS/data/G_list_allchrs.RData")
+
+# remove the version number from the ensembl IDs
+ctwas_res$ensembl <- NA
+ctwas_res$ensembl[ctwas_res$type=="gene"] <-  sapply(ctwas_res$id[ctwas_res$type=="gene"], function(x){unlist(strsplit(x, "[.]"))[1]})
+
+#update the gene positions to TSS
+ctwas_res$pos[ctwas_res$type=="gene"] <- G_list$tss[match(ctwas_res$ensembl[ctwas_res$type=="gene"], G_list$ensembl_gene_id)]
+
+ctwas_susie_res <- ctwas_res
+```
+
+### Summary
+```{r}
+df <- ctwas_none_filtering_gene_res[, c("id", "type", "genename")]
+df$pip_none_filtering <- ctwas_none_filtering_gene_res$susie_pip
+df$pip_dentist_filtering <- ctwas_dentist_gene_res$susie_pip[match(df$id, ctwas_dentist_gene_res$id)]
+df$pip_susie_filtering <- ctwas_susie_gene_res$susie_pip[match(df$id, ctwas_susie_gene_res$id)]
+
+ggplot(data = df, aes(x = pip_none_filtering, y = pip_dentist_filtering)) +
+  geom_point() + 
+  geom_abline(intercept = 0, slope = 1, col = "red") +
+  labs(x = "gene PIP without filtering", y = "gene PIP with DENTIST filtering") + 
+  theme_bw()
+
+ggplot(data = df, aes(x = pip_none_filtering, y = pip_susie_filtering)) +
+  geom_point() + 
+  geom_abline(intercept = 0, slope = 1, col = "red") +
+  labs(x = "gene PIP without filtering", y = "gene PIP with SuSiE filtering") + 
+  theme_bw()
+
+ggplot(data = df, aes(x = pip_dentist_filtering, y = pip_susie_filtering)) +
+  geom_point() + 
+  geom_abline(intercept = 0, slope = 1, col = "red") +
+  labs(x = "gene PIP with DENTIST filtering", y = "gene PIP with SuSiE filtering") + 
+  theme_bw()
+
+```
+
+## aFib
+
+```{r}
+trait <- "aFib"
+tissue <- "Heart_Atrial_Appendage"
+gwas_name <- "aFib-ebi-a-GCST006414"
+gwas_n <- 1030836
+thin <- 0.1
+max_snp_region <- 20000
+
+tissue <- R.utils::capitalize(tissue)
+ld_R_dir <- "/project2/mstephens/wcrouse/UKB_LDR_0.1/"
+```
+
+Weight
+```{r}
+weight_name <- paste0("mashr_", tissue, "_nolnc")
+weight <- paste0("/project2/xinhe/shared_data/multigroup_ctwas/weights/predictdb_nolnc/", weight_name, ".db")
+cat("weight: \n")
+print(weight)
+
+# Preharmonize prediction models and LD reference
+strand_ambig_action <- "drop"
+outputdir <- paste0("/project2/xinhe/kevinluo/cTWAS/multigroup/cTWAS_filter_ld_mismatch/", trait, "/")
+weight <- file.path(outputdir, paste0(weight_name, "_harmonized_weights_", strand_ambig_action, ".db"))
+cat("harmonized weight: \n")
+print(weight)
+```
+
+### Without filtering
+```{r}
+outputdir <- paste0("/project2/xinhe/kevinluo/cTWAS/multigroup/cTWAS_filter_ld_mismatch/", trait, "/")
+filter_method <- "none"
+outname <- paste0(trait, ".", tissue, ".", filter_method, "_filter")
+
+ctwas_none_filtering_parameters <- ctwas_summarize_parameters(outputdir = outputdir,
+                                                              outname = outname,
+                                                              gwas_n = gwas_n,
+                                                              thin = thin)
+
+ctwas_none_filtering_parameters
+```
+```{r}
+# load cTWAS results
+ctwas_res <- data.table::fread(paste0(outputdir, outname, ".susieIrss.txt"), header=T)
+load(file.path(outputdir, paste0(outname, "_z_snp_harmonized_", strand_ambig_action, ".Rd")))
+load(file.path(outputdir, paste0(outname, "_z_gene.Rd")))
+
+# load gene information from PredictDB
+sqlite <- RSQLite::dbDriver("SQLite")
+db = RSQLite::dbConnect(sqlite, weight)
+query <- function(...) RSQLite::dbGetQuery(db, ...)
+gene_info <- query("select gene, genename, gene_type from extra")
+RSQLite::dbDisconnect(db)
+
+# add gene names to cTWAS results
+ctwas_res$genename[ctwas_res$type=="gene"] <- gene_info$genename[match(ctwas_res$id[ctwas_res$type=="gene"], gene_info$gene)]
+
+# add z-scores to cTWAS results
+ctwas_res$z[ctwas_res$type=="SNP"] <- z_snp$z[match(ctwas_res$id[ctwas_res$type=="SNP"], z_snp$id)]
+ctwas_res$z[ctwas_res$type=="gene"] <- z_gene$z[match(ctwas_res$id[ctwas_res$type=="gene"], z_gene$id)]
+
+# display the genes with PIP > 0.8
+ctwas_res <- ctwas_res[order(-ctwas_res$susie_pip),]
+ctwas_none_filtering_gene_res <- ctwas_res[ctwas_res$type=="gene",]
+ctwas_none_filtering_highpip_gene_res <- ctwas_res[ctwas_res$type=="gene" & ctwas_res$susie_pip > 0.8,]
+
+cat(length(unique(ctwas_none_filtering_highpip_gene_res$genename)), "genes with PIP > 0.8. \n")
+
+# update the position for each gene to the TSS.
+load(file="/project2/xinhe/kevinluo/cTWAS/data/G_list_allchrs.RData")
+
+# remove the version number from the ensembl IDs
+ctwas_res$ensembl <- NA
+ctwas_res$ensembl[ctwas_res$type=="gene"] <-  sapply(ctwas_res$id[ctwas_res$type=="gene"], function(x){unlist(strsplit(x, "[.]"))[1]})
+
+#update the gene positions to TSS
+ctwas_res$pos[ctwas_res$type=="gene"] <- G_list$tss[match(ctwas_res$ensembl[ctwas_res$type=="gene"], G_list$ensembl_gene_id)]
+
+ctwas_none_filtering_res <- ctwas_res
+
+```
+
+### DENTIST filtering
+
+```{r}
+outputdir <- paste0("/project2/xinhe/kevinluo/cTWAS/multigroup/cTWAS_filter_ld_mismatch/", trait, "/")
+filter_method <- "DENTIST"
+outname <- paste0(trait, ".", tissue, ".", filter_method, "_filter")
+
+ctwas_dentist_parameters <- ctwas_summarize_parameters(outputdir = outputdir,
+                                                       outname = outname,
+                                                       gwas_n = gwas_n,
+                                                       thin = thin)
+
+ctwas_dentist_parameters
+```
+
+```{r}
+# load cTWAS results
+ctwas_res <- data.table::fread(paste0(outputdir, outname, ".susieIrss.txt"), header=T)
+load(file.path(outputdir, paste0(outname, "_z_snp_harmonized_", strand_ambig_action, ".Rd")))
+load(file.path(outputdir, paste0(outname, "_z_gene.Rd")))
+
+# load gene information from PredictDB
+sqlite <- RSQLite::dbDriver("SQLite")
+db = RSQLite::dbConnect(sqlite, weight)
+query <- function(...) RSQLite::dbGetQuery(db, ...)
+gene_info <- query("select gene, genename, gene_type from extra")
+RSQLite::dbDisconnect(db)
+
+# add gene names to cTWAS results
+ctwas_res$genename[ctwas_res$type=="gene"] <- gene_info$genename[match(ctwas_res$id[ctwas_res$type=="gene"], gene_info$gene)]
+
+# add z-scores to cTWAS results
+ctwas_res$z[ctwas_res$type=="SNP"] <- z_snp$z[match(ctwas_res$id[ctwas_res$type=="SNP"], z_snp$id)]
+ctwas_res$z[ctwas_res$type=="gene"] <- z_gene$z[match(ctwas_res$id[ctwas_res$type=="gene"], z_gene$id)]
+
+# display the genes with PIP > 0.8
+ctwas_res <- ctwas_res[order(-ctwas_res$susie_pip),]
+ctwas_dentist_gene_res <- ctwas_res[ctwas_res$type=="gene",]
+ctwas_dentist_highpip_gene_res <- ctwas_res[ctwas_res$type=="gene" & ctwas_res$susie_pip > 0.8,]
+
+cat(length(unique(ctwas_dentist_highpip_gene_res$genename)), "genes with PIP > 0.8. \n")
+
+# update the position for each gene to the TSS.
+load(file="/project2/xinhe/kevinluo/cTWAS/data/G_list_allchrs.RData")
+
+# remove the version number from the ensembl IDs
+ctwas_res$ensembl <- NA
+ctwas_res$ensembl[ctwas_res$type=="gene"] <-  sapply(ctwas_res$id[ctwas_res$type=="gene"], function(x){unlist(strsplit(x, "[.]"))[1]})
+
+#update the gene positions to TSS
+ctwas_res$pos[ctwas_res$type=="gene"] <- G_list$tss[match(ctwas_res$ensembl[ctwas_res$type=="gene"], G_list$ensembl_gene_id)]
+
+ctwas_dentist_res <- ctwas_res
+```
+
+### SuSiE filtering
+```{r}
+outputdir <- paste0("/project2/xinhe/kevinluo/cTWAS/multigroup/cTWAS_filter_ld_mismatch/", trait, "/")
+filter_method <- "SuSiE"
+outname <- paste0(trait, ".", tissue, ".", filter_method, "_filter")
+
+ctwas_susie_parameters <- ctwas_summarize_parameters(outputdir = outputdir,
+                                                     outname = outname,
+                                                     gwas_n = gwas_n,
+                                                     thin = thin)
+
+ctwas_susie_parameters
+```
+
+```{r}
+# load cTWAS results
+ctwas_res <- data.table::fread(paste0(outputdir, outname, ".susieIrss.txt"), header=T)
+load(file.path(outputdir, paste0(outname, "_z_snp_harmonized_", strand_ambig_action, ".Rd")))
+load(file.path(outputdir, paste0(outname, "_z_gene.Rd")))
+
+# load gene information from PredictDB
+sqlite <- RSQLite::dbDriver("SQLite")
+db = RSQLite::dbConnect(sqlite, weight)
+query <- function(...) RSQLite::dbGetQuery(db, ...)
+gene_info <- query("select gene, genename, gene_type from extra")
+RSQLite::dbDisconnect(db)
+
+# add gene names to cTWAS results
+ctwas_res$genename[ctwas_res$type=="gene"] <- gene_info$genename[match(ctwas_res$id[ctwas_res$type=="gene"], gene_info$gene)]
+
+# add z-scores to cTWAS results
+ctwas_res$z[ctwas_res$type=="SNP"] <- z_snp$z[match(ctwas_res$id[ctwas_res$type=="SNP"], z_snp$id)]
+ctwas_res$z[ctwas_res$type=="gene"] <- z_gene$z[match(ctwas_res$id[ctwas_res$type=="gene"], z_gene$id)]
+
+# display the genes with PIP > 0.8
+ctwas_res <- ctwas_res[order(-ctwas_res$susie_pip),]
+ctwas_susie_gene_res <- ctwas_res[ctwas_res$type=="gene",]
+ctwas_susie_highpip_gene_res <- ctwas_res[ctwas_res$type=="gene" & ctwas_res$susie_pip > 0.8,]
+
+cat(length(unique(ctwas_susie_highpip_gene_res$genename)), "genes with PIP > 0.8. \n")
+
+# update the position for each gene to the TSS.
+load(file="/project2/xinhe/kevinluo/cTWAS/data/G_list_allchrs.RData")
+
+# remove the version number from the ensembl IDs
+ctwas_res$ensembl <- NA
+ctwas_res$ensembl[ctwas_res$type=="gene"] <-  sapply(ctwas_res$id[ctwas_res$type=="gene"], function(x){unlist(strsplit(x, "[.]"))[1]})
+
+#update the gene positions to TSS
+ctwas_res$pos[ctwas_res$type=="gene"] <- G_list$tss[match(ctwas_res$ensembl[ctwas_res$type=="gene"], G_list$ensembl_gene_id)]
+
+ctwas_susie_res <- ctwas_res
+```
+
+### Summary
+```{r}
+df <- ctwas_none_filtering_gene_res[, c("id", "type", "genename")]
+df$pip_none_filtering <- ctwas_none_filtering_gene_res$susie_pip
+df$pip_dentist_filtering <- ctwas_dentist_gene_res$susie_pip[match(df$id, ctwas_dentist_gene_res$id)]
+df$pip_susie_filtering <- ctwas_susie_gene_res$susie_pip[match(df$id, ctwas_susie_gene_res$id)]
+
+ggplot(data = df, aes(x = pip_none_filtering, y = pip_dentist_filtering)) +
+  geom_point() + 
+  geom_abline(intercept = 0, slope = 1, col = "red") +
+  labs(x = "gene PIP without filtering", y = "gene PIP with DENTIST filtering") + 
+  theme_bw()
+
+ggplot(data = df, aes(x = pip_none_filtering, y = pip_susie_filtering)) +
+  geom_point() + 
+  geom_abline(intercept = 0, slope = 1, col = "red") +
+  labs(x = "gene PIP without filtering", y = "gene PIP with SuSiE filtering") + 
+  theme_bw()
+
+ggplot(data = df, aes(x = pip_dentist_filtering, y = pip_susie_filtering)) +
+  geom_point() + 
+  geom_abline(intercept = 0, slope = 1, col = "red") +
+  labs(x = "gene PIP with DENTIST filtering", y = "gene PIP with SuSiE filtering") + 
+  theme_bw()
+
+```
+
+## Example locus plots
+
+```{r}
+df <- ctwas_none_filtering_gene_res[, c("id", "type", "genename")]
+df$pip_none_filtering <- ctwas_none_filtering_gene_res$susie_pip
+df$pip_dentist_filtering <- ctwas_dentist_gene_res$susie_pip[match(df$id, ctwas_dentist_gene_res$id)]
+df$pip_susie_filtering <- ctwas_susie_gene_res$susie_pip[match(df$id, ctwas_susie_gene_res$id)]
+
+# df[order(df$pip_none_filtering- df$pip_dentist_filtering)[1:5],]
+# 
+# df[order(df$pip_none_filtering- df$pip_susie_filtering)[1:5],]
+# 
+# df[order(df$pip_dentist_filtering - df$pip_none_filtering)[1:5],]
+# 
+# df[order(df$pip_susie_filtering - df$pip_none_filtering)[1:5],]
+
+```
+
+### CAV2 locus
+
+CAV2 gene PIP increased significantly after DENTIST filtering.
+
+```{r}
+print(df[df$genename == "CAV2",])
+```
+
+without filtering 
+```{r}
+# genome-wide bonferroni threshold used for TWAS
+twas_sig_thresh <- 0.05/sum(ctwas_none_filtering_res$type=="gene")
+
+# show cTWAS result for CAV2 and store region_tag
+print(ctwas_none_filtering_res[which(ctwas_none_filtering_res$genename=="CAV2"),])
+region_tag <- "7_70"
+
+# make locus plot
+ctwas_locus_plot(ctwas_res = ctwas_none_filtering_res,
+                 region_tag = region_tag,
+                 xlim = c(115,117),
+                 twas_sig_thresh = twas_sig_thresh,
+                 alt_names = "genename", #the column that specify gene names
+                 legend_panel = "TWAS", #the panel to plot legend
+                 legend_side="left", #the position of the panel
+                 outputdir = outputdir,
+                 outname = outname)
+```
+
+DENTIST result
+
+```{r}
+# genome-wide bonferroni threshold used for TWAS
+twas_sig_thresh <- 0.05/sum(ctwas_dentist_res$type=="gene")
+
+# show cTWAS result for CAV2 and store region_tag
+print(ctwas_dentist_res[which(ctwas_dentist_res$genename=="CAV2"),])
+region_tag <- "7_70"
+
+# make locus plot
+ctwas_locus_plot(ctwas_res = ctwas_dentist_res,
+                 region_tag = region_tag,
+                 xlim = c(115,117),
+                 twas_sig_thresh = twas_sig_thresh,
+                 alt_names = "genename", #the column that specify gene names
+                 legend_panel = "TWAS", #the panel to plot legend
+                 legend_side="left", #the position of the panel
+                 outputdir = outputdir,
+                 outname = outname)
+```
+
+### AGAP5 locus
+
+AGAP5 gene PIP increased significantly after SuSiE filtering.
+
+```{r}
+print(df[df$genename == "AGAP5",])
+```
+
+without filtering 
+```{r}
+# genome-wide bonferroni threshold used for TWAS
+twas_sig_thresh <- 0.05/sum(ctwas_none_filtering_res$type=="gene")
+
+# show cTWAS result for CAV2 and store region_tag
+print(ctwas_none_filtering_res[which(ctwas_none_filtering_res$genename=="AGAP5"),])
+region_tag <- "10_49"
+
+# make locus plot
+ctwas_locus_plot(ctwas_res = ctwas_none_filtering_res,
+                 region_tag = region_tag,
+                 xlim = c(73,74.5),
+                 twas_sig_thresh = twas_sig_thresh,
+                 alt_names = "genename", #the column that specify gene names
+                 legend_panel = "TWAS", #the panel to plot legend
+                 legend_side="left", #the position of the panel
+                 outputdir = outputdir,
+                 outname = outname)
+```
+
+SuSiE result
+```{r}
+# genome-wide bonferroni threshold used for TWAS
+twas_sig_thresh <- 0.05/sum(ctwas_susie_res$type=="gene")
+
+# show cTWAS result for KDM3B and store region_tag
+print(ctwas_susie_res[which(ctwas_susie_res$genename=="AGAP5"),])
+region_tag <- "10_49"
+
+# make locus plot
+ctwas_locus_plot(ctwas_res = ctwas_susie_res,
+                 region_tag = region_tag,
+                 xlim = c(73,74.5),
+                 twas_sig_thresh = twas_sig_thresh,
+                 alt_names = "genename", #the column that specify gene names
+                 legend_panel = "TWAS", #the panel to plot legend
+                 legend_side="left", #the position of the panel
+                 outputdir = outputdir,
+                 outname = outname)
+```
+
+### C9orf3 locus
+
+C9orf3 gene PIP decreased significantly after DENTIST filtering.
+
+```{r}
+print(df[df$genename == "C9orf3",])
+```
+
+without filtering 
+```{r}
+# genome-wide bonferroni threshold used for TWAS
+twas_sig_thresh <- 0.05/sum(ctwas_none_filtering_res$type=="gene")
+
+# show cTWAS result for CAV2 and store region_tag
+print(ctwas_none_filtering_res[which(ctwas_none_filtering_res$genename=="C9orf3"),])
+region_tag <- "9_48"
+
+# make locus plot
+ctwas_locus_plot(ctwas_res = ctwas_none_filtering_res,
+                 region_tag = region_tag,
+                 twas_sig_thresh = twas_sig_thresh,
+                 alt_names = "genename", #the column that specify gene names
+                 legend_panel = "TWAS", #the panel to plot legend
+                 legend_side="left", #the position of the panel
+                 outputdir = outputdir,
+                 outname = outname)
+```
+
+SuSiE result
+```{r}
+# genome-wide bonferroni threshold used for TWAS
+twas_sig_thresh <- 0.05/sum(ctwas_susie_res$type=="gene")
+
+# show cTWAS result for KDM3B and store region_tag
+print(ctwas_susie_res[which(ctwas_susie_res$genename=="C9orf3"),])
+region_tag <- "9_48"
+
+# make locus plot
+ctwas_locus_plot(ctwas_res = ctwas_susie_res,
+                 region_tag = region_tag,
+                 twas_sig_thresh = twas_sig_thresh,
+                 alt_names = "genename", #the column that specify gene names
+                 legend_panel = "TWAS", #the panel to plot legend
+                 legend_side="left", #the position of the panel
+                 outputdir = outputdir,
+                 outname = outname)
+```
