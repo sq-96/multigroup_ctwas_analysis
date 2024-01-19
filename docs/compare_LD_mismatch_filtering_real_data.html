@@ -1,0 +1,1513 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Kaixuan Luo" />
+
+<meta name="date" content="2024-01-19" />
+
+<title>Compare LD mismatch filterng on real data</title>
+
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">multigroup_ctwas_analysis</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/sq-96/multigroup_ctwas_analysis">
+    <span class="fab fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Compare LD mismatch filterng on real data</h1>
+<h4 class="author">Kaixuan Luo</h4>
+<h4 class="date">2024-01-19</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span> workflowr <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2024-01-19
+</p>
+<p>
+<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 7 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 0
+</p>
+<p>
+<strong>Knit directory:</strong> <code>multigroup_ctwas_analysis/</code> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="This is the local directory in which the code in this file was executed."> </span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a> analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version 1.7.0). The <em>Checks</em> tab describes the reproducibility checks that were applied when the results were created. The <em>Past versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguptodate" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great! Since the R Markdown file has been committed to the Git repository, you know the exact version of the code that produced these results.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the global environment can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it’s best to always run the code in an empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20231112code"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Seed:</strong> <code>set.seed(20231112)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20231112code" class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20231112)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Session information:</strong> recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be confident that you successfully produced the results during this run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree1f9e3802e17575be27fd8a67c800e69ab88f3427targetblank1f9e380a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/1f9e3802e17575be27fd8a67c800e69ab88f3427" target="_blank">1f9e380</a> </a>
+</p>
+</div>
+<div id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree1f9e3802e17575be27fd8a67c800e69ab88f3427targetblank1f9e380a" class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version <a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/1f9e3802e17575be27fd8a67c800e69ab88f3427" target="_blank">1f9e380</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .Rhistory
+    Ignored:    .Rproj.user/
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+
+<p>
+These are the previous versions of the repository in which changes were made to the R Markdown (<code>analysis/compare_LD_mismatch_filtering_real_data.Rmd</code>) and HTML (<code>docs/compare_LD_mismatch_filtering_real_data.html</code>) files. If you’ve configured a remote Git repository (see <code>?wflow_git_remote</code>), click on the hyperlinks in the table below to view the files as they were in that past version.
+</p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/1f9e3802e17575be27fd8a67c800e69ab88f3427/analysis/compare_LD_mismatch_filtering_real_data.Rmd" target="_blank">1f9e380</a>
+</td>
+<td>
+kevinlkx
+</td>
+<td>
+2024-01-19
+</td>
+<td>
+wflow_publish(“compare_LD_mismatch_filtering_real_data.Rmd”)
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<div id="load-packages-and-functions" class="section level2">
+<h2>Load packages and functions</h2>
+<pre class="r"><code>library(ctwas)
+library(ggplot2)</code></pre>
+<pre class="r"><code># This section requires internet connections
+library(biomaRt)
+
+# download all entries for ensembl on all chromosomes
+ensembl &lt;- useEnsembl(biomart=&quot;ENSEMBL_MART_ENSEMBL&quot;, dataset=&quot;hsapiens_gene_ensembl&quot;)
+
+G_list &lt;- getBM(filters= &quot;chromosome_name&quot;, attributes= c(&quot;hgnc_symbol&quot;,&quot;chromosome_name&quot;,&quot;start_position&quot;,&quot;end_position&quot;,&quot;gene_biotype&quot;, &quot;ensembl_gene_id&quot;, &quot;strand&quot;), values=1:22, mart=ensembl)
+
+table(G_list$chromosome_name)
+
+# subset to protein coding genes and fix empty gene names
+G_list &lt;- G_list[G_list$gene_biotype %in% c(&quot;protein_coding&quot;),]
+G_list$hgnc_symbol[G_list$hgnc_symbol==&quot;&quot;] &lt;- &quot;-&quot;
+
+# set TSS based on start/end position and strand
+G_list$tss &lt;- G_list[,c(&quot;end_position&quot;, &quot;start_position&quot;)][cbind(1:nrow(G_list),G_list$strand/2+1.5)]
+
+save(G_list, file=&quot;/project2/xinhe/kevinluo/cTWAS/data/G_list_allchrs.RData&quot;)</code></pre>
+</div>
+<div id="ldl" class="section level2">
+<h2>LDL</h2>
+<pre class="r"><code>trait &lt;- &quot;LDL&quot;
+tissue &lt;- &quot;Liver&quot;
+gwas_name &lt;- &quot;LDL-ukb-d-30780_irnt&quot;
+gwas_n &lt;- 343621
+thin &lt;- 0.1
+max_snp_region &lt;- 20000
+
+tissue &lt;- R.utils::capitalize(tissue)
+ld_R_dir &lt;- &quot;/project2/mstephens/wcrouse/UKB_LDR_0.1/&quot;</code></pre>
+<p>Weight</p>
+<pre class="r"><code>weight_name &lt;- paste0(&quot;mashr_&quot;, tissue, &quot;_nolnc&quot;)
+weight &lt;- paste0(&quot;/project2/xinhe/shared_data/multigroup_ctwas/weights/predictdb_nolnc/&quot;, weight_name, &quot;.db&quot;)
+cat(&quot;weight: \n&quot;)
+print(weight)
+
+# Preharmonize prediction models and LD reference
+strand_ambig_action &lt;- &quot;drop&quot;
+outputdir &lt;- paste0(&quot;/project2/xinhe/kevinluo/cTWAS/multigroup/cTWAS_filter_ld_mismatch/&quot;, trait, &quot;/&quot;)
+weight &lt;- file.path(outputdir, paste0(weight_name, &quot;_harmonized_weights_&quot;, strand_ambig_action, &quot;.db&quot;))
+cat(&quot;harmonized weight: \n&quot;)
+print(weight)</code></pre>
+<pre><code># weight: 
+# [1] &quot;/project2/xinhe/shared_data/multigroup_ctwas/weights/predictdb_nolnc/mashr_Liver_nolnc.db&quot;
+# harmonized weight: 
+# [1] &quot;/project2/xinhe/kevinluo/cTWAS/multigroup/cTWAS_filter_ld_mismatch/LDL//mashr_Liver_nolnc_harmonized_weights_drop.db&quot;</code></pre>
+<div id="without-filtering" class="section level3">
+<h3>Without filtering</h3>
+<pre class="r"><code>outputdir &lt;- paste0(&quot;/project2/xinhe/kevinluo/cTWAS/multigroup/cTWAS_filter_ld_mismatch/&quot;, trait, &quot;/&quot;)
+filter_method &lt;- &quot;none&quot;
+outname &lt;- paste0(trait, &quot;.&quot;, tissue, &quot;.&quot;, filter_method, &quot;_filter&quot;)
+
+ctwas_none_filtering_parameters &lt;- ctwas_summarize_parameters(outputdir = outputdir,
+                                                              outname = outname,
+                                                              gwas_n = gwas_n,
+                                                              thin = thin)
+
+ctwas_none_filtering_parameters</code></pre>
+<p><img src="figure/compare_LD_mismatch_filtering_real_data.Rmd/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code># $group_size
+#     SNP    gene 
+# 7405450    8775 
+# 
+# $group_prior
+#          SNP         gene 
+# 0.0001764255 0.0140266909 
+# 
+# $group_prior_var
+#      SNP     gene 
+# 11.39814 29.85853 
+# 
+# $enrichment
+#     gene 
+# 79.50488 
+# 
+# $group_pve
+#        SNP       gene 
+# 0.04333785 0.01069525 
+# 
+# $total_pve
+# [1] 0.0540331
+# 
+# $attributable_pve
+#       SNP      gene 
+# 0.8020611 0.1979389 
+# 
+# $convergence_plot</code></pre>
+<pre class="r"><code># load cTWAS results
+ctwas_res &lt;- data.table::fread(paste0(outputdir, outname, &quot;.susieIrss.txt&quot;), header=T)
+load(file.path(outputdir, paste0(outname, &quot;_z_snp_harmonized_&quot;, strand_ambig_action, &quot;.Rd&quot;)))
+load(file.path(outputdir, paste0(outname, &quot;_z_gene.Rd&quot;)))
+
+# load gene information from PredictDB
+sqlite &lt;- RSQLite::dbDriver(&quot;SQLite&quot;)
+db = RSQLite::dbConnect(sqlite, weight)
+query &lt;- function(...) RSQLite::dbGetQuery(db, ...)
+gene_info &lt;- query(&quot;select gene, genename, gene_type from extra&quot;)
+RSQLite::dbDisconnect(db)
+
+# add gene names to cTWAS results
+ctwas_res$genename[ctwas_res$type==&quot;gene&quot;] &lt;- gene_info$genename[match(ctwas_res$id[ctwas_res$type==&quot;gene&quot;], gene_info$gene)]
+
+# add z-scores to cTWAS results
+ctwas_res$z[ctwas_res$type==&quot;SNP&quot;] &lt;- z_snp$z[match(ctwas_res$id[ctwas_res$type==&quot;SNP&quot;], z_snp$id)]
+ctwas_res$z[ctwas_res$type==&quot;gene&quot;] &lt;- z_gene$z[match(ctwas_res$id[ctwas_res$type==&quot;gene&quot;], z_gene$id)]
+
+# display the genes with PIP &gt; 0.8
+ctwas_res &lt;- ctwas_res[order(-ctwas_res$susie_pip),]
+ctwas_none_filtering_gene_res &lt;- ctwas_res[ctwas_res$type==&quot;gene&quot;,]
+ctwas_none_filtering_highpip_gene_res &lt;- ctwas_res[ctwas_res$type==&quot;gene&quot; &amp; ctwas_res$susie_pip &gt; 0.8,]
+
+cat(length(unique(ctwas_none_filtering_highpip_gene_res$genename)), &quot;genes with PIP &gt; 0.8. \n&quot;)
+
+# update the position for each gene to the TSS.
+load(file=&quot;/project2/xinhe/kevinluo/cTWAS/data/G_list_allchrs.RData&quot;)
+
+# remove the version number from the ensembl IDs
+ctwas_res$ensembl &lt;- NA
+ctwas_res$ensembl[ctwas_res$type==&quot;gene&quot;] &lt;-  sapply(ctwas_res$id[ctwas_res$type==&quot;gene&quot;], function(x){unlist(strsplit(x, &quot;[.]&quot;))[1]})
+
+#update the gene positions to TSS
+ctwas_res$pos[ctwas_res$type==&quot;gene&quot;] &lt;- G_list$tss[match(ctwas_res$ensembl[ctwas_res$type==&quot;gene&quot;], G_list$ensembl_gene_id)]
+
+ctwas_none_filtering_res &lt;- ctwas_res</code></pre>
+<pre><code># 45 genes with PIP &gt; 0.8.</code></pre>
+</div>
+<div id="dentist-filtering" class="section level3">
+<h3>DENTIST filtering</h3>
+<pre class="r"><code>outputdir &lt;- paste0(&quot;/project2/xinhe/kevinluo/cTWAS/multigroup/cTWAS_filter_ld_mismatch/&quot;, trait, &quot;/&quot;)
+filter_method &lt;- &quot;DENTIST&quot;
+outname &lt;- paste0(trait, &quot;.&quot;, tissue, &quot;.&quot;, filter_method, &quot;_filter&quot;)
+
+ctwas_dentist_parameters &lt;- ctwas_summarize_parameters(outputdir = outputdir,
+                                                       outname = outname,
+                                                       gwas_n = gwas_n,
+                                                       thin = thin)
+
+ctwas_dentist_parameters</code></pre>
+<p><img src="figure/compare_LD_mismatch_filtering_real_data.Rmd/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code># $group_size
+#     SNP    gene 
+# 7405290    8774 
+# 
+# $group_prior
+#         SNP        gene 
+# 0.000176426 0.014026648 
+# 
+# $group_prior_var
+#      SNP     gene 
+# 11.39815 29.85859 
+# 
+# $enrichment
+#     gene 
+# 79.50441 
+# 
+# $group_pve
+#        SNP       gene 
+# 0.04333707 0.01069402 
+# 
+# $total_pve
+# [1] 0.0540311
+# 
+# $attributable_pve
+#       SNP      gene 
+# 0.8020765 0.1979235 
+# 
+# $convergence_plot</code></pre>
+<pre class="r"><code># load cTWAS results
+ctwas_res &lt;- data.table::fread(paste0(outputdir, outname, &quot;.susieIrss.txt&quot;), header=T)
+load(file.path(outputdir, paste0(outname, &quot;_z_snp_harmonized_&quot;, strand_ambig_action, &quot;.Rd&quot;)))
+load(file.path(outputdir, paste0(outname, &quot;_z_gene.Rd&quot;)))
+
+# load gene information from PredictDB
+sqlite &lt;- RSQLite::dbDriver(&quot;SQLite&quot;)
+db = RSQLite::dbConnect(sqlite, weight)
+query &lt;- function(...) RSQLite::dbGetQuery(db, ...)
+gene_info &lt;- query(&quot;select gene, genename, gene_type from extra&quot;)
+RSQLite::dbDisconnect(db)
+
+# add gene names to cTWAS results
+ctwas_res$genename[ctwas_res$type==&quot;gene&quot;] &lt;- gene_info$genename[match(ctwas_res$id[ctwas_res$type==&quot;gene&quot;], gene_info$gene)]
+
+# add z-scores to cTWAS results
+ctwas_res$z[ctwas_res$type==&quot;SNP&quot;] &lt;- z_snp$z[match(ctwas_res$id[ctwas_res$type==&quot;SNP&quot;], z_snp$id)]
+ctwas_res$z[ctwas_res$type==&quot;gene&quot;] &lt;- z_gene$z[match(ctwas_res$id[ctwas_res$type==&quot;gene&quot;], z_gene$id)]
+
+# display the genes with PIP &gt; 0.8
+ctwas_res &lt;- ctwas_res[order(-ctwas_res$susie_pip),]
+ctwas_dentist_gene_res &lt;- ctwas_res[ctwas_res$type==&quot;gene&quot;,]
+ctwas_dentist_highpip_gene_res &lt;- ctwas_res[ctwas_res$type==&quot;gene&quot; &amp; ctwas_res$susie_pip &gt; 0.8,]
+
+cat(length(unique(ctwas_dentist_highpip_gene_res$genename)), &quot;genes with PIP &gt; 0.8. \n&quot;)
+
+# update the position for each gene to the TSS.
+load(file=&quot;/project2/xinhe/kevinluo/cTWAS/data/G_list_allchrs.RData&quot;)
+
+# remove the version number from the ensembl IDs
+ctwas_res$ensembl &lt;- NA
+ctwas_res$ensembl[ctwas_res$type==&quot;gene&quot;] &lt;-  sapply(ctwas_res$id[ctwas_res$type==&quot;gene&quot;], function(x){unlist(strsplit(x, &quot;[.]&quot;))[1]})
+
+#update the gene positions to TSS
+ctwas_res$pos[ctwas_res$type==&quot;gene&quot;] &lt;- G_list$tss[match(ctwas_res$ensembl[ctwas_res$type==&quot;gene&quot;], G_list$ensembl_gene_id)]
+
+ctwas_dentist_res &lt;- ctwas_res</code></pre>
+<pre><code># 45 genes with PIP &gt; 0.8.</code></pre>
+</div>
+<div id="susie-filtering" class="section level3">
+<h3>SuSiE filtering</h3>
+<pre class="r"><code>outputdir &lt;- paste0(&quot;/project2/xinhe/kevinluo/cTWAS/multigroup/cTWAS_filter_ld_mismatch/&quot;, trait, &quot;/&quot;)
+filter_method &lt;- &quot;SuSiE&quot;
+outname &lt;- paste0(trait, &quot;.&quot;, tissue, &quot;.&quot;, filter_method, &quot;_filter&quot;)
+
+ctwas_susie_parameters &lt;- ctwas_summarize_parameters(outputdir = outputdir,
+                                                     outname = outname,
+                                                     gwas_n = gwas_n,
+                                                     thin = thin)
+
+ctwas_susie_parameters</code></pre>
+<p><img src="figure/compare_LD_mismatch_filtering_real_data.Rmd/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code># $group_size
+#     SNP    gene 
+# 7401640    8770 
+# 
+# $group_prior
+#          SNP         gene 
+# 0.0001762665 0.0141830628 
+# 
+# $group_prior_var
+#      SNP     gene 
+# 11.37163 29.69081 
+# 
+# $enrichment
+#     gene 
+# 80.46372 
+# 
+# $group_pve
+#        SNP       gene 
+# 0.04317585 0.01074761 
+# 
+# $total_pve
+# [1] 0.05392346
+# 
+# $attributable_pve
+#       SNP      gene 
+# 0.8006877 0.1993123 
+# 
+# $convergence_plot</code></pre>
+<pre class="r"><code># load cTWAS results
+ctwas_res &lt;- data.table::fread(paste0(outputdir, outname, &quot;.susieIrss.txt&quot;), header=T)
+load(file.path(outputdir, paste0(outname, &quot;_z_snp_harmonized_&quot;, strand_ambig_action, &quot;.Rd&quot;)))
+load(file.path(outputdir, paste0(outname, &quot;_z_gene.Rd&quot;)))
+
+# load gene information from PredictDB
+sqlite &lt;- RSQLite::dbDriver(&quot;SQLite&quot;)
+db = RSQLite::dbConnect(sqlite, weight)
+query &lt;- function(...) RSQLite::dbGetQuery(db, ...)
+gene_info &lt;- query(&quot;select gene, genename, gene_type from extra&quot;)
+RSQLite::dbDisconnect(db)
+
+# add gene names to cTWAS results
+ctwas_res$genename[ctwas_res$type==&quot;gene&quot;] &lt;- gene_info$genename[match(ctwas_res$id[ctwas_res$type==&quot;gene&quot;], gene_info$gene)]
+
+# add z-scores to cTWAS results
+ctwas_res$z[ctwas_res$type==&quot;SNP&quot;] &lt;- z_snp$z[match(ctwas_res$id[ctwas_res$type==&quot;SNP&quot;], z_snp$id)]
+ctwas_res$z[ctwas_res$type==&quot;gene&quot;] &lt;- z_gene$z[match(ctwas_res$id[ctwas_res$type==&quot;gene&quot;], z_gene$id)]
+
+# display the genes with PIP &gt; 0.8
+ctwas_res &lt;- ctwas_res[order(-ctwas_res$susie_pip),]
+ctwas_susie_gene_res &lt;- ctwas_res[ctwas_res$type==&quot;gene&quot;,]
+ctwas_susie_highpip_gene_res &lt;- ctwas_res[ctwas_res$type==&quot;gene&quot; &amp; ctwas_res$susie_pip &gt; 0.8,]
+
+cat(length(unique(ctwas_susie_highpip_gene_res$genename)), &quot;genes with PIP &gt; 0.8. \n&quot;)
+
+# update the position for each gene to the TSS.
+load(file=&quot;/project2/xinhe/kevinluo/cTWAS/data/G_list_allchrs.RData&quot;)
+
+# remove the version number from the ensembl IDs
+ctwas_res$ensembl &lt;- NA
+ctwas_res$ensembl[ctwas_res$type==&quot;gene&quot;] &lt;-  sapply(ctwas_res$id[ctwas_res$type==&quot;gene&quot;], function(x){unlist(strsplit(x, &quot;[.]&quot;))[1]})
+
+#update the gene positions to TSS
+ctwas_res$pos[ctwas_res$type==&quot;gene&quot;] &lt;- G_list$tss[match(ctwas_res$ensembl[ctwas_res$type==&quot;gene&quot;], G_list$ensembl_gene_id)]
+
+ctwas_susie_res &lt;- ctwas_res</code></pre>
+<pre><code># 45 genes with PIP &gt; 0.8.</code></pre>
+</div>
+<div id="summary" class="section level3">
+<h3>Summary</h3>
+<pre class="r"><code>df &lt;- ctwas_none_filtering_gene_res[, c(&quot;id&quot;, &quot;type&quot;, &quot;genename&quot;)]
+df$pip_none_filtering &lt;- ctwas_none_filtering_gene_res$susie_pip
+df$pip_dentist_filtering &lt;- ctwas_dentist_gene_res$susie_pip[match(df$id, ctwas_dentist_gene_res$id)]
+df$pip_susie_filtering &lt;- ctwas_susie_gene_res$susie_pip[match(df$id, ctwas_susie_gene_res$id)]
+
+ggplot(data = df, aes(x = pip_none_filtering, y = pip_dentist_filtering)) +
+  geom_point() + 
+  geom_abline(intercept = 0, slope = 1, col = &quot;red&quot;) +
+  labs(x = &quot;gene PIP without filtering&quot;, y = &quot;gene PIP with DENTIST filtering&quot;) + 
+  theme_bw()</code></pre>
+<pre><code># Warning: Removed 1 rows containing missing values (`geom_point()`).</code></pre>
+<p><img src="figure/compare_LD_mismatch_filtering_real_data.Rmd/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggplot(data = df, aes(x = pip_none_filtering, y = pip_susie_filtering)) +
+  geom_point() + 
+  geom_abline(intercept = 0, slope = 1, col = &quot;red&quot;) +
+  labs(x = &quot;gene PIP without filtering&quot;, y = &quot;gene PIP with SuSiE filtering&quot;) + 
+  theme_bw()</code></pre>
+<pre><code># Warning: Removed 5 rows containing missing values (`geom_point()`).</code></pre>
+<p><img src="figure/compare_LD_mismatch_filtering_real_data.Rmd/unnamed-chunk-10-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggplot(data = df, aes(x = pip_dentist_filtering, y = pip_susie_filtering)) +
+  geom_point() + 
+  geom_abline(intercept = 0, slope = 1, col = &quot;red&quot;) +
+  labs(x = &quot;gene PIP with DENTIST filtering&quot;, y = &quot;gene PIP with SuSiE filtering&quot;) + 
+  theme_bw()</code></pre>
+<pre><code># Warning: Removed 6 rows containing missing values (`geom_point()`).</code></pre>
+<p><img src="figure/compare_LD_mismatch_filtering_real_data.Rmd/unnamed-chunk-10-3.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="afib" class="section level2">
+<h2>aFib</h2>
+<pre class="r"><code>trait &lt;- &quot;aFib&quot;
+tissue &lt;- &quot;Heart_Atrial_Appendage&quot;
+gwas_name &lt;- &quot;aFib-ebi-a-GCST006414&quot;
+gwas_n &lt;- 1030836
+thin &lt;- 0.1
+max_snp_region &lt;- 20000
+
+tissue &lt;- R.utils::capitalize(tissue)
+ld_R_dir &lt;- &quot;/project2/mstephens/wcrouse/UKB_LDR_0.1/&quot;</code></pre>
+<p>Weight</p>
+<pre class="r"><code>weight_name &lt;- paste0(&quot;mashr_&quot;, tissue, &quot;_nolnc&quot;)
+weight &lt;- paste0(&quot;/project2/xinhe/shared_data/multigroup_ctwas/weights/predictdb_nolnc/&quot;, weight_name, &quot;.db&quot;)
+cat(&quot;weight: \n&quot;)
+print(weight)
+
+# Preharmonize prediction models and LD reference
+strand_ambig_action &lt;- &quot;drop&quot;
+outputdir &lt;- paste0(&quot;/project2/xinhe/kevinluo/cTWAS/multigroup/cTWAS_filter_ld_mismatch/&quot;, trait, &quot;/&quot;)
+weight &lt;- file.path(outputdir, paste0(weight_name, &quot;_harmonized_weights_&quot;, strand_ambig_action, &quot;.db&quot;))
+cat(&quot;harmonized weight: \n&quot;)
+print(weight)</code></pre>
+<pre><code># weight: 
+# [1] &quot;/project2/xinhe/shared_data/multigroup_ctwas/weights/predictdb_nolnc/mashr_Heart_Atrial_Appendage_nolnc.db&quot;
+# harmonized weight: 
+# [1] &quot;/project2/xinhe/kevinluo/cTWAS/multigroup/cTWAS_filter_ld_mismatch/aFib//mashr_Heart_Atrial_Appendage_nolnc_harmonized_weights_drop.db&quot;</code></pre>
+<div id="without-filtering-1" class="section level3">
+<h3>Without filtering</h3>
+<pre class="r"><code>outputdir &lt;- paste0(&quot;/project2/xinhe/kevinluo/cTWAS/multigroup/cTWAS_filter_ld_mismatch/&quot;, trait, &quot;/&quot;)
+filter_method &lt;- &quot;none&quot;
+outname &lt;- paste0(trait, &quot;.&quot;, tissue, &quot;.&quot;, filter_method, &quot;_filter&quot;)
+
+ctwas_none_filtering_parameters &lt;- ctwas_summarize_parameters(outputdir = outputdir,
+                                                              outname = outname,
+                                                              gwas_n = gwas_n,
+                                                              thin = thin)
+
+ctwas_none_filtering_parameters</code></pre>
+<p><img src="figure/compare_LD_mismatch_filtering_real_data.Rmd/unnamed-chunk-13-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code># $group_size
+#     SNP    gene 
+# 7055050    9894 
+# 
+# $group_prior
+#          SNP         gene 
+# 0.0001818829 0.0238113548 
+# 
+# $group_prior_var
+#       SNP      gene 
+#  8.613486 10.430038 
+# 
+# $enrichment
+#     gene 
+# 130.9159 
+# 
+# $group_pve
+#         SNP        gene 
+# 0.010722136 0.002383704 
+# 
+# $total_pve
+# [1] 0.01310584
+# 
+# $attributable_pve
+#      SNP     gene 
+# 0.818119 0.181881 
+# 
+# $convergence_plot</code></pre>
+<pre class="r"><code># load cTWAS results
+ctwas_res &lt;- data.table::fread(paste0(outputdir, outname, &quot;.susieIrss.txt&quot;), header=T)
+load(file.path(outputdir, paste0(outname, &quot;_z_snp_harmonized_&quot;, strand_ambig_action, &quot;.Rd&quot;)))
+load(file.path(outputdir, paste0(outname, &quot;_z_gene.Rd&quot;)))
+
+# load gene information from PredictDB
+sqlite &lt;- RSQLite::dbDriver(&quot;SQLite&quot;)
+db = RSQLite::dbConnect(sqlite, weight)
+query &lt;- function(...) RSQLite::dbGetQuery(db, ...)
+gene_info &lt;- query(&quot;select gene, genename, gene_type from extra&quot;)
+RSQLite::dbDisconnect(db)
+
+# add gene names to cTWAS results
+ctwas_res$genename[ctwas_res$type==&quot;gene&quot;] &lt;- gene_info$genename[match(ctwas_res$id[ctwas_res$type==&quot;gene&quot;], gene_info$gene)]
+
+# add z-scores to cTWAS results
+ctwas_res$z[ctwas_res$type==&quot;SNP&quot;] &lt;- z_snp$z[match(ctwas_res$id[ctwas_res$type==&quot;SNP&quot;], z_snp$id)]
+ctwas_res$z[ctwas_res$type==&quot;gene&quot;] &lt;- z_gene$z[match(ctwas_res$id[ctwas_res$type==&quot;gene&quot;], z_gene$id)]
+
+# display the genes with PIP &gt; 0.8
+ctwas_res &lt;- ctwas_res[order(-ctwas_res$susie_pip),]
+ctwas_none_filtering_gene_res &lt;- ctwas_res[ctwas_res$type==&quot;gene&quot;,]
+ctwas_none_filtering_highpip_gene_res &lt;- ctwas_res[ctwas_res$type==&quot;gene&quot; &amp; ctwas_res$susie_pip &gt; 0.8,]
+
+cat(length(unique(ctwas_none_filtering_highpip_gene_res$genename)), &quot;genes with PIP &gt; 0.8. \n&quot;)
+
+# update the position for each gene to the TSS.
+load(file=&quot;/project2/xinhe/kevinluo/cTWAS/data/G_list_allchrs.RData&quot;)
+
+# remove the version number from the ensembl IDs
+ctwas_res$ensembl &lt;- NA
+ctwas_res$ensembl[ctwas_res$type==&quot;gene&quot;] &lt;-  sapply(ctwas_res$id[ctwas_res$type==&quot;gene&quot;], function(x){unlist(strsplit(x, &quot;[.]&quot;))[1]})
+
+#update the gene positions to TSS
+ctwas_res$pos[ctwas_res$type==&quot;gene&quot;] &lt;- G_list$tss[match(ctwas_res$ensembl[ctwas_res$type==&quot;gene&quot;], G_list$ensembl_gene_id)]
+
+ctwas_none_filtering_res &lt;- ctwas_res</code></pre>
+<pre><code># 42 genes with PIP &gt; 0.8.</code></pre>
+</div>
+<div id="dentist-filtering-1" class="section level3">
+<h3>DENTIST filtering</h3>
+<pre class="r"><code>outputdir &lt;- paste0(&quot;/project2/xinhe/kevinluo/cTWAS/multigroup/cTWAS_filter_ld_mismatch/&quot;, trait, &quot;/&quot;)
+filter_method &lt;- &quot;DENTIST&quot;
+outname &lt;- paste0(trait, &quot;.&quot;, tissue, &quot;.&quot;, filter_method, &quot;_filter&quot;)
+
+ctwas_dentist_parameters &lt;- ctwas_summarize_parameters(outputdir = outputdir,
+                                                       outname = outname,
+                                                       gwas_n = gwas_n,
+                                                       thin = thin)
+
+ctwas_dentist_parameters</code></pre>
+<p><img src="figure/compare_LD_mismatch_filtering_real_data.Rmd/unnamed-chunk-15-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code># $group_size
+#     SNP    gene 
+# 6790540    9711 
+# 
+# $group_prior
+#          SNP         gene 
+# 0.0001998022 0.0218272229 
+# 
+# $group_prior_var
+#       SNP      gene 
+#  8.001629 12.391268 
+# 
+# $enrichment
+#     gene 
+# 109.2442 
+# 
+# $group_pve
+#         SNP        gene 
+# 0.010531577 0.002547937 
+# 
+# $total_pve
+# [1] 0.01307951
+# 
+# $attributable_pve
+#       SNP      gene 
+# 0.8051964 0.1948036 
+# 
+# $convergence_plot</code></pre>
+<pre class="r"><code># load cTWAS results
+ctwas_res &lt;- data.table::fread(paste0(outputdir, outname, &quot;.susieIrss.txt&quot;), header=T)
+load(file.path(outputdir, paste0(outname, &quot;_z_snp_harmonized_&quot;, strand_ambig_action, &quot;.Rd&quot;)))
+load(file.path(outputdir, paste0(outname, &quot;_z_gene.Rd&quot;)))
+
+# load gene information from PredictDB
+sqlite &lt;- RSQLite::dbDriver(&quot;SQLite&quot;)
+db = RSQLite::dbConnect(sqlite, weight)
+query &lt;- function(...) RSQLite::dbGetQuery(db, ...)
+gene_info &lt;- query(&quot;select gene, genename, gene_type from extra&quot;)
+RSQLite::dbDisconnect(db)
+
+# add gene names to cTWAS results
+ctwas_res$genename[ctwas_res$type==&quot;gene&quot;] &lt;- gene_info$genename[match(ctwas_res$id[ctwas_res$type==&quot;gene&quot;], gene_info$gene)]
+
+# add z-scores to cTWAS results
+ctwas_res$z[ctwas_res$type==&quot;SNP&quot;] &lt;- z_snp$z[match(ctwas_res$id[ctwas_res$type==&quot;SNP&quot;], z_snp$id)]
+ctwas_res$z[ctwas_res$type==&quot;gene&quot;] &lt;- z_gene$z[match(ctwas_res$id[ctwas_res$type==&quot;gene&quot;], z_gene$id)]
+
+# display the genes with PIP &gt; 0.8
+ctwas_res &lt;- ctwas_res[order(-ctwas_res$susie_pip),]
+ctwas_dentist_gene_res &lt;- ctwas_res[ctwas_res$type==&quot;gene&quot;,]
+ctwas_dentist_highpip_gene_res &lt;- ctwas_res[ctwas_res$type==&quot;gene&quot; &amp; ctwas_res$susie_pip &gt; 0.8,]
+
+cat(length(unique(ctwas_dentist_highpip_gene_res$genename)), &quot;genes with PIP &gt; 0.8. \n&quot;)
+
+# update the position for each gene to the TSS.
+load(file=&quot;/project2/xinhe/kevinluo/cTWAS/data/G_list_allchrs.RData&quot;)
+
+# remove the version number from the ensembl IDs
+ctwas_res$ensembl &lt;- NA
+ctwas_res$ensembl[ctwas_res$type==&quot;gene&quot;] &lt;-  sapply(ctwas_res$id[ctwas_res$type==&quot;gene&quot;], function(x){unlist(strsplit(x, &quot;[.]&quot;))[1]})
+
+#update the gene positions to TSS
+ctwas_res$pos[ctwas_res$type==&quot;gene&quot;] &lt;- G_list$tss[match(ctwas_res$ensembl[ctwas_res$type==&quot;gene&quot;], G_list$ensembl_gene_id)]
+
+ctwas_dentist_res &lt;- ctwas_res</code></pre>
+<pre><code># 44 genes with PIP &gt; 0.8.</code></pre>
+</div>
+<div id="susie-filtering-1" class="section level3">
+<h3>SuSiE filtering</h3>
+<pre class="r"><code>outputdir &lt;- paste0(&quot;/project2/xinhe/kevinluo/cTWAS/multigroup/cTWAS_filter_ld_mismatch/&quot;, trait, &quot;/&quot;)
+filter_method &lt;- &quot;SuSiE&quot;
+outname &lt;- paste0(trait, &quot;.&quot;, tissue, &quot;.&quot;, filter_method, &quot;_filter&quot;)
+
+ctwas_susie_parameters &lt;- ctwas_summarize_parameters(outputdir = outputdir,
+                                                     outname = outname,
+                                                     gwas_n = gwas_n,
+                                                     thin = thin)
+
+ctwas_susie_parameters</code></pre>
+<p><img src="figure/compare_LD_mismatch_filtering_real_data.Rmd/unnamed-chunk-17-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code># $group_size
+#     SNP    gene 
+# 7024770    9863 
+# 
+# $group_prior
+#          SNP         gene 
+# 0.0001840401 0.0237465422 
+# 
+# $group_prior_var
+#       SNP      gene 
+#  8.562658 10.404694 
+# 
+# $enrichment
+#     gene 
+# 129.0291 
+# 
+# $group_pve
+#         SNP        gene 
+# 0.010738996 0.002364009 
+# 
+# $total_pve
+# [1] 0.01310301
+# 
+# $attributable_pve
+#       SNP      gene 
+# 0.8195827 0.1804173 
+# 
+# $convergence_plot</code></pre>
+<pre class="r"><code># load cTWAS results
+ctwas_res &lt;- data.table::fread(paste0(outputdir, outname, &quot;.susieIrss.txt&quot;), header=T)
+load(file.path(outputdir, paste0(outname, &quot;_z_snp_harmonized_&quot;, strand_ambig_action, &quot;.Rd&quot;)))
+load(file.path(outputdir, paste0(outname, &quot;_z_gene.Rd&quot;)))
+
+# load gene information from PredictDB
+sqlite &lt;- RSQLite::dbDriver(&quot;SQLite&quot;)
+db = RSQLite::dbConnect(sqlite, weight)
+query &lt;- function(...) RSQLite::dbGetQuery(db, ...)
+gene_info &lt;- query(&quot;select gene, genename, gene_type from extra&quot;)
+RSQLite::dbDisconnect(db)
+
+# add gene names to cTWAS results
+ctwas_res$genename[ctwas_res$type==&quot;gene&quot;] &lt;- gene_info$genename[match(ctwas_res$id[ctwas_res$type==&quot;gene&quot;], gene_info$gene)]
+
+# add z-scores to cTWAS results
+ctwas_res$z[ctwas_res$type==&quot;SNP&quot;] &lt;- z_snp$z[match(ctwas_res$id[ctwas_res$type==&quot;SNP&quot;], z_snp$id)]
+ctwas_res$z[ctwas_res$type==&quot;gene&quot;] &lt;- z_gene$z[match(ctwas_res$id[ctwas_res$type==&quot;gene&quot;], z_gene$id)]
+
+# display the genes with PIP &gt; 0.8
+ctwas_res &lt;- ctwas_res[order(-ctwas_res$susie_pip),]
+ctwas_susie_gene_res &lt;- ctwas_res[ctwas_res$type==&quot;gene&quot;,]
+ctwas_susie_highpip_gene_res &lt;- ctwas_res[ctwas_res$type==&quot;gene&quot; &amp; ctwas_res$susie_pip &gt; 0.8,]
+
+cat(length(unique(ctwas_susie_highpip_gene_res$genename)), &quot;genes with PIP &gt; 0.8. \n&quot;)
+
+# update the position for each gene to the TSS.
+load(file=&quot;/project2/xinhe/kevinluo/cTWAS/data/G_list_allchrs.RData&quot;)
+
+# remove the version number from the ensembl IDs
+ctwas_res$ensembl &lt;- NA
+ctwas_res$ensembl[ctwas_res$type==&quot;gene&quot;] &lt;-  sapply(ctwas_res$id[ctwas_res$type==&quot;gene&quot;], function(x){unlist(strsplit(x, &quot;[.]&quot;))[1]})
+
+#update the gene positions to TSS
+ctwas_res$pos[ctwas_res$type==&quot;gene&quot;] &lt;- G_list$tss[match(ctwas_res$ensembl[ctwas_res$type==&quot;gene&quot;], G_list$ensembl_gene_id)]
+
+ctwas_susie_res &lt;- ctwas_res</code></pre>
+<pre><code># 43 genes with PIP &gt; 0.8.</code></pre>
+</div>
+<div id="summary-1" class="section level3">
+<h3>Summary</h3>
+<pre class="r"><code>df &lt;- ctwas_none_filtering_gene_res[, c(&quot;id&quot;, &quot;type&quot;, &quot;genename&quot;)]
+df$pip_none_filtering &lt;- ctwas_none_filtering_gene_res$susie_pip
+df$pip_dentist_filtering &lt;- ctwas_dentist_gene_res$susie_pip[match(df$id, ctwas_dentist_gene_res$id)]
+df$pip_susie_filtering &lt;- ctwas_susie_gene_res$susie_pip[match(df$id, ctwas_susie_gene_res$id)]
+
+ggplot(data = df, aes(x = pip_none_filtering, y = pip_dentist_filtering)) +
+  geom_point() + 
+  geom_abline(intercept = 0, slope = 1, col = &quot;red&quot;) +
+  labs(x = &quot;gene PIP without filtering&quot;, y = &quot;gene PIP with DENTIST filtering&quot;) + 
+  theme_bw()</code></pre>
+<pre><code># Warning: Removed 183 rows containing missing values (`geom_point()`).</code></pre>
+<p><img src="figure/compare_LD_mismatch_filtering_real_data.Rmd/unnamed-chunk-19-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggplot(data = df, aes(x = pip_none_filtering, y = pip_susie_filtering)) +
+  geom_point() + 
+  geom_abline(intercept = 0, slope = 1, col = &quot;red&quot;) +
+  labs(x = &quot;gene PIP without filtering&quot;, y = &quot;gene PIP with SuSiE filtering&quot;) + 
+  theme_bw()</code></pre>
+<pre><code># Warning: Removed 31 rows containing missing values (`geom_point()`).</code></pre>
+<p><img src="figure/compare_LD_mismatch_filtering_real_data.Rmd/unnamed-chunk-19-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggplot(data = df, aes(x = pip_dentist_filtering, y = pip_susie_filtering)) +
+  geom_point() + 
+  geom_abline(intercept = 0, slope = 1, col = &quot;red&quot;) +
+  labs(x = &quot;gene PIP with DENTIST filtering&quot;, y = &quot;gene PIP with SuSiE filtering&quot;) + 
+  theme_bw()</code></pre>
+<pre><code># Warning: Removed 187 rows containing missing values (`geom_point()`).</code></pre>
+<p><img src="figure/compare_LD_mismatch_filtering_real_data.Rmd/unnamed-chunk-19-3.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="example-locus-plots" class="section level2">
+<h2>Example locus plots</h2>
+<pre class="r"><code>df &lt;- ctwas_none_filtering_gene_res[, c(&quot;id&quot;, &quot;type&quot;, &quot;genename&quot;)]
+df$pip_none_filtering &lt;- ctwas_none_filtering_gene_res$susie_pip
+df$pip_dentist_filtering &lt;- ctwas_dentist_gene_res$susie_pip[match(df$id, ctwas_dentist_gene_res$id)]
+df$pip_susie_filtering &lt;- ctwas_susie_gene_res$susie_pip[match(df$id, ctwas_susie_gene_res$id)]
+
+# df[order(df$pip_none_filtering- df$pip_dentist_filtering)[1:5],]
+# 
+# df[order(df$pip_none_filtering- df$pip_susie_filtering)[1:5],]
+# 
+# df[order(df$pip_dentist_filtering - df$pip_none_filtering)[1:5],]
+# 
+# df[order(df$pip_susie_filtering - df$pip_none_filtering)[1:5],]</code></pre>
+<div id="cav2-locus" class="section level3">
+<h3>CAV2 locus</h3>
+<pre class="r"><code>print(df[df$genename == &quot;CAV2&quot;,])</code></pre>
+<pre><code>#                    id type genename pip_none_filtering pip_dentist_filtering
+# 1: ENSG00000105971.14 gene     CAV2       1.233718e-06             0.9978039
+#    pip_susie_filtering
+# 1:        7.774559e-12</code></pre>
+<p>without filtering</p>
+<pre class="r"><code># genome-wide bonferroni threshold used for TWAS
+twas_sig_thresh &lt;- 0.05/sum(ctwas_none_filtering_res$type==&quot;gene&quot;)
+
+# show cTWAS result for CAV2 and store region_tag
+print(ctwas_none_filtering_res[which(ctwas_none_filtering_res$genename==&quot;CAV2&quot;),])
+region_tag &lt;- &quot;7_70&quot;
+
+# make locus plot
+ctwas_locus_plot(ctwas_res = ctwas_none_filtering_res,
+                 region_tag = region_tag,
+                 xlim = c(115,117),
+                 twas_sig_thresh = twas_sig_thresh,
+                 alt_names = &quot;genename&quot;, #the column that specify gene names
+                 legend_panel = &quot;TWAS&quot;, #the panel to plot legend
+                 legend_side=&quot;left&quot;, #the position of the panel
+                 outputdir = outputdir,
+                 outname = outname)</code></pre>
+<pre><code># Warning in asMethod(object): sparse-&gt;dense coercion: allocating vector of size
+# 2.7 GiB</code></pre>
+<p><img src="figure/compare_LD_mismatch_filtering_real_data.Rmd/unnamed-chunk-22-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>#    chrom                 id       pos type region_tag1 region_tag2 cs_index
+# 1:     7 ENSG00000105971.14 116287380 gene           7          70        0
+#       susie_pip      mu2 genename         z         ensembl
+# 1: 1.233718e-06 3044.044     CAV2 -14.58049 ENSG00000105971</code></pre>
+<p>DENTIST result</p>
+<pre class="r"><code># genome-wide bonferroni threshold used for TWAS
+twas_sig_thresh &lt;- 0.05/sum(ctwas_dentist_res$type==&quot;gene&quot;)
+
+# show cTWAS result for CAV2 and store region_tag
+print(ctwas_dentist_res[which(ctwas_dentist_res$genename==&quot;CAV2&quot;),])
+region_tag &lt;- &quot;7_70&quot;
+
+# make locus plot
+ctwas_locus_plot(ctwas_res = ctwas_dentist_res,
+                 region_tag = region_tag,
+                 xlim = c(115,117),
+                 twas_sig_thresh = twas_sig_thresh,
+                 alt_names = &quot;genename&quot;, #the column that specify gene names
+                 legend_panel = &quot;TWAS&quot;, #the panel to plot legend
+                 legend_side=&quot;left&quot;, #the position of the panel
+                 outputdir = outputdir,
+                 outname = outname)</code></pre>
+<pre><code># Warning in asMethod(object): sparse-&gt;dense coercion: allocating vector of size
+# 2.7 GiB</code></pre>
+<p><img src="figure/compare_LD_mismatch_filtering_real_data.Rmd/unnamed-chunk-23-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>#    chrom                 id       pos type region_tag1 region_tag2 cs_index
+# 1:     7 ENSG00000105971.14 116287380 gene           7          70        1
+#    susie_pip    mu2 genename         z         ensembl
+# 1: 0.9978039 123.94     CAV2 -14.58049 ENSG00000105971</code></pre>
+</div>
+<div id="agap5-locus" class="section level3">
+<h3>AGAP5 locus</h3>
+<pre class="r"><code>print(df[df$genename == &quot;AGAP5&quot;,])</code></pre>
+<pre><code>#                    id type genename pip_none_filtering pip_dentist_filtering
+# 1: ENSG00000172650.13 gene    AGAP5         0.01400113           0.008348378
+#    pip_susie_filtering
+# 1:           0.9758852</code></pre>
+<p>without filtering</p>
+<pre class="r"><code># genome-wide bonferroni threshold used for TWAS
+twas_sig_thresh &lt;- 0.05/sum(ctwas_none_filtering_res$type==&quot;gene&quot;)
+
+# show cTWAS result for CAV2 and store region_tag
+print(ctwas_none_filtering_res[which(ctwas_none_filtering_res$genename==&quot;AGAP5&quot;),])
+region_tag &lt;- &quot;10_49&quot;
+
+# make locus plot
+ctwas_locus_plot(ctwas_res = ctwas_none_filtering_res,
+                 region_tag = region_tag,
+                 xlim = c(73,74.5),
+                 twas_sig_thresh = twas_sig_thresh,
+                 alt_names = &quot;genename&quot;, #the column that specify gene names
+                 legend_panel = &quot;TWAS&quot;, #the panel to plot legend
+                 legend_side=&quot;left&quot;, #the position of the panel
+                 outputdir = outputdir,
+                 outname = outname)</code></pre>
+<pre><code># Warning in asMethod(object): sparse-&gt;dense coercion: allocating vector of size
+# 2.3 GiB</code></pre>
+<p><img src="figure/compare_LD_mismatch_filtering_real_data.Rmd/unnamed-chunk-25-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>#    chrom                 id      pos type region_tag1 region_tag2 cs_index
+# 1:    10 ENSG00000172650.13 73698109 gene          10          49        0
+#     susie_pip      mu2 genename         z         ensembl
+# 1: 0.01400113 161.1709    AGAP5 -11.51406 ENSG00000172650</code></pre>
+<p>SuSiE result</p>
+<pre class="r"><code># genome-wide bonferroni threshold used for TWAS
+twas_sig_thresh &lt;- 0.05/sum(ctwas_susie_res$type==&quot;gene&quot;)
+
+# show cTWAS result for KDM3B and store region_tag
+print(ctwas_susie_res[which(ctwas_susie_res$genename==&quot;AGAP5&quot;),])
+region_tag &lt;- &quot;10_49&quot;
+
+# make locus plot
+ctwas_locus_plot(ctwas_res = ctwas_susie_res,
+                 region_tag = region_tag,
+                 xlim = c(73,74.5),
+                 twas_sig_thresh = twas_sig_thresh,
+                 alt_names = &quot;genename&quot;, #the column that specify gene names
+                 legend_panel = &quot;TWAS&quot;, #the panel to plot legend
+                 legend_side=&quot;left&quot;, #the position of the panel
+                 outputdir = outputdir,
+                 outname = outname)</code></pre>
+<pre><code># Warning in asMethod(object): sparse-&gt;dense coercion: allocating vector of size
+# 2.3 GiB</code></pre>
+<p><img src="figure/compare_LD_mismatch_filtering_real_data.Rmd/unnamed-chunk-26-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>#    chrom                 id      pos type region_tag1 region_tag2 cs_index
+# 1:    10 ENSG00000172650.13 73698109 gene          10          49        5
+#    susie_pip      mu2 genename         z         ensembl
+# 1: 0.9758852 48.99834    AGAP5 -11.51406 ENSG00000172650</code></pre>
+</div>
+<div id="c9orf3-locus" class="section level3">
+<h3>C9orf3 locus</h3>
+<pre class="r"><code>print(df[df$genename == &quot;C9orf3&quot;,])</code></pre>
+<pre><code>#                    id type genename pip_none_filtering pip_dentist_filtering
+# 1: ENSG00000148120.16 gene   C9orf3          0.9207887             0.9618413
+#    pip_susie_filtering
+# 1:          0.00640381</code></pre>
+<p>without filtering</p>
+<pre class="r"><code># genome-wide bonferroni threshold used for TWAS
+twas_sig_thresh &lt;- 0.05/sum(ctwas_none_filtering_res$type==&quot;gene&quot;)
+
+# show cTWAS result for CAV2 and store region_tag
+print(ctwas_none_filtering_res[which(ctwas_none_filtering_res$genename==&quot;C9orf3&quot;),])
+region_tag &lt;- &quot;9_48&quot;
+
+# make locus plot
+ctwas_locus_plot(ctwas_res = ctwas_none_filtering_res,
+                 region_tag = region_tag,
+                 twas_sig_thresh = twas_sig_thresh,
+                 alt_names = &quot;genename&quot;, #the column that specify gene names
+                 legend_panel = &quot;TWAS&quot;, #the panel to plot legend
+                 legend_side=&quot;left&quot;, #the position of the panel
+                 outputdir = outputdir,
+                 outname = outname)</code></pre>
+<p><img src="figure/compare_LD_mismatch_filtering_real_data.Rmd/unnamed-chunk-28-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>#    chrom                 id      pos type region_tag1 region_tag2 cs_index
+# 1:     9 ENSG00000148120.16 94726604 gene           9          48        3
+#    susie_pip      mu2 genename         z         ensembl
+# 1: 0.9207887 214.7931   C9orf3 -10.67164 ENSG00000148120</code></pre>
+<p>SuSiE result</p>
+<pre class="r"><code># genome-wide bonferroni threshold used for TWAS
+twas_sig_thresh &lt;- 0.05/sum(ctwas_susie_res$type==&quot;gene&quot;)
+
+# show cTWAS result for KDM3B and store region_tag
+print(ctwas_susie_res[which(ctwas_susie_res$genename==&quot;C9orf3&quot;),])
+region_tag &lt;- &quot;9_48&quot;
+
+# make locus plot
+ctwas_locus_plot(ctwas_res = ctwas_susie_res,
+                 region_tag = region_tag,
+                 twas_sig_thresh = twas_sig_thresh,
+                 alt_names = &quot;genename&quot;, #the column that specify gene names
+                 legend_panel = &quot;TWAS&quot;, #the panel to plot legend
+                 legend_side=&quot;left&quot;, #the position of the panel
+                 outputdir = outputdir,
+                 outname = outname)</code></pre>
+<p><img src="figure/compare_LD_mismatch_filtering_real_data.Rmd/unnamed-chunk-29-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>#    chrom                 id      pos type region_tag1 region_tag2 cs_index
+# 1:     9 ENSG00000148120.16 94726604 gene           9          48        0
+#     susie_pip      mu2 genename         z         ensembl
+# 1: 0.00640381 126.1549   C9orf3 -10.67164 ENSG00000148120</code></pre>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span> Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code># R version 4.2.0 (2022-04-22)
+# Platform: x86_64-pc-linux-gnu (64-bit)
+# Running under: CentOS Linux 7 (Core)
+# 
+# Matrix products: default
+# BLAS/LAPACK: /software/openblas-0.3.13-el7-x86_64/lib/libopenblas_haswellp-r0.3.13.so
+# 
+# locale:
+#  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+#  [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+#  [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+#  [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+#  [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+# [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+# 
+# attached base packages:
+# [1] stats     graphics  grDevices utils     datasets  methods   base     
+# 
+# other attached packages:
+# [1] cowplot_1.1.1 ggplot2_3.4.1 ctwas_0.1.35 
+# 
+# loaded via a namespace (and not attached):
+#  [1] Rcpp_1.0.10       lattice_0.20-45   rprojroot_2.0.3   digest_0.6.31    
+#  [5] foreach_1.5.2     utf8_1.2.3        R6_2.5.1          RSQLite_2.2.20   
+#  [9] evaluate_0.20     highr_0.10        pillar_1.8.1      rlang_1.1.3      
+# [13] data.table_1.14.6 irlba_2.3.5       whisker_0.4       jquerylib_0.1.4  
+# [17] blob_1.2.3        R.utils_2.12.2    R.oo_1.25.0       Matrix_1.5-3     
+# [21] rmarkdown_2.20    labeling_0.4.2    stringr_1.5.0     bit_4.0.5        
+# [25] munsell_0.5.0     mixsqp_0.3-43     compiler_4.2.0    httpuv_1.6.5     
+# [29] xfun_0.37         pkgconfig_2.0.3   htmltools_0.5.4   tidyselect_1.2.0 
+# [33] tibble_3.1.8      workflowr_1.7.0   logging_0.10-108  codetools_0.2-18 
+# [37] fansi_1.0.4       dplyr_1.1.0       withr_2.5.0       later_1.3.0      
+# [41] R.methodsS3_1.8.2 grid_4.2.0        jsonlite_1.8.4    gtable_0.3.1     
+# [45] lifecycle_1.0.3   DBI_1.1.3         git2r_0.30.1      magrittr_2.0.3   
+# [49] scales_1.2.1      cli_3.6.0         stringi_1.7.12    cachem_1.0.6     
+# [53] farver_2.1.1      fs_1.6.1          promises_1.2.0.1  pgenlibr_0.3.3   
+# [57] bslib_0.4.2       generics_0.1.3    vctrs_0.5.2       iterators_1.0.14 
+# [61] tools_4.2.0       bit64_4.0.5       glue_1.6.2        fastmap_1.1.0    
+# [65] yaml_2.3.7        colorspace_2.1-0  memoise_2.0.1     knitr_1.42       
+# [69] sass_0.4.5</code></pre>
+</div>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
