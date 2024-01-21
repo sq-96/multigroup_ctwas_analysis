@@ -46,6 +46,18 @@ plot_PIP_combined <- function(configtag, runtag,  simutags, ...){
    f1 <- caliPIP_plot_combined(phenofs, susieIfs, ...) 
    return(f1)
 }
+plot_PIP_L1 <- function(configtag, runtag,  simutags, ...){
+   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
+   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_config", configtag,"_LDR",".L1.susieIrss.txt")
+   f1 <- caliPIP_plot(phenofs, susieIfs, ...) 
+   return(f1)
+}
+plot_PIP_L1_combined <- function(configtag, runtag,  simutags, ...){
+   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
+   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_config", configtag,"_LDR",".L1.susieIrss.txt")
+   f1 <- caliPIP_plot_combined(phenofs, susieIfs, ...) 
+   return(f1)
+}
 ```
 
 ## Simulation 1: 3% PVE for Causal Tissues and 0.5% PVE for Non-causal Tissues. 
@@ -369,6 +381,13 @@ plot_par_7(truth,est,xlabels = c("Artery","Spleen","Skin","Lung","Adipose","Panc
 ```{r, fig.width= 8, fig.height= 4, echo=FALSE, warning=FALSE}
 f1 <- plot_PIP(configtag, runtag, simutags, main = "Expression Trait PIP Calibration")
 f2 <-  plot_PIP_combined(configtag, runtag, simutags, main = "Gene PIP Calibration")
+gridExtra::grid.arrange(f1, f2, ncol =2)
+```
+
+### PIP Calibration Plot (L1=1)
+```{r, fig.width= 8, fig.height= 4, echo=FALSE, warning=FALSE}
+f1 <- plot_PIP_L1(configtag, runtag, simutags, main = "Expression Trait PIP Calibration")
+f2 <-  plot_PIP_L1_combined(configtag, runtag, simutags, main = "Gene PIP Calibration")
 gridExtra::grid.arrange(f1, f2, ncol =2)
 ```
 

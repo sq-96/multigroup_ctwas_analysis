@@ -294,3 +294,191 @@ plot_par_6(truth,est,xlabels = c("Liver_E","Liver_S","Lung_E","Lung_S","Spleen_E
 f1 <- plot_PIP(configtag, runtag, paste(3, 1:5, sep = "-"), main = "")
 f1
 ```
+
+### Simulation 4: Expression traits from Liver and Lung and Splicing traits from Liver are causal (3% PVE).  
+
+```{r echo=FALSE}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_E_S_three_tissues/"
+runtag = "ukb-s80.45"
+configtag <- 1
+
+simutags <- paste(4, 1:5, sep = "-")
+thin <- 0.1
+
+sample_size <- 45000
+PIP_threshold <- 0.8
+
+results_df <- get_sim_joint_res(results_dir,runtag,configtag,simutags,thin,sample_size,PIP_threshold)
+group_size <- results_df[[2]]
+results_df <- results_df[[1]]
+```
+
+### Results using PIP Threshold
+```{r echo=FALSE}
+results_df[,c("simutag", "n_causal", "n_detected_pip", "n_detected_pip_in_causal")]
+#mean percent causal using combined PIP > 0.8
+sum(results_df$n_detected_pip_in_causal)/sum(results_df$n_detected_pip)
+```
+
+### Estimated Prior Inclusion Probability
+```{r, fig.width= 8, fig.height= 5, message=FALSE, warning=FALSE, echo=FALSE}
+y1 <- results_df$prior_Liver_Expression
+y2 <- results_df$prior_Liver_Splicing
+y3 <- results_df$prior_Lung_Expression
+y4 <- results_df$prior_Lung_Splicing
+y5 <- results_df$prior_Spleen_Expression
+y6 <- results_df$prior_Spleen_Splicing
+
+truth <- rbind(c(1,0.009),c(2,0.009),c(3,0.009),c(4,0.009),c(5,0.009),c(6,0.009))
+est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6))
+plot_par_6(truth,est,xlabels = c("Liver_E","Liver_S","Lung_E","Lung_S","Spleen_E","Spleen_S"),ylim=c(0,0.025),ylab="Prior inclusion")
+```
+
+### Estimated PVE
+```{r, fig.width= 8, fig.height= 5, message=FALSE, warning=FALSE, echo=FALSE}
+y1 <- results_df$pve_Liver_Expression
+y2 <- results_df$pve_Liver_Splicing
+y3 <- results_df$pve_Lung_Expression
+y4 <- results_df$pve_Lung_Splicing
+y5 <- results_df$pve_Spleen_Expression
+y6 <- results_df$pve_Spleen_Splicing
+
+truth <- rbind(c(1,0.03),c(2,0.03),c(3,0.03),c(4,0.03),c(5,0.03),c(6,0.03))
+est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6))
+plot_par_6(truth,est,xlabels = c("Liver_E","Liver_S","Lung_E","Lung_S","Spleen_E","Spleen_S"),ylim=c(0,0.06),ylab="PVE")
+```
+
+### Estimated Prior Variance
+```{r, fig.width= 8, fig.height= 5, message=FALSE, warning=FALSE, echo=FALSE}
+y1 <- results_df$prior_var_Liver_Expression
+y2 <- results_df$prior_var_Liver_Splicing
+y3 <- results_df$prior_var_Lung_Expression
+y4 <- results_df$prior_var_Lung_Splicing
+y5 <- results_df$prior_var_Spleen_Expression
+y6 <- results_df$prior_var_Spleen_Splicing
+
+t1 <- 0.03*sample_size/(group_size[2]*0.009)
+t2 <- 0.03*sample_size/(group_size[3]*0.009)
+t3 <- 0.03*sample_size/(group_size[4]*0.009)
+t4 <- 0.03*sample_size/(group_size[5]*0.009)
+t5 <- 0.03*sample_size/(group_size[6]*0.009)
+t6 <- 0.03*sample_size/(group_size[7]*0.009)
+
+truth <- rbind(c(1,t1),c(2,t2),c(3,t3),c(4,t4),c(5,t5),c(6,t6))
+est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6))
+plot_par_6(truth,est,xlabels = c("Liver_E","Liver_S","Lung_E","Lung_S","Spleen_E","Spleen_S"),ylim=c(0,30),ylab=TeX("$sigma^2$"))
+```
+
+### Estimated Enrichment
+```{r, fig.width= 4, fig.height= 5, message=FALSE, warning=FALSE, echo=FALSE}
+y1 <- results_df$pve_Liver_Expression/results_df$prior_SNP
+y2 <- results_df$pve_Liver_Splicing/results_df$prior_SNP
+y3 <- results_df$pve_Lung_Expression/results_df$prior_SNP
+y4 <- results_df$pve_Lung_Splicing/results_df$prior_SNP
+y5 <- results_df$pve_Spleen_Expression/results_df$prior_SNP
+y6 <- results_df$pve_Spleen_Splicing/results_df$prior_SNP
+
+truth <- rbind(c(1,120),c(2,120),c(3,120),c(4,120),c(5,120),c(6,120))
+est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6))
+plot_par_6(truth,est,xlabels = c("Liver_E","Liver_S","Lung_E","Lung_S","Spleen_E","Spleen_S"),ylim=c(0,250),ylab= TeX("Enrichment $\\pi_G/\\pi_V$"))
+```
+
+#### PIP Calibration Plot
+```{r, fig.width= 4, fig.height= 4, message=FALSE, warning=FALSE, echo=FALSE}
+f1 <- plot_PIP(configtag, runtag, paste(4, 1:5, sep = "-"), main = "")
+f1
+```
+
+### Simulation 5: Expression and Splicing traits from Liver are causal(3% PVE).  
+
+```{r echo=FALSE}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_E_S_three_tissues/"
+runtag = "ukb-s80.45"
+configtag <- 1
+
+simutags <- paste(5, 1:5, sep = "-")
+thin <- 0.1
+
+sample_size <- 45000
+PIP_threshold <- 0.8
+
+results_df <- get_sim_joint_res(results_dir,runtag,configtag,simutags,thin,sample_size,PIP_threshold)
+group_size <- results_df[[2]]
+results_df <- results_df[[1]]
+```
+
+### Results using PIP Threshold
+```{r echo=FALSE}
+results_df[,c("simutag", "n_causal", "n_detected_pip", "n_detected_pip_in_causal")]
+#mean percent causal using combined PIP > 0.8
+sum(results_df$n_detected_pip_in_causal)/sum(results_df$n_detected_pip)
+```
+
+### Estimated Prior Inclusion Probability
+```{r, fig.width= 8, fig.height= 5, message=FALSE, warning=FALSE, echo=FALSE}
+y1 <- results_df$prior_Liver_Expression
+y2 <- results_df$prior_Liver_Splicing
+y3 <- results_df$prior_Lung_Expression
+y4 <- results_df$prior_Lung_Splicing
+y5 <- results_df$prior_Spleen_Expression
+y6 <- results_df$prior_Spleen_Splicing
+
+truth <- rbind(c(1,0.009),c(2,0.009),c(3,0),c(4,0),c(5,0),c(6,0))
+est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6))
+plot_par_6(truth,est,xlabels = c("Liver_E","Liver_S","Lung_E","Lung_S","Spleen_E","Spleen_S"),ylim=c(0,0.025),ylab="Prior inclusion")
+```
+
+### Estimated PVE
+```{r, fig.width= 8, fig.height= 5, message=FALSE, warning=FALSE, echo=FALSE}
+y1 <- results_df$pve_Liver_Expression
+y2 <- results_df$pve_Liver_Splicing
+y3 <- results_df$pve_Lung_Expression
+y4 <- results_df$pve_Lung_Splicing
+y5 <- results_df$pve_Spleen_Expression
+y6 <- results_df$pve_Spleen_Splicing
+
+truth <- rbind(c(1,0.03),c(2,0.03),c(3,0),c(4,0),c(5,0),c(6,0))
+est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6))
+plot_par_6(truth,est,xlabels = c("Liver_E","Liver_S","Lung_E","Lung_S","Spleen_E","Spleen_S"),ylim=c(0,0.06),ylab="PVE")
+```
+
+### Estimated Prior Variance
+```{r, fig.width= 8, fig.height= 5, message=FALSE, warning=FALSE, echo=FALSE}
+y1 <- results_df$prior_var_Liver_Expression
+y2 <- results_df$prior_var_Liver_Splicing
+y3 <- results_df$prior_var_Lung_Expression
+y4 <- results_df$prior_var_Lung_Splicing
+y5 <- results_df$prior_var_Spleen_Expression
+y6 <- results_df$prior_var_Spleen_Splicing
+
+t1 <- 0.03*sample_size/(group_size[2]*0.009)
+t2 <- 0.03*sample_size/(group_size[3]*0.009)
+t3 <- 0
+t4 <- 0
+t5 <- 0
+t6 <- 0
+
+truth <- rbind(c(1,t1),c(2,t2),c(3,t3),c(4,t4),c(5,t5),c(6,t6))
+est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6))
+plot_par_6(truth,est,xlabels = c("Liver_E","Liver_S","Lung_E","Lung_S","Spleen_E","Spleen_S"),ylim=c(0,30),ylab=TeX("$sigma^2$"))
+```
+
+### Estimated Enrichment
+```{r, fig.width= 4, fig.height= 5, message=FALSE, warning=FALSE, echo=FALSE}
+y1 <- results_df$pve_Liver_Expression/results_df$prior_SNP
+y2 <- results_df$pve_Liver_Splicing/results_df$prior_SNP
+y3 <- results_df$pve_Lung_Expression/results_df$prior_SNP
+y4 <- results_df$pve_Lung_Splicing/results_df$prior_SNP
+y5 <- results_df$pve_Spleen_Expression/results_df$prior_SNP
+y6 <- results_df$pve_Spleen_Splicing/results_df$prior_SNP
+
+truth <- rbind(c(1,120),c(2,120),c(3,0),c(4,0),c(5,0),c(6,0))
+est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6))
+plot_par_6(truth,est,xlabels = c("Liver_E","Liver_S","Lung_E","Lung_S","Spleen_E","Spleen_S"),ylim=c(0,250),ylab= TeX("Enrichment $\\pi_G/\\pi_V$"))
+```
+
+#### PIP Calibration Plot
+```{r, fig.width= 4, fig.height= 4, message=FALSE, warning=FALSE, echo=FALSE}
+f1 <- plot_PIP(configtag, runtag, paste(5, 1:5, sep = "-"), main = "")
+f1
+```
