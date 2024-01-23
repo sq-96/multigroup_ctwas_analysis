@@ -30,6 +30,36 @@ plot_PIP <- function(configtag, runtag,  simutags, ...){
    f1 <- caliPIP_plot(phenofs, susieIfs, ...) 
    return(f1)
 }
+plot_PIP_combined <- function(configtag, runtag,  simutags, ...){
+   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
+   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_config", configtag,"_LDR",".susieIrss.txt")
+   f1 <- caliPIP_plot_combined(phenofs, susieIfs, ...) 
+   return(f1)
+}
+plot_PIP_L1 <- function(configtag, runtag,  simutags, ...){
+   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
+   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_config", configtag,"_LDR",".L1.susieIrss.txt")
+   f1 <- caliPIP_plot(phenofs, susieIfs, ...) 
+   return(f1)
+}
+plot_PIP_L1_combined <- function(configtag, runtag,  simutags, ...){
+   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
+   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_config", configtag,"_LDR",".L1.susieIrss.txt")
+   f1 <- caliPIP_plot_combined(phenofs, susieIfs, ...) 
+   return(f1)
+}
+plot_PIP_true <- function(configtag, runtag,  simutags, ...){
+   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
+   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_config", configtag,"_LDR",".true.susieIrss.txt")
+   f1 <- caliPIP_plot(phenofs, susieIfs, ...) 
+   return(f1)
+}
+plot_PIP_true_combined <- function(configtag, runtag,  simutags, ...){
+   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
+   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_config", configtag,"_LDR",".true.susieIrss.txt")
+   f1 <- caliPIP_plot_combined(phenofs, susieIfs, ...) 
+   return(f1)
+}
 ```
 
 ### Simulation 1: Expression and Splicing from Liver (3% PVE)
@@ -480,5 +510,17 @@ plot_par_6(truth,est,xlabels = c("Liver_E","Liver_S","Lung_E","Lung_S","Spleen_E
 #### PIP Calibration Plot
 ```{r, fig.width= 4, fig.height= 4, message=FALSE, warning=FALSE, echo=FALSE}
 f1 <- plot_PIP(configtag, runtag, paste(5, 1:5, sep = "-"), main = "")
+f1
+```
+
+### PIP Calibration Plot (L1=1)
+```{r, fig.width= 4, fig.height= 4, message=FALSE, warning=FALSE, echo=FALSE}
+f1 <- plot_PIP_L1(configtag, runtag, paste(5, 1:5, sep = "-"), main = "")
+f1
+```
+
+### PIP Calibration Plot (True parameters)
+```{r, fig.width= 4, fig.height= 4, message=FALSE, warning=FALSE, echo=FALSE}
+f1 <- plot_PIP_true(configtag, runtag, paste(5, 1:3, sep = "-"), main = "")
 f1
 ```
