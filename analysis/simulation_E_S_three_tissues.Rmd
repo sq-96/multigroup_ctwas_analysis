@@ -30,7 +30,7 @@ plot_PIP <- function(configtag, runtag,  simutags, ...){
 plot_PIP_combined <- function(configtag, runtag,  simutags, ...){
    phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
    susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_config", configtag,"_LDR",".susieIrss.txt")
-   f1 <- caliPIP_plot_combined(phenofs, susieIfs, ...) 
+   f1 <- caliPIP_plot_E_S_combined(phenofs, susieIfs, ...) 
    return(f1)
 }
 plot_PIP_L1 <- function(configtag, runtag,  simutags, ...){
@@ -42,7 +42,7 @@ plot_PIP_L1 <- function(configtag, runtag,  simutags, ...){
 plot_PIP_L1_combined <- function(configtag, runtag,  simutags, ...){
    phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
    susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_config", configtag,"_LDR",".L1.susieIrss.txt")
-   f1 <- caliPIP_plot_combined(phenofs, susieIfs, ...) 
+   f1 <- caliPIP_plot_E_S_combined(phenofs, susieIfs, ...) 
    return(f1)
 }
 plot_PIP_true <- function(configtag, runtag,  simutags, ...){
@@ -54,7 +54,7 @@ plot_PIP_true <- function(configtag, runtag,  simutags, ...){
 plot_PIP_true_combined <- function(configtag, runtag,  simutags, ...){
    phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
    susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_config", configtag,"_LDR",".true.susieIrss.txt")
-   f1 <- caliPIP_plot_combined(phenofs, susieIfs, ...) 
+   f1 <- caliPIP_plot_E_S_combined(phenofs, susieIfs, ...) 
    return(f1)
 }
 ```
@@ -238,3 +238,32 @@ f1
 f1 <- plot_PIP_true(configtag, runtag, paste(5, 1:5, sep = "-"), main = "")
 f1
 ```
+
+### PIP Calibration Plot
+```{r, fig.width= 8, fig.height= 4, echo=FALSE, warning=FALSE}
+load("/project2/xinhe/shengqian/cTWAS/cTWAS_analysis/data/mashr_sqtl/sqtl/mashr/intron_mapping.RData")
+f1 <- plot_PIP(configtag, runtag, simutags, main = "Expression Trait PIP Calibration")
+f2 <-  plot_PIP_combined(configtag, runtag, simutags, main = "Gene PIP Calibration")
+gridExtra::grid.arrange(f1, f2, ncol =2)
+```
+
+### PIP Calibration Plot (L1=1)
+```{r, fig.width= 8, fig.height= 4, echo=FALSE, warning=FALSE}
+f1 <- plot_PIP_L1(configtag, runtag, simutags, main = "Expression Trait PIP Calibration")
+f2 <-  plot_PIP_L1_combined(configtag, runtag, simutags, main = "Gene PIP Calibration")
+gridExtra::grid.arrange(f1, f2, ncol =2)
+```
+
+### PIP Calibration Plot (True parameters)
+```{r, fig.width= 8, fig.height= 4, echo=FALSE, warning=FALSE}
+f1 <- plot_PIP_true(configtag, runtag, simutags, main = "Expression Trait PIP Calibration")
+f2 <-  plot_PIP_true_combined(configtag, runtag, simutags, main = "Gene PIP Calibration")
+gridExtra::grid.arrange(f1, f2, ncol =2)
+```
+
+```{r}
+ctwas_res <- data.table::fread(paste0(results_dir, runtag, "_simu", simutags[5], "_config", configtag, "_LDR.susieIrss.txt"))
+ctwas_gene_res <- ctwas_res[ctwas_res$type!="SNP",]
+ctwas_gene_res[ctwas_gene_res$susie_pip>0.7 & ctwas_gene_res$susie_pip<0.8]
+```
+
