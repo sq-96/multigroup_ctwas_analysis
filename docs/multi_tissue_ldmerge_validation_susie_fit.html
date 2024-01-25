@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="XSun" />
+
+<meta name="date" content="2024-01-25" />
+
+<title>Pathways selection using Susie</title>
+
+<script src="site_libs/header-attrs-2.21/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/htmlwidgets-1.6.2/htmlwidgets.js"></script>
+<link href="site_libs/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet" />
+<script src="site_libs/datatables-binding-0.22/datatables.js"></script>
+<link href="site_libs/dt-core-1.11.3/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="site_libs/dt-core-1.11.3/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="site_libs/dt-core-1.11.3/js/jquery.dataTables.min.js"></script>
+<link href="site_libs/crosstalk-1.2.0/css/crosstalk.min.css" rel="stylesheet" />
+<script src="site_libs/crosstalk-1.2.0/js/crosstalk.min.js"></script>
+<link href="site_libs/font-awesome-6.2.1/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.2.1/css/v4-shims.min.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">multigroup_ctwas_analysis</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/sq-96/multigroup_ctwas_analysis">
+    <span class="fab fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Pathways selection using Susie</h1>
+<h4 class="author">XSun</h4>
+<h4 class="date">2024-01-25</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span> workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2024-01-25
+</p>
+<p>
+<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 1
+</p>
+<p>
+<strong>Knit directory:</strong> <code>multigroup_ctwas_analysis/</code> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="This is the local directory in which the code in this file was executed."> </span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a> analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version 1.7.1). The <em>Checks</em> tab describes the reproducibility checks that were applied when the results were created. The <em>Past versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges"> <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted changes </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguncommittedchanges" class="panel-collapse collapse">
+<div class="panel-body">
+<p>The R Markdown is untracked by Git. To know which version of the R Markdown file created these results, you’ll want to first commit it to the Git repo. If you’re still working on the analysis, you can ignore this warning. When you’re finished, you can run <code>wflow_publish</code> to commit the R Markdown file and build the HTML.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the global environment can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it’s best to always run the code in an empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20231112code"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Seed:</strong> <code>set.seed(20231112)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20231112code" class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20231112)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Session information:</strong> recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be confident that you successfully produced the results during this run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree7561eb8e9305c91c77e101eca2b84d7eb46b4e2etargetblank7561eb8a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/7561eb8e9305c91c77e101eca2b84d7eb46b4e2e" target="_blank">7561eb8</a> </a>
+</p>
+</div>
+<div id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree7561eb8e9305c91c77e101eca2b84d7eb46b4e2etargetblank7561eb8a" class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version <a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/7561eb8e9305c91c77e101eca2b84d7eb46b4e2e" target="_blank">7561eb8</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .Rhistory
+
+Untracked files:
+    Untracked:  analysis/CopyOfmulti_tissue_ldmerge_validation.Rmd
+    Untracked:  analysis/multi_tissue_ldmerge_validation_susie_fit.Rmd
+    Untracked:  analysis/multi_tissue_ldmerge_validation_xgboost_fit.Rmd
+
+Unstaged changes:
+    Modified:   analysis/multi_tissue_ldmerge_validation.Rmd
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+<p>
+There are no past versions. Publish this analysis with <code>wflow_publish()</code> to start tracking its development.
+</p>
+<hr>
+</div>
+</div>
+</div>
+<div id="overview" class="section level1">
+<h1>Overview</h1>
+<p>The model is <span class="math inline">\(y=X*w\)</span></p>
+<p>y is an n-dimensional vector representing gene-trait associations (n = number of genes), which can be:</p>
+<ul>
+<li>z-scores computed by MAGMA</li>
+<li>a binary vector indicating gene-trait relationships (genes with FDR &lt; 0.05 as per MAGMA are marked 1).</li>
+</ul>
+<p>If y is a z-score vector, it can be fitted using linear Susie</p>
+<p>If y is a binarized vector, the model can be fitted using logistic Susie</p>
+<div id="functions" class="section level2">
+<h2>Functions</h2>
+<pre class="r"><code>library(gseasusie)
+library(tidyverse)
+library(GO.db)
+
+
+color_sign = function(value) {
+  if (value &gt; 0) {
+    color &lt;- &quot;#008000&quot;
+  } else if (value &lt; 0) {
+    color &lt;- &quot;#e00000&quot;
+  } else {
+    color &lt;- &quot;#777&quot;
+  }
+  list(color = color)
+}
+
+
+getGOTermName &lt;- function(go_id) {
+  result &lt;- try(Term(GOTERM[[go_id]]), silent = TRUE)
+  if (class(result) == &quot;try-error&quot;) {
+    return(NA)
+  } else {
+    return(result)
+  }
+}
+
+getKEGGPathwayName &lt;- function(kegg_id) {
+  result &lt;- try(KEGGREST::keggGet(kegg_id)[[1]]$NAME, silent = TRUE)
+  if (class(result) == &quot;try-error&quot;) {
+    return(NA)
+  } else {
+    return(result)
+  }
+}
+
+interactive_table_linear_susie &lt;- function(fit, ora) {
+  
+  fit &lt;- fit
+  ora &lt;- ora
+  
+  res &lt;- gseasusie:::get_gene_set_summary(fit) %&gt;%
+    dplyr::left_join(ora)
+  
+  coef &lt;- susieR::coef.susie(fit)
+  coef &lt;- as.data.frame(cbind(names(coef), coef))
+  colnames(coef) &lt;- c(&quot;pwy&quot;, &quot;beta&quot;)
+  rownames(coef) &lt;- seq(1,nrow(coef),by=1)
+  
+  res_updated &lt;- res %&gt;%
+    # Ensure &#39;beta&#39; in &#39;res&#39; is of type double
+    mutate(beta = as.numeric(beta)) %&gt;%
+    left_join(coef %&gt;%
+                # Ensure &#39;beta&#39; in &#39;coef&#39; is of type double
+                mutate(beta = as.numeric(beta)), 
+              by = c(&quot;geneSet&quot; = &quot;pwy&quot;)) %&gt;%
+    # Combine the two &#39;beta&#39; columns, choosing &#39;coef&#39; values first
+    mutate(beta = coalesce(beta.y, beta.x)) %&gt;%
+    # Explicitly use `select` from `dplyr`
+    dplyr::select(-beta.y, -beta.x)
+  
+  res &lt;- res_updated
+  
+  csdat &lt;- gseasusie:::get_credible_set_summary(fit) %&gt;%
+    dplyr::left_join(ora) %&gt;%
+    dplyr::filter(in_cs, active_cs) %&gt;%
+    dplyr::select(geneSet, component, in_cs) %&gt;%
+    distinct()
+  
+  dt &lt;- res %&gt;% 
+    dplyr::filter(overlap &gt; 0) %&gt;%
+    dplyr::mutate(
+      logOddsRatio = log(oddsRatio),
+      nlog10pFishersExact = -log10(pFishersExact)
+    ) %&gt;%
+    dplyr::left_join(csdat) %&gt;%
+    dplyr::arrange(dplyr::desc(nlog10pFishersExact)) %&gt;%
+    dplyr::mutate(
+      fisherRank = dplyr::row_number(),
+      in_cs = dplyr::if_else(is.na(in_cs), FALSE, in_cs)) %&gt;%
+    dplyr::select(geneSet, beta, pip, overlap, geneSetSize, logOddsRatio, nlog10pFishersExact, in_cs, component, fisherRank) %&gt;%
+    dplyr::mutate(dplyr::across(!where(is.numeric) , as.factor))
+  
+  
+  if(grepl(&quot;GO&quot;,dt$geneSet[1])) {
+      dt &lt;- dt %&gt;%
+      dplyr::filter(!is.na(component)) %&gt;% #### only show CS
+      dplyr::mutate(goTermName = sapply(as.character(geneSet), getGOTermName)) %&gt;% # extract Go term names
+      dplyr::select(geneSet, goTermName, everything()) # re-order
+  }else if (grepl(&quot;hsa&quot;,dt$geneSet[1])) {
+      dt &lt;- dt %&gt;%
+      dplyr::filter(!is.na(component)) %&gt;% #### only show CS
+      dplyr::mutate(KEGGPathwayName = sapply(as.character(geneSet), getKEGGPathwayName)) %&gt;% # extract Go term names
+      dplyr::select(geneSet, KEGGPathwayName, everything()) # re-order
+  }
+  
+  # dt %&gt;%
+  #   dplyr::select(-c(in_cs)) %&gt;%
+  #   reactable::reactable(
+  #     filterable=TRUE,
+  #     minRows=1,
+  #     columns = list(
+  #       pip = reactable::colDef(format = reactable::colFormat(digits = 3)),
+  #       logOddsRatio = reactable::colDef(style= function(value){color_sign(value)},
+  #                                        format = reactable::colFormat(digits = 3)),
+  #       beta = reactable::colDef(style= function(value){color_sign(value)},
+  #                                format = reactable::colFormat(digits = 3)),
+  #       nlog10pFishersExact = reactable::colDef(format = reactable::colFormat(digits = 3))
+  #     ),
+  #     rowStyle = function(index){
+  #       if(dt$in_cs[index] == TRUE){
+  #         list(background = &quot;#e5f5e0&quot;)
+  #       }
+  #     },
+  #     defaultSorted = list(nlog10pFishersExact=&#39;desc&#39;)
+  #   )
+  # 
+  DT::datatable(dt,options = list(pageLength=10))
+  
+}
+
+interactive_table_logistic_susie &lt;- function(fit, ora) {
+  
+  fit &lt;- fit
+  ora &lt;- ora
+  
+  res &lt;- gseasusie:::get_gene_set_summary(fit) %&gt;%
+    dplyr::left_join(ora)
+  
+  csdat &lt;- gseasusie:::get_credible_set_summary(fit) %&gt;%
+    dplyr::left_join(ora) %&gt;%
+    dplyr::filter(in_cs, active_cs) %&gt;%
+    dplyr::select(geneSet, component, in_cs) %&gt;%
+    distinct()
+  
+  dt &lt;- res %&gt;% 
+    dplyr::filter(overlap &gt; 0) %&gt;%
+    dplyr::mutate(
+      logOddsRatio = log(oddsRatio),
+      nlog10pFishersExact = -log10(pFishersExact)
+    ) %&gt;%
+    dplyr::left_join(csdat) %&gt;%
+    dplyr::arrange(dplyr::desc(nlog10pFishersExact)) %&gt;%
+    dplyr::mutate(
+      fisherRank = dplyr::row_number(),
+      in_cs = dplyr::if_else(is.na(in_cs), FALSE, in_cs)) %&gt;%
+    dplyr::select(geneSet, beta, pip, overlap, geneSetSize, logOddsRatio, nlog10pFishersExact, in_cs, component, fisherRank) %&gt;%
+    dplyr::mutate(dplyr::across(!where(is.numeric) , as.factor))
+  
+  
+  if(grepl(&quot;GO&quot;,dt$geneSet[1])) {
+      dt &lt;- dt %&gt;%
+      dplyr::filter(!is.na(component)) %&gt;% #### only show CS
+      dplyr::mutate(goTermName = sapply(as.character(geneSet), getGOTermName)) %&gt;% # extract Go term names
+      dplyr::select(geneSet, goTermName, everything()) # re-order
+  }else if (grepl(&quot;hsa&quot;,dt$geneSet[1])) {
+      dt &lt;- dt %&gt;%
+      dplyr::filter(!is.na(component)) %&gt;% #### only show CS
+      dplyr::mutate(KEGGPathwayName = sapply(as.character(geneSet), getKEGGPathwayName)) %&gt;% # extract Go term names
+      dplyr::select(geneSet, KEGGPathwayName, everything()) # re-order
+  }
+  
+  # dt %&gt;%
+  #   dplyr::select(-c(in_cs)) %&gt;%
+  #   reactable::reactable(
+  #     filterable=TRUE,
+  #     minRows=10,
+  #     columns = list(
+  #       pip = reactable::colDef(format = reactable::colFormat(digits = 3)),
+  #       logOddsRatio = reactable::colDef(style= function(value){color_sign(value)},
+  #                                        format = reactable::colFormat(digits = 3)),
+  #       beta = reactable::colDef(style= function(value){color_sign(value)},
+  #                                format = reactable::colFormat(digits = 3)),
+  #       nlog10pFishersExact = reactable::colDef(format = reactable::colFormat(digits = 3))
+  #     ),
+  #     rowStyle = function(index){
+  #       if(dt$in_cs[index] == TRUE){
+  #         list(background = &quot;#e5f5e0&quot;)
+  #       }
+  #     },
+  #     defaultSorted = list(nlog10pFishersExact=&#39;desc&#39;)
+  #   )
+  DT::datatable(dt,options = list(pageLength=10))
+}</code></pre>
+</div>
+</div>
+<div id="afib-ebi-a-gcst006414" class="section level1">
+<h1>aFib-ebi-a-GCST006414</h1>
+<div id="go-biological-process" class="section level2">
+<h2>Go Biological Process</h2>
+<div id="modelling-z-scores-using-susie" class="section level3">
+<h3>Modelling z-scores using Susie</h3>
+<pre class="r"><code>load(&quot;/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/aFib-ebi-a-GCST006414_gobp.rdata&quot;)
+gseasusie::enrichment_volcano(linear.fit, linear.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-4de263013227ca78a293" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-4de263013227ca78a293">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4","5","6","7","8","9","10"],["GO:0048738","GO:0050907","GO:0050911","GO:0050906","GO:0007186","GO:0019065","GO:0075509","GO:0043402","GO:0051141","GO:2000640"],["cardiac muscle tissue development","detection of chemical stimulus involved in sensory perception","detection of chemical stimulus involved in sensory perception of smell","detection of stimulus involved in sensory perception","G protein-coupled receptor signaling pathway","receptor-mediated endocytosis of virus by host cell","endocytosis involved in viral entry into host cell","glucocorticoid mediated signaling pathway","negative regulation of NK T cell proliferation","positive regulation of SREBP signaling pathway"],[0.765746710724477,-0.0482282778987781,-0.221670847380811,-0.015009983512092,-0.08182068916032979,2.857893325209,2.857893325209,3.92712616050931,3.34963232901898,3.34963232901898],[0.9999701356608672,0.1165878772374856,0.4886537484135351,0.03948084439307342,0.3306029219121251,0.5000018160117106,0.5000018160117106,0.9709215454534612,0.4874652753986466,0.4874652753986466],[33,1,1,3,27,3,3,2,1,1],[199,409,361,462,1264,3,3,3,1,1],[1.538236541951833,-2.920486741222899,-2.792183878264225,-1.940118272546976,-0.7514845878277691,null,null,3.811684330893258,null,null],[10.79164397390144,6.209918709023407,5.382686540320232,5.254649955781034,4.492548454418264,4.117750129242024,4.117750129242024,2.27988305018808,1.371984277824585,1.371984277824585],["TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE"],["L4","L3","L3","L3","L3","L2","L2","L6","L5","L5"],[1,54,73,75,97,114,115,409,1092,1093]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>goTermName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="modelling-binarized-y-using-logistic-susie" class="section level3">
+<h3>Modelling binarized y using logistic Susie</h3>
+<pre class="r"><code>gseasusie::enrichment_volcano(logistic.fit, logistic.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_logistic_susie(logistic.fit, logistic.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-20575149739a71fc930f" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-20575149739a71fc930f">{"x":{"filter":"none","vertical":false,"data":[["1","2"],["GO:0048738","GO:0086001"],["cardiac muscle tissue development","cardiac muscle cell action potential"],[1.334652186350755,1.90821731485375],[0.9999672915887802,0.9980137013495531],[33,18],[199,67],[1.538236541951833,2.137379653285166],[10.79164397390144,9.666905015640069],["TRUE","TRUE"],["L2","L1"],[1,5]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>goTermName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<div id="go-molecular-function" class="section level2">
+<h2>Go Molecular Function</h2>
+<div id="modelling-z-scores-using-susie-1" class="section level3">
+<h3>Modelling z-scores using Susie</h3>
+<pre class="r"><code>load(&quot;/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/aFib-ebi-a-GCST006414_gomf.rdata&quot;)
+gseasusie::enrichment_volcano(linear.fit, linear.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-a23c348805048a1f64c7" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-a23c348805048a1f64c7">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4","5","6","7","8","9","10","11","12"],["GO:0004930","GO:0003690","GO:0004984","GO:1990837","GO:0044212","GO:0001067","GO:0000976","GO:0004883","GO:0038050","GO:0045183","GO:0086041","GO:0031883"],["G protein-coupled receptor activity","double-stranded DNA binding","olfactory receptor activity","sequence-specific double-stranded DNA binding",null,"transcription regulatory region nucleic acid binding","transcription cis-regulatory region binding","nuclear glucocorticoid receptor activity",null,"translation factor activity, non-nucleic acid binding","voltage-gated potassium channel activity involved in SA node cell action potential depolarization","taste receptor binding"],[-0.303235549656515,0.0499383317467777,-0.0552016152969024,0.06812755598220729,0.0619856240435644,0.0579615348367312,0.0206341424747641,4.12118898311972,4.12118898311972,8.002688612095699,6.52718226060682,6.72467770679788],[0.884787425264011,0.1906520754330796,0.1151404709600358,0.2455910247047608,0.2329298446062621,0.2184095261405459,0.07489827134800953,0.4999910296022396,0.4999910296022396,0.9998528632577703,0.9613410782718285,0.9751528046209557],[5,70,1,64,65,65,58,1,1,1,1,1],[783,904,361,812,884,886,770,1,1,1,1,1],[-1.994816256788661,0.6678431329905697,-2.811633681849293,0.6834916286238966,0.6051000706967835,0.6025264555952027,0.6275253248798,null,null,null,null,null],[9.375971499019172,5.711769384082522,5.553872558806792,5.491696636965962,4.575963016951897,4.561171890213411,4.426120485165231,1.363906220051178,1.363906220051178,1.363906220051178,1.363906220051178,1.363906220051178],["TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE"],["L1","L4","L1","L4","L4","L4","L4","L2","L2","L3","L9","L5"],[1,3,4,5,10,11,12,185,186,203,204,213]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>goTermName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="modelling-binarized-y-using-logistic-susie-1" class="section level3">
+<h3>Modelling binarized y using logistic Susie</h3>
+<pre class="r"><code>gseasusie::enrichment_volcano(logistic.fit, logistic.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_logistic_susie(logistic.fit, logistic.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-93928d62269dcef60a51" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-93928d62269dcef60a51">{"x":{"filter":"none","vertical":false,"data":[[],[],[],[],[],[],[],[],[],[],[],[]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>goTermName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<div id="go-cellular-component" class="section level2">
+<h2>Go Cellular Component</h2>
+<div id="modelling-z-scores-using-susie-2" class="section level3">
+<h3>Modelling z-scores using Susie</h3>
+<pre class="r"><code>load(&quot;/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/aFib-ebi-a-GCST006414_gocc.rdata&quot;)
+
+gseasusie::enrichment_volcano(linear.fit, linear.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-16707cd634e93674753d" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-16707cd634e93674753d">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4","5","6","7","8","9","10"],["GO:0030017","GO:0031674","GO:0030018","GO:0005654","GO:0044428","GO:0031981","GO:0005737","GO:0044444","GO:0002199","GO:0090534"],["sarcomere","I band","Z disc","nucleoplasm",null,"nuclear lumen","cytoplasm",null,"zona pellucida receptor complex","calcium ion-transporting ATPase complex"],[0.0222584687341838,0.083067699730312,0.669026047760504,0.0259073562140602,0.0507458336028004,0.07871100148459691,0.00586143811311577,0.0879566550934963,2.27162660329157,6.24062214024233],[0.037738888033645,0.1129092667615225,0.8327013899608704,0.1608735966966848,0.3373113326455587,0.5033551752899744,0.06502511865808502,0.8987649067200384,0.9712880302177368,0.9800834456121588],[27,21,20,197,240,223,522,449,3,1],[194,136,125,3394,4330,3972,11085,9350,7,1],[1.331092498289045,1.447465168842422,1.488838287444425,0.4403945844359622,0.4069631754796152,0.4132086267924893,0.3687696743839101,0.3290606498856175,2.841719896748874,null],[7.340407948266007,6.613954989466467,6.585824741477969,6.193782680993202,6.047031994296959,5.97294803350388,5.045414213148652,4.633720783295006,2.641102974995492,1.376053843953054],["TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE"],["L1","L1","L1","L2","L2","L2","L4","L4","L5","L3"],[3,5,6,9,10,11,20,24,43,123]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>goTermName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="modelling-binarized-y-using-logistic-susie-2" class="section level3">
+<h3>Modelling binarized y using logistic Susie</h3>
+<pre class="r"><code>gseasusie::enrichment_volcano(logistic.fit, logistic.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_logistic_susie(logistic.fit, logistic.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-37e46cf92521dcbed3f8" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-37e46cf92521dcbed3f8">{"x":{"filter":"none","vertical":false,"data":[[],[],[],[],[],[],[],[],[],[],[],[]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>goTermName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<div id="kegg" class="section level2">
+<h2>KEGG</h2>
+<div id="modelling-z-scores-using-susie-3" class="section level3">
+<h3>Modelling z-scores using Susie</h3>
+<pre class="r"><code>load(&quot;/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/aFib-ebi-a-GCST006414_kegg.rdata&quot;)
+gseasusie::enrichment_volcano(linear.fit, linear.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-99e959167faff8d1fc37" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-99e959167faff8d1fc37">{"x":{"filter":"none","vertical":false,"data":[["1"],["hsa04740"],["Olfactory transduction - Homo sapiens (human)"],[-0.45454733402046],[0.9999999865093714],[4],[407],[-1.57201779563717],[3.874300019709557],["TRUE"],["L1"],[4]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>KEGGPathwayName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="modelling-binarized-y-using-logistic-susie-3" class="section level3">
+<h3>Modelling binarized y using logistic Susie</h3>
+<pre class="r"><code>gseasusie::enrichment_volcano(logistic.fit, logistic.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-9-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_logistic_susie(logistic.fit, logistic.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-4a6133f685aa29daac40" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-4a6133f685aa29daac40">{"x":{"filter":"none","vertical":false,"data":[[],[],[],[],[],[],[],[],[],[],[],[]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>KEGGPathwayName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+</div>
+<div id="ibd-ebi-a-gcst004131" class="section level1">
+<h1>IBD-ebi-a-GCST004131</h1>
+<div id="go-biological-process-1" class="section level2">
+<h2>Go Biological Process</h2>
+<div id="modelling-z-scores-using-susie-4" class="section level3">
+<h3>Modelling z-scores using Susie</h3>
+<pre class="r"><code>load(&quot;/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/IBD-ebi-a-GCST004131_gobp.rdata&quot;)
+gseasusie::enrichment_volcano(linear.fit, linear.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-d72b6eff4afa454a8832" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-d72b6eff4afa454a8832">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4","5","6","7","8","9","10"],["GO:0034097","GO:0071345","GO:0019221","GO:0030098","GO:0030217","GO:0002399","GO:0002505","GO:0002506","GO:0065006","GO:0071823"],["response to cytokine","cellular response to cytokine stimulus","cytokine-mediated signaling pathway","lymphocyte differentiation","T cell differentiation","MHC class II protein complex assembly","antigen processing and presentation of polysaccharide antigen via MHC class II",null,null,"protein-carbohydrate complex subunit organization"],[0.0624486965167417,0.272261419541085,0.0271087380422312,0.0191019367249429,0.562649674211013,2.17756244620551,0.68108168808128,0.68108168808128,0.68108168808128,0.68108168808128],[0.1831056514977328,0.7514198160578229,0.06546978854953078,0.0410626657910641,0.9325307927196923,0.4748630166812173,0.1263438349542995,0.1263438349542995,0.1263438349542995,0.1263438349542995],[176,166,125,70,53,3,2,2,2,2],[1048,967,669,327,226,3,2,2,2,2],[0.9247563264497238,0.9472209093087821,1.032306750133723,1.175433095364593,1.284719373233753,null,null,null,null,null],[21.23003426056497,21.00751094009738,18.70628954648757,13.70871368192445,12.14815633032977,3.284945351985242,2.189645278181845,2.189645278181845,2.189645278181845,2.189645278181845],["TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE"],["L1","L1","L1","L2","L2","L3","L3","L3","L3","L3"],[1,2,5,17,21,402,759,760,761,762]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>goTermName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="modelling-binarized-y-using-logistic-susie-4" class="section level3">
+<h3>Modelling binarized y using logistic Susie</h3>
+<pre class="r"><code>gseasusie::enrichment_volcano(logistic.fit, logistic.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_logistic_susie(logistic.fit, logistic.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-73d12cd98287c4e0164c" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-73d12cd98287c4e0164c">{"x":{"filter":"none","vertical":false,"data":[["1","2","3"],["GO:0034097","GO:0071345","GO:0046649"],["response to cytokine","cellular response to cytokine stimulus","lymphocyte activation"],[0.5908895692964737,0.1780592804064735,0.7424537568542278],[0.7728095151986336,0.2282587517488111,0.9992769605276386],[176,166,115],[1048,967,620],[0.9247563264497238,0.9472209093087821,1.017331311413141],[21.23003426056497,21.00751094009738,16.95502437669051],["TRUE","TRUE","TRUE"],["L1","L1","L2"],[1,2,7]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>goTermName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<div id="go-molecular-function-1" class="section level2">
+<h2>Go Molecular Function</h2>
+<div id="modelling-z-scores-using-susie-5" class="section level3">
+<h3>Modelling z-scores using Susie</h3>
+<pre class="r"><code>load(&quot;/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/IBD-ebi-a-GCST004131_gomf.rdata&quot;)
+gseasusie::enrichment_volcano(linear.fit, linear.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-12-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-0796cbf5802287e6981e" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-0796cbf5802287e6981e">{"x":{"filter":"none","vertical":false,"data":[["1","2","3"],["GO:0032395","GO:0005515","GO:0005143"],["MHC class II receptor activity","protein binding","interleukin-12 receptor binding"],[4.29610738383201,0.142834136079106,2.96042356663493],[0.9999999997819723,0.9951171652055746,0.9631994546836546],[7,938,3],[9,10754,6],[3.68737912346174,0.2825089895661156,2.431374460284256],[6.155434168114463,4.778126440259938,2.055994169190598],["TRUE","TRUE","TRUE"],["L1","L2","L3"],[1,10,75]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>goTermName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="modelling-binarized-y-using-logistic-susie-5" class="section level3">
+<h3>Modelling binarized y using logistic Susie</h3>
+<pre class="r"><code>gseasusie::enrichment_volcano(logistic.fit, logistic.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-13-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_logistic_susie(logistic.fit, logistic.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-35c46d2ddbc1fab8b4dc" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-35c46d2ddbc1fab8b4dc">{"x":{"filter":"none","vertical":false,"data":[["1"],["GO:0032395"],["MHC class II receptor activity"],[3.465690266205596],[0.9608682689926239],[7],[9],[3.68737912346174],[6.155434168114463],["TRUE"],["L1"],[1]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>goTermName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<div id="go-cellular-component-1" class="section level2">
+<h2>Go Cellular Component</h2>
+<div id="modelling-z-scores-using-susie-6" class="section level3">
+<h3>Modelling z-scores using Susie</h3>
+<pre class="r"><code>load(&quot;/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/IBD-ebi-a-GCST004131_gocc.rdata&quot;)
+
+gseasusie::enrichment_volcano(linear.fit, linear.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-14-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-2a1b6e0e6b8a75d77da4" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-2a1b6e0e6b8a75d77da4">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4","5"],["GO:0042613","GO:0005654","GO:0044428","GO:0031981","GO:0005829"],["MHC class II protein complex","nucleoplasm",null,"nuclear lumen","cytosol"],[4.82887021069541,0.04966837957993,0.0451333163360029,0.0440181708354266,0.135931554940669],[0.9999999260356247,0.3393585133007578,0.3362693883022556,0.3190864783688554,0.9994323254426026],[11,350,427,395,446],[13,3247,4138,3798,4747],[4.158558760980386,0.4298705594307409,0.3956989229225029,0.3955262815673751,0.2603681246443521],[10.27008625045312,9.661247634937043,9.391968535021025,8.961729064349523,4.567414140503378],["TRUE","TRUE","TRUE","TRUE","TRUE"],["L1","L5","L5","L5","L2"],[1,2,3,4,14]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>goTermName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="modelling-binarized-y-using-logistic-susie-6" class="section level3">
+<h3>Modelling binarized y using logistic Susie</h3>
+<pre class="r"><code>gseasusie::enrichment_volcano(logistic.fit, logistic.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-15-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_logistic_susie(logistic.fit, logistic.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-f41426fe0b90d0c09df4" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-f41426fe0b90d0c09df4">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4"],["GO:0042613","GO:0005654","GO:0044428","GO:0031981"],["MHC class II protein complex","nucleoplasm",null,"nuclear lumen"],[4.119865181202733,0.2767450430653163,0.04241713802144842,0.04126525502619564],[0.9916595870282744,0.752829809060943,0.135682180906615,0.1291627462166177],[11,350,427,395],[13,3247,4138,3798],[4.158558760980386,0.4298705594307409,0.3956989229225029,0.3955262815673751],[10.27008625045312,9.661247634937043,9.391968535021025,8.961729064349523],["TRUE","TRUE","TRUE","TRUE"],["L1","L2","L2","L2"],[1,2,3,4]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>goTermName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<div id="kegg-1" class="section level2">
+<h2>KEGG</h2>
+<div id="modelling-z-scores-using-susie-7" class="section level3">
+<h3>Modelling z-scores using Susie</h3>
+<pre class="r"><code>load(&quot;/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/IBD-ebi-a-GCST004131_kegg.rdata&quot;)
+gseasusie::enrichment_volcano(linear.fit, linear.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-16-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-35e1d0e81f5ada6ecac0" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-35e1d0e81f5ada6ecac0">{"x":{"filter":"none","vertical":false,"data":[["1","2"],["hsa05321","hsa05145"],["Inflammatory bowel disease - Homo sapiens (human)","Toxoplasmosis - Homo sapiens (human)"],[1.87720693060534,0.8394361950021419],[0.9999999999956416,0.9996937427119247],[31,35],[61,107],[2.32868592766624,1.574204511244061],[15.78582104296432,10.7146288717432],["TRUE","TRUE"],["L1","L2"],[1,7]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>KEGGPathwayName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="modelling-binarized-y-using-logistic-susie-7" class="section level3">
+<h3>Modelling binarized y using logistic Susie</h3>
+<pre class="r"><code>gseasusie::enrichment_volcano(logistic.fit, logistic.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-17-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_logistic_susie(logistic.fit, logistic.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-a41f9b9304ecbba20fc2" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-a41f9b9304ecbba20fc2">{"x":{"filter":"none","vertical":false,"data":[["1","2"],["hsa05321","hsa05166"],["Inflammatory bowel disease - Homo sapiens (human)","Human T-cell leukemia virus 1 infection - Homo sapiens (human)"],[1.997483845846443,0.8825129579910582],[0.9999960619822924,0.9999854468687097],[31,59],[61,247],[2.32868592766624,1.157385212892526],[15.78582104296432,10.99429090477454],["TRUE","TRUE"],["L1","L2"],[1,4]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>KEGGPathwayName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+</div>
+<div id="ldl-ukb-d-30780_irnt" class="section level1">
+<h1>LDL-ukb-d-30780_irnt</h1>
+<div id="go-biological-process-2" class="section level2">
+<h2>Go Biological Process</h2>
+<div id="modelling-z-scores-using-susie-8" class="section level3">
+<h3>Modelling z-scores using Susie</h3>
+<pre class="r"><code>load(&quot;/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/LDL-ukb-d-30780_irnt_gobp.rdata&quot;)
+gseasusie::enrichment_volcano(linear.fit, linear.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-18-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-80db18273cfc4a9b8682" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-80db18273cfc4a9b8682">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4","5","6"],["GO:0007186","GO:0052696","GO:0043691","GO:0060333","GO:0031424","GO:0018916"],["G protein-coupled receptor signaling pathway","flavonoid glucuronidation","reverse cholesterol transport","interferon-gamma-mediated signaling pathway","keratinization","nitrobenzene metabolic process"],[-0.364384893876675,3.46560458411555,3.05294168639087,1.21443187226454,-0.800019542302593,5.16534171309751],[0.9992618063395788,0.9923803469404869,0.9892245298213366,0.9999652339403424,0.9953563041886848,0.9996849884224959],[72,9,12,27,6,4],[1248,9,16,84,205,4],[-0.7715927950658782,null,3.171169595531839,1.329941741161061,-1.4458378460576,null],[11.13613505815517,8.550029683299639,8.33273192294555,6.616938802127081,4.731020167718215,3.797906484719461],["TRUE","TRUE","TRUE","TRUE","TRUE","TRUE"],["L2","L4","L1","L5","L3","L7"],[1,14,17,41,70,105]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>goTermName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="modelling-binarized-y-using-logistic-susie-8" class="section level3">
+<h3>Modelling binarized y using logistic Susie</h3>
+<pre class="r"><code>gseasusie::enrichment_volcano(logistic.fit, logistic.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-19-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_logistic_susie(logistic.fit, logistic.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-6f19a3278480c8d45e45" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-6f19a3278480c8d45e45">{"x":{"filter":"none","vertical":false,"data":[["1","2","3"],["GO:0007186","GO:0055088","GO:0052696"],["G protein-coupled receptor signaling pathway","lipid homeostasis","flavonoid glucuronidation"],[-0.6657248986979092,1.350492382574562,5.700224872252116],[0.9999999989635725,0.9996558444176512,0.9963213475845522],[72,42,9],[1248,123,9],[-0.7715927950658782,1.427046908784324,null],[11.13613505815517,10.8742923757262,8.550029683299639],["TRUE","TRUE","TRUE"],["L3","L2","L1"],[1,2,14]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>goTermName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<div id="go-molecular-function-2" class="section level2">
+<h2>Go Molecular Function</h2>
+<div id="modelling-z-scores-using-susie-9" class="section level3">
+<h3>Modelling z-scores using Susie</h3>
+<pre class="r"><code>load(&quot;/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/LDL-ukb-d-30780_irnt_gomf.rdata&quot;)
+gseasusie::enrichment_volcano(linear.fit, linear.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-20-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-81a148ea6c961cf45e2c" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-81a148ea6c961cf45e2c">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4","5","6","7","8"],["GO:0097159","GO:0042605","GO:1901363","GO:0034185","GO:0019899","GO:0032395","GO:0008107","GO:0031127"],["organic cyclic compound binding","peptide antigen binding","heterocyclic compound binding","apolipoprotein binding","enzyme binding","MHC class II receptor activity","galactoside 2-alpha-L-fucosyltransferase activity","alpha-(1,2)-fucosyltransferase activity"],[0.111098727435432,2.04358477505013,0.0474579636101572,2.2166965959059,0.204995068412427,3.45816514005496,2.96394274448104,2.96394274448104],[0.6920478456747549,0.9930143949371683,0.300934958553671,0.9798051345496802,0.9969951290382747,0.9999888272770259,0.4959375782659201,0.4959375782659201],[730,11,718,9,305,6,2,2],[5765,21,5680,15,2199,9,2,2],[0.2405378171955329,2.182353167802155,0.2352021324983309,2.491674164049924,0.3001058373257307,2.777901094593887,null,null],[5.520420272851983,5.431569928222214,5.279973224791698,5.176040845021666,4.864496554199389,3.938913084847345,1.910399825433587,1.910399825433587],["TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE"],["L7","L5","L7","L9","L4","L1","L6","L6"],[3,5,6,7,11,15,90,91]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>goTermName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="modelling-binarized-y-using-logistic-susie-9" class="section level3">
+<h3>Modelling binarized y using logistic Susie</h3>
+<pre class="r"><code>gseasusie::enrichment_volcano(logistic.fit, logistic.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-21-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_logistic_susie(logistic.fit, logistic.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-425deb884d24b4ea5f7c" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-425deb884d24b4ea5f7c">{"x":{"filter":"none","vertical":false,"data":[[],[],[],[],[],[],[],[],[],[],[],[]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>goTermName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<div id="go-cellular-component-2" class="section level2">
+<h2>Go Cellular Component</h2>
+<div id="modelling-z-scores-using-susie-10" class="section level3">
+<h3>Modelling z-scores using Susie</h3>
+<pre class="r"><code>load(&quot;/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/LDL-ukb-d-30780_irnt_gocc.rdata&quot;)
+
+gseasusie::enrichment_volcano(linear.fit, linear.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-22-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-5674f84365e74fcb3e3c" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-5674f84365e74fcb3e3c">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4","5","6","7","8","9","10","11","12","13"],["GO:0043227","GO:0042611","GO:0043226","GO:0034364","GO:0034361","GO:0034385","GO:0034363","GO:0045111","GO:0005882","GO:0045095","GO:1990666","GO:0097728","GO:0120134"],["membrane-bounded organelle","MHC protein complex","organelle","high-density lipoprotein particle","very-low-density lipoprotein particle","triglyceride-rich plasma lipoprotein particle","intermediate-density lipoprotein particle","intermediate filament cytoskeleton","intermediate filament","keratin filament","PCSK9-LDLR complex","9+0 motile cilium","proximal portion of axoneme"],[0.176115869886859,3.53077843070123,0.0216696030998288,2.00279341787108,0.549678787851019,0.549678787851019,1.64584142424326,-0.202342753826693,-0.175582084874671,-0.188804582856793,5.67995688142374,3.52245460666019,3.52245460666019],[0.8539418565341796,0.9998118281773425,0.1027116238913922,0.9905907492411615,0.2767919510365404,0.2767919510365404,0.4195406536375557,0.4030951700805689,0.3224797539863363,0.2464841019577899,0.9921652577482836,0.4809540339650252,0.4809540339650252],[1426,12,1521,14,11,11,5,7,5,2,2,1,1],[11816,19,12835,26,19,19,5,219,182,89,2,1,1],[0.3262586776458024,2.624213852640913,0.3144571330470987,2.24009449393204,2.403079181516717,2.403079181516717,null,-1.341595319372624,-1.496361849087091,-1.698045054986018,null,null,null],[8.702209730750692,7.08803681359795,7.080613767137454,6.957701743475313,5.999286036524566,5.999286036524566,4.773108128770919,4.516473696344844,4.346183592793697,2.447801620108694,1.90863658157343,0.9542172575579386,0.9542172575579386],["TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE"],["L3","L1","L3","L2","L5","L5","L5","L6","L6","L6","L7","L4","L4"],[1,6,7,8,10,11,20,25,26,56,88,229,230]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>goTermName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="modelling-binarized-y-using-logistic-susie-10" class="section level3">
+<h3>Modelling binarized y using logistic Susie</h3>
+<pre class="r"><code>gseasusie::enrichment_volcano(logistic.fit, logistic.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-23-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_logistic_susie(logistic.fit, logistic.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-caaf43859fd0889ca800" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-caaf43859fd0889ca800">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4","5","6","7"],["GO:0043227","GO:0034358","GO:1990777","GO:0042611","GO:0034364","GO:0032994","GO:0071556"],["membrane-bounded organelle","plasma lipoprotein particle","lipoprotein particle","MHC protein complex","high-density lipoprotein particle","protein-lipid complex","integral component of lumenal side of endoplasmic reticulum membrane"],[0.2771237108637467,0.679960867452164,0.679960867452164,2.314184470268379,0.2992410424572598,0.2169137873866498,0.05435086205625195],[0.9847558347198531,0.36265326827817,0.36265326827817,0.9378675209479148,0.1472692006231456,0.1278080407477408,0.03478352238065074],[1426,17,17,12,14,17,12],[11816,36,36,19,26,38,23],[0.3262586776458024,1.975842505008872,1.975842505008872,2.624213852640913,2.24009449393204,1.875628044945185,2.171966914522751],[8.702209730750692,7.219237351581977,7.219237351581977,7.08803681359795,6.957701743475313,6.789315515348629,5.845144242257222],["TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE"],["L2","L1","L1","L15","L1","L1","L15"],[1,4,5,6,8,9,12]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>goTermName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<div id="kegg-2" class="section level2">
+<h2>KEGG</h2>
+<div id="modelling-z-scores-using-susie-11" class="section level3">
+<h3>Modelling z-scores using Susie</h3>
+<pre class="r"><code>load(&quot;/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/LDL-ukb-d-30780_irnt_kegg.rdata&quot;)
+gseasusie::enrichment_volcano(linear.fit, linear.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-24-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-28fc46a89962ff28ef30" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-28fc46a89962ff28ef30">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4","5","6"],["hsa04979","hsa04740","hsa05204","hsa00982","hsa05330","hsa05332"],["Cholesterol metabolism - Homo sapiens (human)","Olfactory transduction - Homo sapiens (human)","Chemical carcinogenesis - DNA adducts - Homo sapiens (human)","Drug metabolism - cytochrome P450 - Homo sapiens (human)","Allograft rejection - Homo sapiens (human)","Graft-versus-host disease - Homo sapiens (human)"],[2.92313152201972,-0.569595771644688,0.622753375068958,0.471307318468603,1.41320027690412,0.308130509832421],[1,0.9999999713307924,0.5748048554521239,0.4084600391823923,0.796062025275086,0.1907090813454362],[30,8,27,24,15,14],[50,395,81,69,35,36],[2.445562472223179,-1.92639889520694,1.337780911429003,1.400087683252226,1.734066152995037,1.568230635689854],[15.34087608657264,12.56860424803348,6.566097265035186,6.288425332607767,5.433668367159983,4.527900409241463],["TRUE","TRUE","TRUE","TRUE","TRUE","TRUE"],["L1","L3","L4","L4","L2","L2"],[1,2,4,5,7,11]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>KEGGPathwayName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="modelling-binarized-y-using-logistic-susie-11" class="section level3">
+<h3>Modelling binarized y using logistic Susie</h3>
+<pre class="r"><code>gseasusie::enrichment_volcano(logistic.fit, logistic.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-25-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_logistic_susie(logistic.fit, logistic.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-018aa8438ee3bad3ceee" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-018aa8438ee3bad3ceee">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4","5"],["hsa04979","hsa04740","hsa05322","hsa05204","hsa00982"],["Cholesterol metabolism - Homo sapiens (human)","Olfactory transduction - Homo sapiens (human)","Systemic lupus erythematosus - Homo sapiens (human)","Chemical carcinogenesis - DNA adducts - Homo sapiens (human)","Drug metabolism - cytochrome P450 - Homo sapiens (human)"],[2.417136783028784,-1.403053215420159,1.228773262847777,1.0119100810987,0.2663060167269354],[0.9999999999997028,1,0.9997874233647615,0.7951103043362256,0.2376397171153694],[30,8,34,27,24],[50,395,108,81,69],[2.445562472223179,-1.92639889520694,1.258637780609976,1.337780911429003,1.400087683252226],[15.34087608657264,12.56860424803348,7.405781112755173,6.566097265035186,6.288425332607767],["TRUE","TRUE","TRUE","TRUE","TRUE"],["L1","L3","L2","L4","L4"],[1,2,3,4,5]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>KEGGPathwayName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+</div>
+<div id="sbp-ukb-a-360" class="section level1">
+<h1>SBP-ukb-a-360</h1>
+<div id="go-biological-process-3" class="section level2">
+<h2>Go Biological Process</h2>
+<div id="modelling-z-scores-using-susie-12" class="section level3">
+<h3>Modelling z-scores using Susie</h3>
+<pre class="r"><code>load(&quot;/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/SBP-ukb-a-360_gobp.rdata&quot;)
+gseasusie::enrichment_volcano(linear.fit, linear.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-26-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-de3a36f80a2aa43a84ec" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-de3a36f80a2aa43a84ec">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4","5"],["GO:0050907","GO:0009593","GO:0050906","GO:0007606","GO:1904879"],["detection of chemical stimulus involved in sensory perception","detection of chemical stimulus","detection of stimulus involved in sensory perception","sensory perception of chemical stimulus","positive regulation of calcium ion transmembrane transport via high voltage-gated calcium channel"],[-0.306756913319,-0.0274696580435286,-0.0336595440574286,-0.126806303434663,8.8838816577285],[0.5820051298095505,0.05685795445611774,0.0708284786943234,0.2585721031604579,0.99822820045446],[33,37,40,40,1],[389,420,439,436,1],[-0.5819087253268195,-0.5408238461325106,-0.5036289135852491,-0.4958514435285395,null],[3.067608490967522,2.979794328151186,2.770165569539713,2.68339183178066,0.8512555695990117],["TRUE","TRUE","TRUE","TRUE","TRUE"],["L1","L1","L1","L1","L2"],[153,163,188,206,1852]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>goTermName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="modelling-binarized-y-using-logistic-susie-12" class="section level3">
+<h3>Modelling binarized y using logistic Susie</h3>
+<pre class="r"><code>gseasusie::enrichment_volcano(logistic.fit, logistic.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-27-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_logistic_susie(logistic.fit, logistic.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-0c9955ab111e1cca3425" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-0c9955ab111e1cca3425">{"x":{"filter":"none","vertical":false,"data":[[],[],[],[],[],[],[],[],[],[],[],[]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>goTermName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<div id="go-molecular-function-3" class="section level2">
+<h2>Go Molecular Function</h2>
+<div id="modelling-z-scores-using-susie-13" class="section level3">
+<h3>Modelling z-scores using Susie</h3>
+<pre class="r"><code>load(&quot;/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/SBP-ukb-a-360_gomf.rdata&quot;)
+gseasusie::enrichment_volcano(linear.fit, linear.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-28-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-dbf5faccd537f6ef246a" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-dbf5faccd537f6ef246a">{"x":{"filter":"none","vertical":false,"data":[["1"],["GO:0004930"],["G protein-coupled receptor activity"],[-0.412900917619049],[0.9960180937417991],[65],[740],[-0.5543485731605174],[5.071876145922242],["TRUE"],["L1"],[1]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>goTermName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="modelling-binarized-y-using-logistic-susie-13" class="section level3">
+<h3>Modelling binarized y using logistic Susie</h3>
+<pre class="r"><code>gseasusie::enrichment_volcano(logistic.fit, logistic.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-29-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_logistic_susie(logistic.fit, logistic.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-22f4f93b92540efc38d8" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-22f4f93b92540efc38d8">{"x":{"filter":"none","vertical":false,"data":[[],[],[],[],[],[],[],[],[],[],[],[]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>goTermName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<div id="go-cellular-component-3" class="section level2">
+<h2>Go Cellular Component</h2>
+<div id="modelling-z-scores-using-susie-14" class="section level3">
+<h3>Modelling z-scores using Susie</h3>
+<pre class="r"><code>load(&quot;/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/SBP-ukb-a-360_gocc.rdata&quot;)
+
+gseasusie::enrichment_volcano(linear.fit, linear.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-30-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-d38a10cf1f4a4312555e" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-d38a10cf1f4a4312555e">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4","5"],["GO:0005622","GO:0044424","GO:0005654","GO:0031981","GO:0044428"],["intracellular anatomical structure",null,"nucleoplasm","nuclear lumen",null],[0.152026429591092,0.0337287004399497,0.106275124172492,0.0236488614014759,0.0056246750526787],[0.8114789202106412,0.187924786434532,0.7435264311352091,0.1864835643500897,0.04963783857752269],[1924,1918,538,608,655],[13130,13105,3245,3796,4136],[0.3934197993130165,0.3811114304472505,0.2759080270519424,0.2331375817279027,0.2213688539782946],[10.2253486519369,9.690240876881424,6.320366591196198,5.082692587140629,4.875034800208576],["TRUE","TRUE","TRUE","TRUE","TRUE"],["L1","L1","L2","L2","L2"],[2,4,8,13,15]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>goTermName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="modelling-binarized-y-using-logistic-susie-14" class="section level3">
+<h3>Modelling binarized y using logistic Susie</h3>
+<pre class="r"><code>gseasusie::enrichment_volcano(logistic.fit, logistic.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-31-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_logistic_susie(logistic.fit, logistic.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-f6601b42c136c442346e" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-f6601b42c136c442346e">{"x":{"filter":"none","vertical":false,"data":[["1"],["GO:0043229"],["intracellular organelle"],[0.3179904473437869],[0.9972872600158993],[1727],[11542],[0.3494973989479069],[10.9195669500853],["TRUE"],["L1"],[1]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>goTermName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<div id="kegg-3" class="section level2">
+<h2>KEGG</h2>
+<div id="modelling-z-scores-using-susie-15" class="section level3">
+<h3>Modelling z-scores using Susie</h3>
+<pre class="r"><code>load(&quot;/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/SBP-ukb-a-360_kegg.rdata&quot;)
+gseasusie::enrichment_volcano(linear.fit, linear.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-32-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-0a9e6b1a7a900cea07f3" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-0a9e6b1a7a900cea07f3">{"x":{"filter":"none","vertical":false,"data":[["1","2","3"],["hsa05414","hsa05410","hsa04740"],["Dilated cardiomyopathy - Homo sapiens (human)","Hypertrophic cardiomyopathy - Homo sapiens (human)","Olfactory transduction - Homo sapiens (human)"],[0.134082875914071,0.6788305608763709,-0.526837091773444],[0.1841769525237262,0.8206897007640784,0.9999999459951381],[24,22,39],[86,80,386],[0.8679168471207717,0.8461612258028083,-0.4032453721162765],[3.081665996079598,2.760462900058739,1.710139923932167],["TRUE","TRUE","TRUE"],["L4","L4","L1"],[10,12,36]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>KEGGPathwayName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="modelling-binarized-y-using-logistic-susie-15" class="section level3">
+<h3>Modelling binarized y using logistic Susie</h3>
+<pre class="r"><code>gseasusie::enrichment_volcano(logistic.fit, logistic.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-33-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_logistic_susie(logistic.fit, logistic.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-9b395a4bb9eddbb07a43" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-9b395a4bb9eddbb07a43">{"x":{"filter":"none","vertical":false,"data":[[],[],[],[],[],[],[],[],[],[],[],[]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>KEGGPathwayName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+</div>
+<div id="scz-ieu-b-5102" class="section level1">
+<h1>SCZ-ieu-b-5102</h1>
+<div id="go-biological-process-4" class="section level2">
+<h2>Go Biological Process</h2>
+<div id="modelling-z-scores-using-susie-16" class="section level3">
+<h3>Modelling z-scores using Susie</h3>
+<pre class="r"><code>load(&quot;/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/SCZ-ieu-b-5102_gobp.rdata&quot;)
+gseasusie::enrichment_volcano(linear.fit, linear.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-34-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-32e9027c444b11c54a16" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-32e9027c444b11c54a16">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4","5","6","7"],["GO:0050907","GO:0009593","GO:0051606","GO:0007156","GO:0031424","GO:0006214","GO:0046127"],["detection of chemical stimulus involved in sensory perception","detection of chemical stimulus","detection of stimulus","homophilic cell adhesion via plasma membrane adhesion molecules","keratinization","thymidine catabolic process","pyrimidine deoxyribonucleoside catabolic process"],[-0.6199703004466069,-0.0224463921740609,-0.058816310158063,0.928476258913841,-0.781957001060731,4.44773132516225,4.44773132516225],[0.8282707949313394,0.03239001210194092,0.09889108040036421,0.9999840956003203,0.9868941673151014,0.4989490954035123,0.4989490954035123],[17,22,46,56,7,1,1],[376,407,574,162,192,1,1],[-1.422116841396581,-1.23425054214599,-0.8141558768169996,1.025315029290087,-1.636870100937588,null,null],[11.62051784034656,10.53036529474966,8.096592858349913,8.078476564945843,7.052262501528254,0.7925253048665225,0.7925253048665225],["TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE"],["L1","L1","L1","L2","L3","L5","L5"],[1,3,14,15,25,1858,1859]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>goTermName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="modelling-binarized-y-using-logistic-susie-16" class="section level3">
+<h3>Modelling binarized y using logistic Susie</h3>
+<pre class="r"><code>gseasusie::enrichment_volcano(logistic.fit, logistic.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-35-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_logistic_susie(logistic.fit, logistic.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-ddd6af3b79767d761cfa" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-ddd6af3b79767d761cfa">{"x":{"filter":"none","vertical":false,"data":[["1","2"],["GO:0050808","GO:0007186"],["synapse organization","G protein-coupled receptor signaling pathway"],[0.7804510282166108,-0.5854651957250637],[0.9999505294999039,0.999996552157127],[107,115],[356,1177],[0.8286516279734109,-0.6117914180603734],[10.56418285115284,10.08948695157161],["TRUE","TRUE"],["L1","L2"],[2,5]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>goTermName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<div id="go-molecular-function-4" class="section level2">
+<h2>Go Molecular Function</h2>
+<div id="modelling-z-scores-using-susie-17" class="section level3">
+<h3>Modelling z-scores using Susie</h3>
+<pre class="r"><code>load(&quot;/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/SCZ-ieu-b-5102_gomf.rdata&quot;)
+gseasusie::enrichment_volcano(linear.fit, linear.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-36-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-bd2fb33727c3bea89d26" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-bd2fb33727c3bea89d26">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4"],["GO:0004930","GO:0086056","GO:0004159","GO:0017113"],["G protein-coupled receptor activity","voltage-gated calcium channel activity involved in AV node cell action potential","dihydropyrimidine dehydrogenase (NAD+) activity","dihydropyrimidine dehydrogenase (NADP+) activity"],[-0.588184039581446,4.85361880814026,4.43162509145746,4.43162509145746],[0.9999946918901137,0.9795455516012819,0.499785911932935,0.499785911932935],[51,2,1,1],[724,3,1,1],[-0.9665315999793773,2.339594681004156,null,null],[13.06514474175068,1.155173370915616,0.7913259492550321,0.7913259492550321],["TRUE","TRUE","TRUE","TRUE"],["L1","L3","L4","L4"],[1,227,456,457]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>goTermName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="modelling-binarized-y-using-logistic-susie-17" class="section level3">
+<h3>Modelling binarized y using logistic Susie</h3>
+<pre class="r"><code>gseasusie::enrichment_volcano(logistic.fit, logistic.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-37-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_logistic_susie(logistic.fit, logistic.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-1e3db9c455638c246c90" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-1e3db9c455638c246c90">{"x":{"filter":"none","vertical":false,"data":[["1"],["GO:0004930"],["G protein-coupled receptor activity"],[-0.8408677989876949],[0.9999999754069084],[51],[724],[-0.9665315999793773],[13.06514474175068],["TRUE"],["L1"],[1]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>goTermName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<div id="go-cellular-component-4" class="section level2">
+<h2>Go Cellular Component</h2>
+<div id="modelling-z-scores-using-susie-18" class="section level3">
+<h3>Modelling z-scores using Susie</h3>
+<pre class="r"><code>load(&quot;/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/SCZ-ieu-b-5102_gocc.rdata&quot;)
+
+gseasusie::enrichment_volcano(linear.fit, linear.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-38-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-04604ad1601bc719a8b6" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-04604ad1601bc719a8b6">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4","5","6","7","8"],["GO:0098794","GO:0097458","GO:0032279","GO:0045211","GO:0097060","GO:0042611","GO:0005891","GO:0034704"],["postsynapse",null,"asymmetric synapse","postsynaptic membrane","synaptic membrane","MHC protein complex","voltage-gated calcium channel complex","calcium channel complex"],[0.008698367867499959,0.274199734791983,0.00909031522726267,0.414878524001679,0.0228837520328141,2.72180250593115,1.10923287556882,0.140159401130136],[0.02915812809874474,0.9620790463469977,0.02395872702811896,0.8608500269020116,0.06126282252925985,0.9750865442957874,0.8577138321280797,0.1409455232670515],[160,357,97,94,114,14,17,21],[573,1599,305,301,404,18,42,62],[0.739471071066378,0.4599989941565645,0.9149835798082064,0.8872789266049681,0.7447959083608432,2.913295758075436,1.274491783445296,0.9914711501936229],[12.64530656051556,11.32620615723444,11.31261660573765,10.46381169953306,9.411788288261596,7.935226913441017,3.885372514950925,3.169757122575658],["TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE"],["L5","L1","L5","L5","L5","L2","L4","L4"],[2,4,5,7,11,13,55,65]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>goTermName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="modelling-binarized-y-using-logistic-susie-18" class="section level3">
+<h3>Modelling binarized y using logistic Susie</h3>
+<pre class="r"><code>gseasusie::enrichment_volcano(logistic.fit, logistic.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-39-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_logistic_susie(logistic.fit, logistic.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-6d8345d07abb14d89d31" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-6d8345d07abb14d89d31">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4","5","6","7","8"],["GO:0045202","GO:0098794","GO:0044456","GO:0042611","GO:0042613","GO:0005654","GO:0044428","GO:0031981"],["synapse","postsynapse",null,"MHC protein complex","MHC class II protein complex","nucleoplasm",null,"nuclear lumen"],[0.4722557360119587,0.04397767507854537,0.03830216395714123,1.641198946830787,1.670707542580147,0.1876408169077184,0.05357889402763228,0.01230202534145649],[0.8717367753655942,0.07565531023885108,0.07245065111748394,0.5458786830747664,0.4605782304842875,0.717895066283627,0.2311991960824968,0.05665928312912494],[267,160,220,14,11,619,768,702],[1093,573,875,18,12,3243,4132,3791],[0.5712471661858647,0.739471071066378,0.6030301372740746,2.913295758075436,4.057501609385778,0.2679454204944247,0.2434488526795451,0.2301552440571686],[12.94707465589882,12.64530656051556,11.931493509917,7.935226913441017,7.740949268842358,6.669489045577627,6.467557333495939,5.524185616727227],["TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE"],["L1","L1","L1","L2","L2","L3","L3","L3"],[1,2,3,13,14,19,21,34]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>goTermName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<div id="kegg-4" class="section level2">
+<h2>KEGG</h2>
+<div id="modelling-z-scores-using-susie-19" class="section level3">
+<h3>Modelling z-scores using Susie</h3>
+<pre class="r"><code>load(&quot;/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/SCZ-ieu-b-5102_kegg.rdata&quot;)
+gseasusie::enrichment_volcano(linear.fit, linear.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-40-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-c5d03f78b440389719f7" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-c5d03f78b440389719f7">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4"],["hsa04740","hsa05322","hsa05203","hsa04261"],["Olfactory transduction - Homo sapiens (human)","Systemic lupus erythematosus - Homo sapiens (human)","Viral carcinogenesis - Homo sapiens (human)","Adrenergic signaling in cardiomyocytes - Homo sapiens (human)"],[-0.652896347204136,1.07093725997923,0.565299424983372,0.652017559206134],[0.9999999999730433,0.9999953154439238,0.9945622537596931,0.9844836820119773],[21,39,53,42],[372,97,186,138],[-1.181154399381741,1.308750666710641,0.7859452456214481,0.8751383982450985],[8.915110259833293,8.33885508925567,5.087852822300098,4.853302675046273],["TRUE","TRUE","TRUE","TRUE"],["L2","L1","L5","L3"],[1,2,7,9]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>KEGGPathwayName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="modelling-binarized-y-using-logistic-susie-19" class="section level3">
+<h3>Modelling binarized y using logistic Susie</h3>
+<pre class="r"><code>gseasusie::enrichment_volcano(logistic.fit, logistic.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-41-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_logistic_susie(logistic.fit, logistic.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-807d0dfa873b6e6f4d55" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-807d0dfa873b6e6f4d55">{"x":{"filter":"none","vertical":false,"data":[["1","2","3"],["hsa04740","hsa05322","hsa04261"],["Olfactory transduction - Homo sapiens (human)","Systemic lupus erythematosus - Homo sapiens (human)","Adrenergic signaling in cardiomyocytes - Homo sapiens (human)"],[-1.050001476193701,1.208851460090018,0.8745869683536575],[0.9999999999852757,0.9990703373088246,0.9903865793323678],[21,39,42],[372,97,138],[-1.181154399381741,1.308750666710641,0.8751383982450985],[8.915110259833293,8.33885508925567,4.853302675046273],["TRUE","TRUE","TRUE"],["L2","L1","L3"],[1,2,9]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>KEGGPathwayName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+</div>
+<div id="wbc-ieu-b-30" class="section level1">
+<h1>WBC-ieu-b-30</h1>
+<div id="go-biological-process-5" class="section level2">
+<h2>Go Biological Process</h2>
+<div id="modelling-z-scores-using-susie-20" class="section level3">
+<h3>Modelling z-scores using Susie</h3>
+<pre class="r"><code>load(&quot;/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/WBC-ieu-b-30_gobp.rdata&quot;)
+gseasusie::enrichment_volcano(linear.fit, linear.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-42-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-ab2e6f20d93a27428cf3" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-ab2e6f20d93a27428cf3">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15"],["GO:0031325","GO:0010604","GO:0002376","GO:0051173","GO:0050907","GO:0009593","GO:0010557","GO:0031424","GO:0045935","GO:0007600","GO:0051254","GO:0031328","GO:0006955","GO:1903508","GO:1902680"],["positive regulation of cellular metabolic process","positive regulation of macromolecule metabolic process","immune system process","positive regulation of nitrogen compound metabolic process","detection of chemical stimulus involved in sensory perception","detection of chemical stimulus","positive regulation of macromolecule biosynthetic process","keratinization","positive regulation of nucleobase-containing compound metabolic process","sensory perception","positive regulation of RNA metabolic process","positive regulation of cellular biosynthetic process","immune response","positive regulation of nucleic acid-templated transcription","positive regulation of RNA biosynthetic process"],[0.0367204669559658,0.0264060277018621,0.314646433564698,0.0118432243552632,-0.0378199739697606,-0.0731958196190295,0.0144710337333139,-1.0759646349792,0.106800950866317,-0.558051024408054,0.0250348458223106,0.0198358098964079,0.0426175267924635,0.0348780266391909,0.0285227337169478],[0.1378005459453636,0.1001372720307709,0.8770586273104528,0.0450922900255496,0.04199193234700926,0.08330207123211686,0.04434983437798667,0.9940397818638633,0.3134009898190023,0.8531740806101138,0.07286789296622875,0.06155420624369135,0.1052952634901861,0.09837133629097816,0.08087762433768964],[1450,1453,1271,1387,86,99,851,34,860,245,783,884,886,743,743],[3057,3075,2660,2940,403,434,1743,212,1768,868,1598,1830,1836,1515,1516],[0.3674024098848369,0.3588744965758979,0.3729596612810294,0.3512429135831431,-0.9277260445809545,-0.8420779478840423,0.3950517858167624,-1.271746668040914,0.3875598368727498,-0.5648448791464867,0.3987156487111548,0.3740079986268237,0.3719437514801784,0.3982890516174956,0.3968791662203596],[18.76718245139929,17.96394113956138,17.43433416878898,16.71463371368945,15.20382110045133,13.96274727819841,13.89981330635061,13.65378149946045,13.56082919613262,13.24457565610984,13.19086171620438,13.08912456950087,12.9722985823092,12.6044135202698,12.50966132537112],["TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE"],["L4","L4","L1","L4","L2","L2","L4","L3","L4","L2","L4","L4","L1","L4","L4"],[1,2,3,5,7,10,11,12,14,15,17,18,19,23,26]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>goTermName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="modelling-binarized-y-using-logistic-susie-20" class="section level3">
+<h3>Modelling binarized y using logistic Susie</h3>
+<pre class="r"><code>gseasusie::enrichment_volcano(logistic.fit, logistic.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-43-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_logistic_susie(logistic.fit, logistic.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-9dde5e237bdcefa6594f" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-9dde5e237bdcefa6594f">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4","5","6","7","8","9","10","11","12"],["GO:0031325","GO:0010604","GO:0002376","GO:0009893","GO:0051173","GO:0050907","GO:0007606","GO:0009593","GO:0010557","GO:0031424","GO:0007600","GO:0007156"],["positive regulation of cellular metabolic process","positive regulation of macromolecule metabolic process","immune system process","positive regulation of metabolic process","positive regulation of nitrogen compound metabolic process","detection of chemical stimulus involved in sensory perception","sensory perception of chemical stimulus","detection of chemical stimulus","positive regulation of macromolecule biosynthetic process","keratinization","sensory perception","homophilic cell adhesion via plasma membrane adhesion molecules"],[0.1606098381173891,0.06914909182356449,0.2666227930321247,0.008412389321791907,0.008389046915735131,-0.5941587269285608,-0.0623588001556518,-0.07944325040968217,0.005543621723612601,-1.209302084369182,-0.0103357902074735,0.8364598601809021],[0.6013890089491276,0.2644070826781311,0.9766609389736608,0.03477799199622189,0.03328996361197945,0.7485600225943996,0.08672675349626358,0.1079839597162536,0.01842337368324964,0.9999647044547562,0.02167603578780875,0.9711421963324591],[1450,1453,1271,1548,1387,86,103,99,851,34,245,97],[3057,3075,2660,3313,2940,403,450,434,1743,212,868,162],[0.3674024098848369,0.3588744965758979,0.3729596612810294,0.338868839441768,0.3512429135831431,-0.9277260445809545,-0.8383413116788325,-0.8420779478840423,0.3950517858167624,-1.271746668040914,-0.5648448791464867,0.8061622595968272],[18.76718245139929,17.96394113956138,17.43433416878898,16.95411708044318,16.71463371368945,15.20382110045133,14.34306576127525,13.96274727819841,13.89981330635061,13.65378149946045,13.24457565610984,6.357131477678911],["TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE"],["L1","L1","L4","L1","L1","L2","L2","L2","L1","L3","L2","L5"],[1,2,3,4,5,7,9,10,11,12,15,132]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>goTermName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<div id="go-molecular-function-5" class="section level2">
+<h2>Go Molecular Function</h2>
+<div id="modelling-z-scores-using-susie-21" class="section level3">
+<h3>Modelling z-scores using Susie</h3>
+<pre class="r"><code>load(&quot;/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/WBC-ieu-b-30_gomf.rdata&quot;)
+gseasusie::enrichment_volcano(linear.fit, linear.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-44-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-76d19e3a57fbba487b81" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-76d19e3a57fbba487b81">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4","5","6","7","8"],["GO:0005515","GO:0019899","GO:0004984","GO:1901363","GO:0097159","GO:0042605","GO:0045125","GO:0038036"],["protein binding","enzyme binding","olfactory receptor activity","heterocyclic compound binding","organic cyclic compound binding","peptide antigen binding","bioactive lipid receptor activity","sphingosine-1-phosphate receptor activity"],[0.259069929936093,0.294708237128738,-0.71398761610579,0.09099563978800369,0.102955964787785,3.37355070774546,0.234476431798684,3.29504287632324],[0.9999995876684019,0.9961604999720108,0.989477610394856,0.4561203554971456,0.5158695717978879,0.9999942672134721,0.08455970170768423,0.8773813316318716],[4658,1027,77,2386,2415,18,10,7],[10846,2135,355,5484,5565,21,12,8],[0.3487699245279203,0.3651296252256238,-0.9111192326718771,0.1994491530716172,0.1939222184348321,2.184770590511561,2.001297368486486,2.337404499841788],[22.17452812569842,14.10463507516228,13.13755060104569,8.337324178347883,7.977773719788838,4.354007693586759,2.296538018431421,2.045170854854724],["TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE"],["L1","L4","L3","L5","L5","L2","L6","L6"],[1,3,4,6,7,40,111,141]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>goTermName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="modelling-binarized-y-using-logistic-susie-21" class="section level3">
+<h3>Modelling binarized y using logistic Susie</h3>
+<pre class="r"><code>gseasusie::enrichment_volcano(logistic.fit, logistic.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-45-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_logistic_susie(logistic.fit, logistic.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-ad54cb05514572bb960b" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-ad54cb05514572bb960b">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4"],["GO:0005515","GO:1901363","GO:0097159","GO:0003676"],["protein binding","heterocyclic compound binding","organic cyclic compound binding","nucleic acid binding"],[0.2855432940113597,0.1091695488590895,0.05017494018605317,0.01469654197124906],[0.9999999965849179,0.6119687998323002,0.289825073558298,0.08021815528018561],[4658,2386,2415,1631],[10846,5484,5565,3701],[0.3487699245279203,0.1994491530716172,0.1939222184348321,0.1995391190128887],[22.17452812569842,8.337324178347883,7.977773719788838,6.767231755315158],["TRUE","TRUE","TRUE","TRUE"],["L1","L2","L2","L2"],[1,6,7,11]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>goTermName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<div id="go-cellular-component-5" class="section level2">
+<h2>Go Cellular Component</h2>
+<div id="modelling-z-scores-using-susie-22" class="section level3">
+<h3>Modelling z-scores using Susie</h3>
+<pre class="r"><code>load(&quot;/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/WBC-ieu-b-30_gocc.rdata&quot;)
+
+gseasusie::enrichment_volcano(linear.fit, linear.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-46-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-8d99c22b03d94d12a42e" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-8d99c22b03d94d12a42e">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4","5","6","7","8","9","10","11"],["GO:0044428","GO:0031981","GO:0005829","GO:0005622","GO:0044424","GO:0005882","GO:0045111","GO:0042611","GO:0071556","GO:0098553","GO:0044459"],[null,"nuclear lumen","cytosol","intracellular anatomical structure",null,"intermediate filament","intermediate filament cytoskeleton","MHC protein complex","integral component of lumenal side of endoplasmic reticulum membrane","lumenal side of endoplasmic reticulum membrane",null],[0.0206381570898793,0.280865097596296,0.242183671095829,0.147831638599808,0.08197891521752811,-1.00382050669613,-0.102635668844189,3.20750354169994,0.169196973948149,0.169196973948149,0.284785951702861],[0.07164173468215296,0.9043252884430217,0.9999985408354759,0.6382245553656394,0.3612539900230328,0.871229801095339,0.1014921350108611,0.8938124841267991,0.05552978856357138,0.05552978856357138,0.994959766968058],[1922,1775,2134,5495,5482,31,47,17,18,18,1123],[4166,3825,4784,13253,13228,187,223,19,22,22,2605],[0.3357852923018776,0.3408377296753508,0.2659984594720937,0.3028489443537103,0.2962819015204269,-1.222248935660196,-0.9263370898930887,2.547136891618219,1.911098222459142,1.911098222459142,0.1513040298777715],[19.65448808439961,19.16871599703309,13.67661784573901,13.39944996904618,12.93973025820708,11.29168426564178,8.694159958324116,4.945043354376564,4.055562934208357,4.055562934208357,3.307203226934766],["TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE"],["L1","L1","L3","L7","L7","L4","L4","L2","L2","L2","L6"],[1,2,5,6,7,8,17,36,48,49,69]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>goTermName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="modelling-binarized-y-using-logistic-susie-22" class="section level3">
+<h3>Modelling binarized y using logistic Susie</h3>
+<pre class="r"><code>gseasusie::enrichment_volcano(logistic.fit, logistic.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-47-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_logistic_susie(logistic.fit, logistic.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-17b5b571a57b957c1e5e" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-17b5b571a57b957c1e5e">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4","5","6","7","8"],["GO:0044428","GO:0031981","GO:0005829","GO:0005882","GO:0005912","GO:0070161","GO:0005924","GO:0005925"],[null,"nuclear lumen","cytosol","intermediate filament","adherens junction","anchoring junction",null,"focal adhesion"],[0.2035773101265722,0.06692400431637363,0.2210374896512053,-1.275123288633315,0.2375587188261704,0.1610461322052567,0.02683758704162873,0.02516798138391612],[0.7421559712045165,0.2424157226680672,0.9983375917309089,0.9974041103612447,0.5065353202103546,0.3527029494861019,0.0568403540950535,0.05345003618045874],[1922,1775,2134,31,276,281,215,214],[4166,3825,4784,187,518,533,393,391],[0.3357852923018776,0.3408377296753508,0.2659984594720937,-1.222248935660196,0.553973967745002,0.5311925786546978,0.6084021540818206,0.6093207580996518],[19.65448808439961,19.16871599703309,13.67661784573901,11.29168426564178,9.199070268005231,8.719081419855224,8.5110496759354,8.418385325443603],["TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE"],["L1","L1","L3","L2","L4","L4","L4","L4"],[1,2,5,8,14,16,20,21]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>goTermName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<div id="kegg-5" class="section level2">
+<h2>KEGG</h2>
+<div id="modelling-z-scores-using-susie-23" class="section level3">
+<h3>Modelling z-scores using Susie</h3>
+<pre class="r"><code>load(&quot;/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/WBC-ieu-b-30_kegg.rdata&quot;)
+gseasusie::enrichment_volcano(linear.fit, linear.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-48-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-07677d5acb58eba38195" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-07677d5acb58eba38195">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4"],["hsa04740","hsa05203","hsa04640","hsa00982"],["Olfactory transduction - Homo sapiens (human)","Viral carcinogenesis - Homo sapiens (human)","Hematopoietic cell lineage - Homo sapiens (human)","Drug metabolism - cytochrome P450 - Homo sapiens (human)"],[-1.05702833248811,0.920601268149015,1.18437903922922,-1.19003879774688],[1,0.9996584071545648,0.9895339436825532,0.9618724729482783],[89,123,57,12],[400,190,90,67],[-0.9511191701090391,0.98349359038864,0.9071220375974451,-1.183384963169649],[15.84945167153699,10.20995555906737,4.489315694455489,4.290158470369239],["TRUE","TRUE","TRUE","TRUE"],["L1","L4","L3","L5"],[1,2,16,25]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>KEGGPathwayName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="modelling-binarized-y-using-logistic-susie-23" class="section level3">
+<h3>Modelling binarized y using logistic Susie</h3>
+<pre class="r"><code>gseasusie::enrichment_volcano(logistic.fit, logistic.ora)</code></pre>
+<p><img src="figure/multi_tissue_ldmerge_validation_susie_fit.Rmd/unnamed-chunk-49-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>interactive_table_logistic_susie(logistic.fit, logistic.ora)</code></pre>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-f98129f5a9a7655be4f4" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-f98129f5a9a7655be4f4">{"x":{"filter":"none","vertical":false,"data":[["1","2"],["hsa04740","hsa05203"],["Olfactory transduction - Homo sapiens (human)","Viral carcinogenesis - Homo sapiens (human)"],[-0.8944089792028036,0.8049380348144659],[0.9999999999960204,0.998977247007335],[89,123],[400,190],[-0.9511191701090391,0.98349359038864],[15.84945167153699,10.20995555906737],["TRUE","TRUE"],["L1","L2"],[1,2]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>geneSet<\/th>\n      <th>KEGGPathwayName<\/th>\n      <th>beta<\/th>\n      <th>pip<\/th>\n      <th>overlap<\/th>\n      <th>geneSetSize<\/th>\n      <th>logOddsRatio<\/th>\n      <th>nlog10pFishersExact<\/th>\n      <th>in_cs<\/th>\n      <th>component<\/th>\n      <th>fisherRank<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span> Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.2.0 (2022-04-22)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Red Hat Enterprise Linux 8.4 (Ootpa)
+
+Matrix products: default
+BLAS/LAPACK: /software/openblas-0.3.13-el8-x86_64/lib/libopenblas_skylakexp-r0.3.13.so
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+
+attached base packages:
+[1] stats4    stats     graphics  grDevices utils     datasets  methods  
+[8] base     
+
+other attached packages:
+ [1] GO.db_3.16.0         AnnotationDbi_1.60.2 IRanges_2.32.0      
+ [4] S4Vectors_0.36.2     Biobase_2.58.0       BiocGenerics_0.44.0 
+ [7] lubridate_1.9.2      forcats_1.0.0        stringr_1.5.0       
+[10] dplyr_1.1.2          purrr_1.0.1          readr_2.1.4         
+[13] tidyr_1.3.0          tibble_3.2.1         ggplot2_3.4.2       
+[16] tidyverse_2.0.0      gseasusie_0.0.0.9000
+
+loaded via a namespace (and not attached):
+ [1] bitops_1.0-7           matrixStats_1.2.0      fs_1.5.2              
+ [4] bit64_4.0.5            httr_1.4.7             rprojroot_2.0.3       
+ [7] GenomeInfoDb_1.34.9    data.tree_1.1.0        tools_4.2.0           
+[10] bslib_0.3.1            DT_0.22                irlba_2.3.5           
+[13] utf8_1.2.2             R6_2.5.1               DBI_1.1.2             
+[16] colorspace_2.0-3       withr_2.5.0            tidyselect_1.2.0      
+[19] curl_4.3.2             bit_4.0.4              compiler_4.2.0        
+[22] git2r_0.30.1           VEB.Boost_0.0.0.9039   cli_3.6.2             
+[25] labeling_0.4.2         sass_0.4.1             scales_1.2.0          
+[28] mvtnorm_1.2-4          mixsqp_0.3-48          digest_0.6.29         
+[31] spatstat.utils_3.0-1   rmarkdown_2.21         XVector_0.38.0        
+[34] pkgconfig_2.0.3        htmltools_0.5.7        highr_0.9             
+[37] fastmap_1.1.0          htmlwidgets_1.6.2      susieR_0.12.40        
+[40] rlang_1.1.2            rstudioapi_0.14        RSQLite_2.3.1         
+[43] jquerylib_0.1.4        generics_0.1.3         farver_2.1.0          
+[46] jsonlite_1.8.7         crosstalk_1.2.0        mr.ash.alpha_0.1-43   
+[49] RCurl_1.98-1.12        magrittr_2.0.3         GenomeInfoDbData_1.2.9
+[52] Matrix_1.6-1.1         Rcpp_1.0.11            munsell_0.5.0         
+[55] fansi_1.0.3            lifecycle_1.0.4        stringi_1.7.6         
+[58] yaml_2.3.5             zlibbioc_1.44.0        plyr_1.8.7            
+[61] grid_4.2.0             blob_1.2.3             parallel_4.2.0        
+[64] promises_1.2.0.1       crayon_1.5.1           lattice_0.20-45       
+[67] Biostrings_2.66.0      hms_1.1.3              KEGGREST_1.38.0       
+[70] knitr_1.42             pillar_1.9.0           glue_1.6.2            
+[73] evaluate_0.15          emulator_1.2-21        png_0.1-7             
+[76] vctrs_0.6.1            tzdb_0.3.0             httpuv_1.6.5          
+[79] gtable_0.3.0           reshape_0.8.9          cachem_1.0.6          
+[82] xfun_0.38              later_1.3.0            memoise_2.0.1         
+[85] workflowr_1.7.1        timechange_0.2.0       ellipsis_0.3.2        </code></pre>
+</div>
+</div>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
