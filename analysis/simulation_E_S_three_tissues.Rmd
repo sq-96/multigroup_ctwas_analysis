@@ -57,6 +57,18 @@ plot_PIP_true_combined <- function(configtag, runtag,  simutags, ...){
    f1 <- caliPIP_plot_E_S_combined(phenofs, susieIfs, ...) 
    return(f1)
 }
+plot_PIP_trueL1 <- function(configtag, runtag,  simutags, ...){
+   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
+   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_config", configtag,"_LDR",".trueL1.susieIrss.txt")
+   f1 <- caliPIP_plot(phenofs, susieIfs, ...) 
+   return(f1)
+}
+plot_PIP_trueL1_combined <- function(configtag, runtag,  simutags, ...){
+   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
+   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_config", configtag,"_LDR",".trueL1.susieIrss.txt")
+   f1 <- caliPIP_plot_E_S_combined(phenofs, susieIfs, ...) 
+   return(f1)
+}
 ```
 
 ### Simulation 1: Expression and Splicing from Liver (3% PVE)
@@ -261,3 +273,9 @@ f2 <-  plot_PIP_true_combined(configtag, runtag, simutags, main = "Gene PIP Cali
 gridExtra::grid.arrange(f1, f2, ncol =2)
 ```
 
+### PIP Calibration Plot (True parameters, L1)
+```{r, fig.width= 8, fig.height= 4, echo=FALSE, warning=FALSE}
+f1 <- plot_PIP_trueL1(configtag, runtag, simutags, main = "Expression Trait PIP Calibration")
+f2 <-  plot_PIP_trueL1_combined(configtag, runtag, simutags, main = "Gene PIP Calibration")
+gridExtra::grid.arrange(f1, f2, ncol =2)
+```
