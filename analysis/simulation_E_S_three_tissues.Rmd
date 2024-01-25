@@ -261,9 +261,3 @@ f2 <-  plot_PIP_true_combined(configtag, runtag, simutags, main = "Gene PIP Cali
 gridExtra::grid.arrange(f1, f2, ncol =2)
 ```
 
-```{r}
-ctwas_res <- data.table::fread(paste0(results_dir, runtag, "_simu", simutags[5], "_config", configtag, "_LDR.susieIrss.txt"))
-ctwas_gene_res <- ctwas_res[ctwas_res$type!="SNP",]
-ctwas_gene_res[ctwas_gene_res$susie_pip>0.7 & ctwas_gene_res$susie_pip<0.8]
-```
-
