@@ -11,33 +11,56 @@ output:
 
 # Overview
 
-We validate [genes with susie pip > 0.8](https://sq-96.github.io/multigroup_ctwas_analysis/multi_tissue_ldmerge.html) by some trait-related pathways. Pathways are selected using MAGMA. Due to the correlation among candidate pathways, we employ SuSiE and logistic SuSiE to fine-map the pathways.
+We validate [genes with susie pip > 0.8](https://sq-96.github.io/multigroup_ctwas_analysis/multi_tissue_ldmerge.html) here. 
+
+The basic idea is:
+
+Some biological pathways are related to the traits. Genes within these pathways are more likely to be associated with these traits. Our approach involves aggregating these genes into a collective group. This allows us to assess whether the genes identified by cTWAS are overrepresented in this group. 
+
+However, the presence of common genes across multiple pathways presents a challenge to this straightforward aggregation approach. To address this, we propose weighting the pathways, assigning a unique score to each gene. By selecting genes that meet a specific score threshold, we can form a more refined group. We can then evaluate the enrichment of cTWAS-identified genes within this selectively grouped set.
 
 ## Model
 
 The model is $y=X*w$
 
-y is an n-dimensional vector representing gene-trait associations (n = number of genes). 
+y is an n-dimensional vector representing gene-trait associations (n = number of genes), which can be:
 
- - For SuSiE, y consists of z-scores computed by MAGMA
- - for logistic SuSiE, y is a binary vector indicating gene-trait relationships (genes with FDR < 0.05 as per MAGMA are marked 1).
+ - z-scores computed by MAGMA
+ - a binary vector indicating gene-trait relationships (genes with FDR < 0.05 as per MAGMA are marked 1).
 
 X is an n×m matrix (m = number of pathways) indicating gene membership in specific pathways.
+
+We fitted this model using different models.
+
+If y is a z-score vector, it can be fitted using 
+
+ - linear Susie
+ - XGBoost: regression with squared loss
+
+If y is a binarized vector, the model can be fitted using 
+
+ - logistic Susie
+ - XGBoost: logistic regression for binary classification, output probability
 
 ## Benchmarks
 
 The model fitting results in pathway weights, from which we predict gene labels $\hat{y}$. We then categorize genes based on these new labels. 
 
-- For SuSiE, we compute the p-values from the new labels(z-scores), then compute FDR. Genes with FDR < 0.05 are considered benchmarks. 
-- For logistic SuSiE, genes with labels > 0.5 are considered benchmarks.
+- For z-score model, we compute the p-values from the new labels(z-scores), then compute FDR. Then we tested different cutoffs for gene selection. The cutoffs are: 0.05,0.1,0.2
+
+- For binarized model. Genes with labels > 0.5/0.6/0.7/0.8 are considered benchmarks.
 
 ## Testing genes
 
-Genes from ctwas results are divided into two groups based on their SuSiE PIPs: high (>0.8) and moderate (0.8 > PIP > 0.5). 
+Genes from ctwas results are divided into different groups based on their SuSiE PIPs: 
+
+- high (>0.8) 
+- moderate (0.8 > PIP > 0.5)
+- low (<0.5)
 
 ## Fisher exact test
 
-We assess whether high-PIP genes are more enriched in our benchmarks than moderate-PIP genes using Fisher exact tests. 
+We assess whether high-PIP genes are more enriched in our benchmarks than other groups using Fisher exact tests. 
 
 The testing matrix is: 
 
@@ -45,7 +68,7 @@ The testing matrix is:
 
 fisher_matrix <- matrix(c("n1","n2","n3","n4"),nrow = 2,ncol = 2)
 rownames(fisher_matrix) <- c("#included","#notincluded")
-colnames(fisher_matrix) <- c("pip08","pip05")
+colnames(fisher_matrix) <- c("pip08","other group")
 
 print(fisher_matrix)
 ```
@@ -54,943 +77,532 @@ print(fisher_matrix)
 
 The pathways are from Go Biological Process (gobp), Go Molecular Function (gomf), Go Cellular Component (gocc) and KEGG.
 
-
 ## Functions
 
-```{r warning=F,message=FALSE}
-library(gseasusie)
-library(tidyverse)
-library(GO.db)
+```{r}
 
+# Function to compute and display benchmark genes and overlaps
+compute_gene_overlap_z <- function(threshold = 0.05) {
+  traits <- c("IBD-ebi-a-GCST004131", "LDL-ukb-d-30780_irnt", "SBP-ukb-a-360", "SCZ-ieu-b-5102", "WBC-ieu-b-30", "aFib-ebi-a-GCST006414")
+  folder_xgboost <- "/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost/"
+  folder_susie <- "/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/"
 
-# coeftable_linear<- function(linear_fit) {
-#   coef <- susieR::coef.susie(linear_fit)
-#   coef <- as.data.frame(cbind(names(coef), coef))
-#   colnames(coef) <- c("pwy", "beta")
-#   rownames(coef) <- seq(1,nrow(coef),by=1)
-#   DT::datatable(coef, 
-#                 caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', 
-#                                                   'Correct coef for linear fitting'), 
-#                 options = list(pageLength = 5))
-# }
+  sum <- matrix(nrow = length(traits), ncol = 3)
+  for (i in seq_along(traits)) {
+    xg <- get(load(paste0(folder_xgboost, "gene_labels_xgboost_", traits[i], ".rdata")))
+    xg_pass <- xg$SYMBOL[xg$pred_fdr_xgb < threshold]
+    xg_pass <- xg_pass[!duplicated(xg_pass)]
 
-color_sign = function(value) {
-  if (value > 0) {
-    color <- "#008000"
-  } else if (value < 0) {
-    color <- "#e00000"
-  } else {
-    color <- "#777"
+    susie <- get(load(paste0(folder_susie, "gene_labels_susie_", traits[i], ".rdata")))
+    susie_pass <- susie$SYMBOL[susie$fdr_pred_linsusie < threshold]
+    susie_pass <- susie_pass[!duplicated(susie_pass)]
+
+    overlap <- sum(xg_pass %in% susie_pass)
+    sum[i, ] <- c(length(susie_pass), length(xg_pass), overlap)
   }
-  list(color = color)
+
+  rownames(sum) <- traits
+  colnames(sum) <- c("#ofbenchmarkgene_susie", "#ofbenchmarkgene_xgboost", "#ofoverlap")
+
+  DT::datatable(sum, caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', '#of benchmark genes and the overlaps'), options = list(pageLength = 10))
 }
 
+compute_gene_overlap_b <- function(threshold = 0.5) {
+  traits <- c("IBD-ebi-a-GCST004131", "LDL-ukb-d-30780_irnt", "SBP-ukb-a-360", "SCZ-ieu-b-5102", "WBC-ieu-b-30", "aFib-ebi-a-GCST006414")
+  folder_xgboost <- "/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost/"
+  folder_susie <- "/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/"
 
-getGOTermName <- function(go_id) {
-  result <- try(Term(GOTERM[[go_id]]), silent = TRUE)
-  if (class(result) == "try-error") {
-    return(NA)
-  } else {
-    return(result)
+  sum <- matrix(nrow = length(traits), ncol = 3)
+  for (i in seq_along(traits)) {
+    xg <- get(load(paste0(folder_xgboost, "gene_labels_xgboost_", traits[i], ".rdata")))
+    xg_pass <- xg$SYMBOL[xg$pred_y_logi_xgb > threshold]
+    xg_pass <- xg_pass[!duplicated(xg_pass)]
+
+    susie <- get(load(paste0(folder_susie, "gene_labels_susie_", traits[i], ".rdata")))
+    susie_pass <- susie$SYMBOL[susie$y_pred_logi > threshold]
+    susie_pass <- susie_pass[!duplicated(susie_pass)]
+
+    overlap <- sum(xg_pass %in% susie_pass)
+    sum[i, ] <- c(length(susie_pass), length(xg_pass), overlap)
   }
+
+  rownames(sum) <- traits
+  colnames(sum) <- c("#ofbenchmarkgene_susie", "#ofbenchmarkgene_xgboost", "#ofoverlap")
+
+  DT::datatable(sum, caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', '#of benchmark genes and the overlaps'), options = list(pageLength = 10))
 }
 
-getKEGGPathwayName <- function(kegg_id) {
-  result <- try(KEGGREST::keggGet(kegg_id)[[1]]$NAME, silent = TRUE)
-  if (class(result) == "try-error") {
-    return(NA)
-  } else {
-    return(result)
-  }
-}
-
-interactive_table_linear_susie <- function(fit, ora) {
-  
-  fit <- fit
-  ora <- ora
-  
-  res <- gseasusie:::get_gene_set_summary(fit) %>%
-    dplyr::left_join(ora)
-  
-  coef <- susieR::coef.susie(fit)
-  coef <- as.data.frame(cbind(names(coef), coef))
-  colnames(coef) <- c("pwy", "beta")
-  rownames(coef) <- seq(1,nrow(coef),by=1)
-  
-  res_updated <- res %>%
-    # Ensure 'beta' in 'res' is of type double
-    mutate(beta = as.numeric(beta)) %>%
-    left_join(coef %>%
-                # Ensure 'beta' in 'coef' is of type double
-                mutate(beta = as.numeric(beta)), 
-              by = c("geneSet" = "pwy")) %>%
-    # Combine the two 'beta' columns, choosing 'coef' values first
-    mutate(beta = coalesce(beta.y, beta.x)) %>%
-    # Explicitly use `select` from `dplyr`
-    dplyr::select(-beta.y, -beta.x)
-  
-  res <- res_updated
-  
-  csdat <- gseasusie:::get_credible_set_summary(fit) %>%
-    dplyr::left_join(ora) %>%
-    dplyr::filter(in_cs, active_cs) %>%
-    dplyr::select(geneSet, component, in_cs) %>%
-    distinct()
-  
-  dt <- res %>% 
-    dplyr::filter(overlap > 0) %>%
-    dplyr::mutate(
-      logOddsRatio = log(oddsRatio),
-      nlog10pFishersExact = -log10(pFishersExact)
-    ) %>%
-    dplyr::left_join(csdat) %>%
-    dplyr::arrange(dplyr::desc(nlog10pFishersExact)) %>%
-    dplyr::mutate(
-      fisherRank = dplyr::row_number(),
-      in_cs = dplyr::if_else(is.na(in_cs), FALSE, in_cs)) %>%
-    dplyr::select(geneSet, beta, pip, overlap, geneSetSize, logOddsRatio, nlog10pFishersExact, in_cs, component, fisherRank) %>%
-    dplyr::mutate(dplyr::across(!where(is.numeric) , as.factor))
-  
-  
-  if(grepl("GO",dt$geneSet[1])) {
-      dt <- dt %>%
-      dplyr::filter(!is.na(component)) %>% #### only show CS
-      dplyr::mutate(goTermName = sapply(as.character(geneSet), getGOTermName)) %>% # extract Go term names
-      dplyr::select(geneSet, goTermName, everything()) # re-order
-  }else if (grepl("hsa",dt$geneSet[1])) {
-      dt <- dt %>%
-      dplyr::filter(!is.na(component)) %>% #### only show CS
-      dplyr::mutate(KEGGPathwayName = sapply(as.character(geneSet), getKEGGPathwayName)) %>% # extract Go term names
-      dplyr::select(geneSet, KEGGPathwayName, everything()) # re-order
-  }
-  
-  # dt %>%
-  #   dplyr::select(-c(in_cs)) %>%
-  #   reactable::reactable(
-  #     filterable=TRUE,
-  #     minRows=1,
-  #     columns = list(
-  #       pip = reactable::colDef(format = reactable::colFormat(digits = 3)),
-  #       logOddsRatio = reactable::colDef(style= function(value){color_sign(value)},
-  #                                        format = reactable::colFormat(digits = 3)),
-  #       beta = reactable::colDef(style= function(value){color_sign(value)},
-  #                                format = reactable::colFormat(digits = 3)),
-  #       nlog10pFishersExact = reactable::colDef(format = reactable::colFormat(digits = 3))
-  #     ),
-  #     rowStyle = function(index){
-  #       if(dt$in_cs[index] == TRUE){
-  #         list(background = "#e5f5e0")
-  #       }
-  #     },
-  #     defaultSorted = list(nlog10pFishersExact='desc')
-  #   )
-  # 
-  DT::datatable(dt,options = list(pageLength=10))
-  
-}
-
-interactive_table_logistic_susie <- function(fit, ora) {
-  
-  fit <- fit
-  ora <- ora
-  
-  res <- gseasusie:::get_gene_set_summary(fit) %>%
-    dplyr::left_join(ora)
-  
-  csdat <- gseasusie:::get_credible_set_summary(fit) %>%
-    dplyr::left_join(ora) %>%
-    dplyr::filter(in_cs, active_cs) %>%
-    dplyr::select(geneSet, component, in_cs) %>%
-    distinct()
-  
-  dt <- res %>% 
-    dplyr::filter(overlap > 0) %>%
-    dplyr::mutate(
-      logOddsRatio = log(oddsRatio),
-      nlog10pFishersExact = -log10(pFishersExact)
-    ) %>%
-    dplyr::left_join(csdat) %>%
-    dplyr::arrange(dplyr::desc(nlog10pFishersExact)) %>%
-    dplyr::mutate(
-      fisherRank = dplyr::row_number(),
-      in_cs = dplyr::if_else(is.na(in_cs), FALSE, in_cs)) %>%
-    dplyr::select(geneSet, beta, pip, overlap, geneSetSize, logOddsRatio, nlog10pFishersExact, in_cs, component, fisherRank) %>%
-    dplyr::mutate(dplyr::across(!where(is.numeric) , as.factor))
-  
-  
-  if(grepl("GO",dt$geneSet[1])) {
-      dt <- dt %>%
-      dplyr::filter(!is.na(component)) %>% #### only show CS
-      dplyr::mutate(goTermName = sapply(as.character(geneSet), getGOTermName)) %>% # extract Go term names
-      dplyr::select(geneSet, goTermName, everything()) # re-order
-  }else if (grepl("hsa",dt$geneSet[1])) {
-      dt <- dt %>%
-      dplyr::filter(!is.na(component)) %>% #### only show CS
-      dplyr::mutate(KEGGPathwayName = sapply(as.character(geneSet), getKEGGPathwayName)) %>% # extract Go term names
-      dplyr::select(geneSet, KEGGPathwayName, everything()) # re-order
-  }
-  
-  # dt %>%
-  #   dplyr::select(-c(in_cs)) %>%
-  #   reactable::reactable(
-  #     filterable=TRUE,
-  #     minRows=10,
-  #     columns = list(
-  #       pip = reactable::colDef(format = reactable::colFormat(digits = 3)),
-  #       logOddsRatio = reactable::colDef(style= function(value){color_sign(value)},
-  #                                        format = reactable::colFormat(digits = 3)),
-  #       beta = reactable::colDef(style= function(value){color_sign(value)},
-  #                                format = reactable::colFormat(digits = 3)),
-  #       nlog10pFishersExact = reactable::colDef(format = reactable::colFormat(digits = 3))
-  #     ),
-  #     rowStyle = function(index){
-  #       if(dt$in_cs[index] == TRUE){
-  #         list(background = "#e5f5e0")
-  #       }
-  #     },
-  #     defaultSorted = list(nlog10pFishersExact='desc')
-  #   )
-  DT::datatable(dt,options = list(pageLength=10))
-}
 ```
 
+# Fitting results
 
-# aFib-ebi-a-GCST006414
+## Susie 
 
-## Susie & Logistic Susie results
-
-### Go Biological Process
-
-#### Susie
-
-```{r warning=F,message=FALSE}
-load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/aFib-ebi-a-GCST006414_gobp.rdata")
-gseasusie::enrichment_volcano(linear.fit, linear.ora)
-interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
-```
-
-#### Logistice Susie
-
-```{r warning=F,message=FALSE}
-gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-interactive_table_logistic_susie(logistic.fit, logistic.ora)
-```
+[link to the results](https://sq-96.github.io/multigroup_ctwas_analysis/multi_tissue_ldmerge_validation_susie_fit.html)
 
 
-### Go Molecular Function
+## xgboost
 
-#### Susie
+[link to the results](https://sq-96.github.io/multigroup_ctwas_analysis/multi_tissue_ldmerge_validation_xgboost_fit.html)
 
-```{r warning=F,message=FALSE}
-load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/aFib-ebi-a-GCST006414_gomf.rdata")
-gseasusie::enrichment_volcano(linear.fit, linear.ora)
-interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
-```
+# Enrichment results (Fisher exact test)
 
-#### Logistice Susie
+## Susie - modelling z-scores
 
-```{r warning=F,message=FALSE}
-gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-interactive_table_logistic_susie(logistic.fit, logistic.ora)
-```
-
-
-### Go Cellular Component
-
-#### Susie
-
-```{r warning=F,message=FALSE}
-load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/aFib-ebi-a-GCST006414_gocc.rdata")
-
-gseasusie::enrichment_volcano(linear.fit, linear.ora)
-
-
-interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
-
-```
-
-#### Logistice Susie
-
-```{r warning=F,message=FALSE}
-gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-interactive_table_logistic_susie(logistic.fit, logistic.ora)
-```
-
-
-### KEGG
-
-#### Susie
-
-```{r warning=F,message=FALSE}
-load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/aFib-ebi-a-GCST006414_kegg.rdata")
-gseasusie::enrichment_volcano(linear.fit, linear.ora)
-
-
-interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
-```
-
-#### Logistice Susie
-
-```{r warning=F,message=FALSE}
-gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-interactive_table_logistic_susie(logistic.fit, logistic.ora)
-```
-
-## Validation
-
-```{r}
-load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher/fisher_aFib-ebi-a-GCST006414_linearsusie.rdata")
-
-DT::datatable(df_all, 
-                caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', 
-                                                  'Gene labels'), 
-                options = list(pageLength = 5))
-
-```
-
-
-### Susie
-
-```{r}
-DT::datatable(linear_selected, 
-                caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', 
-                                                  'Benchmark genes'), 
-                options = list(pageLength = 5))
-print(fisher_matrix)
-print(fisher_result)
-```
-
-
-### Logistic Susie
+### FDR cutoff for selecting benchmark genes = 0.05
 
 ```{r}
 
-load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher/fisher_aFib-ebi-a-GCST006414_logisusie.rdata")
-DT::datatable(linear_selected, 
-                caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', 
-                                                  'Benchmark genes'), 
-                options = list(pageLength = 5))
-print(fisher_matrix)
-print(fisher_result)
-```
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher_susie/fisher_zscore_allcutoff.rdata")
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher_susie/num_benchmark_genes_zscore_allcutoff.rdata")
+# Convert named vectors to data frames
+fisher_z_df <- as.data.frame(fisher_zscore_p$fdrcutoff_0.05)
+num_benchmark_genes_df <- as.data.frame(num_benchmark_genes_zscore$fdrcutoff_0.05)
 
+# Set row names as a new column
+fisher_z_df$id <- row.names(fisher_z_df)
+num_benchmark_genes_df$id <- row.names(num_benchmark_genes_df)
 
-# IBD-ebi-a-GCST004131
-## Susie & Logistic Susie results
+# Merge data frames by the new column
+merged_df <- merge(num_benchmark_genes_df,fisher_z_df,by = "id")
+#colnames(merged_df_0.05) <- c("traits","#of benchmark genes","fisher_z_p_pip08+/pip08-","fisher_z_p_pip08+/pip05-","fisher_z_p_pip08+/pip05~08")
+colnames(merged_df) <- c("traits","#of benchmark genes","pip>0.8/pip<0.8","pip>0.8/pip<0.5","pip>0.8/pip0.5~0.8")
 
-### Go Biological Process
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;',
+                                                  'Fisher exact test p values for different groups'),
+             options = list(pageLength = 6))
 
-#### Susie
-
-```{r warning=F,message=FALSE}
-load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/IBD-ebi-a-GCST004131_gobp.rdata")
-gseasusie::enrichment_volcano(linear.fit, linear.ora)
-
-
-interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
-```
-
-#### Logistice Susie
-
-```{r warning=F,message=FALSE}
-gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-interactive_table_logistic_susie(logistic.fit, logistic.ora)
-```
-
-
-### Go Molecular Function
-
-#### Susie
-
-```{r warning=F,message=FALSE}
-load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/IBD-ebi-a-GCST004131_gomf.rdata")
-gseasusie::enrichment_volcano(linear.fit, linear.ora)
-
-
-interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
-```
-
-#### Logistice Susie
-
-```{r warning=F,message=FALSE}
-gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-interactive_table_logistic_susie(logistic.fit, logistic.ora)
-```
-
-
-### Go Cellular Component
-
-#### Susie
-
-```{r warning=F,message=FALSE}
-load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/IBD-ebi-a-GCST004131_gocc.rdata")
-
-gseasusie::enrichment_volcano(linear.fit, linear.ora)
-
-
-interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
-
-```
-
-#### Logistice Susie
-
-```{r warning=F,message=FALSE}
-gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-interactive_table_logistic_susie(logistic.fit, logistic.ora)
-```
-
-
-### KEGG
-
-#### Susie
-
-```{r warning=F,message=FALSE}
-load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/IBD-ebi-a-GCST004131_kegg.rdata")
-gseasusie::enrichment_volcano(linear.fit, linear.ora)
-
-
-interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
-```
-
-#### Logistice Susie
-
-```{r warning=F,message=FALSE}
-gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-interactive_table_logistic_susie(logistic.fit, logistic.ora)
-```
-
-## Validation
-
-```{r}
-load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher/fisher_IBD-ebi-a-GCST004131_linearsusie.rdata")
-
-DT::datatable(df_all, 
-                caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', 
-                                                  'Gene labels'), 
-                options = list(pageLength = 5))
 
 ```
 
 
-### Susie
-
-```{r}
-DT::datatable(linear_selected, 
-                caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', 
-                                                  'Benchmark genes'), 
-                options = list(pageLength = 5))
-print(fisher_matrix)
-print(fisher_result)
-```
 
 
-### Logistic Susie
+
+
+### FDR cutoff for selecting benchmark genes = 0.1
 
 ```{r}
 
-load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher/fisher_IBD-ebi-a-GCST004131_logisusie.rdata")
-DT::datatable(linear_selected, 
-                caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', 
-                                                  'Benchmark genes'), 
-                options = list(pageLength = 5))
-print(fisher_matrix)
-print(fisher_result)
-```
+# Convert named vectors to data frames
+fisher_z_df <- as.data.frame(fisher_zscore_p$fdrcutoff_0.1)
+num_benchmark_genes_df <- as.data.frame(num_benchmark_genes_zscore$fdrcutoff_0.1)
 
+# Set row names as a new column
+fisher_z_df$id <- row.names(fisher_z_df)
+num_benchmark_genes_df$id <- row.names(num_benchmark_genes_df)
 
-# LDL-ukb-d-30780_irnt
-## Susie & Logistic Susie results
+# Merge data frames by the new column
+merged_df <- merge(num_benchmark_genes_df,fisher_z_df,by = "id")
+#colnames(merged_df_0.1) <- c("traits","#of benchmark genes","fisher_z_p_pip08+/pip08-","fisher_z_p_pip08+/pip05-","fisher_z_p_pip08+/pip05~08")
+colnames(merged_df) <- c("traits","#of benchmark genes","pip>0.8/pip<0.8","pip>0.8/pip<0.5","pip>0.8/pip0.5~0.8")
 
-### Go Biological Process
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;',
+                                                  'Fisher exact test p values for different groups'),
+             options = list(pageLength = 6))
 
-#### Susie
-
-```{r warning=F,message=FALSE}
-load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/LDL-ukb-d-30780_irnt_gobp.rdata")
-gseasusie::enrichment_volcano(linear.fit, linear.ora)
-
-
-interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
-```
-
-#### Logistice Susie
-
-```{r warning=F,message=FALSE}
-gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-interactive_table_logistic_susie(logistic.fit, logistic.ora)
-```
-
-
-### Go Molecular Function
-
-#### Susie
-
-```{r warning=F,message=FALSE}
-load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/LDL-ukb-d-30780_irnt_gomf.rdata")
-gseasusie::enrichment_volcano(linear.fit, linear.ora)
-
-
-interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
-```
-
-#### Logistice Susie
-
-```{r warning=F,message=FALSE}
-gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-interactive_table_logistic_susie(logistic.fit, logistic.ora)
-```
-
-
-### Go Cellular Component
-
-#### Susie
-
-```{r warning=F,message=FALSE}
-load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/LDL-ukb-d-30780_irnt_gocc.rdata")
-
-gseasusie::enrichment_volcano(linear.fit, linear.ora)
-
-
-interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
-
-```
-
-#### Logistice Susie
-
-```{r warning=F,message=FALSE}
-gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-interactive_table_logistic_susie(logistic.fit, logistic.ora)
-```
-
-
-### KEGG
-
-#### Susie
-
-```{r warning=F,message=FALSE}
-load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/LDL-ukb-d-30780_irnt_kegg.rdata")
-gseasusie::enrichment_volcano(linear.fit, linear.ora)
-
-
-interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
-```
-
-#### Logistice Susie
-
-```{r warning=F,message=FALSE}
-gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-interactive_table_logistic_susie(logistic.fit, logistic.ora)
-```
-
-## Validation
-
-```{r}
-load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher/fisher_LDL-ukb-d-30780_irnt_linearsusie.rdata")
-
-DT::datatable(df_all, 
-                caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', 
-                                                  'Gene labels'), 
-                options = list(pageLength = 5))
 
 ```
 
 
-### Susie
 
-```{r}
-DT::datatable(linear_selected, 
-                caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', 
-                                                  'Benchmark genes'), 
-                options = list(pageLength = 5))
-print(fisher_matrix)
-print(fisher_result)
-```
-
-
-### Logistic Susie
+### FDR cutoff for selecting benchmark genes = 0.2
 
 ```{r}
 
-load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher/fisher_LDL-ukb-d-30780_irnt_logisusie.rdata")
-DT::datatable(linear_selected, 
-                caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', 
-                                                  'Benchmark genes'), 
-                options = list(pageLength = 5))
-print(fisher_matrix)
-print(fisher_result)
-```
+# Convert named vectors to data frames
+fisher_z_df <- as.data.frame(fisher_zscore_p$fdrcutoff_0.2)
+num_benchmark_genes_df <- as.data.frame(num_benchmark_genes_zscore$fdrcutoff_0.2)
 
+# Set row names as a new column
+fisher_z_df$id <- row.names(fisher_z_df)
+num_benchmark_genes_df$id <- row.names(num_benchmark_genes_df)
 
-# SBP-ukb-a-360
+# Merge data frames by the new column
+merged_df <- merge(num_benchmark_genes_df,fisher_z_df,by = "id")
+#colnames(merged_df_0.2) <- c("traits","#of benchmark genes","fisher_z_p_pip08+/pip08-","fisher_z_p_pip08+/pip05-","fisher_z_p_pip08+/pip05~08")
+colnames(merged_df) <- c("traits","#of benchmark genes","pip>0.8/pip<0.8","pip>0.8/pip<0.5","pip>0.8/pip0.5~0.8")
 
-## Susie & Logistic Susie results
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;',
+                                                  'Fisher exact test p values for different groups'),
+             options = list(pageLength = 6))
 
-### Go Biological Process
-
-#### Susie
-
-```{r warning=F,message=FALSE}
-load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/SBP-ukb-a-360_gobp.rdata")
-gseasusie::enrichment_volcano(linear.fit, linear.ora)
-
-
-interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
-```
-
-#### Logistice Susie
-
-```{r warning=F,message=FALSE}
-gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-interactive_table_logistic_susie(logistic.fit, logistic.ora)
-```
-
-
-### Go Molecular Function
-
-#### Susie
-
-```{r warning=F,message=FALSE}
-load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/SBP-ukb-a-360_gomf.rdata")
-gseasusie::enrichment_volcano(linear.fit, linear.ora)
-
-
-interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
-```
-
-#### Logistice Susie
-
-```{r warning=F,message=FALSE}
-gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-interactive_table_logistic_susie(logistic.fit, logistic.ora)
-```
-
-
-### Go Cellular Component
-
-#### Susie
-
-```{r warning=F,message=FALSE}
-load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/SBP-ukb-a-360_gocc.rdata")
-
-gseasusie::enrichment_volcano(linear.fit, linear.ora)
-
-
-interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
-
-```
-
-#### Logistice Susie
-
-```{r warning=F,message=FALSE}
-gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-interactive_table_logistic_susie(logistic.fit, logistic.ora)
-```
-
-
-### KEGG
-
-#### Susie
-
-```{r warning=F,message=FALSE}
-load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/SBP-ukb-a-360_kegg.rdata")
-gseasusie::enrichment_volcano(linear.fit, linear.ora)
-
-
-interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
-```
-
-#### Logistice Susie
-
-```{r warning=F,message=FALSE}
-gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-interactive_table_logistic_susie(logistic.fit, logistic.ora)
-```
-
-## Validation
-
-```{r}
-load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher/fisher_SBP-ukb-a-360_linearsusie.rdata")
-
-DT::datatable(df_all, 
-                caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', 
-                                                  'Gene labels'), 
-                options = list(pageLength = 5))
 
 ```
 
 
-### Susie
+## Susie - modelling binary y
 
-```{r}
-DT::datatable(linear_selected, 
-                caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', 
-                                                  'Benchmark genes'), 
-                options = list(pageLength = 5))
-print(fisher_matrix)
-print(fisher_result)
-```
-
-
-### Logistic Susie
+### Probability cutoff for selecting benchmark genes = 0.8
 
 ```{r}
 
-load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher/fisher_SBP-ukb-a-360_logisusie.rdata")
-DT::datatable(linear_selected, 
-                caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', 
-                                                  'Benchmark genes'), 
-                options = list(pageLength = 5))
-print(fisher_matrix)
-print(fisher_result)
-```
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher_susie/fisher_biny_allcutoff.rdata")
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher_susie/num_benchmark_genes_biny_allcutoff.rdata")
+# Convert named vectors to data frames
+fisher_b_df <- as.data.frame(fisher_biny_p$probcutoff_0.8)
+num_benchmark_genes_df <- as.data.frame(num_benchmark_genes_biny$probcutoff_0.8)
 
+# Set row names as a new column
+fisher_b_df$id <- row.names(fisher_b_df)
+num_benchmark_genes_df$id <- row.names(num_benchmark_genes_df)
 
+# Merge data frames by the new column
+merged_df <- merge(num_benchmark_genes_df,fisher_b_df,by = "id")
 
-# SCZ-ieu-b-5102
+colnames(merged_df) <- c("traits","#of benchmark genes","pip>0.8/pip<0.8","pip>0.8/pip<0.5","pip>0.8/pip0.5~0.8")
 
-## Susie & Logistic Susie results
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;',
+                                                  'Fisher exact test p values for different groups'),
+             options = list(pageLength = 6))
 
-### Go Biological Process
-
-#### Susie
-
-```{r warning=F,message=FALSE}
-load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/SCZ-ieu-b-5102_gobp.rdata")
-gseasusie::enrichment_volcano(linear.fit, linear.ora)
-
-
-interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
-```
-
-#### Logistice Susie
-
-```{r warning=F,message=FALSE}
-gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-interactive_table_logistic_susie(logistic.fit, logistic.ora)
-```
-
-
-### Go Molecular Function
-
-#### Susie
-
-```{r warning=F,message=FALSE}
-load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/SCZ-ieu-b-5102_gomf.rdata")
-gseasusie::enrichment_volcano(linear.fit, linear.ora)
-
-
-interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
-```
-
-#### Logistice Susie
-
-```{r warning=F,message=FALSE}
-gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-interactive_table_logistic_susie(logistic.fit, logistic.ora)
-```
-
-
-### Go Cellular Component
-
-#### Susie
-
-```{r warning=F,message=FALSE}
-load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/SCZ-ieu-b-5102_gocc.rdata")
-
-gseasusie::enrichment_volcano(linear.fit, linear.ora)
-
-
-interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
-
-```
-
-#### Logistice Susie
-
-```{r warning=F,message=FALSE}
-gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-interactive_table_logistic_susie(logistic.fit, logistic.ora)
-```
-
-
-### KEGG
-
-#### Susie
-
-```{r warning=F,message=FALSE}
-load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/SCZ-ieu-b-5102_kegg.rdata")
-gseasusie::enrichment_volcano(linear.fit, linear.ora)
-
-
-interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
-```
-
-#### Logistice Susie
-
-```{r warning=F,message=FALSE}
-gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-interactive_table_logistic_susie(logistic.fit, logistic.ora)
-```
-
-## Validation
-
-```{r}
-load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher/fisher_SCZ-ieu-b-5102_linearsusie.rdata")
-
-DT::datatable(df_all, 
-                caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', 
-                                                  'Gene labels'), 
-                options = list(pageLength = 5))
 
 ```
 
 
-### Susie
-
-```{r}
-DT::datatable(linear_selected, 
-                caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', 
-                                                  'Benchmark genes'), 
-                options = list(pageLength = 5))
-print(fisher_matrix)
-print(fisher_result)
-```
-
-
-### Logistic Susie
+### Probability cutoff for selecting benchmark genes = 0.7
 
 ```{r}
 
-load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher/fisher_SCZ-ieu-b-5102_logisusie.rdata")
-DT::datatable(linear_selected, 
-                caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', 
-                                                  'Benchmark genes'), 
-                options = list(pageLength = 5))
-print(fisher_matrix)
-print(fisher_result)
-```
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher_susie/fisher_biny_allcutoff.rdata")
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher_susie/num_benchmark_genes_biny_allcutoff.rdata")
+# Convert named vectors to data frames
+fisher_b_df <- as.data.frame(fisher_biny_p$probcutoff_0.7)
+num_benchmark_genes_df <- as.data.frame(num_benchmark_genes_biny$probcutoff_0.7)
 
+# Set row names as a new column
+fisher_b_df$id <- row.names(fisher_b_df)
+num_benchmark_genes_df$id <- row.names(num_benchmark_genes_df)
 
-# WBC-ieu-b-30
+# Merge data frames by the new column
+merged_df <- merge(num_benchmark_genes_df,fisher_b_df,by = "id")
 
-## Susie & Logistic Susie results
+colnames(merged_df) <- c("traits","#of benchmark genes","pip>0.8/pip<0.8","pip>0.8/pip<0.5","pip>0.8/pip0.5~0.8")
 
-### Go Biological Process
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;',
+                                                  'Fisher exact test p values for different groups'),
+             options = list(pageLength = 6))
 
-#### Susie
-
-```{r warning=F,message=FALSE}
-load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/WBC-ieu-b-30_gobp.rdata")
-gseasusie::enrichment_volcano(linear.fit, linear.ora)
-
-
-interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
-```
-
-#### Logistice Susie
-
-```{r warning=F,message=FALSE}
-gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-interactive_table_logistic_susie(logistic.fit, logistic.ora)
-```
-
-
-### Go Molecular Function
-
-#### Susie
-
-```{r warning=F,message=FALSE}
-load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/WBC-ieu-b-30_gomf.rdata")
-gseasusie::enrichment_volcano(linear.fit, linear.ora)
-
-
-interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
-```
-
-#### Logistice Susie
-
-```{r warning=F,message=FALSE}
-gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-interactive_table_logistic_susie(logistic.fit, logistic.ora)
-```
-
-
-### Go Cellular Component
-
-#### Susie
-
-```{r warning=F,message=FALSE}
-load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/WBC-ieu-b-30_gocc.rdata")
-
-gseasusie::enrichment_volcano(linear.fit, linear.ora)
-
-
-interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
-
-```
-
-#### Logistice Susie
-
-```{r warning=F,message=FALSE}
-gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-interactive_table_logistic_susie(logistic.fit, logistic.ora)
-```
-
-
-### KEGG
-
-#### Susie
-
-```{r warning=F,message=FALSE}
-load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/WBC-ieu-b-30_kegg.rdata")
-gseasusie::enrichment_volcano(linear.fit, linear.ora)
-
-
-interactive_table_linear_susie(fit = linear.fit, ora = linear.ora)
-```
-
-#### Logistice Susie
-
-```{r warning=F,message=FALSE}
-gseasusie::enrichment_volcano(logistic.fit, logistic.ora)
-interactive_table_logistic_susie(logistic.fit, logistic.ora)
-```
-
-## Validation
-
-```{r}
-load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher/fisher_WBC-ieu-b-30_linearsusie.rdata")
-
-DT::datatable(df_all, 
-                caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', 
-                                                  'Gene labels'), 
-                options = list(pageLength = 5))
 
 ```
 
 
-### Susie
-
-```{r}
-DT::datatable(linear_selected, 
-                caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', 
-                                                  'Benchmark genes'), 
-                options = list(pageLength = 5))
-print(fisher_matrix)
-print(fisher_result)
-```
-
-
-### Logistic Susie
+### Probability cutoff for selecting benchmark genes = 0.6
 
 ```{r}
 
-load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher/fisher_WBC-ieu-b-30_logisusie.rdata")
-DT::datatable(linear_selected, 
-                caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', 
-                                                  'Benchmark genes'), 
-                options = list(pageLength = 5))
-print(fisher_matrix)
-print(fisher_result)
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher_susie/fisher_biny_allcutoff.rdata")
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher_susie/num_benchmark_genes_biny_allcutoff.rdata")
+# Convert named vectors to data frames
+fisher_b_df <- as.data.frame(fisher_biny_p$probcutoff_0.6)
+num_benchmark_genes_df <- as.data.frame(num_benchmark_genes_biny$probcutoff_0.6)
+
+# Set row names as a new column
+fisher_b_df$id <- row.names(fisher_b_df)
+num_benchmark_genes_df$id <- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df <- merge(num_benchmark_genes_df,fisher_b_df,by = "id")
+
+colnames(merged_df) <- c("traits","#of benchmark genes","pip>0.8/pip<0.8","pip>0.8/pip<0.5","pip>0.8/pip0.5~0.8")
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;',
+                                                  'Fisher exact test p values for different groups'),
+             options = list(pageLength = 6))
+
+
 ```
 
 
+### Probability cutoff for selecting benchmark genes = 0.5
+
+```{r}
+
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher_susie/fisher_biny_allcutoff.rdata")
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher_susie/num_benchmark_genes_biny_allcutoff.rdata")
+# Convert named vectors to data frames
+fisher_b_df <- as.data.frame(fisher_biny_p$probcutoff_0.5)
+num_benchmark_genes_df <- as.data.frame(num_benchmark_genes_biny$probcutoff_0.5)
+
+# Set row names as a new column
+fisher_b_df$id <- row.names(fisher_b_df)
+num_benchmark_genes_df$id <- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df <- merge(num_benchmark_genes_df,fisher_b_df,by = "id")
+
+colnames(merged_df) <- c("traits","#of benchmark genes","pip>0.8/pip<0.5","pip>0.8/pip<0.5","pip>0.8/pip0.8~0.5")
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;',
+                                                  'Fisher exact test p values for different groups'),
+             options = list(pageLength = 6))
+
+
+```
+
+
+
+
+## xgboost - modelling z-scores
+
+### FDR cutoff for selecting benchmark genes = 0.05
+
+```{r}
+
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher_xgboost/fisher_zscore_allcutoff.rdata")
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher_xgboost/num_benchmark_genes_zscore_allcutoff.rdata")
+# Convert named vectors to data frames
+fisher_z_df <- as.data.frame(fisher_zscore_p$fdrcutoff_0.05)
+num_benchmark_genes_df <- as.data.frame(num_benchmark_genes_zscore$fdrcutoff_0.05)
+
+# Set row names as a new column
+fisher_z_df$id <- row.names(fisher_z_df)
+num_benchmark_genes_df$id <- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df <- merge(num_benchmark_genes_df,fisher_z_df,by = "id")
+#colnames(merged_df_0.05) <- c("traits","#of benchmark genes","fisher_z_p_pip08+/pip08-","fisher_z_p_pip08+/pip05-","fisher_z_p_pip08+/pip05~08")
+colnames(merged_df) <- c("traits","#of benchmark genes","pip>0.8/pip<0.8","pip>0.8/pip<0.5","pip>0.8/pip0.5~0.8")
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;',
+                                                  'Fisher exact test p values for different groups'),
+             options = list(pageLength = 6))
+
+
+```
+
+
+### FDR cutoff for selecting benchmark genes = 0.1
+
+```{r}
+
+# Convert named vectors to data frames
+fisher_z_df <- as.data.frame(fisher_zscore_p$fdrcutoff_0.1)
+num_benchmark_genes_df <- as.data.frame(num_benchmark_genes_zscore$fdrcutoff_0.1)
+
+# Set row names as a new column
+fisher_z_df$id <- row.names(fisher_z_df)
+num_benchmark_genes_df$id <- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df <- merge(num_benchmark_genes_df,fisher_z_df,by = "id")
+#colnames(merged_df_0.1) <- c("traits","#of benchmark genes","fisher_z_p_pip08+/pip08-","fisher_z_p_pip08+/pip05-","fisher_z_p_pip08+/pip05~08")
+colnames(merged_df) <- c("traits","#of benchmark genes","pip>0.8/pip<0.8","pip>0.8/pip<0.5","pip>0.8/pip0.5~0.8")
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;',
+                                                  'Fisher exact test p values for different groups'),
+             options = list(pageLength = 6))
+
+
+```
+
+
+
+### FDR cutoff for selecting benchmark genes = 0.2
+
+```{r}
+
+# Convert named vectors to data frames
+fisher_z_df <- as.data.frame(fisher_zscore_p$fdrcutoff_0.2)
+num_benchmark_genes_df <- as.data.frame(num_benchmark_genes_zscore$fdrcutoff_0.2)
+
+# Set row names as a new column
+fisher_z_df$id <- row.names(fisher_z_df)
+num_benchmark_genes_df$id <- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df <- merge(num_benchmark_genes_df,fisher_z_df,by = "id")
+#colnames(merged_df_0.2) <- c("traits","#of benchmark genes","fisher_z_p_pip08+/pip08-","fisher_z_p_pip08+/pip05-","fisher_z_p_pip08+/pip05~08")
+colnames(merged_df) <- c("traits","#of benchmark genes","pip>0.8/pip<0.8","pip>0.8/pip<0.5","pip>0.8/pip0.5~0.8")
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;',
+                                                  'Fisher exact test p values for different groups'),
+             options = list(pageLength = 6))
+
+
+```
+
+
+## xgboost - modelling binary y
+
+### Probability cutoff for selecting benchmark genes = 0.8
+
+```{r}
+
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher_xgboost/fisher_biny_allcutoff.rdata")
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher_xgboost/num_benchmark_genes_biny_allcutoff.rdata")
+# Convert named vectors to data frames
+fisher_b_df <- as.data.frame(fisher_biny_p$probcutoff_0.8)
+num_benchmark_genes_df <- as.data.frame(num_benchmark_genes_biny$probcutoff_0.8)
+
+# Set row names as a new column
+fisher_b_df$id <- row.names(fisher_b_df)
+num_benchmark_genes_df$id <- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df <- merge(num_benchmark_genes_df,fisher_b_df,by = "id")
+
+colnames(merged_df) <- c("traits","#of benchmark genes","pip>0.8/pip<0.8","pip>0.8/pip<0.5","pip>0.8/pip0.5~0.8")
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;',
+                                                  'Fisher exact test p values for different groups'),
+             options = list(pageLength = 6))
+
+
+```
+
+
+### Probability cutoff for selecting benchmark genes = 0.7
+
+```{r}
+
+# Convert named vectors to data frames
+fisher_b_df <- as.data.frame(fisher_biny_p$probcutoff_0.7)
+num_benchmark_genes_df <- as.data.frame(num_benchmark_genes_biny$probcutoff_0.7)
+
+# Set row names as a new column
+fisher_b_df$id <- row.names(fisher_b_df)
+num_benchmark_genes_df$id <- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df <- merge(num_benchmark_genes_df,fisher_b_df,by = "id")
+
+colnames(merged_df) <- c("traits","#of benchmark genes","pip>0.8/pip<0.8","pip>0.8/pip<0.5","pip>0.8/pip0.5~0.8")
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;',
+                                                  'Fisher exact test p values for different groups'),
+             options = list(pageLength = 6))
+
+
+```
+
+
+
+### Probability cutoff for selecting benchmark genes = 0.6
+
+```{r}
+
+# Convert named vectors to data frames
+fisher_b_df <- as.data.frame(fisher_biny_p$probcutoff_0.6)
+num_benchmark_genes_df <- as.data.frame(num_benchmark_genes_biny$probcutoff_0.6)
+
+# Set row names as a new column
+fisher_b_df$id <- row.names(fisher_b_df)
+num_benchmark_genes_df$id <- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df <- merge(num_benchmark_genes_df,fisher_b_df,by = "id")
+
+colnames(merged_df) <- c("traits","#of benchmark genes","pip>0.8/pip<0.8","pip>0.8/pip<0.5","pip>0.8/pip0.5~0.8")
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;',
+                                                  'Fisher exact test p values for different groups'),
+             options = list(pageLength = 6))
+
+
+```
+
+
+### Probability cutoff for selecting benchmark genes = 0.5
+
+```{r}
+
+# Convert named vectors to data frames
+fisher_b_df <- as.data.frame(fisher_biny_p$probcutoff_0.5)
+num_benchmark_genes_df <- as.data.frame(num_benchmark_genes_biny$probcutoff_0.5)
+
+# Set row names as a new column
+fisher_b_df$id <- row.names(fisher_b_df)
+num_benchmark_genes_df$id <- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df <- merge(num_benchmark_genes_df,fisher_b_df,by = "id")
+
+colnames(merged_df) <- c("traits","#of benchmark genes","pip>0.8/pip<0.8","pip>0.8/pip<0.5","pip>0.8/pip0.5~0.8")
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;',
+                                                  'Fisher exact test p values for different groups'),
+             options = list(pageLength = 6))
+
+
+```
+
+
+
+
+
+
+
+# Benchmark gene comparison
+
+## Modelling z-scores
+
+### FDR cutoff for selecting benchmark genes = 0.05
+
+```{r}
+
+compute_gene_overlap_z(0.05)
+
+```
+
+
+
+
+
+### FDR cutoff for selecting benchmark genes = 0.1
+
+```{r}
+
+compute_gene_overlap_z(0.1)
+
+```
+
+### FDR cutoff for selecting benchmark genes = 0.2
+
+```{r}
+
+compute_gene_overlap_z(0.2)
+
+```
+
+
+## Modelling binarized y
+
+### Probability cutoff for selecting benchmark genes = 0.8
+
+```{r}
+compute_gene_overlap_b(0.8)
+```
+
+### Probability cutoff for selecting benchmark genes = 0.7
+
+```{r}
+compute_gene_overlap_b(0.7)
+```
+
+
+### Probability cutoff for selecting benchmark genes = 0.6
+
+```{r}
+compute_gene_overlap_b(0.6)
+```
+
+### Probability cutoff for selecting benchmark genes = 0.5
+
+```{r}
+compute_gene_overlap_b(0.5)
+```
