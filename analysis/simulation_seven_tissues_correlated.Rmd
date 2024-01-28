@@ -46,6 +46,18 @@ plot_PIP_combined <- function(configtag, runtag,  simutags, ...){
    f1 <- caliPIP_plot_combined(phenofs, susieIfs, ...) 
    return(f1)
 }
+plot_PIP_csindex <- function(configtag, runtag,  simutags, ...){
+   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
+   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_config", configtag,"_LDR",".susieIrss.txt")
+   f1 <- caliPIP_plot_csindex(phenofs, susieIfs, ...) 
+   return(f1)
+}
+plot_PIP_combined_csindex <- function(configtag, runtag,  simutags, ...){
+   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
+   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_config", configtag,"_LDR",".susieIrss.txt")
+   f1 <- caliPIP_plot_combined_csindex(phenofs, susieIfs, ...) 
+   return(f1)
+}
 plot_PIP_L1 <- function(configtag, runtag,  simutags, ...){
    phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
    susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_config", configtag,"_LDR",".L1.susieIrss.txt")
@@ -393,6 +405,13 @@ plot_par_7(truth,est,xlabels = c("Artery","Spleen","Skin","Lung","Adipose","Panc
 ```{r, fig.width= 8, fig.height= 4, echo=FALSE, warning=FALSE}
 f1 <- plot_PIP(configtag, runtag, simutags, main = "Expression Trait PIP Calibration")
 f2 <-  plot_PIP_combined(configtag, runtag, simutags, main = "Gene PIP Calibration")
+gridExtra::grid.arrange(f1, f2, ncol =2)
+```
+
+### PIP Calibration Plot (cs_index!=0)
+```{r, fig.width= 8, fig.height= 4, echo=FALSE, warning=FALSE}
+f1 <- plot_PIP_csindex(configtag, runtag, simutags, main = "Expression Trait PIP Calibration")
+f2 <-  plot_PIP_combined_csindex(configtag, runtag, simutags, main = "Gene PIP Calibration")
 gridExtra::grid.arrange(f1, f2, ncol =2)
 ```
 

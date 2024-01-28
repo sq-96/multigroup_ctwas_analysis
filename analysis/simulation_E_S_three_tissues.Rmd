@@ -259,6 +259,14 @@ f2 <-  plot_PIP_combined(configtag, runtag, simutags, main = "Gene PIP Calibrati
 gridExtra::grid.arrange(f1, f2, ncol =2)
 ```
 
+### PIP Calibration Plot (cs_index!=0)
+```{r, fig.width= 8, fig.height= 4, echo=FALSE, warning=FALSE}
+load("/project2/xinhe/shengqian/cTWAS/cTWAS_analysis/data/mashr_sqtl/sqtl/mashr/intron_mapping.RData")
+f1 <- plot_PIP_csindex(configtag, runtag, simutags, main = "Expression Trait PIP Calibration")
+f2 <-  plot_PIP_combined_csindex(configtag, runtag, simutags, main = "Gene PIP Calibration")
+gridExtra::grid.arrange(f1, f2, ncol =2)
+```
+
 ### PIP Calibration Plot (L1=1)
 ```{r, fig.width= 8, fig.height= 4, echo=FALSE, warning=FALSE}
 f1 <- plot_PIP_L1(configtag, runtag, simutags, main = "Expression Trait PIP Calibration")
@@ -273,7 +281,7 @@ f2 <-  plot_PIP_true_combined(configtag, runtag, simutags, main = "Gene PIP Cali
 gridExtra::grid.arrange(f1, f2, ncol =2)
 ```
 
-### PIP Calibration Plot (True parameters, L1)
+### PIP Calibration Plot (True parameters, L=1)
 ```{r, fig.width= 8, fig.height= 4, echo=FALSE, warning=FALSE}
 f1 <- plot_PIP_trueL1(configtag, runtag, simutags, main = "Expression Trait PIP Calibration")
 f2 <-  plot_PIP_trueL1_combined(configtag, runtag, simutags, main = "Gene PIP Calibration")
