@@ -85,24 +85,37 @@ The pathways are from Go Biological Process (gobp), Go Molecular Function (gomf)
 compute_gene_overlap_z <- function(threshold = 0.05) {
   traits <- c("IBD-ebi-a-GCST004131", "LDL-ukb-d-30780_irnt", "SBP-ukb-a-360", "SCZ-ieu-b-5102", "WBC-ieu-b-30", "aFib-ebi-a-GCST006414")
   folder_xgboost <- "/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost/"
+  folder_xgboost_jointly <- "/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_jointly/"
   folder_susie <- "/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/"
 
-  sum <- matrix(nrow = length(traits), ncol = 3)
+  sum <- matrix(nrow = length(traits), ncol = 7)
   for (i in seq_along(traits)) {
     xg <- get(load(paste0(folder_xgboost, "gene_labels_xgboost_", traits[i], ".rdata")))
     xg_pass <- xg$SYMBOL[xg$pred_fdr_xgb < threshold]
     xg_pass <- xg_pass[!duplicated(xg_pass)]
-
+    
+    xg_pass_gobp <- xg$SYMBOL[xg$pred_fdr_xgb < threshold & xg$db == "gobp"]
+    xg_pass_gobp <- xg_pass_gobp[!duplicated(xg_pass_gobp)]
+    
+    xg_joint <- get(load(paste0(folder_xgboost_jointly, "gene_labels_xgboost_", traits[i], ".rdata")))
+    xg_pass_joint <- xg_joint$SYMBOL[xg_joint$pred_fdr_xgb < threshold]
+    xg_pass_joint <- xg_pass_joint[!duplicated(xg_pass_joint)]
+    
+    xg_pass_gobp <- xg$SYMBOL[xg$pred_fdr_xgb < threshold & xg$db == "gobp"]
+    xg_pass_gobp <- xg_pass_gobp[!duplicated(xg_pass_gobp)]
+    
     susie <- get(load(paste0(folder_susie, "gene_labels_susie_", traits[i], ".rdata")))
     susie_pass <- susie$SYMBOL[susie$fdr_pred_linsusie < threshold]
     susie_pass <- susie_pass[!duplicated(susie_pass)]
 
-    overlap <- sum(xg_pass %in% susie_pass)
-    sum[i, ] <- c(length(susie_pass), length(xg_pass), overlap)
+    overlap_xgboost_susie <- sum(xg_pass %in% susie_pass)
+    overlap_xgboost_gobp_susie <- sum(xg_pass_gobp %in% susie_pass)
+    overlap_xgboost_sep_joint <- sum(xg_pass %in% xg_pass_joint)
+    sum[i, ] <- c(length(susie_pass),length(xg_pass),length(xg_pass_joint),length(xg_pass_gobp),overlap_xgboost_susie,overlap_xgboost_gobp_susie,overlap_xgboost_sep_joint)
   }
 
   rownames(sum) <- traits
-  colnames(sum) <- c("#ofbenchmarkgene_susie", "#ofbenchmarkgene_xgboost", "#ofoverlap")
+  colnames(sum) <- c("#ofbenchmarkgene_susie", "#ofbenchmarkgene_xgboost_sep","#ofbenchmarkgene_xgboost_joint","#ofbenchmarkgene_xgboost_gobp", "#ofoverlap of xgboos_all and susie_all", "#ofoverlap of xgboos_gobp and susie_all","#ofoverlap of xgboos_sep and xgboos_joint")
 
   DT::datatable(sum, caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', '#of benchmark genes and the overlaps'), options = list(pageLength = 10))
 }
@@ -110,24 +123,34 @@ compute_gene_overlap_z <- function(threshold = 0.05) {
 compute_gene_overlap_b <- function(threshold = 0.5) {
   traits <- c("IBD-ebi-a-GCST004131", "LDL-ukb-d-30780_irnt", "SBP-ukb-a-360", "SCZ-ieu-b-5102", "WBC-ieu-b-30", "aFib-ebi-a-GCST006414")
   folder_xgboost <- "/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost/"
+  folder_xgboost_jointly <- "/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_jointly/"
   folder_susie <- "/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/"
 
-  sum <- matrix(nrow = length(traits), ncol = 3)
+  sum <- matrix(nrow = length(traits), ncol = 7)
   for (i in seq_along(traits)) {
     xg <- get(load(paste0(folder_xgboost, "gene_labels_xgboost_", traits[i], ".rdata")))
     xg_pass <- xg$SYMBOL[xg$pred_y_logi_xgb > threshold]
     xg_pass <- xg_pass[!duplicated(xg_pass)]
 
+    xg_pass_gobp <- xg$SYMBOL[xg$pred_y_logi_xgb > threshold & xg$db =="gobp"]
+    xg_pass_gobp <- xg_pass_gobp[!duplicated(xg_pass_gobp)]
+    
+    xg_joint <- get(load(paste0(folder_xgboost_jointly, "gene_labels_xgboost_", traits[i], ".rdata")))
+    xg_pass_joint <- xg_joint$SYMBOL[xg_joint$pred_y_logi_xgb > threshold]
+    xg_pass_joint <- xg_pass_joint[!duplicated(xg_pass_joint)]
+    
     susie <- get(load(paste0(folder_susie, "gene_labels_susie_", traits[i], ".rdata")))
     susie_pass <- susie$SYMBOL[susie$y_pred_logi > threshold]
     susie_pass <- susie_pass[!duplicated(susie_pass)]
 
-    overlap <- sum(xg_pass %in% susie_pass)
-    sum[i, ] <- c(length(susie_pass), length(xg_pass), overlap)
+    overlap_xgboost_susie <- sum(xg_pass %in% susie_pass)
+    overlap_xgboost_gobp_susie <- sum(xg_pass_gobp %in% susie_pass)
+    overlap_xgboost_sep_joint <- sum(xg_pass %in% xg_pass_joint)
+    sum[i, ] <- c(length(susie_pass),length(xg_pass),length(xg_pass_joint),length(xg_pass_gobp),overlap_xgboost_susie,overlap_xgboost_gobp_susie,overlap_xgboost_sep_joint)
   }
 
   rownames(sum) <- traits
-  colnames(sum) <- c("#ofbenchmarkgene_susie", "#ofbenchmarkgene_xgboost", "#ofoverlap")
+  colnames(sum) <- c("#ofbenchmarkgene_susie", "#ofbenchmarkgene_xgboost_sep","#ofbenchmarkgene_xgboost_joint","#ofbenchmarkgene_xgboost_gobp", "#ofoverlap of xgboos_all and susie_all", "#ofoverlap of xgboos_gobp and susie_all","#ofoverlap of xgboos_sep and xgboos_joint")
 
   DT::datatable(sum, caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;', '#of benchmark genes and the overlaps'), options = list(pageLength = 10))
 }
@@ -147,7 +170,7 @@ compute_gene_overlap_b <- function(threshold = 0.5) {
 
 # Enrichment results (Fisher exact test)
 
-## Susie - modelling z-scores
+## Susie - modelling z-scores - benchmarks from 4 data base, run susie seperately
 
 ### FDR cutoff for selecting benchmark genes = 0.05
 
@@ -175,9 +198,6 @@ DT::datatable(merged_df,
 
 
 ```
-
-
-
 
 
 
@@ -234,7 +254,7 @@ DT::datatable(merged_df,
 ```
 
 
-## Susie - modelling binary y
+## Susie - modelling binary y - benchmarks from 4 data base, run susie seperately
 
 ### Probability cutoff for selecting benchmark genes = 0.8
 
@@ -350,7 +370,7 @@ DT::datatable(merged_df,
 
 
 
-## xgboost - modelling z-scores
+## xgboost - modelling z-scores - benchmarks from 4 data base, run xgboost seperately
 
 ### FDR cutoff for selecting benchmark genes = 0.05
 
@@ -433,7 +453,7 @@ DT::datatable(merged_df,
 ```
 
 
-## xgboost - modelling binary y
+## xgboost - modelling binary y - benchmarks from all data base, run xgboost seperately
 
 ### Probability cutoff for selecting benchmark genes = 0.8
 
@@ -540,6 +560,406 @@ DT::datatable(merged_df,
 
 
 ```
+
+
+
+
+
+
+
+
+## xgboost - modelling z-scores - benchmarks from 4 data base, run xgboost jointly
+
+### FDR cutoff for selecting benchmark genes = 0.05
+
+```{r}
+
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher_xgboost_jointly/fisher_zscore_allcutoff.rdata")
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher_xgboost_jointly/num_benchmark_genes_zscore_allcutoff.rdata")
+# Convert named vectors to data frames
+fisher_z_df <- as.data.frame(fisher_zscore_p$fdrcutoff_0.05)
+num_benchmark_genes_df <- as.data.frame(num_benchmark_genes_zscore$fdrcutoff_0.05)
+
+# Set row names as a new column
+fisher_z_df$id <- row.names(fisher_z_df)
+num_benchmark_genes_df$id <- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df <- merge(num_benchmark_genes_df,fisher_z_df,by = "id")
+#colnames(merged_df_0.05) <- c("traits","#of benchmark genes","fisher_z_p_pip08+/pip08-","fisher_z_p_pip08+/pip05-","fisher_z_p_pip08+/pip05~08")
+colnames(merged_df) <- c("traits","#of benchmark genes","pip>0.8/pip<0.8","pip>0.8/pip<0.5","pip>0.8/pip0.5~0.8")
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;',
+                                                  'Fisher exact test p values for different groups'),
+             options = list(pageLength = 6))
+
+
+```
+
+
+### FDR cutoff for selecting benchmark genes = 0.1
+
+```{r}
+
+# Convert named vectors to data frames
+fisher_z_df <- as.data.frame(fisher_zscore_p$fdrcutoff_0.1)
+num_benchmark_genes_df <- as.data.frame(num_benchmark_genes_zscore$fdrcutoff_0.1)
+
+# Set row names as a new column
+fisher_z_df$id <- row.names(fisher_z_df)
+num_benchmark_genes_df$id <- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df <- merge(num_benchmark_genes_df,fisher_z_df,by = "id")
+#colnames(merged_df_0.1) <- c("traits","#of benchmark genes","fisher_z_p_pip08+/pip08-","fisher_z_p_pip08+/pip05-","fisher_z_p_pip08+/pip05~08")
+colnames(merged_df) <- c("traits","#of benchmark genes","pip>0.8/pip<0.8","pip>0.8/pip<0.5","pip>0.8/pip0.5~0.8")
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;',
+                                                  'Fisher exact test p values for different groups'),
+             options = list(pageLength = 6))
+
+
+```
+
+
+
+### FDR cutoff for selecting benchmark genes = 0.2
+
+```{r}
+
+# Convert named vectors to data frames
+fisher_z_df <- as.data.frame(fisher_zscore_p$fdrcutoff_0.2)
+num_benchmark_genes_df <- as.data.frame(num_benchmark_genes_zscore$fdrcutoff_0.2)
+
+# Set row names as a new column
+fisher_z_df$id <- row.names(fisher_z_df)
+num_benchmark_genes_df$id <- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df <- merge(num_benchmark_genes_df,fisher_z_df,by = "id")
+#colnames(merged_df_0.2) <- c("traits","#of benchmark genes","fisher_z_p_pip08+/pip08-","fisher_z_p_pip08+/pip05-","fisher_z_p_pip08+/pip05~08")
+colnames(merged_df) <- c("traits","#of benchmark genes","pip>0.8/pip<0.8","pip>0.8/pip<0.5","pip>0.8/pip0.5~0.8")
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;',
+                                                  'Fisher exact test p values for different groups'),
+             options = list(pageLength = 6))
+
+
+```
+
+
+## xgboost - modelling binary y - benchmarks from all data base, run xgboost jointly
+
+### Probability cutoff for selecting benchmark genes = 0.8
+
+```{r}
+
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher_xgboost_jointly/fisher_biny_allcutoff.rdata")
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher_xgboost_jointly/num_benchmark_genes_biny_allcutoff.rdata")
+# Convert named vectors to data frames
+fisher_b_df <- as.data.frame(fisher_biny_p$probcutoff_0.8)
+num_benchmark_genes_df <- as.data.frame(num_benchmark_genes_biny$probcutoff_0.8)
+
+# Set row names as a new column
+fisher_b_df$id <- row.names(fisher_b_df)
+num_benchmark_genes_df$id <- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df <- merge(num_benchmark_genes_df,fisher_b_df,by = "id")
+
+colnames(merged_df) <- c("traits","#of benchmark genes","pip>0.8/pip<0.8","pip>0.8/pip<0.5","pip>0.8/pip0.5~0.8")
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;',
+                                                  'Fisher exact test p values for different groups'),
+             options = list(pageLength = 6))
+
+
+```
+
+
+### Probability cutoff for selecting benchmark genes = 0.7
+
+```{r}
+
+# Convert named vectors to data frames
+fisher_b_df <- as.data.frame(fisher_biny_p$probcutoff_0.7)
+num_benchmark_genes_df <- as.data.frame(num_benchmark_genes_biny$probcutoff_0.7)
+
+# Set row names as a new column
+fisher_b_df$id <- row.names(fisher_b_df)
+num_benchmark_genes_df$id <- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df <- merge(num_benchmark_genes_df,fisher_b_df,by = "id")
+
+colnames(merged_df) <- c("traits","#of benchmark genes","pip>0.8/pip<0.8","pip>0.8/pip<0.5","pip>0.8/pip0.5~0.8")
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;',
+                                                  'Fisher exact test p values for different groups'),
+             options = list(pageLength = 6))
+
+
+```
+
+
+
+### Probability cutoff for selecting benchmark genes = 0.6
+
+```{r}
+
+# Convert named vectors to data frames
+fisher_b_df <- as.data.frame(fisher_biny_p$probcutoff_0.6)
+num_benchmark_genes_df <- as.data.frame(num_benchmark_genes_biny$probcutoff_0.6)
+
+# Set row names as a new column
+fisher_b_df$id <- row.names(fisher_b_df)
+num_benchmark_genes_df$id <- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df <- merge(num_benchmark_genes_df,fisher_b_df,by = "id")
+
+colnames(merged_df) <- c("traits","#of benchmark genes","pip>0.8/pip<0.8","pip>0.8/pip<0.5","pip>0.8/pip0.5~0.8")
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;',
+                                                  'Fisher exact test p values for different groups'),
+             options = list(pageLength = 6))
+
+
+```
+
+
+### Probability cutoff for selecting benchmark genes = 0.5
+
+```{r}
+
+# Convert named vectors to data frames
+fisher_b_df <- as.data.frame(fisher_biny_p$probcutoff_0.5)
+num_benchmark_genes_df <- as.data.frame(num_benchmark_genes_biny$probcutoff_0.5)
+
+# Set row names as a new column
+fisher_b_df$id <- row.names(fisher_b_df)
+num_benchmark_genes_df$id <- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df <- merge(num_benchmark_genes_df,fisher_b_df,by = "id")
+
+colnames(merged_df) <- c("traits","#of benchmark genes","pip>0.8/pip<0.8","pip>0.8/pip<0.5","pip>0.8/pip0.5~0.8")
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;',
+                                                  'Fisher exact test p values for different groups'),
+             options = list(pageLength = 6))
+
+
+```
+
+
+
+
+
+
+
+
+
+## xgboost - modelling z-scores - benchmarks from GOBP
+
+### FDR cutoff for selecting benchmark genes = 0.05
+
+```{r}
+
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher_xgboost/fisher_zscore_allcutoff_gobp.rdata")
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher_xgboost/num_benchmark_genes_zscore_allcutoff_gobp.rdata")
+# Convert named vectors to data frames
+fisher_z_df <- as.data.frame(fisher_zscore_p$fdrcutoff_0.05)
+num_benchmark_genes_df <- as.data.frame(num_benchmark_genes_zscore$fdrcutoff_0.05)
+
+# Set row names as a new column
+fisher_z_df$id <- row.names(fisher_z_df)
+num_benchmark_genes_df$id <- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df <- merge(num_benchmark_genes_df,fisher_z_df,by = "id")
+#colnames(merged_df_0.05) <- c("traits","#of benchmark genes","fisher_z_p_pip08+/pip08-","fisher_z_p_pip08+/pip05-","fisher_z_p_pip08+/pip05~08")
+colnames(merged_df) <- c("traits","#of benchmark genes","pip>0.8/pip<0.8","pip>0.8/pip<0.5","pip>0.8/pip0.5~0.8")
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;',
+                                                  'Fisher exact test p values for different groups'),
+             options = list(pageLength = 6))
+
+
+```
+
+
+### FDR cutoff for selecting benchmark genes = 0.1
+
+```{r}
+
+# Convert named vectors to data frames
+fisher_z_df <- as.data.frame(fisher_zscore_p$fdrcutoff_0.1)
+num_benchmark_genes_df <- as.data.frame(num_benchmark_genes_zscore$fdrcutoff_0.1)
+
+# Set row names as a new column
+fisher_z_df$id <- row.names(fisher_z_df)
+num_benchmark_genes_df$id <- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df <- merge(num_benchmark_genes_df,fisher_z_df,by = "id")
+#colnames(merged_df_0.1) <- c("traits","#of benchmark genes","fisher_z_p_pip08+/pip08-","fisher_z_p_pip08+/pip05-","fisher_z_p_pip08+/pip05~08")
+colnames(merged_df) <- c("traits","#of benchmark genes","pip>0.8/pip<0.8","pip>0.8/pip<0.5","pip>0.8/pip0.5~0.8")
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;',
+                                                  'Fisher exact test p values for different groups'),
+             options = list(pageLength = 6))
+
+
+```
+
+
+
+### FDR cutoff for selecting benchmark genes = 0.2
+
+```{r}
+
+# Convert named vectors to data frames
+fisher_z_df <- as.data.frame(fisher_zscore_p$fdrcutoff_0.2)
+num_benchmark_genes_df <- as.data.frame(num_benchmark_genes_zscore$fdrcutoff_0.2)
+
+# Set row names as a new column
+fisher_z_df$id <- row.names(fisher_z_df)
+num_benchmark_genes_df$id <- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df <- merge(num_benchmark_genes_df,fisher_z_df,by = "id")
+#colnames(merged_df_0.2) <- c("traits","#of benchmark genes","fisher_z_p_pip08+/pip08-","fisher_z_p_pip08+/pip05-","fisher_z_p_pip08+/pip05~08")
+colnames(merged_df) <- c("traits","#of benchmark genes","pip>0.8/pip<0.8","pip>0.8/pip<0.5","pip>0.8/pip0.5~0.8")
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;',
+                                                  'Fisher exact test p values for different groups'),
+             options = list(pageLength = 6))
+
+
+```
+
+
+## xgboost - modelling binary y - benchmarks from GOBP
+
+### Probability cutoff for selecting benchmark genes = 0.8
+
+```{r}
+
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher_xgboost/fisher_biny_allcutoff_gobp.rdata")
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher_xgboost/num_benchmark_genes_biny_allcutoff_gobp.rdata")
+# Convert named vectors to data frames
+fisher_b_df <- as.data.frame(fisher_biny_p$probcutoff_0.8)
+num_benchmark_genes_df <- as.data.frame(num_benchmark_genes_biny$probcutoff_0.8)
+
+# Set row names as a new column
+fisher_b_df$id <- row.names(fisher_b_df)
+num_benchmark_genes_df$id <- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df <- merge(num_benchmark_genes_df,fisher_b_df,by = "id")
+
+colnames(merged_df) <- c("traits","#of benchmark genes","pip>0.8/pip<0.8","pip>0.8/pip<0.5","pip>0.8/pip0.5~0.8")
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;',
+                                                  'Fisher exact test p values for different groups'),
+             options = list(pageLength = 6))
+
+
+```
+
+
+### Probability cutoff for selecting benchmark genes = 0.7
+
+```{r}
+
+# Convert named vectors to data frames
+fisher_b_df <- as.data.frame(fisher_biny_p$probcutoff_0.7)
+num_benchmark_genes_df <- as.data.frame(num_benchmark_genes_biny$probcutoff_0.7)
+
+# Set row names as a new column
+fisher_b_df$id <- row.names(fisher_b_df)
+num_benchmark_genes_df$id <- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df <- merge(num_benchmark_genes_df,fisher_b_df,by = "id")
+
+colnames(merged_df) <- c("traits","#of benchmark genes","pip>0.8/pip<0.8","pip>0.8/pip<0.5","pip>0.8/pip0.5~0.8")
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;',
+                                                  'Fisher exact test p values for different groups'),
+             options = list(pageLength = 6))
+
+
+```
+
+
+
+### Probability cutoff for selecting benchmark genes = 0.6
+
+```{r}
+
+# Convert named vectors to data frames
+fisher_b_df <- as.data.frame(fisher_biny_p$probcutoff_0.6)
+num_benchmark_genes_df <- as.data.frame(num_benchmark_genes_biny$probcutoff_0.6)
+
+# Set row names as a new column
+fisher_b_df$id <- row.names(fisher_b_df)
+num_benchmark_genes_df$id <- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df <- merge(num_benchmark_genes_df,fisher_b_df,by = "id")
+
+colnames(merged_df) <- c("traits","#of benchmark genes","pip>0.8/pip<0.8","pip>0.8/pip<0.5","pip>0.8/pip0.5~0.8")
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;',
+                                                  'Fisher exact test p values for different groups'),
+             options = list(pageLength = 6))
+
+
+```
+
+
+### Probability cutoff for selecting benchmark genes = 0.5
+
+```{r}
+
+# Convert named vectors to data frames
+fisher_b_df <- as.data.frame(fisher_biny_p$probcutoff_0.5)
+num_benchmark_genes_df <- as.data.frame(num_benchmark_genes_biny$probcutoff_0.5)
+
+# Set row names as a new column
+fisher_b_df$id <- row.names(fisher_b_df)
+num_benchmark_genes_df$id <- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df <- merge(num_benchmark_genes_df,fisher_b_df,by = "id")
+
+colnames(merged_df) <- c("traits","#of benchmark genes","pip>0.8/pip<0.8","pip>0.8/pip<0.5","pip>0.8/pip0.5~0.8")
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;',
+                                                  'Fisher exact test p values for different groups'),
+             options = list(pageLength = 6))
+
+
+```
+
+
+
 
 
 
