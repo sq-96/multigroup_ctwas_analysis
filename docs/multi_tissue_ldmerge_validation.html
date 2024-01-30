@@ -410,7 +410,7 @@ aria-hidden="true"></span> </a>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2024-01-25
+<strong>Last updated:</strong> 2024-01-30
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -544,15 +544,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree7561eb8e9305c91c77e101eca2b84d7eb46b4e2etargetblank7561eb8a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree49f077591be30afdb223d37df9d0dccd148464detargetblank49f0775a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/7561eb8e9305c91c77e101eca2b84d7eb46b4e2e" target="_blank">7561eb8</a>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/49f077591be30afdb223d37df9d0dccd148464de" target="_blank">49f0775</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree7561eb8e9305c91c77e101eca2b84d7eb46b4e2etargetblank7561eb8a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree49f077591be30afdb223d37df9d0dccd148464detargetblank49f0775a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -562,7 +562,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/7561eb8e9305c91c77e101eca2b84d7eb46b4e2e" target="_blank">7561eb8</a>.
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/49f077591be30afdb223d37df9d0dccd148464de" target="_blank">49f0775</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -578,14 +578,11 @@ were generated:
 <pre><code>
 Ignored files:
     Ignored:    .Rhistory
-
-Untracked files:
-    Untracked:  analysis/CopyOfmulti_tissue_ldmerge_validation.Rmd
-    Untracked:  analysis/multi_tissue_ldmerge_validation_susie_fit.Rmd
-    Untracked:  analysis/multi_tissue_ldmerge_validation_xgboost_fit.Rmd
+    Ignored:    results/
 
 Unstaged changes:
     Modified:   analysis/multi_tissue_ldmerge_validation.Rmd
+    Modified:   analysis/multi_tissue_ldmerge_validation_xgboost_fit.Rmd
 
 </code></pre>
 <p>
@@ -632,6 +629,74 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/9650d4c1cce552807caea4665d6d5dfce7bca5e5/analysis/multi_tissue_ldmerge_validation.Rmd" target="_blank">9650d4c</a>
+</td>
+<td>
+sq-96
+</td>
+<td>
+2024-01-27
+</td>
+<td>
+update
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/sq-96/multigroup_ctwas_analysis/9650d4c1cce552807caea4665d6d5dfce7bca5e5/docs/multi_tissue_ldmerge_validation.html" target="_blank">9650d4c</a>
+</td>
+<td>
+sq-96
+</td>
+<td>
+2024-01-27
+</td>
+<td>
+update
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/c937f2bfccfc8d8feb23f9fd138d092ae41c5d34/analysis/multi_tissue_ldmerge_validation.Rmd" target="_blank">c937f2b</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2024-01-25
+</td>
+<td>
+update
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/sq-96/multigroup_ctwas_analysis/c937f2bfccfc8d8feb23f9fd138d092ae41c5d34/docs/multi_tissue_ldmerge_validation.html" target="_blank">c937f2b</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2024-01-25
+</td>
+<td>
+update
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -900,24 +965,37 @@ Function (gomf), Go Cellular Component (gocc) and KEGG.</p>
 compute_gene_overlap_z &lt;- function(threshold = 0.05) {
   traits &lt;- c(&quot;IBD-ebi-a-GCST004131&quot;, &quot;LDL-ukb-d-30780_irnt&quot;, &quot;SBP-ukb-a-360&quot;, &quot;SCZ-ieu-b-5102&quot;, &quot;WBC-ieu-b-30&quot;, &quot;aFib-ebi-a-GCST006414&quot;)
   folder_xgboost &lt;- &quot;/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost/&quot;
+  folder_xgboost_jointly &lt;- &quot;/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_jointly/&quot;
   folder_susie &lt;- &quot;/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/&quot;
 
-  sum &lt;- matrix(nrow = length(traits), ncol = 3)
+  sum &lt;- matrix(nrow = length(traits), ncol = 7)
   for (i in seq_along(traits)) {
     xg &lt;- get(load(paste0(folder_xgboost, &quot;gene_labels_xgboost_&quot;, traits[i], &quot;.rdata&quot;)))
     xg_pass &lt;- xg$SYMBOL[xg$pred_fdr_xgb &lt; threshold]
     xg_pass &lt;- xg_pass[!duplicated(xg_pass)]
-
+    
+    xg_pass_gobp &lt;- xg$SYMBOL[xg$pred_fdr_xgb &lt; threshold &amp; xg$db == &quot;gobp&quot;]
+    xg_pass_gobp &lt;- xg_pass_gobp[!duplicated(xg_pass_gobp)]
+    
+    xg_joint &lt;- get(load(paste0(folder_xgboost_jointly, &quot;gene_labels_xgboost_&quot;, traits[i], &quot;.rdata&quot;)))
+    xg_pass_joint &lt;- xg_joint$SYMBOL[xg_joint$pred_fdr_xgb &lt; threshold]
+    xg_pass_joint &lt;- xg_pass_joint[!duplicated(xg_pass_joint)]
+    
+    xg_pass_gobp &lt;- xg$SYMBOL[xg$pred_fdr_xgb &lt; threshold &amp; xg$db == &quot;gobp&quot;]
+    xg_pass_gobp &lt;- xg_pass_gobp[!duplicated(xg_pass_gobp)]
+    
     susie &lt;- get(load(paste0(folder_susie, &quot;gene_labels_susie_&quot;, traits[i], &quot;.rdata&quot;)))
     susie_pass &lt;- susie$SYMBOL[susie$fdr_pred_linsusie &lt; threshold]
     susie_pass &lt;- susie_pass[!duplicated(susie_pass)]
 
-    overlap &lt;- sum(xg_pass %in% susie_pass)
-    sum[i, ] &lt;- c(length(susie_pass), length(xg_pass), overlap)
+    overlap_xgboost_susie &lt;- sum(xg_pass %in% susie_pass)
+    overlap_xgboost_gobp_susie &lt;- sum(xg_pass_gobp %in% susie_pass)
+    overlap_xgboost_sep_joint &lt;- sum(xg_pass %in% xg_pass_joint)
+    sum[i, ] &lt;- c(length(susie_pass),length(xg_pass),length(xg_pass_joint),length(xg_pass_gobp),overlap_xgboost_susie,overlap_xgboost_gobp_susie,overlap_xgboost_sep_joint)
   }
 
   rownames(sum) &lt;- traits
-  colnames(sum) &lt;- c(&quot;#ofbenchmarkgene_susie&quot;, &quot;#ofbenchmarkgene_xgboost&quot;, &quot;#ofoverlap&quot;)
+  colnames(sum) &lt;- c(&quot;#ofbenchmarkgene_susie&quot;, &quot;#ofbenchmarkgene_xgboost_sep&quot;,&quot;#ofbenchmarkgene_xgboost_joint&quot;,&quot;#ofbenchmarkgene_xgboost_gobp&quot;, &quot;#ofoverlap of xgboos_all and susie_all&quot;, &quot;#ofoverlap of xgboos_gobp and susie_all&quot;,&quot;#ofoverlap of xgboos_sep and xgboos_joint&quot;)
 
   DT::datatable(sum, caption = htmltools::tags$caption(style = &#39;caption-side: left; text-align: left; color:black; font-size:150%;&#39;, &#39;#of benchmark genes and the overlaps&#39;), options = list(pageLength = 10))
 }
@@ -925,24 +1003,34 @@ compute_gene_overlap_z &lt;- function(threshold = 0.05) {
 compute_gene_overlap_b &lt;- function(threshold = 0.5) {
   traits &lt;- c(&quot;IBD-ebi-a-GCST004131&quot;, &quot;LDL-ukb-d-30780_irnt&quot;, &quot;SBP-ukb-a-360&quot;, &quot;SCZ-ieu-b-5102&quot;, &quot;WBC-ieu-b-30&quot;, &quot;aFib-ebi-a-GCST006414&quot;)
   folder_xgboost &lt;- &quot;/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost/&quot;
+  folder_xgboost_jointly &lt;- &quot;/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_jointly/&quot;
   folder_susie &lt;- &quot;/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/susie/&quot;
 
-  sum &lt;- matrix(nrow = length(traits), ncol = 3)
+  sum &lt;- matrix(nrow = length(traits), ncol = 7)
   for (i in seq_along(traits)) {
     xg &lt;- get(load(paste0(folder_xgboost, &quot;gene_labels_xgboost_&quot;, traits[i], &quot;.rdata&quot;)))
     xg_pass &lt;- xg$SYMBOL[xg$pred_y_logi_xgb &gt; threshold]
     xg_pass &lt;- xg_pass[!duplicated(xg_pass)]
 
+    xg_pass_gobp &lt;- xg$SYMBOL[xg$pred_y_logi_xgb &gt; threshold &amp; xg$db ==&quot;gobp&quot;]
+    xg_pass_gobp &lt;- xg_pass_gobp[!duplicated(xg_pass_gobp)]
+    
+    xg_joint &lt;- get(load(paste0(folder_xgboost_jointly, &quot;gene_labels_xgboost_&quot;, traits[i], &quot;.rdata&quot;)))
+    xg_pass_joint &lt;- xg_joint$SYMBOL[xg_joint$pred_y_logi_xgb &gt; threshold]
+    xg_pass_joint &lt;- xg_pass_joint[!duplicated(xg_pass_joint)]
+    
     susie &lt;- get(load(paste0(folder_susie, &quot;gene_labels_susie_&quot;, traits[i], &quot;.rdata&quot;)))
     susie_pass &lt;- susie$SYMBOL[susie$y_pred_logi &gt; threshold]
     susie_pass &lt;- susie_pass[!duplicated(susie_pass)]
 
-    overlap &lt;- sum(xg_pass %in% susie_pass)
-    sum[i, ] &lt;- c(length(susie_pass), length(xg_pass), overlap)
+    overlap_xgboost_susie &lt;- sum(xg_pass %in% susie_pass)
+    overlap_xgboost_gobp_susie &lt;- sum(xg_pass_gobp %in% susie_pass)
+    overlap_xgboost_sep_joint &lt;- sum(xg_pass %in% xg_pass_joint)
+    sum[i, ] &lt;- c(length(susie_pass),length(xg_pass),length(xg_pass_joint),length(xg_pass_gobp),overlap_xgboost_susie,overlap_xgboost_gobp_susie,overlap_xgboost_sep_joint)
   }
 
   rownames(sum) &lt;- traits
-  colnames(sum) &lt;- c(&quot;#ofbenchmarkgene_susie&quot;, &quot;#ofbenchmarkgene_xgboost&quot;, &quot;#ofoverlap&quot;)
+  colnames(sum) &lt;- c(&quot;#ofbenchmarkgene_susie&quot;, &quot;#ofbenchmarkgene_xgboost_sep&quot;,&quot;#ofbenchmarkgene_xgboost_joint&quot;,&quot;#ofbenchmarkgene_xgboost_gobp&quot;, &quot;#ofoverlap of xgboos_all and susie_all&quot;, &quot;#ofoverlap of xgboos_gobp and susie_all&quot;,&quot;#ofoverlap of xgboos_sep and xgboos_joint&quot;)
 
   DT::datatable(sum, caption = htmltools::tags$caption(style = &#39;caption-side: left; text-align: left; color:black; font-size:150%;&#39;, &#39;#of benchmark genes and the overlaps&#39;), options = list(pageLength = 10))
 }</code></pre>
@@ -965,8 +1053,11 @@ to the results</a></p>
 </div>
 <div id="enrichment-results-fisher-exact-test" class="section level1">
 <h1>Enrichment results (Fisher exact test)</h1>
-<div id="susie---modelling-z-scores" class="section level2">
-<h2>Susie - modelling z-scores</h2>
+<div
+id="susie---modelling-z-scores---benchmarks-from-4-data-base-run-susie-seperately"
+class="section level2">
+<h2>Susie - modelling z-scores - benchmarks from 4 data base, run susie
+seperately</h2>
 <div id="fdr-cutoff-for-selecting-benchmark-genes-0.05"
 class="section level3">
 <h3>FDR cutoff for selecting benchmark genes = 0.05</h3>
@@ -1039,8 +1130,11 @@ DT::datatable(merged_df,
 <script type="application/json" data-for="htmlwidget-a23c348805048a1f64c7">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black; font-size:150%;\">Fisher exact test p values for different groups<\/caption>","data":[["1","2","3","4","5","6"],["IBD-ebi-a-GCST004131","LDL-ukb-d-30780_irnt","SBP-ukb-a-360","SCZ-ieu-b-5102","WBC-ieu-b-30","aFib-ebi-a-GCST006414"],[41,100,1,8,17282,14],[0.000119289188038542,4.23953643671491e-07,1,1,1,0.0342870047379991],[0.000120257429616122,3.46375678598348e-07,1,1,1,0.0344510470079059],[0.11556797632747,0.11404441279911,1,1,0.256052980872444,0.444444444444444]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>traits<\/th>\n      <th>#of benchmark genes<\/th>\n      <th>pip&gt;0.8/pip&lt;0.8<\/th>\n      <th>pip&gt;0.8/pip&lt;0.5<\/th>\n      <th>pip&gt;0.8/pip0.5~0.8<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":6,"columnDefs":[{"className":"dt-right","targets":[2,3,4,5]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
-<div id="susie---modelling-binary-y" class="section level2">
-<h2>Susie - modelling binary y</h2>
+<div
+id="susie---modelling-binary-y---benchmarks-from-4-data-base-run-susie-seperately"
+class="section level2">
+<h2>Susie - modelling binary y - benchmarks from 4 data base, run susie
+seperately</h2>
 <div id="probability-cutoff-for-selecting-benchmark-genes-0.8"
 class="section level3">
 <h3>Probability cutoff for selecting benchmark genes = 0.8</h3>
@@ -1142,8 +1236,11 @@ DT::datatable(merged_df,
 <script type="application/json" data-for="htmlwidget-99e959167faff8d1fc37">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black; font-size:150%;\">Fisher exact test p values for different groups<\/caption>","data":[["1","2","3","4","5","6"],["IBD-ebi-a-GCST004131","LDL-ukb-d-30780_irnt","SBP-ukb-a-360","SCZ-ieu-b-5102","WBC-ieu-b-30","aFib-ebi-a-GCST006414"],[27,78,0,13,1936,9],[0.0623833148365677,1.97432314006259e-06,1,1,0.00120134285499194,1],[0.0625500126025088,1.57023092386089e-06,1,1,0.00117555826932841,1],[0.493670886075949,0.302503900550576,1,1,0.197223646126992,1]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>traits<\/th>\n      <th>#of benchmark genes<\/th>\n      <th>pip&gt;0.8/pip&lt;0.5<\/th>\n      <th>pip&gt;0.8/pip&lt;0.5<\/th>\n      <th>pip&gt;0.8/pip0.8~0.5<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":6,"columnDefs":[{"className":"dt-right","targets":[2,3,4,5]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
-<div id="xgboost---modelling-z-scores" class="section level2">
-<h2>xgboost - modelling z-scores</h2>
+<div
+id="xgboost---modelling-z-scores---benchmarks-from-4-data-base-run-xgboost-seperately"
+class="section level2">
+<h2>xgboost - modelling z-scores - benchmarks from 4 data base, run
+xgboost seperately</h2>
 <div id="fdr-cutoff-for-selecting-benchmark-genes-0.05-1"
 class="section level3">
 <h3>FDR cutoff for selecting benchmark genes = 0.05</h3>
@@ -1216,8 +1313,11 @@ DT::datatable(merged_df,
 <script type="application/json" data-for="htmlwidget-73d12cd98287c4e0164c">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black; font-size:150%;\">Fisher exact test p values for different groups<\/caption>","data":[["1","2","3","4","5","6"],["IBD-ebi-a-GCST004131","LDL-ukb-d-30780_irnt","SBP-ukb-a-360","SCZ-ieu-b-5102","WBC-ieu-b-30","aFib-ebi-a-GCST006414"],[55,94,2,25,17277,9],[1.17033443108403e-05,4.22790368676065e-13,1,1,1,4.00255586035076e-11],[1.09580590099048e-05,2.1279810900645e-13,1,1,1,1.54226561498157e-11],[0.200723327305606,0.0634295264687809,1,0.515661524076672,0.256052980872444,0.0875041264041793]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>traits<\/th>\n      <th>#of benchmark genes<\/th>\n      <th>pip&gt;0.8/pip&lt;0.8<\/th>\n      <th>pip&gt;0.8/pip&lt;0.5<\/th>\n      <th>pip&gt;0.8/pip0.5~0.8<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":6,"columnDefs":[{"className":"dt-right","targets":[2,3,4,5]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
-<div id="xgboost---modelling-binary-y" class="section level2">
-<h2>xgboost - modelling binary y</h2>
+<div
+id="xgboost---modelling-binary-y---benchmarks-from-all-data-base-run-xgboost-seperately"
+class="section level2">
+<h2>xgboost - modelling binary y - benchmarks from all data base, run
+xgboost seperately</h2>
 <div id="probability-cutoff-for-selecting-benchmark-genes-0.8-1"
 class="section level3">
 <h3>Probability cutoff for selecting benchmark genes = 0.8</h3>
@@ -1313,62 +1413,412 @@ DT::datatable(merged_df,
 <script type="application/json" data-for="htmlwidget-f41426fe0b90d0c09df4">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black; font-size:150%;\">Fisher exact test p values for different groups<\/caption>","data":[["1","2","3","4","5","6"],["IBD-ebi-a-GCST004131","LDL-ukb-d-30780_irnt","SBP-ukb-a-360","SCZ-ieu-b-5102","WBC-ieu-b-30","aFib-ebi-a-GCST006414"],[98,108,92,155,2852,41],[1.39315954084541e-07,1.01970264739262e-05,0.294342722785694,0.00364651698472231,2.67802807796454e-09,0.000206654147017522],[1.23903170994956e-07,8.71036854405363e-06,0.295543025597718,0.00326078172000092,2.12644041810541e-09,0.000152261837785675],[0.154304270378486,0.302503900550576,1,1,0.109942167434851,1]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>traits<\/th>\n      <th>#of benchmark genes<\/th>\n      <th>pip&gt;0.8/pip&lt;0.8<\/th>\n      <th>pip&gt;0.8/pip&lt;0.5<\/th>\n      <th>pip&gt;0.8/pip0.5~0.8<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":6,"columnDefs":[{"className":"dt-right","targets":[2,3,4,5]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
+<div
+id="xgboost---modelling-z-scores---benchmarks-from-4-data-base-run-xgboost-jointly"
+class="section level2">
+<h2>xgboost - modelling z-scores - benchmarks from 4 data base, run
+xgboost jointly</h2>
+<div id="fdr-cutoff-for-selecting-benchmark-genes-0.05-2"
+class="section level3">
+<h3>FDR cutoff for selecting benchmark genes = 0.05</h3>
+<pre class="r"><code>load(&quot;/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher_xgboost_jointly/fisher_zscore_allcutoff.rdata&quot;)
+load(&quot;/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher_xgboost_jointly/num_benchmark_genes_zscore_allcutoff.rdata&quot;)
+# Convert named vectors to data frames
+fisher_z_df &lt;- as.data.frame(fisher_zscore_p$fdrcutoff_0.05)
+num_benchmark_genes_df &lt;- as.data.frame(num_benchmark_genes_zscore$fdrcutoff_0.05)
+
+# Set row names as a new column
+fisher_z_df$id &lt;- row.names(fisher_z_df)
+num_benchmark_genes_df$id &lt;- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df &lt;- merge(num_benchmark_genes_df,fisher_z_df,by = &quot;id&quot;)
+#colnames(merged_df_0.05) &lt;- c(&quot;traits&quot;,&quot;#of benchmark genes&quot;,&quot;fisher_z_p_pip08+/pip08-&quot;,&quot;fisher_z_p_pip08+/pip05-&quot;,&quot;fisher_z_p_pip08+/pip05~08&quot;)
+colnames(merged_df) &lt;- c(&quot;traits&quot;,&quot;#of benchmark genes&quot;,&quot;pip&gt;0.8/pip&lt;0.8&quot;,&quot;pip&gt;0.8/pip&lt;0.5&quot;,&quot;pip&gt;0.8/pip0.5~0.8&quot;)
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = &#39;caption-side: left; text-align: left; color:black; font-size:150%;&#39;,
+                                                  &#39;Fisher exact test p values for different groups&#39;),
+             options = list(pageLength = 6))</code></pre>
+<div id="htmlwidget-35e1d0e81f5ada6ecac0" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-35e1d0e81f5ada6ecac0">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black; font-size:150%;\">Fisher exact test p values for different groups<\/caption>","data":[["1","2","3","4","5","6"],["IBD-ebi-a-GCST004131","LDL-ukb-d-30780_irnt","SBP-ukb-a-360","SCZ-ieu-b-5102","WBC-ieu-b-30","aFib-ebi-a-GCST006414"],[34,39,1,2,130,2],[7.57974974025646e-05,6.9287592743753e-07,1,1,3.29015915585801e-05,0.00772118032458763],[6.91480525812478e-05,5.05140525098842e-07,1,1,2.80883590739298e-05,0.00775862125446685],[0.358868979122144,0.245201581553571,1,1,0.222753544425842,0.444444444444444]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>traits<\/th>\n      <th>#of benchmark genes<\/th>\n      <th>pip&gt;0.8/pip&lt;0.8<\/th>\n      <th>pip&gt;0.8/pip&lt;0.5<\/th>\n      <th>pip&gt;0.8/pip0.5~0.8<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":6,"columnDefs":[{"className":"dt-right","targets":[2,3,4,5]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="fdr-cutoff-for-selecting-benchmark-genes-0.1-2"
+class="section level3">
+<h3>FDR cutoff for selecting benchmark genes = 0.1</h3>
+<pre class="r"><code># Convert named vectors to data frames
+fisher_z_df &lt;- as.data.frame(fisher_zscore_p$fdrcutoff_0.1)
+num_benchmark_genes_df &lt;- as.data.frame(num_benchmark_genes_zscore$fdrcutoff_0.1)
+
+# Set row names as a new column
+fisher_z_df$id &lt;- row.names(fisher_z_df)
+num_benchmark_genes_df$id &lt;- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df &lt;- merge(num_benchmark_genes_df,fisher_z_df,by = &quot;id&quot;)
+#colnames(merged_df_0.1) &lt;- c(&quot;traits&quot;,&quot;#of benchmark genes&quot;,&quot;fisher_z_p_pip08+/pip08-&quot;,&quot;fisher_z_p_pip08+/pip05-&quot;,&quot;fisher_z_p_pip08+/pip05~08&quot;)
+colnames(merged_df) &lt;- c(&quot;traits&quot;,&quot;#of benchmark genes&quot;,&quot;pip&gt;0.8/pip&lt;0.8&quot;,&quot;pip&gt;0.8/pip&lt;0.5&quot;,&quot;pip&gt;0.8/pip0.5~0.8&quot;)
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = &#39;caption-side: left; text-align: left; color:black; font-size:150%;&#39;,
+                                                  &#39;Fisher exact test p values for different groups&#39;),
+             options = list(pageLength = 6))</code></pre>
+<div id="htmlwidget-a41f9b9304ecbba20fc2" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-a41f9b9304ecbba20fc2">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black; font-size:150%;\">Fisher exact test p values for different groups<\/caption>","data":[["1","2","3","4","5","6"],["IBD-ebi-a-GCST004131","LDL-ukb-d-30780_irnt","SBP-ukb-a-360","SCZ-ieu-b-5102","WBC-ieu-b-30","aFib-ebi-a-GCST006414"],[38,46,1,4,15336,5],[0.000109551131240484,1.09382389979233e-09,1,1,0.014244226327821,0.000145854647030141],[0.000101162246161858,7.55563422887564e-10,1,1,0.0143513543079442,0.000147270033716911],[0.358868979122144,0.0802335945747455,1,1,1,0.195555555555556]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>traits<\/th>\n      <th>#of benchmark genes<\/th>\n      <th>pip&gt;0.8/pip&lt;0.8<\/th>\n      <th>pip&gt;0.8/pip&lt;0.5<\/th>\n      <th>pip&gt;0.8/pip0.5~0.8<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":6,"columnDefs":[{"className":"dt-right","targets":[2,3,4,5]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="fdr-cutoff-for-selecting-benchmark-genes-0.2-2"
+class="section level3">
+<h3>FDR cutoff for selecting benchmark genes = 0.2</h3>
+<pre class="r"><code># Convert named vectors to data frames
+fisher_z_df &lt;- as.data.frame(fisher_zscore_p$fdrcutoff_0.2)
+num_benchmark_genes_df &lt;- as.data.frame(num_benchmark_genes_zscore$fdrcutoff_0.2)
+
+# Set row names as a new column
+fisher_z_df$id &lt;- row.names(fisher_z_df)
+num_benchmark_genes_df$id &lt;- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df &lt;- merge(num_benchmark_genes_df,fisher_z_df,by = &quot;id&quot;)
+#colnames(merged_df_0.2) &lt;- c(&quot;traits&quot;,&quot;#of benchmark genes&quot;,&quot;fisher_z_p_pip08+/pip08-&quot;,&quot;fisher_z_p_pip08+/pip05-&quot;,&quot;fisher_z_p_pip08+/pip05~08&quot;)
+colnames(merged_df) &lt;- c(&quot;traits&quot;,&quot;#of benchmark genes&quot;,&quot;pip&gt;0.8/pip&lt;0.8&quot;,&quot;pip&gt;0.8/pip&lt;0.5&quot;,&quot;pip&gt;0.8/pip0.5~0.8&quot;)
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = &#39;caption-side: left; text-align: left; color:black; font-size:150%;&#39;,
+                                                  &#39;Fisher exact test p values for different groups&#39;),
+             options = list(pageLength = 6))</code></pre>
+<div id="htmlwidget-80db18273cfc4a9b8682" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-80db18273cfc4a9b8682">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black; font-size:150%;\">Fisher exact test p values for different groups<\/caption>","data":[["1","2","3","4","5","6"],["IBD-ebi-a-GCST004131","LDL-ukb-d-30780_irnt","SBP-ukb-a-360","SCZ-ieu-b-5102","WBC-ieu-b-30","aFib-ebi-a-GCST006414"],[43,53,6,8,16662,5],[0.000163848704982256,9.264376250996e-11,0.024115177870759,1,0.511387921676506,0.000145854647030141],[0.000153071048623989,6.56871336654548e-11,0.0242312401086544,1,0.512152416390858,0.000147270033716911],[0.358868979122144,0.044408559355571,1,1,0.256052980872444,0.195555555555556]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>traits<\/th>\n      <th>#of benchmark genes<\/th>\n      <th>pip&gt;0.8/pip&lt;0.8<\/th>\n      <th>pip&gt;0.8/pip&lt;0.5<\/th>\n      <th>pip&gt;0.8/pip0.5~0.8<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":6,"columnDefs":[{"className":"dt-right","targets":[2,3,4,5]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<div
+id="xgboost---modelling-binary-y---benchmarks-from-all-data-base-run-xgboost-jointly"
+class="section level2">
+<h2>xgboost - modelling binary y - benchmarks from all data base, run
+xgboost jointly</h2>
+<div id="probability-cutoff-for-selecting-benchmark-genes-0.8-2"
+class="section level3">
+<h3>Probability cutoff for selecting benchmark genes = 0.8</h3>
+<pre class="r"><code>load(&quot;/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher_xgboost_jointly/fisher_biny_allcutoff.rdata&quot;)
+load(&quot;/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher_xgboost_jointly/num_benchmark_genes_biny_allcutoff.rdata&quot;)
+# Convert named vectors to data frames
+fisher_b_df &lt;- as.data.frame(fisher_biny_p$probcutoff_0.8)
+num_benchmark_genes_df &lt;- as.data.frame(num_benchmark_genes_biny$probcutoff_0.8)
+
+# Set row names as a new column
+fisher_b_df$id &lt;- row.names(fisher_b_df)
+num_benchmark_genes_df$id &lt;- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df &lt;- merge(num_benchmark_genes_df,fisher_b_df,by = &quot;id&quot;)
+
+colnames(merged_df) &lt;- c(&quot;traits&quot;,&quot;#of benchmark genes&quot;,&quot;pip&gt;0.8/pip&lt;0.8&quot;,&quot;pip&gt;0.8/pip&lt;0.5&quot;,&quot;pip&gt;0.8/pip0.5~0.8&quot;)
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = &#39;caption-side: left; text-align: left; color:black; font-size:150%;&#39;,
+                                                  &#39;Fisher exact test p values for different groups&#39;),
+             options = list(pageLength = 6))</code></pre>
+<div id="htmlwidget-6f19a3278480c8d45e45" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-6f19a3278480c8d45e45">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black; font-size:150%;\">Fisher exact test p values for different groups<\/caption>","data":[["1","2","3","4","5","6"],["IBD-ebi-a-GCST004131","LDL-ukb-d-30780_irnt","SBP-ukb-a-360","SCZ-ieu-b-5102","WBC-ieu-b-30","aFib-ebi-a-GCST006414"],[14,13,2,11,32,1],[0.0342765262705995,1,1,1,0.334422080169432,1],[0.0343694609272258,1,1,1,0.328509335719458,1],[0.493670886075949,1,1,1,1,1]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>traits<\/th>\n      <th>#of benchmark genes<\/th>\n      <th>pip&gt;0.8/pip&lt;0.8<\/th>\n      <th>pip&gt;0.8/pip&lt;0.5<\/th>\n      <th>pip&gt;0.8/pip0.5~0.8<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":6,"columnDefs":[{"className":"dt-right","targets":[2,3,4,5]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="probability-cutoff-for-selecting-benchmark-genes-0.7-2"
+class="section level3">
+<h3>Probability cutoff for selecting benchmark genes = 0.7</h3>
+<pre class="r"><code># Convert named vectors to data frames
+fisher_b_df &lt;- as.data.frame(fisher_biny_p$probcutoff_0.7)
+num_benchmark_genes_df &lt;- as.data.frame(num_benchmark_genes_biny$probcutoff_0.7)
+
+# Set row names as a new column
+fisher_b_df$id &lt;- row.names(fisher_b_df)
+num_benchmark_genes_df$id &lt;- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df &lt;- merge(num_benchmark_genes_df,fisher_b_df,by = &quot;id&quot;)
+
+colnames(merged_df) &lt;- c(&quot;traits&quot;,&quot;#of benchmark genes&quot;,&quot;pip&gt;0.8/pip&lt;0.8&quot;,&quot;pip&gt;0.8/pip&lt;0.5&quot;,&quot;pip&gt;0.8/pip0.5~0.8&quot;)
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = &#39;caption-side: left; text-align: left; color:black; font-size:150%;&#39;,
+                                                  &#39;Fisher exact test p values for different groups&#39;),
+             options = list(pageLength = 6))</code></pre>
+<div id="htmlwidget-81a148ea6c961cf45e2c" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-81a148ea6c961cf45e2c">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black; font-size:150%;\">Fisher exact test p values for different groups<\/caption>","data":[["1","2","3","4","5","6"],["IBD-ebi-a-GCST004131","LDL-ukb-d-30780_irnt","SBP-ukb-a-360","SCZ-ieu-b-5102","WBC-ieu-b-30","aFib-ebi-a-GCST006414"],[21,18,5,26,201,4],[0.0522561336556115,0.0747316153846178,1,1,0.0270346830697812,0.0115597831086318],[0.0523965122323345,0.0752271192776545,1,1,0.0266570129127371,0.0116157305984728],[0.493670886075949,0.447513812154696,1,1,0.450701151912335,0.444444444444444]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>traits<\/th>\n      <th>#of benchmark genes<\/th>\n      <th>pip&gt;0.8/pip&lt;0.8<\/th>\n      <th>pip&gt;0.8/pip&lt;0.5<\/th>\n      <th>pip&gt;0.8/pip0.5~0.8<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":6,"columnDefs":[{"className":"dt-right","targets":[2,3,4,5]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="probability-cutoff-for-selecting-benchmark-genes-0.6-2"
+class="section level3">
+<h3>Probability cutoff for selecting benchmark genes = 0.6</h3>
+<pre class="r"><code># Convert named vectors to data frames
+fisher_b_df &lt;- as.data.frame(fisher_biny_p$probcutoff_0.6)
+num_benchmark_genes_df &lt;- as.data.frame(num_benchmark_genes_biny$probcutoff_0.6)
+
+# Set row names as a new column
+fisher_b_df$id &lt;- row.names(fisher_b_df)
+num_benchmark_genes_df$id &lt;- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df &lt;- merge(num_benchmark_genes_df,fisher_b_df,by = &quot;id&quot;)
+
+colnames(merged_df) &lt;- c(&quot;traits&quot;,&quot;#of benchmark genes&quot;,&quot;pip&gt;0.8/pip&lt;0.8&quot;,&quot;pip&gt;0.8/pip&lt;0.5&quot;,&quot;pip&gt;0.8/pip0.5~0.8&quot;)
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = &#39;caption-side: left; text-align: left; color:black; font-size:150%;&#39;,
+                                                  &#39;Fisher exact test p values for different groups&#39;),
+             options = list(pageLength = 6))</code></pre>
+<div id="htmlwidget-425deb884d24b4ea5f7c" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-425deb884d24b4ea5f7c">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black; font-size:150%;\">Fisher exact test p values for different groups<\/caption>","data":[["1","2","3","4","5","6"],["IBD-ebi-a-GCST004131","LDL-ukb-d-30780_irnt","SBP-ukb-a-360","SCZ-ieu-b-5102","WBC-ieu-b-30","aFib-ebi-a-GCST006414"],[43,38,20,63,509,11],[0.000163848704982256,2.43754605427462e-05,1,0.110621265311609,0.000597253174260748,0.000519879053799835],[0.000165175260050603,1.90565820568758e-05,1,0.106267111955288,0.000530268451488358,0.000409275648213812],[0.11556797632747,0.409955285855052,1,1,0.396761347534695,0.584516129032258]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>traits<\/th>\n      <th>#of benchmark genes<\/th>\n      <th>pip&gt;0.8/pip&lt;0.8<\/th>\n      <th>pip&gt;0.8/pip&lt;0.5<\/th>\n      <th>pip&gt;0.8/pip0.5~0.8<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":6,"columnDefs":[{"className":"dt-right","targets":[2,3,4,5]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="probability-cutoff-for-selecting-benchmark-genes-0.5-2"
+class="section level3">
+<h3>Probability cutoff for selecting benchmark genes = 0.5</h3>
+<pre class="r"><code># Convert named vectors to data frames
+fisher_b_df &lt;- as.data.frame(fisher_biny_p$probcutoff_0.5)
+num_benchmark_genes_df &lt;- as.data.frame(num_benchmark_genes_biny$probcutoff_0.5)
+
+# Set row names as a new column
+fisher_b_df$id &lt;- row.names(fisher_b_df)
+num_benchmark_genes_df$id &lt;- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df &lt;- merge(num_benchmark_genes_df,fisher_b_df,by = &quot;id&quot;)
+
+colnames(merged_df) &lt;- c(&quot;traits&quot;,&quot;#of benchmark genes&quot;,&quot;pip&gt;0.8/pip&lt;0.8&quot;,&quot;pip&gt;0.8/pip&lt;0.5&quot;,&quot;pip&gt;0.8/pip0.5~0.8&quot;)
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = &#39;caption-side: left; text-align: left; color:black; font-size:150%;&#39;,
+                                                  &#39;Fisher exact test p values for different groups&#39;),
+             options = list(pageLength = 6))</code></pre>
+<div id="htmlwidget-5674f84365e74fcb3e3c" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-5674f84365e74fcb3e3c">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black; font-size:150%;\">Fisher exact test p values for different groups<\/caption>","data":[["1","2","3","4","5","6"],["IBD-ebi-a-GCST004131","LDL-ukb-d-30780_irnt","SBP-ukb-a-360","SCZ-ieu-b-5102","WBC-ieu-b-30","aFib-ebi-a-GCST006414"],[76,48,52,119,1752,24],[2.85482354839379e-08,2.2679973892496e-06,0.177588678950478,0.0223004741487473,5.04219527919639e-08,5.96392460767868e-05],[2.65783979615127e-08,1.79063898124804e-06,0.178372669113227,0.0210412295741075,3.68931548602521e-08,5.15661975004318e-05],[0.0567586739599918,0.245201581553571,1,1,0.306944124989798,0.322164524871055]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>traits<\/th>\n      <th>#of benchmark genes<\/th>\n      <th>pip&gt;0.8/pip&lt;0.8<\/th>\n      <th>pip&gt;0.8/pip&lt;0.5<\/th>\n      <th>pip&gt;0.8/pip0.5~0.8<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":6,"columnDefs":[{"className":"dt-right","targets":[2,3,4,5]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<div id="xgboost---modelling-z-scores---benchmarks-from-gobp"
+class="section level2">
+<h2>xgboost - modelling z-scores - benchmarks from GOBP</h2>
+<div id="fdr-cutoff-for-selecting-benchmark-genes-0.05-3"
+class="section level3">
+<h3>FDR cutoff for selecting benchmark genes = 0.05</h3>
+<pre class="r"><code>load(&quot;/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher_xgboost/fisher_zscore_allcutoff_gobp.rdata&quot;)
+load(&quot;/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher_xgboost/num_benchmark_genes_zscore_allcutoff_gobp.rdata&quot;)
+# Convert named vectors to data frames
+fisher_z_df &lt;- as.data.frame(fisher_zscore_p$fdrcutoff_0.05)
+num_benchmark_genes_df &lt;- as.data.frame(num_benchmark_genes_zscore$fdrcutoff_0.05)
+
+# Set row names as a new column
+fisher_z_df$id &lt;- row.names(fisher_z_df)
+num_benchmark_genes_df$id &lt;- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df &lt;- merge(num_benchmark_genes_df,fisher_z_df,by = &quot;id&quot;)
+#colnames(merged_df_0.05) &lt;- c(&quot;traits&quot;,&quot;#of benchmark genes&quot;,&quot;fisher_z_p_pip08+/pip08-&quot;,&quot;fisher_z_p_pip08+/pip05-&quot;,&quot;fisher_z_p_pip08+/pip05~08&quot;)
+colnames(merged_df) &lt;- c(&quot;traits&quot;,&quot;#of benchmark genes&quot;,&quot;pip&gt;0.8/pip&lt;0.8&quot;,&quot;pip&gt;0.8/pip&lt;0.5&quot;,&quot;pip&gt;0.8/pip0.5~0.8&quot;)
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = &#39;caption-side: left; text-align: left; color:black; font-size:150%;&#39;,
+                                                  &#39;Fisher exact test p values for different groups&#39;),
+             options = list(pageLength = 6))</code></pre>
+<div id="htmlwidget-caaf43859fd0889ca800" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-caaf43859fd0889ca800">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black; font-size:150%;\">Fisher exact test p values for different groups<\/caption>","data":[["1","2","3","4","5","6"],["IBD-ebi-a-GCST004131","LDL-ukb-d-30780_irnt","SBP-ukb-a-360","SCZ-ieu-b-5102","WBC-ieu-b-30","aFib-ebi-a-GCST006414"],[22,37,1,1,201,5],[2.06331620572648e-07,6.39352289898652e-09,1,1,5.7164050070623e-06,8.77308504107172e-05],[2.08596865810391e-07,3.06770249677223e-09,1,1,4.2925544778187e-06,8.85832704994227e-05],[0.0547427256288015,0.302503900550576,1,1,0.326147822643406,0.195555555555556]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>traits<\/th>\n      <th>#of benchmark genes<\/th>\n      <th>pip&gt;0.8/pip&lt;0.8<\/th>\n      <th>pip&gt;0.8/pip&lt;0.5<\/th>\n      <th>pip&gt;0.8/pip0.5~0.8<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":6,"columnDefs":[{"className":"dt-right","targets":[2,3,4,5]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="fdr-cutoff-for-selecting-benchmark-genes-0.1-3"
+class="section level3">
+<h3>FDR cutoff for selecting benchmark genes = 0.1</h3>
+<pre class="r"><code># Convert named vectors to data frames
+fisher_z_df &lt;- as.data.frame(fisher_zscore_p$fdrcutoff_0.1)
+num_benchmark_genes_df &lt;- as.data.frame(num_benchmark_genes_zscore$fdrcutoff_0.1)
+
+# Set row names as a new column
+fisher_z_df$id &lt;- row.names(fisher_z_df)
+num_benchmark_genes_df$id &lt;- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df &lt;- merge(num_benchmark_genes_df,fisher_z_df,by = &quot;id&quot;)
+#colnames(merged_df_0.1) &lt;- c(&quot;traits&quot;,&quot;#of benchmark genes&quot;,&quot;fisher_z_p_pip08+/pip08-&quot;,&quot;fisher_z_p_pip08+/pip05-&quot;,&quot;fisher_z_p_pip08+/pip05~08&quot;)
+colnames(merged_df) &lt;- c(&quot;traits&quot;,&quot;#of benchmark genes&quot;,&quot;pip&gt;0.8/pip&lt;0.8&quot;,&quot;pip&gt;0.8/pip&lt;0.5&quot;,&quot;pip&gt;0.8/pip0.5~0.8&quot;)
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = &#39;caption-side: left; text-align: left; color:black; font-size:150%;&#39;,
+                                                  &#39;Fisher exact test p values for different groups&#39;),
+             options = list(pageLength = 6))</code></pre>
+<div id="htmlwidget-28fc46a89962ff28ef30" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-28fc46a89962ff28ef30">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black; font-size:150%;\">Fisher exact test p values for different groups<\/caption>","data":[["1","2","3","4","5","6"],["IBD-ebi-a-GCST004131","LDL-ukb-d-30780_irnt","SBP-ukb-a-360","SCZ-ieu-b-5102","WBC-ieu-b-30","aFib-ebi-a-GCST006414"],[26,43,2,2,14079,7],[4.49054230947093e-07,7.6211041189827e-12,1,1,0.0589368714324497,1.08731761407749e-06],[4.53974612403971e-07,3.43696488705049e-12,1,1,0.0587738202066973,5.53125673188554e-07],[0.0547427256288015,0.0656157988241693,1,1,1,0.322164524871055]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>traits<\/th>\n      <th>#of benchmark genes<\/th>\n      <th>pip&gt;0.8/pip&lt;0.8<\/th>\n      <th>pip&gt;0.8/pip&lt;0.5<\/th>\n      <th>pip&gt;0.8/pip0.5~0.8<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":6,"columnDefs":[{"className":"dt-right","targets":[2,3,4,5]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="fdr-cutoff-for-selecting-benchmark-genes-0.2-3"
+class="section level3">
+<h3>FDR cutoff for selecting benchmark genes = 0.2</h3>
+<pre class="r"><code># Convert named vectors to data frames
+fisher_z_df &lt;- as.data.frame(fisher_zscore_p$fdrcutoff_0.2)
+num_benchmark_genes_df &lt;- as.data.frame(num_benchmark_genes_zscore$fdrcutoff_0.2)
+
+# Set row names as a new column
+fisher_z_df$id &lt;- row.names(fisher_z_df)
+num_benchmark_genes_df$id &lt;- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df &lt;- merge(num_benchmark_genes_df,fisher_z_df,by = &quot;id&quot;)
+#colnames(merged_df_0.2) &lt;- c(&quot;traits&quot;,&quot;#of benchmark genes&quot;,&quot;fisher_z_p_pip08+/pip08-&quot;,&quot;fisher_z_p_pip08+/pip05-&quot;,&quot;fisher_z_p_pip08+/pip05~08&quot;)
+colnames(merged_df) &lt;- c(&quot;traits&quot;,&quot;#of benchmark genes&quot;,&quot;pip&gt;0.8/pip&lt;0.8&quot;,&quot;pip&gt;0.8/pip&lt;0.5&quot;,&quot;pip&gt;0.8/pip0.5~0.8&quot;)
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = &#39;caption-side: left; text-align: left; color:black; font-size:150%;&#39;,
+                                                  &#39;Fisher exact test p values for different groups&#39;),
+             options = list(pageLength = 6))</code></pre>
+<div id="htmlwidget-018aa8438ee3bad3ceee" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-018aa8438ee3bad3ceee">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black; font-size:150%;\">Fisher exact test p values for different groups<\/caption>","data":[["1","2","3","4","5","6"],["IBD-ebi-a-GCST004131","LDL-ukb-d-30780_irnt","SBP-ukb-a-360","SCZ-ieu-b-5102","WBC-ieu-b-30","aFib-ebi-a-GCST006414"],[26,64,2,3,15070,8],[4.49054230947093e-07,1.60367495482494e-13,1,1,0.367383038331604,6.9644094799923e-09],[4.53974612403971e-07,7.07599240067432e-14,1,1,0.36790076322956,3.05186673427197e-09],[0.0547427256288015,0.0495280802766161,1,1,0.634857680114854,0.170472026243266]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>traits<\/th>\n      <th>#of benchmark genes<\/th>\n      <th>pip&gt;0.8/pip&lt;0.8<\/th>\n      <th>pip&gt;0.8/pip&lt;0.5<\/th>\n      <th>pip&gt;0.8/pip0.5~0.8<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":6,"columnDefs":[{"className":"dt-right","targets":[2,3,4,5]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<div id="xgboost---modelling-binary-y---benchmarks-from-gobp"
+class="section level2">
+<h2>xgboost - modelling binary y - benchmarks from GOBP</h2>
+<div id="probability-cutoff-for-selecting-benchmark-genes-0.8-3"
+class="section level3">
+<h3>Probability cutoff for selecting benchmark genes = 0.8</h3>
+<pre class="r"><code>load(&quot;/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher_xgboost/fisher_biny_allcutoff_gobp.rdata&quot;)
+load(&quot;/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher_xgboost/num_benchmark_genes_biny_allcutoff_gobp.rdata&quot;)
+# Convert named vectors to data frames
+fisher_b_df &lt;- as.data.frame(fisher_biny_p$probcutoff_0.8)
+num_benchmark_genes_df &lt;- as.data.frame(num_benchmark_genes_biny$probcutoff_0.8)
+
+# Set row names as a new column
+fisher_b_df$id &lt;- row.names(fisher_b_df)
+num_benchmark_genes_df$id &lt;- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df &lt;- merge(num_benchmark_genes_df,fisher_b_df,by = &quot;id&quot;)
+
+colnames(merged_df) &lt;- c(&quot;traits&quot;,&quot;#of benchmark genes&quot;,&quot;pip&gt;0.8/pip&lt;0.8&quot;,&quot;pip&gt;0.8/pip&lt;0.5&quot;,&quot;pip&gt;0.8/pip0.5~0.8&quot;)
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = &#39;caption-side: left; text-align: left; color:black; font-size:150%;&#39;,
+                                                  &#39;Fisher exact test p values for different groups&#39;),
+             options = list(pageLength = 6))</code></pre>
+<div id="htmlwidget-de3a36f80a2aa43a84ec" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-de3a36f80a2aa43a84ec">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black; font-size:150%;\">Fisher exact test p values for different groups<\/caption>","data":[["1","2","3","4","5","6"],["IBD-ebi-a-GCST004131","LDL-ukb-d-30780_irnt","SBP-ukb-a-360","SCZ-ieu-b-5102","WBC-ieu-b-30","aFib-ebi-a-GCST006414"],[10,10,4,3,8,5],[0.0212309184824746,0.000623031055051243,1,0.00794954370121116,1,8.77308504107172e-05],[0.0212888627131356,0.000452742657458228,1,0.00798155421621112,1,8.85832704994227e-05],[0.493670886075949,0.587487268125559,1,0.397849462365591,1,0.195555555555556]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>traits<\/th>\n      <th>#of benchmark genes<\/th>\n      <th>pip&gt;0.8/pip&lt;0.8<\/th>\n      <th>pip&gt;0.8/pip&lt;0.5<\/th>\n      <th>pip&gt;0.8/pip0.5~0.8<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":6,"columnDefs":[{"className":"dt-right","targets":[2,3,4,5]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="probability-cutoff-for-selecting-benchmark-genes-0.7-3"
+class="section level3">
+<h3>Probability cutoff for selecting benchmark genes = 0.7</h3>
+<pre class="r"><code># Convert named vectors to data frames
+fisher_b_df &lt;- as.data.frame(fisher_biny_p$probcutoff_0.7)
+num_benchmark_genes_df &lt;- as.data.frame(num_benchmark_genes_biny$probcutoff_0.7)
+
+# Set row names as a new column
+fisher_b_df$id &lt;- row.names(fisher_b_df)
+num_benchmark_genes_df$id &lt;- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df &lt;- merge(num_benchmark_genes_df,fisher_b_df,by = &quot;id&quot;)
+
+colnames(merged_df) &lt;- c(&quot;traits&quot;,&quot;#of benchmark genes&quot;,&quot;pip&gt;0.8/pip&lt;0.8&quot;,&quot;pip&gt;0.8/pip&lt;0.5&quot;,&quot;pip&gt;0.8/pip0.5~0.8&quot;)
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = &#39;caption-side: left; text-align: left; color:black; font-size:150%;&#39;,
+                                                  &#39;Fisher exact test p values for different groups&#39;),
+             options = list(pageLength = 6))</code></pre>
+<div id="htmlwidget-0c9955ab111e1cca3425" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-0c9955ab111e1cca3425">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black; font-size:150%;\">Fisher exact test p values for different groups<\/caption>","data":[["1","2","3","4","5","6"],["IBD-ebi-a-GCST004131","LDL-ukb-d-30780_irnt","SBP-ukb-a-360","SCZ-ieu-b-5102","WBC-ieu-b-30","aFib-ebi-a-GCST006414"],[29,18,5,7,81,12],[4.96901049548607e-05,5.67602743579324e-05,1,0.0184533479443911,0.0666617317703331,0.000519879053799835],[4.46123633839401e-05,3.52902088138717e-05,1,0.0185272680328917,0.066330538389669,0.000524898631719655],[0.358868979122144,0.657832389820392,1,0.397849462365591,0.623893194449982,0.195555555555556]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>traits<\/th>\n      <th>#of benchmark genes<\/th>\n      <th>pip&gt;0.8/pip&lt;0.8<\/th>\n      <th>pip&gt;0.8/pip&lt;0.5<\/th>\n      <th>pip&gt;0.8/pip0.5~0.8<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":6,"columnDefs":[{"className":"dt-right","targets":[2,3,4,5]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="probability-cutoff-for-selecting-benchmark-genes-0.6-3"
+class="section level3">
+<h3>Probability cutoff for selecting benchmark genes = 0.6</h3>
+<pre class="r"><code># Convert named vectors to data frames
+fisher_b_df &lt;- as.data.frame(fisher_biny_p$probcutoff_0.6)
+num_benchmark_genes_df &lt;- as.data.frame(num_benchmark_genes_biny$probcutoff_0.6)
+
+# Set row names as a new column
+fisher_b_df$id &lt;- row.names(fisher_b_df)
+num_benchmark_genes_df$id &lt;- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df &lt;- merge(num_benchmark_genes_df,fisher_b_df,by = &quot;id&quot;)
+
+colnames(merged_df) &lt;- c(&quot;traits&quot;,&quot;#of benchmark genes&quot;,&quot;pip&gt;0.8/pip&lt;0.8&quot;,&quot;pip&gt;0.8/pip&lt;0.5&quot;,&quot;pip&gt;0.8/pip0.5~0.8&quot;)
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = &#39;caption-side: left; text-align: left; color:black; font-size:150%;&#39;,
+                                                  &#39;Fisher exact test p values for different groups&#39;),
+             options = list(pageLength = 6))</code></pre>
+<div id="htmlwidget-dbf5faccd537f6ef246a" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-dbf5faccd537f6ef246a">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black; font-size:150%;\">Fisher exact test p values for different groups<\/caption>","data":[["1","2","3","4","5","6"],["IBD-ebi-a-GCST004131","LDL-ukb-d-30780_irnt","SBP-ukb-a-360","SCZ-ieu-b-5102","WBC-ieu-b-30","aFib-ebi-a-GCST006414"],[39,34,16,27,334,19],[2.43250646185189e-06,1.18275208067848e-05,1,0.061900010243023,0.00106834887581614,0.00129791727567509],[2.19000145219532e-06,8.70813921751098e-06,1,0.0621425073473118,0.000990205371304427,0.000955132865028299],[0.200723327305606,0.409955285855052,1,0.397849462365591,0.296330048180053,1]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>traits<\/th>\n      <th>#of benchmark genes<\/th>\n      <th>pip&gt;0.8/pip&lt;0.8<\/th>\n      <th>pip&gt;0.8/pip&lt;0.5<\/th>\n      <th>pip&gt;0.8/pip0.5~0.8<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":6,"columnDefs":[{"className":"dt-right","targets":[2,3,4,5]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="probability-cutoff-for-selecting-benchmark-genes-0.5-3"
+class="section level3">
+<h3>Probability cutoff for selecting benchmark genes = 0.5</h3>
+<pre class="r"><code># Convert named vectors to data frames
+fisher_b_df &lt;- as.data.frame(fisher_biny_p$probcutoff_0.5)
+num_benchmark_genes_df &lt;- as.data.frame(num_benchmark_genes_biny$probcutoff_0.5)
+
+# Set row names as a new column
+fisher_b_df$id &lt;- row.names(fisher_b_df)
+num_benchmark_genes_df$id &lt;- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df &lt;- merge(num_benchmark_genes_df,fisher_b_df,by = &quot;id&quot;)
+
+colnames(merged_df) &lt;- c(&quot;traits&quot;,&quot;#of benchmark genes&quot;,&quot;pip&gt;0.8/pip&lt;0.8&quot;,&quot;pip&gt;0.8/pip&lt;0.5&quot;,&quot;pip&gt;0.8/pip0.5~0.8&quot;)
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = &#39;caption-side: left; text-align: left; color:black; font-size:150%;&#39;,
+                                                  &#39;Fisher exact test p values for different groups&#39;),
+             options = list(pageLength = 6))</code></pre>
+<div id="htmlwidget-22f4f93b92540efc38d8" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-22f4f93b92540efc38d8">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black; font-size:150%;\">Fisher exact test p values for different groups<\/caption>","data":[["1","2","3","4","5","6"],["IBD-ebi-a-GCST004131","LDL-ukb-d-30780_irnt","SBP-ukb-a-360","SCZ-ieu-b-5102","WBC-ieu-b-30","aFib-ebi-a-GCST006414"],[65,59,50,75,1267,31],[1.92287661310929e-05,0.000129200907367171,0.167464655105875,0.140960242878538,1.66587568286058e-05,0.00352886059671351],[1.81750404605246e-05,0.000111726971721098,0.168208590972161,0.139183319654199,1.47053894980527e-05,0.00297163441465701],[0.200723327305606,0.409955285855052,1,1,0.169243865477754,1]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>traits<\/th>\n      <th>#of benchmark genes<\/th>\n      <th>pip&gt;0.8/pip&lt;0.8<\/th>\n      <th>pip&gt;0.8/pip&lt;0.5<\/th>\n      <th>pip&gt;0.8/pip0.5~0.8<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":6,"columnDefs":[{"className":"dt-right","targets":[2,3,4,5]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
 </div>
 <div id="benchmark-gene-comparison" class="section level1">
 <h1>Benchmark gene comparison</h1>
 <div id="modelling-z-scores" class="section level2">
 <h2>Modelling z-scores</h2>
-<div id="fdr-cutoff-for-selecting-benchmark-genes-0.05-2"
+<div id="fdr-cutoff-for-selecting-benchmark-genes-0.05-4"
 class="section level3">
 <h3>FDR cutoff for selecting benchmark genes = 0.05</h3>
 <pre class="r"><code>compute_gene_overlap_z(0.05)</code></pre>
-<div id="htmlwidget-35e1d0e81f5ada6ecac0" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-35e1d0e81f5ada6ecac0">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black; font-size:150%;\">#of benchmark genes and the overlaps<\/caption>","data":[["IBD-ebi-a-GCST004131","LDL-ukb-d-30780_irnt","SBP-ukb-a-360","SCZ-ieu-b-5102","WBC-ieu-b-30","aFib-ebi-a-GCST006414"],[30,91,1,6,6396,14],[39,53,2,21,411,6],[16,40,1,3,351,2]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>#ofbenchmarkgene_susie<\/th>\n      <th>#ofbenchmarkgene_xgboost<\/th>\n      <th>#ofoverlap<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[1,2,3]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-d38a10cf1f4a4312555e" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-d38a10cf1f4a4312555e">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black; font-size:150%;\">#of benchmark genes and the overlaps<\/caption>","data":[["IBD-ebi-a-GCST004131","LDL-ukb-d-30780_irnt","SBP-ukb-a-360","SCZ-ieu-b-5102","WBC-ieu-b-30","aFib-ebi-a-GCST006414"],[30,91,1,6,6396,14],[39,53,2,21,411,6],[34,39,1,2,130,2],[22,37,1,1,201,5],[16,40,1,3,351,2],[10,29,0,1,163,2],[29,33,1,2,109,2]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>#ofbenchmarkgene_susie<\/th>\n      <th>#ofbenchmarkgene_xgboost_sep<\/th>\n      <th>#ofbenchmarkgene_xgboost_joint<\/th>\n      <th>#ofbenchmarkgene_xgboost_gobp<\/th>\n      <th>#ofoverlap of xgboos_all and susie_all<\/th>\n      <th>#ofoverlap of xgboos_gobp and susie_all<\/th>\n      <th>#ofoverlap of xgboos_sep and xgboos_joint<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[1,2,3,4,5,6,7]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 </div>
-<div id="fdr-cutoff-for-selecting-benchmark-genes-0.1-2"
+<div id="fdr-cutoff-for-selecting-benchmark-genes-0.1-4"
 class="section level3">
 <h3>FDR cutoff for selecting benchmark genes = 0.1</h3>
 <pre class="r"><code>compute_gene_overlap_z(0.1)</code></pre>
-<div id="htmlwidget-a41f9b9304ecbba20fc2" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-a41f9b9304ecbba20fc2">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black; font-size:150%;\">#of benchmark genes and the overlaps<\/caption>","data":[["IBD-ebi-a-GCST004131","LDL-ukb-d-30780_irnt","SBP-ukb-a-360","SCZ-ieu-b-5102","WBC-ieu-b-30","aFib-ebi-a-GCST006414"],[33,94,1,8,16577,14],[43,75,2,21,16475,8],[18,59,1,5,16454,2]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>#ofbenchmarkgene_susie<\/th>\n      <th>#ofbenchmarkgene_xgboost<\/th>\n      <th>#ofoverlap<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[1,2,3]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-f6601b42c136c442346e" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-f6601b42c136c442346e">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black; font-size:150%;\">#of benchmark genes and the overlaps<\/caption>","data":[["IBD-ebi-a-GCST004131","LDL-ukb-d-30780_irnt","SBP-ukb-a-360","SCZ-ieu-b-5102","WBC-ieu-b-30","aFib-ebi-a-GCST006414"],[33,94,1,8,16577,14],[43,75,2,21,16475,8],[38,46,1,4,15336,5],[26,43,2,2,14079,7],[18,59,1,5,16454,2],[12,31,1,2,14078,2],[31,42,1,4,14954,4]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>#ofbenchmarkgene_susie<\/th>\n      <th>#ofbenchmarkgene_xgboost_sep<\/th>\n      <th>#ofbenchmarkgene_xgboost_joint<\/th>\n      <th>#ofbenchmarkgene_xgboost_gobp<\/th>\n      <th>#ofoverlap of xgboos_all and susie_all<\/th>\n      <th>#ofoverlap of xgboos_gobp and susie_all<\/th>\n      <th>#ofoverlap of xgboos_sep and xgboos_joint<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[1,2,3,4,5,6,7]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 </div>
-<div id="fdr-cutoff-for-selecting-benchmark-genes-0.2-2"
+<div id="fdr-cutoff-for-selecting-benchmark-genes-0.2-4"
 class="section level3">
 <h3>FDR cutoff for selecting benchmark genes = 0.2</h3>
 <pre class="r"><code>compute_gene_overlap_z(0.2)</code></pre>
-<div id="htmlwidget-80db18273cfc4a9b8682" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-80db18273cfc4a9b8682">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black; font-size:150%;\">#of benchmark genes and the overlaps<\/caption>","data":[["IBD-ebi-a-GCST004131","LDL-ukb-d-30780_irnt","SBP-ukb-a-360","SCZ-ieu-b-5102","WBC-ieu-b-30","aFib-ebi-a-GCST006414"],[41,100,1,8,17282,14],[55,94,2,25,17277,9],[19,70,1,5,17277,2]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>#ofbenchmarkgene_susie<\/th>\n      <th>#ofbenchmarkgene_xgboost<\/th>\n      <th>#ofoverlap<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[1,2,3]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-0a9e6b1a7a900cea07f3" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-0a9e6b1a7a900cea07f3">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black; font-size:150%;\">#of benchmark genes and the overlaps<\/caption>","data":[["IBD-ebi-a-GCST004131","LDL-ukb-d-30780_irnt","SBP-ukb-a-360","SCZ-ieu-b-5102","WBC-ieu-b-30","aFib-ebi-a-GCST006414"],[41,100,1,8,17282,14],[55,94,2,25,17277,9],[43,53,6,8,16662,5],[26,64,2,3,15070,8],[19,70,1,5,17277,2],[13,43,1,2,15070,2],[36,49,2,8,16645,4]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>#ofbenchmarkgene_susie<\/th>\n      <th>#ofbenchmarkgene_xgboost_sep<\/th>\n      <th>#ofbenchmarkgene_xgboost_joint<\/th>\n      <th>#ofbenchmarkgene_xgboost_gobp<\/th>\n      <th>#ofoverlap of xgboos_all and susie_all<\/th>\n      <th>#ofoverlap of xgboos_gobp and susie_all<\/th>\n      <th>#ofoverlap of xgboos_sep and xgboos_joint<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[1,2,3,4,5,6,7]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 <div id="modelling-binarized-y" class="section level2">
 <h2>Modelling binarized y</h2>
-<div id="probability-cutoff-for-selecting-benchmark-genes-0.8-2"
+<div id="probability-cutoff-for-selecting-benchmark-genes-0.8-4"
 class="section level3">
 <h3>Probability cutoff for selecting benchmark genes = 0.8</h3>
 <pre class="r"><code>compute_gene_overlap_b(0.8)</code></pre>
-<div id="htmlwidget-6f19a3278480c8d45e45" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-6f19a3278480c8d45e45">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black; font-size:150%;\">#of benchmark genes and the overlaps<\/caption>","data":[["IBD-ebi-a-GCST004131","LDL-ukb-d-30780_irnt","SBP-ukb-a-360","SCZ-ieu-b-5102","WBC-ieu-b-30","aFib-ebi-a-GCST006414"],[13,9,0,12,4,0],[17,14,5,15,61,5],[12,0,0,11,0,0]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>#ofbenchmarkgene_susie<\/th>\n      <th>#ofbenchmarkgene_xgboost<\/th>\n      <th>#ofoverlap<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[1,2,3]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-9b395a4bb9eddbb07a43" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-9b395a4bb9eddbb07a43">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black; font-size:150%;\">#of benchmark genes and the overlaps<\/caption>","data":[["IBD-ebi-a-GCST004131","LDL-ukb-d-30780_irnt","SBP-ukb-a-360","SCZ-ieu-b-5102","WBC-ieu-b-30","aFib-ebi-a-GCST006414"],[13,9,0,12,4,0],[17,14,5,15,61,5],[14,13,2,11,32,1],[10,10,4,3,8,5],[12,0,0,11,0,0],[6,0,0,0,0,0],[9,4,0,9,11,0]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>#ofbenchmarkgene_susie<\/th>\n      <th>#ofbenchmarkgene_xgboost_sep<\/th>\n      <th>#ofbenchmarkgene_xgboost_joint<\/th>\n      <th>#ofbenchmarkgene_xgboost_gobp<\/th>\n      <th>#ofoverlap of xgboos_all and susie_all<\/th>\n      <th>#ofoverlap of xgboos_gobp and susie_all<\/th>\n      <th>#ofoverlap of xgboos_sep and xgboos_joint<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[1,2,3,4,5,6,7]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 </div>
-<div id="probability-cutoff-for-selecting-benchmark-genes-0.7-2"
+<div id="probability-cutoff-for-selecting-benchmark-genes-0.7-4"
 class="section level3">
 <h3>Probability cutoff for selecting benchmark genes = 0.7</h3>
 <pre class="r"><code>compute_gene_overlap_b(0.7)</code></pre>
-<div id="htmlwidget-81a148ea6c961cf45e2c" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-81a148ea6c961cf45e2c">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black; font-size:150%;\">#of benchmark genes and the overlaps<\/caption>","data":[["IBD-ebi-a-GCST004131","LDL-ukb-d-30780_irnt","SBP-ukb-a-360","SCZ-ieu-b-5102","WBC-ieu-b-30","aFib-ebi-a-GCST006414"],[14,9,0,13,46,0],[39,31,9,24,247,12],[12,2,0,11,31,0]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>#ofbenchmarkgene_susie<\/th>\n      <th>#ofbenchmarkgene_xgboost<\/th>\n      <th>#ofoverlap<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[1,2,3]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-32e9027c444b11c54a16" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-32e9027c444b11c54a16">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black; font-size:150%;\">#of benchmark genes and the overlaps<\/caption>","data":[["IBD-ebi-a-GCST004131","LDL-ukb-d-30780_irnt","SBP-ukb-a-360","SCZ-ieu-b-5102","WBC-ieu-b-30","aFib-ebi-a-GCST006414"],[14,9,0,13,46,0],[39,31,9,24,247,12],[21,18,5,26,201,4],[29,18,5,7,81,12],[12,2,0,11,31,0],[7,1,0,0,8,0],[18,10,1,11,94,1]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>#ofbenchmarkgene_susie<\/th>\n      <th>#ofbenchmarkgene_xgboost_sep<\/th>\n      <th>#ofbenchmarkgene_xgboost_joint<\/th>\n      <th>#ofbenchmarkgene_xgboost_gobp<\/th>\n      <th>#ofoverlap of xgboos_all and susie_all<\/th>\n      <th>#ofoverlap of xgboos_gobp and susie_all<\/th>\n      <th>#ofoverlap of xgboos_sep and xgboos_joint<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[1,2,3,4,5,6,7]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 </div>
-<div id="probability-cutoff-for-selecting-benchmark-genes-0.6-2"
+<div id="probability-cutoff-for-selecting-benchmark-genes-0.6-4"
 class="section level3">
 <h3>Probability cutoff for selecting benchmark genes = 0.6</h3>
 <pre class="r"><code>compute_gene_overlap_b(0.6)</code></pre>
-<div id="htmlwidget-425deb884d24b4ea5f7c" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-425deb884d24b4ea5f7c">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black; font-size:150%;\">#of benchmark genes and the overlaps<\/caption>","data":[["IBD-ebi-a-GCST004131","LDL-ukb-d-30780_irnt","SBP-ukb-a-360","SCZ-ieu-b-5102","WBC-ieu-b-30","aFib-ebi-a-GCST006414"],[27,22,0,13,303,0],[54,68,28,75,957,22],[17,18,0,11,182,0]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>#ofbenchmarkgene_susie<\/th>\n      <th>#ofbenchmarkgene_xgboost<\/th>\n      <th>#ofoverlap<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[1,2,3]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-ddd6af3b79767d761cfa" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-ddd6af3b79767d761cfa">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black; font-size:150%;\">#of benchmark genes and the overlaps<\/caption>","data":[["IBD-ebi-a-GCST004131","LDL-ukb-d-30780_irnt","SBP-ukb-a-360","SCZ-ieu-b-5102","WBC-ieu-b-30","aFib-ebi-a-GCST006414"],[27,22,0,13,303,0],[54,68,28,75,957,22],[43,38,20,63,509,11],[39,34,16,27,334,19],[17,18,0,11,182,0],[9,9,0,0,48,0],[31,33,7,30,379,8]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>#ofbenchmarkgene_susie<\/th>\n      <th>#ofbenchmarkgene_xgboost_sep<\/th>\n      <th>#ofbenchmarkgene_xgboost_joint<\/th>\n      <th>#ofbenchmarkgene_xgboost_gobp<\/th>\n      <th>#ofoverlap of xgboos_all and susie_all<\/th>\n      <th>#ofoverlap of xgboos_gobp and susie_all<\/th>\n      <th>#ofoverlap of xgboos_sep and xgboos_joint<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[1,2,3,4,5,6,7]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 </div>
-<div id="probability-cutoff-for-selecting-benchmark-genes-0.5-2"
+<div id="probability-cutoff-for-selecting-benchmark-genes-0.5-4"
 class="section level3">
 <h3>Probability cutoff for selecting benchmark genes = 0.5</h3>
 <pre class="r"><code>compute_gene_overlap_b(0.5)</code></pre>
-<div id="htmlwidget-5674f84365e74fcb3e3c" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-5674f84365e74fcb3e3c">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black; font-size:150%;\">#of benchmark genes and the overlaps<\/caption>","data":[["IBD-ebi-a-GCST004131","LDL-ukb-d-30780_irnt","SBP-ukb-a-360","SCZ-ieu-b-5102","WBC-ieu-b-30","aFib-ebi-a-GCST006414"],[27,78,0,13,1936,9],[98,108,92,155,2852,41],[18,51,0,13,1290,2]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>#ofbenchmarkgene_susie<\/th>\n      <th>#ofbenchmarkgene_xgboost<\/th>\n      <th>#ofoverlap<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[1,2,3]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-bd2fb33727c3bea89d26" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-bd2fb33727c3bea89d26">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black; font-size:150%;\">#of benchmark genes and the overlaps<\/caption>","data":[["IBD-ebi-a-GCST004131","LDL-ukb-d-30780_irnt","SBP-ukb-a-360","SCZ-ieu-b-5102","WBC-ieu-b-30","aFib-ebi-a-GCST006414"],[27,78,0,13,1936,9],[98,108,92,155,2852,41],[76,48,52,119,1752,24],[65,59,50,75,1267,31],[18,51,0,13,1290,2],[12,33,0,4,692,2],[61,43,29,85,1295,18]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>#ofbenchmarkgene_susie<\/th>\n      <th>#ofbenchmarkgene_xgboost_sep<\/th>\n      <th>#ofbenchmarkgene_xgboost_joint<\/th>\n      <th>#ofbenchmarkgene_xgboost_gobp<\/th>\n      <th>#ofoverlap of xgboos_all and susie_all<\/th>\n      <th>#ofoverlap of xgboos_gobp and susie_all<\/th>\n      <th>#ofoverlap of xgboos_sep and xgboos_joint<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[1,2,3,4,5,6,7]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
