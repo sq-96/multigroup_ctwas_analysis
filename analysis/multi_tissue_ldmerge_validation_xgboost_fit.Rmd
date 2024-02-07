@@ -49,84 +49,86 @@ Frequency: The Frequency (sometimes referred to as "Weight" in other contexts) i
 
 # aFib-ebi-a-GCST006414
 
-## Go Biological Process
+## Training on all genes
 
-### Modelling z-scores using regression with squared loss
+### Go Biological Process
+
+#### Modelling z-scores using regression with squared loss
 
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost/aFib-ebi-a-GCST006414_gobp.rdata")
 DT::datatable(importance_matrix_z,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-### Modelling binarized y using logistic regression for binary classification
+#### Modelling binarized y using logistic regression for binary classification
 
 ```{r warning=F,message=FALSE}
 DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
 
-## Go Molecular Function
+### Go Molecular Function
 
-### Modelling z-scores using regression with squared loss
+#### Modelling z-scores using regression with squared loss
 
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost/aFib-ebi-a-GCST006414_gomf.rdata")
 DT::datatable(importance_matrix_z,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-### Modelling binarized y using logistic regression for binary classification
+#### Modelling binarized y using logistic regression for binary classification
 
 ```{r warning=F,message=FALSE}
 DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-## Go Cellular Component
+### Go Cellular Component
 
-### Modelling z-scores using regression with squared loss
+#### Modelling z-scores using regression with squared loss
 
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost/aFib-ebi-a-GCST006414_gocc.rdata")
 DT::datatable(importance_matrix_z,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-### Modelling binarized y using logistic regression for binary classification
+#### Modelling binarized y using logistic regression for binary classification
 
 ```{r warning=F,message=FALSE}
 DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-## KEGG
+### KEGG
 
-### Modelling z-scores using regression with squared loss
+#### Modelling z-scores using regression with squared loss
 
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost/aFib-ebi-a-GCST006414_kegg.rdata")
 DT::datatable(importance_matrix_z,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-### Modelling binarized y using logistic regression for binary classification
+#### Modelling binarized y using logistic regression for binary classification
 
 ```{r warning=F,message=FALSE}
 DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
 
-## 4 data base jointly
+### 4 data base jointly
 
-### Modelling z-scores using regression with squared loss
+#### Modelling z-scores using regression with squared loss
 
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_jointly/aFib-ebi-a-GCST006414_all4db.rdata")
 DT::datatable(importance_matrix_z,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-### Modelling binarized y using logistic regression for binary classification
+#### Modelling binarized y using logistic regression for binary classification
 
 ```{r warning=F,message=FALSE}
 DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-## Gene labels
+### Gene labels
 
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost/gene_labels_xgboost_aFib-ebi-a-GCST006414.rdata")
@@ -135,431 +137,981 @@ DT::datatable(df_all,caption = htmltools::tags$caption(style = 'caption-side: le
 
 
 
+
+## Training on top 500 genes
+
+### Go Biological Process
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/aFib-ebi-a-GCST006414_numtrunc500_gobp.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+### Go Molecular Function
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/aFib-ebi-a-GCST006414_numtrunc500_gomf.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+
+
+### Go Cellular Component
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/aFib-ebi-a-GCST006414_numtrunc500_gocc.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+### KEGG
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/aFib-ebi-a-GCST006414_numtrunc500_kegg.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+
+## Training on top 1000 genes
+
+### Go Biological Process
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/aFib-ebi-a-GCST006414_numtrunc1000_gobp.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+### Go Molecular Function
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/aFib-ebi-a-GCST006414_numtrunc1000_gomf.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+
+
+### Go Cellular Component
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/aFib-ebi-a-GCST006414_numtrunc1000_gocc.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+### KEGG
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/aFib-ebi-a-GCST006414_numtrunc1000_kegg.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+
 # IBD-ebi-a-GCST004131
 
-## Go Biological Process
+## Training on all genes
 
-### Modelling z-scores using regression with squared loss
+### Go Biological Process
+
+#### Modelling z-scores using regression with squared loss
 
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost/IBD-ebi-a-GCST004131_gobp.rdata")
 DT::datatable(importance_matrix_z,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-### Modelling binarized y using logistic regression for binary classification
+#### Modelling binarized y using logistic regression for binary classification
 
 ```{r warning=F,message=FALSE}
 DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
 
-## Go Molecular Function
+### Go Molecular Function
 
-### Modelling z-scores using regression with squared loss
+#### Modelling z-scores using regression with squared loss
 
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost/IBD-ebi-a-GCST004131_gomf.rdata")
 DT::datatable(importance_matrix_z,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-### Modelling binarized y using logistic regression for binary classification
+#### Modelling binarized y using logistic regression for binary classification
 
 ```{r warning=F,message=FALSE}
 DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-## Go Cellular Component
+### Go Cellular Component
 
-### Modelling z-scores using regression with squared loss
+#### Modelling z-scores using regression with squared loss
 
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost/IBD-ebi-a-GCST004131_gocc.rdata")
 DT::datatable(importance_matrix_z,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-### Modelling binarized y using logistic regression for binary classification
+#### Modelling binarized y using logistic regression for binary classification
 
 ```{r warning=F,message=FALSE}
 DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-## KEGG
+### KEGG
 
-### Modelling z-scores using regression with squared loss
+#### Modelling z-scores using regression with squared loss
 
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost/IBD-ebi-a-GCST004131_kegg.rdata")
 DT::datatable(importance_matrix_z,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-### Modelling binarized y using logistic regression for binary classification
+#### Modelling binarized y using logistic regression for binary classification
 
 ```{r warning=F,message=FALSE}
 DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
 
-## 4 data base jointly
+### 4 data base jointly
 
-### Modelling z-scores using regression with squared loss
+#### Modelling z-scores using regression with squared loss
 
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_jointly/IBD-ebi-a-GCST004131_all4db.rdata")
 DT::datatable(importance_matrix_z,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-### Modelling binarized y using logistic regression for binary classification
+#### Modelling binarized y using logistic regression for binary classification
 
 ```{r warning=F,message=FALSE}
 DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-## Gene labels
+### Gene labels
 
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost/gene_labels_xgboost_IBD-ebi-a-GCST004131.rdata")
 DT::datatable(df_all,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Predicted gene labels'),options = list(pageLength = 5))
 ```
 
+
+## Training on top 500 genes
+
+### Go Biological Process
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/IBD-ebi-a-GCST004131_numtrunc500_gobp.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+### Go Molecular Function
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/IBD-ebi-a-GCST004131_numtrunc500_gomf.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+
+
+### Go Cellular Component
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/IBD-ebi-a-GCST004131_numtrunc500_gocc.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+### KEGG
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/IBD-ebi-a-GCST004131_numtrunc500_kegg.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+
+## Training on top 1000 genes
+
+### Go Biological Process
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/IBD-ebi-a-GCST004131_numtrunc1000_gobp.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+### Go Molecular Function
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/IBD-ebi-a-GCST004131_numtrunc1000_gomf.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+
+
+### Go Cellular Component
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/IBD-ebi-a-GCST004131_numtrunc1000_gocc.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+### KEGG
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/IBD-ebi-a-GCST004131_numtrunc1000_kegg.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+
+
+
 # LDL-ukb-d-30780_irnt
 
-## Go Biological Process
+## Training on all genes
 
-### Modelling z-scores using regression with squared loss
+### Go Biological Process
+
+#### Modelling z-scores using regression with squared loss
 
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost/LDL-ukb-d-30780_irnt_gobp.rdata")
 DT::datatable(importance_matrix_z,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-### Modelling binarized y using logistic regression for binary classification
+#### Modelling binarized y using logistic regression for binary classification
 
 ```{r warning=F,message=FALSE}
 DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
 
-## Go Molecular Function
+### Go Molecular Function
 
-### Modelling z-scores using regression with squared loss
+#### Modelling z-scores using regression with squared loss
 
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost/LDL-ukb-d-30780_irnt_gomf.rdata")
 DT::datatable(importance_matrix_z,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-### Modelling binarized y using logistic regression for binary classification
+#### Modelling binarized y using logistic regression for binary classification
 
 ```{r warning=F,message=FALSE}
 DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-## Go Cellular Component
+### Go Cellular Component
 
-### Modelling z-scores using regression with squared loss
+#### Modelling z-scores using regression with squared loss
 
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost/LDL-ukb-d-30780_irnt_gocc.rdata")
 DT::datatable(importance_matrix_z,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-### Modelling binarized y using logistic regression for binary classification
+#### Modelling binarized y using logistic regression for binary classification
 
 ```{r warning=F,message=FALSE}
 DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-## KEGG
+### KEGG
 
-### Modelling z-scores using regression with squared loss
+#### Modelling z-scores using regression with squared loss
 
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost/LDL-ukb-d-30780_irnt_kegg.rdata")
 DT::datatable(importance_matrix_z,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-### Modelling binarized y using logistic regression for binary classification
+#### Modelling binarized y using logistic regression for binary classification
 
 ```{r warning=F,message=FALSE}
 DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
 
-## 4 data base jointly
+### 4 data base jointly
 
-### Modelling z-scores using regression with squared loss
+#### Modelling z-scores using regression with squared loss
 
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_jointly/LDL-ukb-d-30780_irnt_all4db.rdata")
 DT::datatable(importance_matrix_z,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-### Modelling binarized y using logistic regression for binary classification
+#### Modelling binarized y using logistic regression for binary classification
 
 ```{r warning=F,message=FALSE}
 DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
-## Gene labels
+### Gene labels
 
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost/gene_labels_xgboost_LDL-ukb-d-30780_irnt.rdata")
 DT::datatable(df_all,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Predicted gene labels'),options = list(pageLength = 5))
 ```
 
+
+## Training on top 500 genes
+
+### Go Biological Process
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/LDL-ukb-d-30780_irnt_numtrunc500_gobp.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+### Go Molecular Function
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/LDL-ukb-d-30780_irnt_numtrunc500_gomf.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+
+
+### Go Cellular Component
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/LDL-ukb-d-30780_irnt_numtrunc500_gocc.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+### KEGG
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/LDL-ukb-d-30780_irnt_numtrunc500_kegg.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+
+## Training on top 1000 genes
+
+### Go Biological Process
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/LDL-ukb-d-30780_irnt_numtrunc1000_gobp.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+### Go Molecular Function
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/LDL-ukb-d-30780_irnt_numtrunc1000_gomf.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+
+
+### Go Cellular Component
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/LDL-ukb-d-30780_irnt_numtrunc1000_gocc.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+### KEGG
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/LDL-ukb-d-30780_irnt_numtrunc1000_kegg.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+
+
+
+
 # SBP-ukb-a-360
 
-## Go Biological Process
+## Training on all genes
 
-### Modelling z-scores using regression with squared loss
+### Go Biological Process
+
+#### Modelling z-scores using regression with squared loss
 
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost/SBP-ukb-a-360_gobp.rdata")
 DT::datatable(importance_matrix_z,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-### Modelling binarized y using logistic regression for binary classification
+#### Modelling binarized y using logistic regression for binary classification
 
 ```{r warning=F,message=FALSE}
 DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
 
-## Go Molecular Function
+### Go Molecular Function
 
-### Modelling z-scores using regression with squared loss
+#### Modelling z-scores using regression with squared loss
 
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost/SBP-ukb-a-360_gomf.rdata")
 DT::datatable(importance_matrix_z,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-### Modelling binarized y using logistic regression for binary classification
+#### Modelling binarized y using logistic regression for binary classification
 
 ```{r warning=F,message=FALSE}
 DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-## Go Cellular Component
+### Go Cellular Component
 
-### Modelling z-scores using regression with squared loss
+#### Modelling z-scores using regression with squared loss
 
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost/SBP-ukb-a-360_gocc.rdata")
 DT::datatable(importance_matrix_z,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-### Modelling binarized y using logistic regression for binary classification
+#### Modelling binarized y using logistic regression for binary classification
 
 ```{r warning=F,message=FALSE}
 DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-## KEGG
+### KEGG
 
-### Modelling z-scores using regression with squared loss
+#### Modelling z-scores using regression with squared loss
 
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost/SBP-ukb-a-360_kegg.rdata")
 DT::datatable(importance_matrix_z,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-### Modelling binarized y using logistic regression for binary classification
+#### Modelling binarized y using logistic regression for binary classification
 
 ```{r warning=F,message=FALSE}
 DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
 
-## 4 data base jointly
+### 4 data base jointly
 
-### Modelling z-scores using regression with squared loss
+#### Modelling z-scores using regression with squared loss
 
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_jointly/SBP-ukb-a-360_all4db.rdata")
 DT::datatable(importance_matrix_z,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-### Modelling binarized y using logistic regression for binary classification
+#### Modelling binarized y using logistic regression for binary classification
 
 ```{r warning=F,message=FALSE}
 DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-## Gene labels
+### Gene labels
 
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost/gene_labels_xgboost_SBP-ukb-a-360.rdata")
 DT::datatable(df_all,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Predicted gene labels'),options = list(pageLength = 5))
 ```
 
+
+## Training on top 500 genes
+
+### Go Biological Process
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/SBP-ukb-a-360_numtrunc500_gobp.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+### Go Molecular Function
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/SBP-ukb-a-360_numtrunc500_gomf.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+
+
+### Go Cellular Component
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/SBP-ukb-a-360_numtrunc500_gocc.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+### KEGG
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/SBP-ukb-a-360_numtrunc500_kegg.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+
+## Training on top 1000 genes
+
+### Go Biological Process
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/SBP-ukb-a-360_numtrunc1000_gobp.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+### Go Molecular Function
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/SBP-ukb-a-360_numtrunc1000_gomf.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+
+
+### Go Cellular Component
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/SBP-ukb-a-360_numtrunc1000_gocc.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+### KEGG
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/SBP-ukb-a-360_numtrunc1000_kegg.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+
+
+
+
+
+
+
+
+## Training using known SBP features & top 500 genes
+
+Integration of genetic fine-mapping and multi-omics data reveals candidate effector genes for hypertension [AJHG 2023] table s26
+310 Go terms at fdr < 0.05
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_sbp_trunc/SBP-ukb-a-360_numtrunc500.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+## Training using known SBP features & top 1000 genes
+
+Integration of genetic fine-mapping and multi-omics data reveals candidate effector genes for hypertension [AJHG 2023] table s26
+310 Go terms at fdr < 0.05
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_sbp_trunc/SBP-ukb-a-360_numtrunc1000.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
 # SCZ-ieu-b-5102
 
-## Go Biological Process
+## Training on all genes
 
-### Modelling z-scores using regression with squared loss
+### Go Biological Process
+
+#### Modelling z-scores using regression with squared loss
 
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost/SCZ-ieu-b-5102_gobp.rdata")
 DT::datatable(importance_matrix_z,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-### Modelling binarized y using logistic regression for binary classification
+#### Modelling binarized y using logistic regression for binary classification
 
 ```{r warning=F,message=FALSE}
 DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
 
-## Go Molecular Function
+### Go Molecular Function
 
-### Modelling z-scores using regression with squared loss
+#### Modelling z-scores using regression with squared loss
 
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost/SCZ-ieu-b-5102_gomf.rdata")
 DT::datatable(importance_matrix_z,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-### Modelling binarized y using logistic regression for binary classification
+#### Modelling binarized y using logistic regression for binary classification
 
 ```{r warning=F,message=FALSE}
 DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-## Go Cellular Component
+### Go Cellular Component
 
-### Modelling z-scores using regression with squared loss
+#### Modelling z-scores using regression with squared loss
 
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost/SCZ-ieu-b-5102_gocc.rdata")
 DT::datatable(importance_matrix_z,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-### Modelling binarized y using logistic regression for binary classification
+#### Modelling binarized y using logistic regression for binary classification
 
 ```{r warning=F,message=FALSE}
 DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-## KEGG
+### KEGG
 
-### Modelling z-scores using regression with squared loss
+#### Modelling z-scores using regression with squared loss
 
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost/SCZ-ieu-b-5102_kegg.rdata")
 DT::datatable(importance_matrix_z,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-### Modelling binarized y using logistic regression for binary classification
+#### Modelling binarized y using logistic regression for binary classification
 
 ```{r warning=F,message=FALSE}
 DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
 
-## 4 data base jointly
+### 4 data base jointly
 
-### Modelling z-scores using regression with squared loss
+#### Modelling z-scores using regression with squared loss
 
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_jointly/SCZ-ieu-b-5102_all4db.rdata")
 DT::datatable(importance_matrix_z,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-### Modelling binarized y using logistic regression for binary classification
+#### Modelling binarized y using logistic regression for binary classification
 
 ```{r warning=F,message=FALSE}
 DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-## Gene labels
+### Gene labels
 
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost/gene_labels_xgboost_SCZ-ieu-b-5102.rdata")
 DT::datatable(df_all,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Predicted gene labels'),options = list(pageLength = 5))
 ```
 
+
+## Training on top 500 genes
+
+### Go Biological Process
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/SCZ-ieu-b-5102_numtrunc500_gobp.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+### Go Molecular Function
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/SCZ-ieu-b-5102_numtrunc500_gomf.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+
+
+### Go Cellular Component
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/SCZ-ieu-b-5102_numtrunc500_gocc.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+### KEGG
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/SCZ-ieu-b-5102_numtrunc500_kegg.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+
+## Training on top 1000 genes
+
+### Go Biological Process
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/SCZ-ieu-b-5102_numtrunc1000_gobp.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+### Go Molecular Function
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/SCZ-ieu-b-5102_numtrunc1000_gomf.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+
+
+### Go Cellular Component
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/SCZ-ieu-b-5102_numtrunc1000_gocc.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+### KEGG
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/SCZ-ieu-b-5102_numtrunc1000_kegg.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+
+
+
+
+
 # WBC-ieu-b-30
 
-## Go Biological Process
+### Go Biological Process
 
-### Modelling z-scores using regression with squared loss
+#### Modelling z-scores using regression with squared loss
 
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost/WBC-ieu-b-30_gobp.rdata")
 DT::datatable(importance_matrix_z,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-### Modelling binarized y using logistic regression for binary classification
+#### Modelling binarized y using logistic regression for binary classification
 
 ```{r warning=F,message=FALSE}
 DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
 
-## Go Molecular Function
+### Go Molecular Function
 
-### Modelling z-scores using regression with squared loss
+#### Modelling z-scores using regression with squared loss
 
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost/WBC-ieu-b-30_gomf.rdata")
 DT::datatable(importance_matrix_z,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-### Modelling binarized y using logistic regression for binary classification
+#### Modelling binarized y using logistic regression for binary classification
 
 ```{r warning=F,message=FALSE}
 DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-## Go Cellular Component
+### Go Cellular Component
 
-### Modelling z-scores using regression with squared loss
+#### Modelling z-scores using regression with squared loss
 
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost/WBC-ieu-b-30_gocc.rdata")
 DT::datatable(importance_matrix_z,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-### Modelling binarized y using logistic regression for binary classification
+#### Modelling binarized y using logistic regression for binary classification
 
 ```{r warning=F,message=FALSE}
 DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-## KEGG
+### KEGG
 
-### Modelling z-scores using regression with squared loss
+#### Modelling z-scores using regression with squared loss
 
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost/WBC-ieu-b-30_kegg.rdata")
 DT::datatable(importance_matrix_z,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-### Modelling binarized y using logistic regression for binary classification
+#### Modelling binarized y using logistic regression for binary classification
 
 ```{r warning=F,message=FALSE}
 DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
 
-## 4 data base jointly
+### 4 data base jointly
 
-### Modelling z-scores using regression with squared loss
+#### Modelling z-scores using regression with squared loss
 
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_jointly/WBC-ieu-b-30_all4db.rdata")
 DT::datatable(importance_matrix_z,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-### Modelling binarized y using logistic regression for binary classification
+#### Modelling binarized y using logistic regression for binary classification
 
 ```{r warning=F,message=FALSE}
 DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
 ```
 
-## Gene labels
+### Gene labels
 
 ```{r warning=F,message=FALSE}
 load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost/gene_labels_xgboost_WBC-ieu-b-30.rdata")
 DT::datatable(df_all,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Predicted gene labels'),options = list(pageLength = 5))
 ```
+
+
+
+## Training on top 500 genes
+
+### Go Biological Process
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/WBC-ieu-b-30_numtrunc500_gobp.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+### Go Molecular Function
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/WBC-ieu-b-30_numtrunc500_gomf.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+
+
+### Go Cellular Component
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/WBC-ieu-b-30_numtrunc500_gocc.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+### KEGG
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/WBC-ieu-b-30_numtrunc500_kegg.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+
+## Training on top 1000 genes
+
+### Go Biological Process
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/WBC-ieu-b-30_numtrunc1000_gobp.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+### Go Molecular Function
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/WBC-ieu-b-30_numtrunc1000_gomf.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+
+
+### Go Cellular Component
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/WBC-ieu-b-30_numtrunc1000_gocc.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+### KEGG
+
+#### Modelling binarized y using logistic regression for binary classification
+
+```{r warning=F,message=FALSE}
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/xgboost_trunc/WBC-ieu-b-30_numtrunc1000_kegg.rdata")
+DT::datatable(importance_matrix_b,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Importance matrix'),options = list(pageLength = 5))
+```
+
+
+
+
