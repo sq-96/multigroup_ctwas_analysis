@@ -170,6 +170,9 @@ compute_gene_overlap_b <- function(threshold = 0.5) {
 
 # Enrichment results (Fisher exact test)
 
+[summary table](https://docs.google.com/spreadsheets/d/1cf4GuataW0StuO0N4G_uHC_vfuylPeSr/edit?usp=share_link&ouid=112281867300074083642&rtpof=true&sd=true)
+
+
 ## Susie - modelling z-scores - benchmarks from 4 data base, run susie seperately
 
 ### FDR cutoff for selecting benchmark genes = 0.05
@@ -957,6 +960,247 @@ DT::datatable(merged_df,
 
 
 ```
+
+
+
+
+
+
+
+
+
+
+
+## xgboost - modelling binary y - train model on top 500 genes with lowest magma fdr
+
+### Probability cutoff for selecting benchmark genes = 0.8
+
+```{r}
+
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher_xgboost_trunc/fisher_biny_allcutoff_numtrunc500.rdata")
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher_xgboost_trunc/num_benchmark_genes_biny_allcutoff500.rdata")
+# Convert named vectors to data frames
+fisher_b_df <- as.data.frame(fisher_biny_p$probcutoff_0.8)
+num_benchmark_genes_df <- as.data.frame(num_benchmark_genes_biny$probcutoff_0.8)
+
+# Set row names as a new column
+fisher_b_df$id <- row.names(fisher_b_df)
+num_benchmark_genes_df$id <- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df <- merge(num_benchmark_genes_df,fisher_b_df,by = "id")
+
+colnames(merged_df) <- c("traits","#of benchmark genes","pip>0.8/pip<0.8","pip>0.8/pip<0.5","pip>0.8/pip0.5~0.8")
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;',
+                                                  'Fisher exact test p values for different groups'),
+             options = list(pageLength = 6))
+
+
+```
+
+
+### Probability cutoff for selecting benchmark genes = 0.7
+
+```{r}
+
+# Convert named vectors to data frames
+fisher_b_df <- as.data.frame(fisher_biny_p$probcutoff_0.7)
+num_benchmark_genes_df <- as.data.frame(num_benchmark_genes_biny$probcutoff_0.7)
+
+# Set row names as a new column
+fisher_b_df$id <- row.names(fisher_b_df)
+num_benchmark_genes_df$id <- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df <- merge(num_benchmark_genes_df,fisher_b_df,by = "id")
+
+colnames(merged_df) <- c("traits","#of benchmark genes","pip>0.8/pip<0.8","pip>0.8/pip<0.5","pip>0.8/pip0.5~0.8")
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;',
+                                                  'Fisher exact test p values for different groups'),
+             options = list(pageLength = 6))
+
+
+```
+
+
+
+### Probability cutoff for selecting benchmark genes = 0.6
+
+```{r}
+
+# Convert named vectors to data frames
+fisher_b_df <- as.data.frame(fisher_biny_p$probcutoff_0.6)
+num_benchmark_genes_df <- as.data.frame(num_benchmark_genes_biny$probcutoff_0.6)
+
+# Set row names as a new column
+fisher_b_df$id <- row.names(fisher_b_df)
+num_benchmark_genes_df$id <- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df <- merge(num_benchmark_genes_df,fisher_b_df,by = "id")
+
+colnames(merged_df) <- c("traits","#of benchmark genes","pip>0.8/pip<0.8","pip>0.8/pip<0.5","pip>0.8/pip0.5~0.8")
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;',
+                                                  'Fisher exact test p values for different groups'),
+             options = list(pageLength = 6))
+
+
+```
+
+
+### Probability cutoff for selecting benchmark genes = 0.5
+
+```{r}
+
+# Convert named vectors to data frames
+fisher_b_df <- as.data.frame(fisher_biny_p$probcutoff_0.5)
+num_benchmark_genes_df <- as.data.frame(num_benchmark_genes_biny$probcutoff_0.5)
+
+# Set row names as a new column
+fisher_b_df$id <- row.names(fisher_b_df)
+num_benchmark_genes_df$id <- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df <- merge(num_benchmark_genes_df,fisher_b_df,by = "id")
+
+colnames(merged_df) <- c("traits","#of benchmark genes","pip>0.8/pip<0.8","pip>0.8/pip<0.5","pip>0.8/pip0.5~0.8")
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;',
+                                                  'Fisher exact test p values for different groups'),
+             options = list(pageLength = 6))
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+## xgboost - modelling binary y - train model on top 1000 genes with lowest magma fdr
+
+### Probability cutoff for selecting benchmark genes = 0.8
+
+```{r}
+
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher_xgboost_trunc/fisher_biny_allcutoff_numtrunc1000.rdata")
+load("/project/xinhe/xsun/ctwas/4.multi_tissue_process/results/fisher_xgboost_trunc/num_benchmark_genes_biny_allcutoff1000.rdata")
+# Convert named vectors to data frames
+fisher_b_df <- as.data.frame(fisher_biny_p$probcutoff_0.8)
+num_benchmark_genes_df <- as.data.frame(num_benchmark_genes_biny$probcutoff_0.8)
+
+# Set row names as a new column
+fisher_b_df$id <- row.names(fisher_b_df)
+num_benchmark_genes_df$id <- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df <- merge(num_benchmark_genes_df,fisher_b_df,by = "id")
+
+colnames(merged_df) <- c("traits","#of benchmark genes","pip>0.8/pip<0.8","pip>0.8/pip<0.5","pip>0.8/pip0.5~0.8")
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;',
+                                                  'Fisher exact test p values for different groups'),
+             options = list(pageLength = 6))
+
+
+```
+
+
+### Probability cutoff for selecting benchmark genes = 0.7
+
+```{r}
+
+# Convert named vectors to data frames
+fisher_b_df <- as.data.frame(fisher_biny_p$probcutoff_0.7)
+num_benchmark_genes_df <- as.data.frame(num_benchmark_genes_biny$probcutoff_0.7)
+
+# Set row names as a new column
+fisher_b_df$id <- row.names(fisher_b_df)
+num_benchmark_genes_df$id <- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df <- merge(num_benchmark_genes_df,fisher_b_df,by = "id")
+
+colnames(merged_df) <- c("traits","#of benchmark genes","pip>0.8/pip<0.8","pip>0.8/pip<0.5","pip>0.8/pip0.5~0.8")
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;',
+                                                  'Fisher exact test p values for different groups'),
+             options = list(pageLength = 6))
+
+
+```
+
+
+
+### Probability cutoff for selecting benchmark genes = 0.6
+
+```{r}
+
+# Convert named vectors to data frames
+fisher_b_df <- as.data.frame(fisher_biny_p$probcutoff_0.6)
+num_benchmark_genes_df <- as.data.frame(num_benchmark_genes_biny$probcutoff_0.6)
+
+# Set row names as a new column
+fisher_b_df$id <- row.names(fisher_b_df)
+num_benchmark_genes_df$id <- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df <- merge(num_benchmark_genes_df,fisher_b_df,by = "id")
+
+colnames(merged_df) <- c("traits","#of benchmark genes","pip>0.8/pip<0.8","pip>0.8/pip<0.5","pip>0.8/pip0.5~0.8")
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;',
+                                                  'Fisher exact test p values for different groups'),
+             options = list(pageLength = 6))
+
+
+```
+
+
+### Probability cutoff for selecting benchmark genes = 0.5
+
+```{r}
+
+# Convert named vectors to data frames
+fisher_b_df <- as.data.frame(fisher_biny_p$probcutoff_0.5)
+num_benchmark_genes_df <- as.data.frame(num_benchmark_genes_biny$probcutoff_0.5)
+
+# Set row names as a new column
+fisher_b_df$id <- row.names(fisher_b_df)
+num_benchmark_genes_df$id <- row.names(num_benchmark_genes_df)
+
+# Merge data frames by the new column
+merged_df <- merge(num_benchmark_genes_df,fisher_b_df,by = "id")
+
+colnames(merged_df) <- c("traits","#of benchmark genes","pip>0.8/pip<0.8","pip>0.8/pip<0.5","pip>0.8/pip0.5~0.8")
+
+DT::datatable(merged_df,
+             caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;',
+                                                  'Fisher exact test p values for different groups'),
+             options = list(pageLength = 6))
+
+
+```
+
+
+
 
 
 
