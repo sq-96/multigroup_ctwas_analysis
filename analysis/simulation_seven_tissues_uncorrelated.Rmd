@@ -173,8 +173,8 @@ gridExtra::grid.arrange(f1, f2, ncol =2)
 dev.off()
 ```
 
-```{r}
-pdf(file = "./prop_7unccor.pdf", width = 8, height = 5)
+```{r, fig.width= 8, fig.height= 5, echo=FALSE, warning=FALSE}
+#pdf(file = "./prop_7unccor.pdf", width = 8, height = 5)
 prop_df <- get_pip_distr(results_dir,runtag,configtag,simutags,thin,sample_size,PIP_threshold)
 prop_df <- prop_df[,2:8]/prop_df$total_pips
 prop_df <- prop_df %>% summarise(across(everything(), list(mean = mean)))
@@ -192,7 +192,7 @@ barplot(means,
         border = NA,
         ylim = c(0,0.5),
         cex.lab=1.3)
-dev.off()
+#dev.off()
 ```
 
 ### Separate effect size parameters
