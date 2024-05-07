@@ -1,0 +1,38 @@
+---
+title: "APA QTL analysis (using APA FUSION models by Chen et al.)"
+author: "XSun"
+date: "2024-05-07"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+    toc: true
+---
+
+# Data Overview
+
+The paper: https://www.nature.com/articles/s41467-024-46064-7#Sec2
+
+The data is downloaded from http://bioinfo.szbl.ac.cn/TCGD/download.php
+
+Many non-zero weight SNPs have NA as ID
+
+```{r}
+load("/project2/xinhe/shared_data/multigroup_ctwas/weights/apa.stat.rdata")
+print(sprintf("%s tissues included", nrow(sum)))
+
+colnames(sum) <- c("#of genes","average # of non-zero weights_lasso","average # of NA ID for non-zero weights SNPs_lasso","average # of non-zero weights_enet","average # of NA ID for non-zero weights SNPs_enet")
+DT::datatable(sum,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Missing RS id'),options = list(pageLength = 5))
+```
+
+Some APA targets has NA lasso weights. For Adipose_Subcutaneous, there are 3844 APA targets, 180 of them have NA lasso weights (around 5%), none of these targets has NA enet weights. 
+
+Below is one example
+
+```{r}
+load("/project2/xinhe/shared_data/multigroup_ctwas/weights/apa_models/Adipose_Subcutaneous/Adipose_Subcutaneous/Adipose_Subcutaneous.NM_000049.4.wgt.RDat")
+
+DT::datatable(wgt.matrix[1:10,],caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Weights for NM_000049.4 (10 of 4000 are shown here)'),options = list(pageLength = 5))
+```
+
+
+
