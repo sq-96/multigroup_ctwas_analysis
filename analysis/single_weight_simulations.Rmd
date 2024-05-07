@@ -9,7 +9,7 @@ editor_options:
 
 This single weight simulation study is conducted to evaluate our new cTWAS software performance (parameter estimation, PIP calibration ...). Three expression weights from PredictDB are used in this study, which are Liver, Adipose and Lung. For each weight, I select causal genes, simulate phenotype/GWAS and perform ctwas analysis. Two types of LD between weight SNPs (calculating gene z score) are used and compared in this study. And their performance are very close because most genes only have one weight SNP.  
 
-```{r echo=FALSE}
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
 library(ctwas)
 source("/project/xinhe/shengqian/cTWAS_simulation/help_functions.R")
 source("/project/xinhe/shengqian/cTWAS_simulation/summarize_basic_plots.R")
@@ -33,7 +33,7 @@ plot_PIP_merged <- function(results_dir, runtag,  simutags, ...){
 
 ## Simulation 1: Expression trait in liver with 3% PVE and 0.9% Prior
 
-```{r echo=FALSE}
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_Liver_expression/"
 runtag = "Liver"
 simutags <- paste(1, 1:5, sep = "-")
@@ -51,22 +51,20 @@ check_n_detected(results_dir, runtag, simutags, "GTEXLD", PIP_threshold = 0.8)
 check_n_detected(results_dir, runtag, simutags, "UKBBLD", PIP_threshold = 0.8)
 ```
 
-### Estimated Prior Inclusion Probability
-`````{r, fig.width= 3, fig.height= 5, message=FALSE, warning=FALSE, echo=FALSE}
+### Estimated Prior Inclusion Probability and PVE
+`````{r, fig.width= 8, fig.height= 4, message=FALSE, warning=FALSE, echo=FALSE}
+par(mfrow = c(1, 2))
 y1 <- param_GTEX_df$`prior_eQTL|Liver`
 y2 <- param_UKBB_df$`prior_eQTL|Liver`
 truth <- rbind(c(1,0.009),c(2,0.009))
 est <- rbind(cbind(1,y1),cbind(2,y2))
-plot_par_2(truth,est,xlabels = c("GTEX LD", "UKBB LD"),ylim=c(0,0.025),ylab="Prior inclusion")
-```
+plot_par_2(truth,est,xlabels = c("GTEX LD", "UKBB LD"),ylim=c(0,0.025),ylab="Prior inclusion", main="Prior Inclusion Probability")
 
-### Estimated PVE
-`````{r, fig.width= 3, fig.height= 5, message=FALSE, warning=FALSE, echo=FALSE}
 y1 <- param_GTEX_df$`pve_eQTL|Liver`
 y2 <- param_UKBB_df$`pve_eQTL|Liver`
 truth <- rbind(c(1,0.05),c(2,0.05))
 est <- rbind(cbind(1,y1),cbind(2,y2))
-plot_par_2(truth,est,xlabels = c("GTEX LD", "UKBB LD"),ylim=c(0,0.1),ylab="PVE")
+plot_par_2(truth,est,xlabels = c("GTEX LD", "UKBB LD"),ylim=c(0,0.1),ylab="PVE", main="PVE")
 ```
 
 ### PIP Calibration Plot based on UKBB LD (filter out cs index 0)
@@ -97,22 +95,20 @@ check_n_detected(results_dir, runtag, simutags, "GTEXLD", PIP_threshold = 0.8)
 check_n_detected(results_dir, runtag, simutags, "UKBBLD", PIP_threshold = 0.8)
 ```
 
-### Estimated Prior Inclusion Probability
-`````{r, fig.width= 3, fig.height= 5, message=FALSE, warning=FALSE, echo=FALSE}
+### Estimated Prior Inclusion Probability and PVE
+`````{r, fig.width= 8, fig.height= 4, message=FALSE, warning=FALSE, echo=FALSE}
+par(mfrow = c(1, 2))
 y1 <- param_GTEX_df$`prior_eQTL|Adipose`
 y2 <- param_UKBB_df$`prior_eQTL|Adipose`
 truth <- rbind(c(1,0.009),c(2,0.009))
 est <- rbind(cbind(1,y1),cbind(2,y2))
-plot_par_2(truth,est,xlabels = c("GTEX LD", "UKBB LD"),ylim=c(0,0.025),ylab="Prior inclusion")
-```
+plot_par_2(truth,est,xlabels = c("GTEX LD", "UKBB LD"),ylim=c(0,0.025),ylab="Prior inclusion", main="Prior Inclusion Probability")
 
-### Estimated PVE
-`````{r, fig.width= 3, fig.height= 5, message=FALSE, warning=FALSE, echo=FALSE}
 y1 <- param_GTEX_df$`pve_eQTL|Adipose`
 y2 <- param_UKBB_df$`pve_eQTL|Adipose`
 truth <- rbind(c(1,0.05),c(2,0.05))
 est <- rbind(cbind(1,y1),cbind(2,y2))
-plot_par_2(truth,est,xlabels = c("GTEX LD", "UKBB LD"),ylim=c(0,0.1),ylab="PVE")
+plot_par_2(truth,est,xlabels = c("GTEX LD", "UKBB LD"),ylim=c(0,0.1),ylab="PVE", main="PVE")
 ```
 
 ### PIP Calibration Plot based on UKBB LD (filter out cs index 0)
@@ -142,22 +138,20 @@ check_n_detected(results_dir, runtag, simutags, "GTEXLD", PIP_threshold = 0.8)
 check_n_detected(results_dir, runtag, simutags, "UKBBLD", PIP_threshold = 0.8)
 ```
 
-### Estimated Prior Inclusion Probability
-`````{r, fig.width= 3, fig.height= 5, message=FALSE, warning=FALSE, echo=FALSE}
+### Estimated Prior Inclusion Probability and PVE
+`````{r, fig.width= 8, fig.height= 4, message=FALSE, warning=FALSE, echo=FALSE}
+par(mfrow = c(1, 2))
 y1 <- param_GTEX_df$`prior_eQTL|Lung`
 y2 <- param_UKBB_df$`prior_eQTL|Lung`
 truth <- rbind(c(1,0.009),c(2,0.009))
 est <- rbind(cbind(1,y1),cbind(2,y2))
-plot_par_2(truth,est,xlabels = c("GTEX LD", "UKBB LD"),ylim=c(0,0.025),ylab="Prior inclusion")
-```
+plot_par_2(truth,est,xlabels = c("GTEX LD", "UKBB LD"),ylim=c(0,0.025),ylab="Prior inclusion", main="Prior Inclusion Probability")
 
-### Estimated PVE
-`````{r, fig.width= 3, fig.height= 5, message=FALSE, warning=FALSE, echo=FALSE}
 y1 <- param_GTEX_df$`pve_eQTL|Lung`
 y2 <- param_UKBB_df$`pve_eQTL|Lung`
 truth <- rbind(c(1,0.05),c(2,0.05))
 est <- rbind(cbind(1,y1),cbind(2,y2))
-plot_par_2(truth,est,xlabels = c("GTEX LD", "UKBB LD"),ylim=c(0,0.1),ylab="PVE")
+plot_par_2(truth,est,xlabels = c("GTEX LD", "UKBB LD"),ylim=c(0,0.1),ylab="PVE", main="PVE")
 ```
 
 ### PIP Calibration Plot based on UKBB LD (filter out cs index 0)
