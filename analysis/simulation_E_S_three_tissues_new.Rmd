@@ -17,96 +17,40 @@ It current has two setting:
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 library(ctwas)
 library(data.table)
-require(latex2exp)
+source("/project/xinhe/shengqian/cTWAS_simulation/help_functions.R")
 source("/project/xinhe/shengqian/cTWAS_simulation/summarize_basic_plots.R")
 source("/project/xinhe/shengqian/cTWAS_simulation/summarize_ctwas_plots.R")
 source("/project2/xinhe/shengqian/cTWAS/cTWAS_analysis/analysis/simulation_help_functions.R")
-plot_PIP <- function(configtag, runtag,  simutags, ...){
-   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
-   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_config", configtag,"_LDR",".susieIrss.txt")
-   f1 <- caliPIP_plot(phenofs, susieIfs, ...) 
-   return(f1)
-}
-plot_PIP_combined <- function(configtag, runtag,  simutags, ...){
-   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
-   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_config", configtag,"_LDR",".susieIrss.txt")
-   f1 <- caliPIP_plot_E_S_combined(phenofs, susieIfs, ...) 
-   return(f1)
-}
+
 plot_PIP_csindex <- function(configtag, runtag,  simutags, ...){
    phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
-   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_config", configtag,"_LDR",".susieIrss.txt")
+   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_GTEXLD.finemap_regions.res.RDS")
    f1 <- caliPIP_plot_csindex(phenofs, susieIfs, ...) 
    return(f1)
 }
 plot_PIP_combined_csindex <- function(configtag, runtag,  simutags, ...){
    phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
-   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_config", configtag,"_LDR",".susieIrss.txt")
+   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_GTEXLD.finemap_regions.res.RDS")
    f1 <- caliPIP_plot_E_S_combined_csindex(phenofs, susieIfs, ...) 
-   return(f1)
-}
-plot_PIP_L1 <- function(configtag, runtag,  simutags, ...){
-   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
-   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_config", configtag,"_LDR",".L1.susieIrss.txt")
-   f1 <- caliPIP_plot(phenofs, susieIfs, ...) 
-   return(f1)
-}
-plot_PIP_L1_combined <- function(configtag, runtag,  simutags, ...){
-   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
-   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_config", configtag,"_LDR",".L1.susieIrss.txt")
-   f1 <- caliPIP_plot_E_S_combined(phenofs, susieIfs, ...) 
-   return(f1)
-}
-plot_PIP_true <- function(configtag, runtag,  simutags, ...){
-   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
-   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_config", configtag,"_LDR",".true.susieIrss.txt")
-   f1 <- caliPIP_plot(phenofs, susieIfs, ...) 
-   return(f1)
-}
-plot_PIP_true_combined <- function(configtag, runtag,  simutags, ...){
-   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
-   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_config", configtag,"_LDR",".true.susieIrss.txt")
-   f1 <- caliPIP_plot_E_S_combined(phenofs, susieIfs, ...) 
-   return(f1)
-}
-plot_PIP_trueL1 <- function(configtag, runtag,  simutags, ...){
-   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
-   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_config", configtag,"_LDR",".trueL1.susieIrss.txt")
-   f1 <- caliPIP_plot(phenofs, susieIfs, ...) 
-   return(f1)
-}
-plot_PIP_trueL1_combined <- function(configtag, runtag,  simutags, ...){
-   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
-   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_config", configtag,"_LDR",".trueL1.susieIrss.txt")
-   f1 <- caliPIP_plot_E_S_combined(phenofs, susieIfs, ...) 
    return(f1)
 }
 ```
 
 ### Simulation 1: Expression and Splicing from Liver (3% PVE)
 
-```{r echo=FALSE}
-results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_E_S_one_tissue/"
-runtag = "ukb-s80.45-3"
-configtag <- 1
-
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_E_S_three_tissues/"
+runtag = "E_S_three_tissues"
 simutags <- paste(1, 1:5, sep = "-")
-thin <- 0.1
-
-sample_size <- 45000
-PIP_threshold <- 0.8
-
-results_df <- get_sim_joint_res(results_dir,runtag,configtag,simutags,thin,sample_size,PIP_threshold)
-group_size <- results_df[[2]]
-results_df <- results_df[[1]]
+param_GTEX_df <- load_parameters(results_dir, runtag, simutags, "GTEXLD")
+param_UKBB_df <- load_parameters(results_dir, runtag, simutags, "UKBBLD")
 ```
 
-### Results using PIP Threshold
+### Number of causal genes detected (GTEX LD)
 ```{r echo=FALSE}
-results_df[,c("simutag", "n_causal", "n_detected_pip", "n_detected_pip_in_causal")]
-#mean percent causal using combined PIP > 0.8
-sum(results_df$n_detected_pip_in_causal)/sum(results_df$n_detected_pip)
+check_n_detected_multi(results_dir, runtag, simutags, "GTEXLD", PIP_threshold = 0.8)
 ```
+
 
 ### Estimated Prior Inclusion Probability
 ```{r, fig.width= 4, fig.height= 5, message=FALSE, warning=FALSE, echo=FALSE}
@@ -151,10 +95,11 @@ est <- rbind(cbind(1,y1),cbind(2,y2))
 plot_par_2(truth,est,xlabels = c("Liver_E","Liver_S"),ylim=c(0,300),ylab= TeX("Enrichment $\\pi_G/\\pi_V$"))
 ```
 
-### PIP Calibration Plot
-```{r, fig.width= 4, fig.height= 4, message=FALSE, warning=FALSE, echo=FALSE}
-f1 <- plot_PIP(configtag, runtag, paste(1, 1:5, sep = "-"), main = "")
-f1
+### PIP Calibration Plot based on UKBB LD (filter out cs index 0)
+```{r, fig.width= 8, fig.height= 4, echo=FALSE, warning=FALSE}
+load("/project2/xinhe/shengqian/cTWAS/cTWAS_analysis/data/mashr_sqtl/sqtl/mashr/intron_mapping.RData")
+f1 <- plot_PIP_csindex(results_dir, runtag, simutags, main = "no merged regions")
+f2 <- plot_PIP_combined_csindex(results_dir, runtag, simutags, main = "no merged regions")
 ```
 
 ### Simulation 2: Expression and Splicing traits from Liver are causal(3% PVE).  
