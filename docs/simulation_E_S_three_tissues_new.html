@@ -11,8 +11,9 @@
 
 <meta name="author" content="shengqian" />
 
+<meta name="date" content="2023-12-30" />
 
-<title>Four expression traits simulation</title>
+<title>Expression and Splicing from three tissues simulations</title>
 
 <script src="site_libs/header-attrs-2.16/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -365,9 +366,9 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore">Four expression traits simulation</h1>
+<h1 class="title toc-ignore">Expression and Splicing from three tissues simulations</h1>
 <h4 class="author">shengqian</h4>
-<h4 class="date">2024-5-6</h4>
+<h4 class="date">2023-12-30</h4>
 
 </div>
 
@@ -516,7 +517,7 @@ Note that any generated files, e.g. HTML, png, CSS, etc., are not included in t
 <div id="versions" class="tab-pane fade">
 
 <p>
-These are the previous versions of the repository in which changes were made to the R Markdown (<code>analysis/four_expression_traits_simulations.Rmd</code>) and HTML (<code>docs/four_expression_traits_simulations.html</code>) files. If you’ve configured a remote Git repository (see <code>?wflow_git_remote</code>), click on the hyperlinks in the table below to view the files as they were in that past version.
+These are the previous versions of the repository in which changes were made to the R Markdown (<code>analysis/simulation_E_S_three_tissues_new.Rmd</code>) and HTML (<code>docs/simulation_E_S_three_tissues_new.html</code>) files. If you’ve configured a remote Git repository (see <code>?wflow_git_remote</code>), click on the hyperlinks in the table below to view the files as they were in that past version.
 </p>
 <div class="table-responsive">
 <table class="table table-condensed table-hover">
@@ -545,41 +546,7 @@ Message
 Rmd
 </td>
 <td>
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/19c4b2c2dafe56aebace68a0930f4cf240e9027e/analysis/four_expression_traits_simulations.Rmd" target="_blank">19c4b2c</a>
-</td>
-<td>
-sq-96
-</td>
-<td>
-2024-05-09
-</td>
-<td>
-update
-</td>
-</tr>
-<tr>
-<td>
-html
-</td>
-<td>
-<a href="https://rawcdn.githack.com/sq-96/multigroup_ctwas_analysis/19c4b2c2dafe56aebace68a0930f4cf240e9027e/docs/four_expression_traits_simulations.html" target="_blank">19c4b2c</a>
-</td>
-<td>
-sq-96
-</td>
-<td>
-2024-05-09
-</td>
-<td>
-update
-</td>
-</tr>
-<tr>
-<td>
-Rmd
-</td>
-<td>
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/dc112521e3add02b031141612145b781efa79484/analysis/four_expression_traits_simulations.Rmd" target="_blank">dc11252</a>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/dc112521e3add02b031141612145b781efa79484/analysis/simulation_E_S_three_tissues_new.Rmd" target="_blank">dc11252</a>
 </td>
 <td>
 sq-96
@@ -598,243 +565,37 @@ update single tissue simulation
 </div>
 </div>
 </div>
-<p>This four expression traits simulation study is conducted to evaluate our new cTWAS software performance (parameter estimation, PIP calibration …). Four expression traits from PredictDB are used in this study, which are Liver, Adipose, Lung and stomach. Liver and Adipose are selected as causal tissues, each with 3% PVE and 0.9% prior. Lung and stomach are non-causal tissues with 0% PVE. Two types of LD between weight SNPs (calculating gene z score) are used and compared in this study. And their performance are very close because most genes only have one weight SNP.</p>
-<div id="simulation-1-expression-trait-in-liver-with-3-pve-and-0.9-prior" class="section level2">
-<h2>Simulation 1: Expression trait in liver with 3% PVE and 0.9% Prior</h2>
+<p>A simulation of expression and splicing traits from three tissues is conducted to evaluate cTWAS performance (parameter estimation, PIP calibration …). Three tissues used in this simulation are Liver, Lung, Spleen.</p>
+<p>It current has two setting:</p>
+<ul>
+<li>One tissue case: 3% PVE, 0.9% <span class="math inline">\(\pi\)</span> for E and S from Liver and 30% PVE, 2.5e-4 <span class="math inline">\(\pi\)</span> for SNP.</li>
+<li>3% PVE, 0.9% <span class="math inline">\(\pi\)</span> for Liver E and Liver S. 0% PVE, 0% <span class="math inline">\(\pi\)</span> for the others and 30% PVE, 2.5e-4 <span class="math inline">\(\pi\)</span> for SNP.</li>
+</ul>
+<div id="simulation-1-expression-and-splicing-from-liver-3-pve" class="section level3">
+<h3>Simulation 1: Expression and Splicing from Liver (3% PVE)</h3>
+</div>
 <div id="number-of-causal-genes-detected-gtex-ld" class="section level3">
 <h3>Number of causal genes detected (GTEX LD)</h3>
 <pre><code>  simutag ctwas_genes ctwas_cgenes twas_genes twas_cgenes total_cgenes
-1     1-1          14           12        189          33          140
-2     1-2          32           27        331          56          180
-3     1-3          34           27        260          37          156
-4     1-4           8            6        207          27          126
-5     1-5          35           27        350          40          154
+1     1-1          11            7        425          30          399
+2     1-2          18           10        642          40          431
+3     1-3           8            2        513          38          389
+4     1-4           8            3        459          27          394
+5     1-5          11            7        439          28          417
   ctwas_genes_combined ctwas_cgenes_combined total_cgenes_combined
-1                   25                    24                   139
-2                   43                    36                   178
-3                   44                    35                   156
-4                   14                    11                   126
-5                   45                    37                   154</code></pre>
-</div>
-<div id="number-of-causal-genes-detected-ukbb-ld" class="section level3">
-<h3>Number of causal genes detected (UKBB LD)</h3>
-<pre><code>  simutag ctwas_genes ctwas_cgenes twas_genes twas_cgenes total_cgenes
-1     1-1          13           12        189          33          140
-2     1-2          26           23        327          57          180
-3     1-3          25           24        255          37          156
-4     1-4           6            6        207          26          126
-5     1-5          33           26        351          40          154
-  ctwas_genes_combined ctwas_cgenes_combined total_cgenes_combined
-1                   24                    24                   139
-2                   41                    36                   178
-3                   34                    31                   156
-4                   14                    11                   126
-5                   42                    35                   154</code></pre>
+1                   16                    12                   397
+2                   27                    16                   430
+3                   13                     8                   388
+4                   12                     7                   394
+5                   15                    11                   416</code></pre>
 </div>
 <div id="estimated-prior-inclusion-probability-and-pve-gtex-ld" class="section level3">
 <h3>Estimated Prior Inclusion Probability and PVE (GTEX LD)</h3>
-<p><img src="figure/four_expression_traits_simulations.Rmd/unnamed-chunk-5-1.png" width="1152" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-5-1">
-Past versions of unnamed-chunk-5-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-5-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/19c4b2c2dafe56aebace68a0930f4cf240e9027e/docs/figure/four_expression_traits_simulations.Rmd/unnamed-chunk-5-1.png" target="_blank">19c4b2c</a>
-</td>
-<td>
-sq-96
-</td>
-<td>
-2024-05-09
-</td>
-</tr>
-</tbody>
-</table>
+<p><img src="figure/simulation_E_S_three_tissues_new.Rmd/unnamed-chunk-4-1.png" width="1152" style="display: block; margin: auto;" /></p>
 </div>
-</div>
-</div>
-<div id="estimated-prior-inclusion-probability-and-pve-ukbb-ld" class="section level3">
-<h3>Estimated Prior Inclusion Probability and PVE (UKBB LD)</h3>
-<p><img src="figure/four_expression_traits_simulations.Rmd/unnamed-chunk-6-1.png" width="1152" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-6-1">
-Past versions of unnamed-chunk-6-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-6-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/19c4b2c2dafe56aebace68a0930f4cf240e9027e/docs/figure/four_expression_traits_simulations.Rmd/unnamed-chunk-6-1.png" target="_blank">19c4b2c</a>
-</td>
-<td>
-sq-96
-</td>
-<td>
-2024-05-09
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-</div>
-<div id="pip-calibration-plot-of-expression-traits-filter-out-cs-index-0" class="section level3">
-<h3>PIP Calibration Plot of expression traits (filter out cs index 0)</h3>
-<p><img src="figure/four_expression_traits_simulations.Rmd/unnamed-chunk-7-1.png" width="768" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-7-1">
-Past versions of unnamed-chunk-7-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-7-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/19c4b2c2dafe56aebace68a0930f4cf240e9027e/docs/figure/four_expression_traits_simulations.Rmd/unnamed-chunk-7-1.png" target="_blank">19c4b2c</a>
-</td>
-<td>
-sq-96
-</td>
-<td>
-2024-05-09
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-</div>
-<div id="pip-calibration-plot-of-expression-traits-with-region-merge-filter-out-cs-index-0" class="section level3">
-<h3>PIP Calibration Plot of expression traits with region merge (filter out cs index 0)</h3>
-<p><img src="figure/four_expression_traits_simulations.Rmd/unnamed-chunk-8-1.png" width="768" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-8-1">
-Past versions of unnamed-chunk-8-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-8-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/19c4b2c2dafe56aebace68a0930f4cf240e9027e/docs/figure/four_expression_traits_simulations.Rmd/unnamed-chunk-8-1.png" target="_blank">19c4b2c</a>
-</td>
-<td>
-sq-96
-</td>
-<td>
-2024-05-09
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-</div>
-<div id="pip-calibration-plot-of-gene-level-pip-filter-out-cs-index-0" class="section level3">
-<h3>PIP Calibration Plot of gene level PIP (filter out cs index 0)</h3>
-<p><img src="figure/four_expression_traits_simulations.Rmd/unnamed-chunk-9-1.png" width="768" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-9-1">
-Past versions of unnamed-chunk-9-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-9-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/19c4b2c2dafe56aebace68a0930f4cf240e9027e/docs/figure/four_expression_traits_simulations.Rmd/unnamed-chunk-9-1.png" target="_blank">19c4b2c</a>
-</td>
-<td>
-sq-96
-</td>
-<td>
-2024-05-09
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
+<div id="pip-calibration-plot-based-on-gtex-ld-filter-out-cs-index-0" class="section level3">
+<h3>PIP Calibration Plot based on GTEX LD (filter out cs index 0)</h3>
+<p><img src="figure/simulation_E_S_three_tissues_new.Rmd/unnamed-chunk-5-1.png" width="768" style="display: block; margin: auto;" /></p>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
@@ -934,7 +695,6 @@ loaded via a namespace (and not attached):
 [129] git2r_0.30.1                mixsqp_0.3-48              
 [131] getPass_0.2-2               Biobase_2.56.0             
 [133] restfulr_0.0.14            </code></pre>
-</div>
 </div>
 </div>
 
