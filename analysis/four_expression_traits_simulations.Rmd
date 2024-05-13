@@ -36,6 +36,13 @@ plot_PIP_combined_csindex <- function(configtag, runtag,  simutags, LD_type, ...
    f1 <- caliPIP_plot_combined_csindex(phenofs, susieIfs, ...) 
    return(f1)
 }
+
+plot_PIP_combined_merged_csindex <- function(configtag, runtag,  simutags, LD_type, ...){
+   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
+   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_", LD_type, ".finemap_merged_regions.res.RDS")
+   f1 <- caliPIP_plot_combined_csindex(phenofs, susieIfs, ...) 
+   return(f1)
+}
 ```
 
 
@@ -67,7 +74,7 @@ y2 <- param_GTEX_df$`prior_eQTL|Adipose`
 y3 <- param_GTEX_df$`prior_eQTL|Lung`
 y4 <- param_GTEX_df$`prior_eQTL|Stomach`
 truth <- rbind(c(1,0.009),c(2,0.009),c(3,0),c(4,0))
-est <- rbind(cbind(1,y1),cbind(2,y2), cbind(3,y4), cbind(4,y4))
+est <- rbind(cbind(1,y1),cbind(2,y2), cbind(3,y3), cbind(4,y4))
 plot_par_4(truth,est,xlabels = c("Liver", "Adipose", "Lung", "Stomach"),ylim=c(0,0.025),ylab="Prior inclusion", main="Prior Inclusion Probability")
 
 y1 <- param_GTEX_df$`pve_eQTL|Liver`
@@ -75,7 +82,7 @@ y2 <- param_GTEX_df$`pve_eQTL|Adipose`
 y3 <- param_GTEX_df$`pve_eQTL|Lung`
 y4 <- param_GTEX_df$`pve_eQTL|Stomach`
 truth <- rbind(c(1,0.03),c(2,0.03),c(3,0),c(4,0))
-est <- rbind(cbind(1,y1),cbind(2,y2), cbind(3,y4), cbind(4,y4))
+est <- rbind(cbind(1,y1),cbind(2,y2), cbind(3,y3), cbind(4,y4))
 plot_par_4(truth,est,xlabels = c("Liver", "Adipose", "Lung", "Stomach"),ylim=c(0,0.06),ylab="PVE", main="PVE")
 
 y1 <- param_GTEX_df$`enrichment_eQTL|Liver`
@@ -83,7 +90,7 @@ y2 <- param_GTEX_df$`enrichment_eQTL|Adipose`
 y3 <- param_GTEX_df$`enrichment_eQTL|Lung`
 y4 <- param_GTEX_df$`enrichment_eQTL|Stomach`
 truth <- rbind(c(1,36),c(2,36),c(3,0),c(4,0))
-est <- rbind(cbind(1,y1),cbind(2,y2), cbind(3,y4), cbind(4,y4))
+est <- rbind(cbind(1,y1),cbind(2,y2), cbind(3,y3), cbind(4,y4))
 plot_par_4(truth,est,xlabels = c("Liver", "Adipose", "Lung", "Stomach"),ylim=c(0,80),ylab="Enrichment", main="Enrichment")
 ```
 
@@ -95,7 +102,7 @@ y2 <- param_UKBB_df$`prior_eQTL|Adipose`
 y3 <- param_UKBB_df$`prior_eQTL|Lung`
 y4 <- param_UKBB_df$`prior_eQTL|Stomach`
 truth <- rbind(c(1,0.009),c(2,0.009),c(3,0),c(4,0))
-est <- rbind(cbind(1,y1),cbind(2,y2), cbind(3,y4), cbind(4,y4))
+est <- rbind(cbind(1,y1),cbind(2,y2), cbind(3,y3), cbind(4,y4))
 plot_par_4(truth,est,xlabels = c("Liver", "Adipose", "Lung", "Stomach"),ylim=c(0,0.025),ylab="Prior inclusion", main="Prior Inclusion Probability")
 
 y1 <- param_UKBB_df$`pve_eQTL|Liver`
@@ -103,7 +110,7 @@ y2 <- param_UKBB_df$`pve_eQTL|Adipose`
 y3 <- param_UKBB_df$`pve_eQTL|Lung`
 y4 <- param_UKBB_df$`pve_eQTL|Stomach`
 truth <- rbind(c(1,0.03),c(2,0.03),c(3,0),c(4,0))
-est <- rbind(cbind(1,y1),cbind(2,y2), cbind(3,y4), cbind(4,y4))
+est <- rbind(cbind(1,y1),cbind(2,y2), cbind(3,y3), cbind(4,y4))
 plot_par_4(truth,est,xlabels = c("Liver", "Adipose", "Lung", "Stomach"),ylim=c(0,0.06),ylab="PVE", main="PVE")
 
 y1 <- param_UKBB_df$`enrichment_eQTL|Liver`
@@ -111,7 +118,7 @@ y2 <- param_UKBB_df$`enrichment_eQTL|Adipose`
 y3 <- param_UKBB_df$`enrichment_eQTL|Lung`
 y4 <- param_UKBB_df$`enrichment_eQTL|Stomach`
 truth <- rbind(c(1,36),c(2,36),c(3,0),c(4,0))
-est <- rbind(cbind(1,y1),cbind(2,y2), cbind(3,y4), cbind(4,y4))
+est <- rbind(cbind(1,y1),cbind(2,y2), cbind(3,y3), cbind(4,y4))
 plot_par_4(truth,est,xlabels = c("Liver", "Adipose", "Lung", "Stomach"),ylim=c(0,80),ylab="Enrichment", main="Enrichment")
 ```
 
@@ -130,6 +137,13 @@ gridExtra::grid.arrange(f1, f2, ncol =2)
 ```
 
 ### PIP Calibration Plot of gene level PIP (filter out cs index 0)
+```{r, fig.width= 8, fig.height= 4, echo=FALSE, warning=FALSE}
+f1 <- plot_PIP_combined_csindex(results_dir, runtag, simutags, "GTEXLD", main = "GTEX LD")
+f2 <- plot_PIP_combined_csindex(results_dir, runtag, simutags, "UKBBLD", main = "UKBB LD")
+gridExtra::grid.arrange(f1, f2, ncol =2)
+```
+
+### PIP Calibration Plot of gene level PIP with region merge (filter out cs index 0)
 ```{r, fig.width= 8, fig.height= 4, echo=FALSE, warning=FALSE}
 f1 <- plot_PIP_combined_csindex(results_dir, runtag, simutags, "GTEXLD", main = "GTEX LD")
 f2 <- plot_PIP_combined_csindex(results_dir, runtag, simutags, "UKBBLD", main = "UKBB LD")
