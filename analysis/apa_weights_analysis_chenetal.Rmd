@@ -36,3 +36,23 @@ DT::datatable(wgt.matrix[1:10,],caption = htmltools::tags$caption(style = 'capti
 
 
 
+
+
+
+# Analysis 
+
+## Settings 
+
+- Fusion Model: enet model, all SNPs with non-zero weights
+
+## Results summary 
+
+```{r}
+load("/project/xinhe/xsun/multi_group_ctwas/3.apa_testing/summary/para_pip08.rdata")
+
+DT::datatable(para_sum,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','parameter estimation'),options = list(pageLength = 5))
+
+load("/project/xinhe/xsun/multi_group_ctwas/3.apa_testing/summary/genedetails_cs_pip08.rdata")
+
+DT::datatable(gene_table_cut_cs,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','genes with pip > 0.8 & in credible sets'),options = list(pageLength = 5))
+```
