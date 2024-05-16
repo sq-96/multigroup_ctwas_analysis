@@ -15,7 +15,7 @@ library(data.table)
 source("/project/xinhe/shengqian/cTWAS_simulation/help_functions.R")
 source("/project/xinhe/shengqian/cTWAS_simulation/summarize_basic_plots.R")
 source("/project/xinhe/shengqian/cTWAS_simulation/summarize_ctwas_plots.R")
-source("/project2/xinhe/shengqian/cTWAS/cTWAS_analysis/analysis/simulation_help_functions.R")
+#source("/project2/xinhe/shengqian/cTWAS/cTWAS_analysis/analysis/simulation_help_functions.R")
 
 plot_PIP <- function(results_dir, runtag,  simutags, LD_type, ...){
    phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
@@ -122,14 +122,10 @@ est <- rbind(cbind(1,y1),cbind(2,y2), cbind(3,y3), cbind(4,y4))
 plot_par_4(truth,est,xlabels = c("Liver", "Adipose", "Lung", "Stomach"),ylim=c(0,80),ylab="Enrichment", main="Enrichment")
 ```
 
-### PIP attribution among tissues (GTEXLD)
-```{r, echo=FALSE, fig.width= 5, fig.height= 4, warning=FALSE}
-pip_partition_across_tissue(results_dir, runtag, simutags, "GTEXLD", PIP_threshold = 0.8)
-```
-
 ### PIP attribution among tissues (UKBBLD)
 ```{r, echo=FALSE, fig.width= 5, fig.height= 4, warning=FALSE}
-pip_partition_across_tissue(results_dir, runtag, simutags, "UKBBLD", PIP_threshold = 0.8)
+f1 <- pip_partition_across_tissue(results_dir, runtag, simutags, "UKBBLD", PIP_threshold = 0.8)
+f1
 ```
 
 ### PIP Calibration Plot of expression traits (filter out cs index 0)

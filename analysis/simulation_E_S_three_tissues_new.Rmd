@@ -16,7 +16,7 @@ library(data.table)
 source("/project/xinhe/shengqian/cTWAS_simulation/help_functions.R")
 source("/project/xinhe/shengqian/cTWAS_simulation/summarize_basic_plots.R")
 source("/project/xinhe/shengqian/cTWAS_simulation/summarize_ctwas_plots.R")
-source("/project2/xinhe/shengqian/cTWAS/cTWAS_analysis/analysis/simulation_help_functions.R")
+#source("/project2/xinhe/shengqian/cTWAS/cTWAS_analysis/analysis/simulation_help_functions.R")
 load("/project2/xinhe/shengqian/cTWAS/cTWAS_analysis/data/mashr_sqtl/sqtl/mashr/intron_mapping.RData")
 
 plot_PIP <- function(results_dir, runtag,  simutags, LD_type, ...){
@@ -136,11 +136,11 @@ est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6
 plot_par_6(truth,est,xlabels = c("Liver E", "Liver S", "Adipose E", "Adipose S", "Lung E", "Lung S"),ylim=c(0,80),ylab="Enrichment", main="Enrichment")
 ```
 
-### PIP attribution among tissues by eQTL (UKBBLD)
+### PIP attribution among tissues by QTL types (UKBBLD)
 ```{r, echo=FALSE, fig.width= 8, fig.height= 4, warning=FALSE}
-par(mfrow = c(1, 2))
-pip_partition_across_tissue_by_QTLtype(results_dir, runtag, simutags, "UKBBLD", PIP_threshold = 0.8, "eQTL","Expression")
-pip_partition_across_tissue_by_QTLtype(results_dir, runtag, simutags, "UKBBLD", PIP_threshold = 0.8, "sQTL","Splicing")
+f1 <- pip_partition_across_tissue_by_QTLtype(results_dir, runtag, simutags, "UKBBLD", PIP_threshold = 0.8, "eQTL","Expression")
+f2 <- pip_partition_across_tissue_by_QTLtype(results_dir, runtag, simutags, "UKBBLD", PIP_threshold = 0.8, "sQTL","Splicing")
+gridExtra::grid.arrange(f1, f2, ncol=2)
 ```
 
 ### PIP Calibration Plot based on GTEX LD (filter out cs index 0)
