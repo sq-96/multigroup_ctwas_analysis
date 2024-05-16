@@ -122,6 +122,95 @@ est <- rbind(cbind(1,y1),cbind(2,y2), cbind(3,y3), cbind(4,y4))
 plot_par_4(truth,est,xlabels = c("Liver", "Adipose", "Lung", "Stomach"),ylim=c(0,80),ylab="Enrichment", main="Enrichment")
 ```
 
+
+### PIP attribution among tissues (GTEXLD)
+```{r, echo=FALSE, fig.width= 5, fig.height= 4, warning=FALSE}
+plot_df <- data.frame()
+for (i in 1:length(simutags)){
+  simutag <- simutags[i]
+  finemap_res <- readRDS(paste0(results_dir, runtag, "_simu",simutag, "_", "GTEXLD", ".finemap_regions.res.RDS"))
+  finemap_gene_res <- finemap_res[finemap_res$type!="SNP",]
+  finemap_gene_res$gene_id <- sapply(finemap_gene_res$id, function(x){unlist(strsplit(x,"[|]"))[1]})
+  df_gene <- aggregate(finemap_gene_res$susie_pip, by=list(finemap_gene_res$gene), FUN=sum)
+  colnames(df_gene) <- c("gene_id", "combined_pip")
+  for(j in unique(finemap_gene_res$context)){
+    tmp_res <- finemap_gene_res[finemap_gene_res$context==j,]
+    tmp_res <- tmp_res[,c("gene_id","susie_pip")]
+    colnames(tmp_res) <- c("gene_id",j)
+    df_gene <- df_gene %>% join(tmp_res, by = "gene_id") %>% replace(is.na(.), 0)
+  }
+  df_gene$combined_pip <- round(df_gene$combined_pip,3)
+  df_gene <- df_gene[order(-df_gene$combined_pip),]
+  df_gene <- df_gene[df_gene$combined_pip>0.8,]
+  df_gene[,c(3:ncol(df_gene))] <- df_gene[,c(3:ncol(df_gene))]/df_gene$combined_pip
+  plot_df <- rbind(plot_df,df_gene)
+}
+contexts <- colnames(plot_df)[-c(1,2)]
+data <- data.frame()
+for(i in contexts){
+  data <- rbind(data,cbind(i,plot_df[,i]))
+}
+colnames(data) <- c("tissue","attribution")
+data$attribution <- as.numeric(data$attribution)
+data$tissue <- factor(data$tissue, levels=unique(data$tissue))
+
+#pdf(file = "./primary_set2.pdf", width = 5, height = 5)
+ggbarplot(data, 
+          x = "tissue", 
+          y = "attribution", 
+          add = "mean_se", 
+          fill = "tissue", 
+          legend = "none", 
+          ylab="Proportion", 
+          xlab="",
+          palette = c("#7fc97f", "#beaed4", "#fdc086", "#92c5de")) + grids(linetype = "dashed") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+#dev.off()
+```
+
+### PIP attribution among tissues (UKBBLD)
+```{r, echo=FALSE, fig.width= 5, fig.height= 4, warning=FALSE}
+plot_df <- data.frame()
+for (i in 1:length(simutags)){
+  simutag <- simutags[i]
+  finemap_res <- readRDS(paste0(results_dir, runtag, "_simu",simutag, "_", "UKBBLD", ".finemap_regions.res.RDS"))
+  finemap_gene_res <- finemap_res[finemap_res$type!="SNP",]
+  finemap_gene_res$gene_id <- sapply(finemap_gene_res$id, function(x){unlist(strsplit(x,"[|]"))[1]})
+  df_gene <- aggregate(finemap_gene_res$susie_pip, by=list(finemap_gene_res$gene), FUN=sum)
+  colnames(df_gene) <- c("gene_id", "combined_pip")
+  for(j in unique(finemap_gene_res$context)){
+    tmp_res <- finemap_gene_res[finemap_gene_res$context==j,]
+    tmp_res <- tmp_res[,c("gene_id","susie_pip")]
+    colnames(tmp_res) <- c("gene_id",j)
+    df_gene <- df_gene %>% join(tmp_res, by = "gene_id") %>% replace(is.na(.), 0)
+  }
+  df_gene$combined_pip <- round(df_gene$combined_pip,3)
+  df_gene <- df_gene[order(-df_gene$combined_pip),]
+  df_gene <- df_gene[df_gene$combined_pip>0.8,]
+  df_gene[,c(3:ncol(df_gene))] <- df_gene[,c(3:ncol(df_gene))]/df_gene$combined_pip
+  plot_df <- rbind(plot_df,df_gene)
+}
+contexts <- colnames(plot_df)[-c(1,2)]
+data <- data.frame()
+for(i in contexts){
+  data <- rbind(data,cbind(i,plot_df[,i]))
+}
+colnames(data) <- c("tissue","attribution")
+data$attribution <- as.numeric(data$attribution)
+data$tissue <- factor(data$tissue, levels=unique(data$tissue))
+
+#pdf(file = "./primary_set2.pdf", width = 5, height = 5)
+ggbarplot(data, 
+          x = "tissue", 
+          y = "attribution", 
+          add = "mean_se", 
+          fill = "tissue", 
+          legend = "none", 
+          ylab="Proportion", 
+          xlab="",
+          palette = c("#7fc97f", "#beaed4", "#fdc086", "#92c5de")) + grids(linetype = "dashed") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+#dev.off()
+```
+
 ### PIP Calibration Plot of expression traits (filter out cs index 0)
 ```{r, fig.width= 8, fig.height= 4, echo=FALSE, warning=FALSE}
 f1 <- plot_PIP(results_dir, runtag, simutags, "GTEXLD", main = "GTEX LD")
