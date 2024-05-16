@@ -17,6 +17,7 @@ source("/project/xinhe/shengqian/cTWAS_simulation/help_functions.R")
 source("/project/xinhe/shengqian/cTWAS_simulation/summarize_basic_plots.R")
 source("/project/xinhe/shengqian/cTWAS_simulation/summarize_ctwas_plots.R")
 source("/project2/xinhe/shengqian/cTWAS/cTWAS_analysis/analysis/simulation_help_functions.R")
+load("/project2/xinhe/shengqian/cTWAS/cTWAS_analysis/data/mashr_sqtl/sqtl/mashr/intron_mapping.RData")
 
 plot_PIP <- function(results_dir, runtag,  simutags, LD_type, ...){
    phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
@@ -135,108 +136,15 @@ est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6
 plot_par_6(truth,est,xlabels = c("Liver E", "Liver S", "Adipose E", "Adipose S", "Lung E", "Lung S"),ylim=c(0,80),ylab="Enrichment", main="Enrichment")
 ```
 
-### PIP attribution among tissues (GTEXLD)
-```{r, echo=FALSE, fig.width= 5, fig.height= 4, warning=FALSE}
-plot_df <- data.frame()
-for (i in 1:length(simutags)){
-  simutag <- simutags[i]
-  finemap_res <- readRDS(paste0(results_dir, runtag, "_simu",simutag, "_", "GTEXLD", ".finemap_regions.res.RDS"))
-  finemap_sQTL_res <- finemap_res[finemap_res$type=="sQTL",]
-  finemap_sQTL_res$gene <- sapply(finemap_sQTL_res$id, function(x){unlist(strsplit(x,"[|]"))[1]})
-  finemap_sQTL_res <- finemap_sQTL_res %>% join(intron_info, by = "gene") %>% dplyr::select(-gene)
-  finemap_eQTL_res <- finemap_res[finemap_res$type=="eQTL",]
-  finemap_eQTL_res$gene_id <- sapply(finemap_eQTL_res$id, function(x){unlist(strsplit(x,"[|]"))[1]})
-  finemap_gene_res <- rbind(finemap_eQTL_res,finemap_sQTL_res)
-  df_gene <- aggregate(finemap_gene_res$susie_pip, by=list(finemap_gene_res$gene_id), FUN=sum)
-  colnames(df_gene) <- c("gene_id", "combined_pip")
-  for(j in unique(finemap_gene_res$context)){
-    tmp_res <- finemap_gene_res[finemap_gene_res$context==j,]
-    tmp_res <- tmp_res[,c("gene_id","susie_pip")]
-    tmp_res <- aggregate(tmp_res$susie_pip, by=list(tmp_res$gene_id), FUN=sum)
-    colnames(tmp_res) <- c("gene_id",j)
-    df_gene <- df_gene %>% join(tmp_res, by = "gene_id") %>% replace(is.na(.), 0)
-  }
-  df_gene$combined_pip <- round(df_gene$combined_pip,3)
-  df_gene <- df_gene[order(-df_gene$combined_pip),]
-  df_gene <- df_gene[df_gene$combined_pip>0.8,]
-  df_gene[,c(3:ncol(df_gene))] <- df_gene[,c(3:ncol(df_gene))]/df_gene$combined_pip
-  plot_df <- rbind(plot_df,df_gene)
-}
-contexts <- colnames(plot_df)[-c(1,2)]
-data <- data.frame()
-for(i in contexts){
-  data <- rbind(data,cbind(i,plot_df[,i]))
-}
-colnames(data) <- c("tissue","attribution")
-data$attribution <- as.numeric(data$attribution)
-data$tissue <- factor(data$tissue, levels=unique(data$tissue))
-
-#pdf(file = "./primary_set2.pdf", width = 5, height = 5)
-ggbarplot(data, 
-          x = "tissue", 
-          y = "attribution", 
-          add = "mean_se", 
-          fill = "tissue", 
-          legend = "none", 
-          ylab="Proportion", 
-          xlab="",
-          palette = c("#7fc97f", "#beaed4", "#fdc086", "#92c5de")) + grids(linetype = "dashed") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
-#dev.off()
+### PIP attribution among tissues by eQTL (UKBBLD)
+```{r, echo=FALSE, fig.width= 8, fig.height= 4, warning=FALSE}
+par(mfrow = c(1, 2))
+pip_partition_across_tissue_by_QTLtype(results_dir, runtag, simutags, "UKBBLD", PIP_threshold = 0.8, "eQTL","Expression")
+pip_partition_across_tissue_by_QTLtype(results_dir, runtag, simutags, "UKBBLD", PIP_threshold = 0.8, "sQTL","Splicing")
 ```
-
-
-```{r}
-plot_df <- data.frame()
-for (i in 1:length(simutags)){
-  simutag <- simutags[i]
-  finemap_res <- readRDS(paste0(results_dir, runtag, "_simu",simutag, "_", "GTEXLD", ".finemap_regions.res.RDS"))
-  finemap_sQTL_res <- finemap_res[finemap_res$type=="sQTL",]
-  finemap_sQTL_res$gene <- sapply(finemap_sQTL_res$id, function(x){unlist(strsplit(x,"[|]"))[1]})
-  finemap_sQTL_res <- finemap_sQTL_res %>% join(intron_info, by = "gene") %>% dplyr::select(-gene)
-  finemap_eQTL_res <- finemap_res[finemap_res$type=="eQTL",]
-  finemap_eQTL_res$gene_id <- sapply(finemap_eQTL_res$id, function(x){unlist(strsplit(x,"[|]"))[1]})
-  finemap_gene_res <- rbind(finemap_eQTL_res,finemap_sQTL_res)
-  df_gene <- aggregate(finemap_gene_res$susie_pip, by=list(finemap_gene_res$gene_id), FUN=sum)
-  colnames(df_gene) <- c("gene_id", "combined_pip")
-  for(j in unique(finemap_gene_res$type)){
-    tmp_res <- finemap_gene_res[finemap_gene_res$type==j,]
-    tmp_res <- tmp_res[,c("gene_id","susie_pip")]
-    tmp_res <- aggregate(tmp_res$susie_pip, by=list(tmp_res$gene_id), FUN=sum)
-    colnames(tmp_res) <- c("gene_id",j)
-    df_gene <- df_gene %>% join(tmp_res, by = "gene_id") %>% replace(is.na(.), 0)
-  }
-  df_gene$combined_pip <- round(df_gene$combined_pip,3)
-  df_gene <- df_gene[order(-df_gene$combined_pip),]
-  df_gene <- df_gene[df_gene$combined_pip>0.8,]
-  df_gene[,c(3:ncol(df_gene))] <- df_gene[,c(3:ncol(df_gene))]/df_gene$combined_pip
-  plot_df <- rbind(plot_df,df_gene)
-}
-types <- colnames(plot_df)[-c(1,2)]
-data <- data.frame()
-for(i in types){
-  data <- rbind(data,cbind(i,plot_df[,i]))
-}
-colnames(data) <- c("QTLtype","attribution")
-data$attribution <- as.numeric(data$attribution)
-data$QTLtype <- factor(data$QTLtype, levels=unique(data$QTLtype))
-
-#pdf(file = "./primary_set2.pdf", width = 5, height = 5)
-ggbarplot(data, 
-          x = "QTLtype", 
-          y = "attribution", 
-          add = "mean_se", 
-          fill = "QTLtype", 
-          legend = "none", 
-          ylab="Proportion", 
-          xlab="",
-          palette = c("#7fc97f", "#beaed4", "#fdc086", "#92c5de")) + grids(linetype = "dashed") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
-#dev.off()
-```
-
 
 ### PIP Calibration Plot based on GTEX LD (filter out cs index 0)
 ```{r, fig.width= 8, fig.height= 4, echo=FALSE, warning=FALSE}
-load("/project2/xinhe/shengqian/cTWAS/cTWAS_analysis/data/mashr_sqtl/sqtl/mashr/intron_mapping.RData")
 f1 <- plot_PIP(results_dir, runtag, simutags, "GTEXLD", main = "molecular traits PIPs")
 f2 <- plot_PIP_combined(results_dir, runtag, simutags, "GTEXLD", main = "Gene level PIPs")
 gridExtra::grid.arrange(f1, f2, ncol=2)
