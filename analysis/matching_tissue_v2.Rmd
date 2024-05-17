@@ -61,7 +61,8 @@ We filtered the correlation using 0.8 as cutoff.
 
 ```{r }
 library(lattice)
-
+library(gridExtra)
+library(ggplot2)
 get_correlation <- function(tissue1, tissue2, cor_matrix) {
   # Check if tissues are in the matrix and find their positions
   pos1 <- match(tissue1, colnames(cor_matrix))
@@ -602,3 +603,72 @@ DT::datatable(comb,caption = htmltools::tags$caption( style = 'caption-side: lef
 |       |                   | Skin_Sun_Exposed_Lower_leg           | 54                  |                                           |
 |       |                   | Spleen                               | 52                  |                                           |
 
+
+
+# Comparing with the results from package V1
+
+The only different setting running these analyses: 
+
+- When running V1: we used weights for nolnc genes
+
+- When running V2: we just used weights for protein-coding genes, which are a bit fewer.
+
+
+```{r, fig.width=15, fig.height=5}
+load("/project/xinhe/xsun/ctwas/1.matching_tissue/results_data/summary_table.rd")
+colnames(sum_all)[8] <- "num_gene_susiepip08"
+results_v1 <- sum_all
+
+load("/project/xinhe/xsun/ctwas/1.matching_tissue/results_data/summary_table_cs.rdata")
+colnames(sum_all)[1:2] <- c("traits", "weights")
+# Merge the data frames
+results_v1 <- merge(results_v1, sum_all, by = c("traits", "weights"), all.x = TRUE)
+
+
+load("/project/xinhe/xsun/multi_group_ctwas/1.single_tissue/summary/para_pip08.rdata")
+results_v2 <- para_sum
+
+results_v1 <- results_v1[results_v1$traits %in% results_v2$trait,]
+results_v1 <- results_v1[results_v1$weights %in% results_v2$tissue,]
+
+
+# Create a combined key column in both data frames
+results_v1$key <- paste(results_v1$traits, results_v1$weights, sep = "_")
+results_v2$key <- paste(results_v2$trait, results_v2$tissue, sep = "_")
+
+# Sort each data frame by the combined key
+results_v1_sorted <- results_v1[order(results_v1$key), ]
+results_v2_sorted <- results_v2[order(results_v2$key), ]
+
+# Optionally, drop the key column if it's no longer needed
+results_v1_sorted$key <- NULL
+results_v2_sorted$key <- NULL
+
+results_v1_sorted$group_pve_gene <- as.numeric(results_v1_sorted$group_pve_gene)
+results_v2_sorted$group_pve <- as.numeric(results_v2_sorted$group_pve)
+p1 <- ggplot(data = NULL, aes(x = results_v1_sorted$group_pve_gene, y = results_v2_sorted$group_pve)) +
+  geom_point() +
+  geom_abline(slope = 1, intercept = 0, color = "red") +
+  labs(x = "group_pve (V1)", y = "group_pve (V2)") +
+  theme_minimal()
+
+results_v1_sorted$num_gene_susiepip08 <- as.numeric(results_v1_sorted$num_gene_susiepip08)
+results_v2_sorted$`#pip>0.8` <- as.numeric(results_v2_sorted$`#pip>0.8`)
+# Plot 2: num_gene_susiepip08 vs. #pip>0.8
+p2 <- ggplot(data = NULL, aes(x = results_v1_sorted$num_gene_susiepip08, y = results_v2_sorted$`#pip>0.8`)) +
+  geom_point() +
+  geom_abline(slope = 1, intercept = 0, color = "red") +
+  labs(x = "#pip>0.8 (V1)", y = "#pip>0.8 (V2)") +
+  theme_minimal()
+
+results_v1_sorted$num_gene_08_cs <- as.numeric(results_v1_sorted$num_gene_08_cs)
+results_v2_sorted$`#pip>0.8&incs` <- as.numeric(results_v2_sorted$`#pip>0.8&incs`)
+# Plot 3: num_gene_08_cs vs. #pip>0.8&incs
+p3 <- ggplot(data = NULL, aes(x = results_v1_sorted$num_gene_08_cs, y = results_v2_sorted$`#pip>0.8&incs`)) +
+  geom_point() +
+  geom_abline(slope = 1, intercept = 0, color = "red") +
+  labs(x = "#pip>0.8&incs (V1)", y = "#pip>0.8&incs (V2)") +
+  theme_minimal()
+
+grid.arrange(p1, p2, p3, ncol = 3)
+```
