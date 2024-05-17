@@ -545,15 +545,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree4363587f0fbe6850575806ae7c887ede652889e2targetblank4363587a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistreece00c7f78f0a3e7939c4cd47276a5b40f99a1ce4targetblankce00c7fa">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/4363587f0fbe6850575806ae7c887ede652889e2" target="_blank">4363587</a>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/ce00c7f78f0a3e7939c4cd47276a5b40f99a1ce4" target="_blank">ce00c7f</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree4363587f0fbe6850575806ae7c887ede652889e2targetblank4363587a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistreece00c7f78f0a3e7939c4cd47276a5b40f99a1ce4targetblankce00c7fa"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -563,7 +563,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/4363587f0fbe6850575806ae7c887ede652889e2" target="_blank">4363587</a>.
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/ce00c7f78f0a3e7939c4cd47276a5b40f99a1ce4" target="_blank">ce00c7f</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -582,8 +582,6 @@ Ignored files:
     Ignored:    results/
 
 Unstaged changes:
-    Modified:   analysis/index.Rmd
-    Modified:   analysis/matching_tissue.Rmd
     Modified:   analysis/matching_tissue_v2.Rmd
 
 </code></pre>
@@ -630,6 +628,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/eb48b228f02f33b0a1ac02fb84ac8e6f03bc7aed/analysis/matching_tissue_v2.Rmd" target="_blank">eb48b22</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2024-05-17
+</td>
+<td>
+update
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/sq-96/multigroup_ctwas_analysis/eb48b228f02f33b0a1ac02fb84ac8e6f03bc7aed/docs/matching_tissue_v2.html" target="_blank">eb48b22</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2024-05-17
+</td>
+<td>
+update
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -724,7 +756,8 @@ clrs &lt;- colorRampPalette(rev(c(&quot;#D73027&quot;,&quot;#FC8D59&quot;,&quot;
 <div id="functions-used" class="section level2">
 <h2>Functions used</h2>
 <pre class="r"><code>library(lattice)
-
+library(gridExtra)
+library(ggplot2)
 get_correlation &lt;- function(tissue1, tissue2, cor_matrix) {
   # Check if tissues are in the matrix and find their positions
   pos1 &lt;- match(tissue1, colnames(cor_matrix))
@@ -1912,6 +1945,75 @@ DT::datatable(comb,caption = htmltools::tags$caption( style = &#39;caption-side:
 </tr>
 </tbody>
 </table>
+</div>
+<div id="comparing-with-the-results-from-package-v1"
+class="section level1">
+<h1>Comparing with the results from package V1</h1>
+<p>The only different setting running these analyses:</p>
+<ul>
+<li><p>When running V1: we used weights for nolnc genes</p></li>
+<li><p>When running V2: we just used weights for protein-coding genes,
+which are a bit fewer.</p></li>
+</ul>
+<pre class="r"><code>load(&quot;/project/xinhe/xsun/ctwas/1.matching_tissue/results_data/summary_table.rd&quot;)
+colnames(sum_all)[8] &lt;- &quot;num_gene_susiepip08&quot;
+results_v1 &lt;- sum_all
+
+load(&quot;/project/xinhe/xsun/ctwas/1.matching_tissue/results_data/summary_table_cs.rdata&quot;)
+colnames(sum_all)[1:2] &lt;- c(&quot;traits&quot;, &quot;weights&quot;)
+# Merge the data frames
+results_v1 &lt;- merge(results_v1, sum_all, by = c(&quot;traits&quot;, &quot;weights&quot;), all.x = TRUE)
+
+
+load(&quot;/project/xinhe/xsun/multi_group_ctwas/1.single_tissue/summary/para_pip08.rdata&quot;)
+results_v2 &lt;- para_sum
+
+results_v1 &lt;- results_v1[results_v1$traits %in% results_v2$trait,]
+results_v1 &lt;- results_v1[results_v1$weights %in% results_v2$tissue,]
+
+
+# Create a combined key column in both data frames
+results_v1$key &lt;- paste(results_v1$traits, results_v1$weights, sep = &quot;_&quot;)
+results_v2$key &lt;- paste(results_v2$trait, results_v2$tissue, sep = &quot;_&quot;)
+
+# Sort each data frame by the combined key
+results_v1_sorted &lt;- results_v1[order(results_v1$key), ]
+results_v2_sorted &lt;- results_v2[order(results_v2$key), ]
+
+# Optionally, drop the key column if it&#39;s no longer needed
+results_v1_sorted$key &lt;- NULL
+results_v2_sorted$key &lt;- NULL
+
+results_v1_sorted$group_pve_gene &lt;- as.numeric(results_v1_sorted$group_pve_gene)
+results_v2_sorted$group_pve &lt;- as.numeric(results_v2_sorted$group_pve)
+p1 &lt;- ggplot(data = NULL, aes(x = results_v1_sorted$group_pve_gene, y = results_v2_sorted$group_pve)) +
+  geom_point() +
+  geom_abline(slope = 1, intercept = 0, color = &quot;red&quot;) +
+  labs(x = &quot;group_pve (V1)&quot;, y = &quot;group_pve (V2)&quot;) +
+  theme_minimal()
+
+results_v1_sorted$num_gene_susiepip08 &lt;- as.numeric(results_v1_sorted$num_gene_susiepip08)
+results_v2_sorted$`#pip&gt;0.8` &lt;- as.numeric(results_v2_sorted$`#pip&gt;0.8`)
+# Plot 2: num_gene_susiepip08 vs. #pip&gt;0.8
+p2 &lt;- ggplot(data = NULL, aes(x = results_v1_sorted$num_gene_susiepip08, y = results_v2_sorted$`#pip&gt;0.8`)) +
+  geom_point() +
+  geom_abline(slope = 1, intercept = 0, color = &quot;red&quot;) +
+  labs(x = &quot;#pip&gt;0.8 (V1)&quot;, y = &quot;#pip&gt;0.8 (V2)&quot;) +
+  theme_minimal()
+
+results_v1_sorted$num_gene_08_cs &lt;- as.numeric(results_v1_sorted$num_gene_08_cs)
+results_v2_sorted$`#pip&gt;0.8&amp;incs` &lt;- as.numeric(results_v2_sorted$`#pip&gt;0.8&amp;incs`)
+# Plot 3: num_gene_08_cs vs. #pip&gt;0.8&amp;incs
+p3 &lt;- ggplot(data = NULL, aes(x = results_v1_sorted$num_gene_08_cs, y = results_v2_sorted$`#pip&gt;0.8&amp;incs`)) +
+  geom_point() +
+  geom_abline(slope = 1, intercept = 0, color = &quot;red&quot;) +
+  labs(x = &quot;#pip&gt;0.8&amp;incs (V1)&quot;, y = &quot;#pip&gt;0.8&amp;incs (V2)&quot;) +
+  theme_minimal()
+
+grid.arrange(p1, p2, p3, ncol = 3)</code></pre>
+<pre><code>Warning: Removed 1 row containing missing values or values outside the scale range
+(`geom_point()`).</code></pre>
+<p><img src="figure/matching_tissue_v2.Rmd/unnamed-chunk-22-1.png" width="1440" style="display: block; margin: auto;" /></p>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
@@ -1935,20 +2037,23 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
-[1] lattice_0.20-45
+[1] ggplot2_3.5.1   gridExtra_2.3   lattice_0.20-45
 
 loaded via a namespace (and not attached):
  [1] Rcpp_1.0.8.3      highr_0.9         pillar_1.9.0      compiler_4.2.0   
  [5] bslib_0.3.1       later_1.3.0       jquerylib_0.1.4   git2r_0.30.1     
- [9] workflowr_1.7.0   tools_4.2.0       digest_0.6.29     jsonlite_1.8.0   
-[13] evaluate_0.15     lifecycle_1.0.4   tibble_3.2.1      pkgconfig_2.0.3  
-[17] rlang_1.1.2       cli_3.6.1         rstudioapi_0.13   crosstalk_1.2.0  
-[21] yaml_2.3.5        xfun_0.41         fastmap_1.1.0     stringr_1.5.1    
-[25] knitr_1.39        fs_1.5.2          vctrs_0.6.5       sass_0.4.1       
-[29] htmlwidgets_1.5.4 grid_4.2.0        rprojroot_2.0.3   DT_0.22          
-[33] glue_1.6.2        R6_2.5.1          fansi_1.0.3       rmarkdown_2.25   
-[37] magrittr_2.0.3    whisker_0.4       promises_1.2.0.1  htmltools_0.5.2  
-[41] httpuv_1.6.5      utf8_1.2.2        stringi_1.7.6    </code></pre>
+ [9] workflowr_1.7.0   tools_4.2.0       digest_0.6.29     gtable_0.3.0     
+[13] jsonlite_1.8.0    evaluate_0.15     lifecycle_1.0.4   tibble_3.2.1     
+[17] pkgconfig_2.0.3   rlang_1.1.2       cli_3.6.1         rstudioapi_0.13  
+[21] crosstalk_1.2.0   yaml_2.3.5        xfun_0.41         fastmap_1.1.0    
+[25] withr_2.5.0       dplyr_1.1.4       stringr_1.5.1     knitr_1.39       
+[29] generics_0.1.2    fs_1.5.2          vctrs_0.6.5       sass_0.4.1       
+[33] htmlwidgets_1.5.4 tidyselect_1.2.0  grid_4.2.0        rprojroot_2.0.3  
+[37] DT_0.22           glue_1.6.2        R6_2.5.1          fansi_1.0.3      
+[41] rmarkdown_2.25    farver_2.1.0      magrittr_2.0.3    whisker_0.4      
+[45] scales_1.3.0      promises_1.2.0.1  htmltools_0.5.2   colorspace_2.0-3 
+[49] httpuv_1.6.5      labeling_0.4.2    utf8_1.2.2        stringi_1.7.6    
+[53] munsell_0.5.0    </code></pre>
 </div>
 </div>
 
