@@ -17,7 +17,9 @@ source("/project/xinhe/shengqian/cTWAS_simulation/help_functions.R")
 source("/project/xinhe/shengqian/cTWAS_simulation/summarize_basic_plots.R")
 source("/project/xinhe/shengqian/cTWAS_simulation/summarize_ctwas_plots.R")
 #source("/project2/xinhe/shengqian/cTWAS/cTWAS_analysis/analysis/simulation_help_functions.R")
-load("/project2/xinhe/shengqian/cTWAS/cTWAS_analysis/data/mashr_sqtl/sqtl/mashr/intron_mapping.RData")
+load("/project2/xinhe/shengqian/cTWAS/cTWAS_analysis/data/mashr_sqtl/sqtl/mashr/intron_mapping_info.RData")
+#intron_info <- intron_info[intron_info$gene_type=="protein_coding",]
+
 
 plot_PIP <- function(results_dir, runtag,  simutags, LD_type, ...){
    phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
@@ -60,12 +62,12 @@ param_UKBB_df <- load_parameters(results_dir, runtag, simutags, "UKBBLD")
 
 ### Number of causal genes detected (GTEX LD)
 ```{r echo=FALSE}
-check_n_detected_multi(results_dir, runtag, simutags, "GTEXLD", PIP_threshold = 0.8)
+check_n_detected_multiomics(results_dir, runtag, simutags, "GTEXLD", PIP_threshold = 0.8)
 ```
 
 ### Number of causal genes detected (UKBB LD)
 ```{r echo=FALSE}
-check_n_detected_multi(results_dir, runtag, simutags, "UKBBLD", PIP_threshold = 0.8)
+check_n_detected_multiomics(results_dir, runtag, simutags, "UKBBLD", PIP_threshold = 0.8)
 ```
 
 ### Estimated Prior Inclusion Probability and PVE (GTEX LD)
