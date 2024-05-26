@@ -1,0 +1,182 @@
+---
+title: "Real data analysis"
+author: "shengqian"
+date: "2024-5-26"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(ctwas)
+library(data.table)
+library(tidyverse)
+source("/project2/xinhe/shengqian/cTWAS/for_xiaotong/R/ctwas_summarize_finemap_res.R")
+load("/project2/xinhe/shared_data/multigroup_ctwas/weights/E_S_A_mapping.RData")
+E_S_A_mapping <- E_S_A_mapping[E_S_A_mapping$gene_type=="protein_coding",] #limit to protein coding genes
+```
+
+## LDL
+```{r echo=FALSE}
+gwas_n <- 343621
+param <- readRDS("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/results/LDL-ukb-d-30780_irnt/LDL-ukb-d-30780_irnt.param.RDS")
+ctwas_parameters <- summarize_param(param, gwas_n)
+```
+
+### Heritability contribution by types
+```{r}
+sum_pve_across_types(ctwas_parameters)
+```
+
+### Heritability contribution by contexts
+```{r}
+sum_pve_across_contexts(ctwas_parameters)
+```
+
+```{r echo=FALSE}
+finemap_res <- readRDS("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/results/LDL-ukb-d-30780_irnt/LDL-ukb-d-30780_irnt.finemap_res.RDS")
+combined_pip_by_types <- sum_pip_across_types(finemap_res,E_S_A_mapping)
+combined_pip_by_contexts <- sum_pip_across_contexts(finemap_res,E_S_A_mapping)
+```
+
+### Combined PIP by types
+```{r}
+DT::datatable(combined_pip_by_types[combined_pip_by_types$combined_pip>0.8,])
+```
+
+### Combined PIP by contexts
+```{r}
+DT::datatable(combined_pip_by_contexts[combined_pip_by_contexts$combined_pip>0.8,])
+```
+
+## IBD
+```{r echo=FALSE}
+gwas_n <- 59957
+param <- readRDS("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/results/IBD-ebi-a-GCST004131/IBD-ebi-a-GCST004131.param.RDS")
+ctwas_parameters <- summarize_param(param, gwas_n)
+```
+
+### Heritability contribution by types
+```{r}
+sum_pve_across_types(ctwas_parameters)
+```
+
+### Heritability contribution by contexts
+```{r}
+sum_pve_across_contexts(ctwas_parameters)
+```
+
+```{r echo=FALSE}
+finemap_res <- readRDS("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/results/IBD-ebi-a-GCST004131/IBD-ebi-a-GCST004131.finemap_res.RDS")
+combined_pip_by_types <- sum_pip_across_types(finemap_res,E_S_A_mapping)
+combined_pip_by_contexts <- sum_pip_across_contexts(finemap_res,E_S_A_mapping)
+```
+
+### Combined PIP by types
+```{r}
+DT::datatable(combined_pip_by_types[combined_pip_by_types$combined_pip>0.8,])
+```
+
+### Combined PIP by contexts
+```{r}
+DT::datatable(combined_pip_by_contexts[combined_pip_by_contexts$combined_pip>0.8,])
+```
+
+## SCZ
+```{r echo=FALSE}
+gwas_n <- 127906
+param <- readRDS("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/results/SCZ-ieu-b-5102/SCZ-ieu-b-5102.param.RDS")
+ctwas_parameters <- summarize_param(param, gwas_n)
+```
+
+### Heritability contribution by types
+```{r}
+sum_pve_across_types(ctwas_parameters)
+```
+
+### Heritability contribution by contexts
+```{r}
+sum_pve_across_contexts(ctwas_parameters)
+```
+
+```{r echo=FALSE}
+finemap_res <- readRDS("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/results/SCZ-ieu-b-5102/SCZ-ieu-b-5102.finemap_res.RDS")
+combined_pip_by_types <- sum_pip_across_types(finemap_res,E_S_A_mapping)
+combined_pip_by_contexts <- sum_pip_across_contexts(finemap_res,E_S_A_mapping)
+```
+
+### Combined PIP by types
+```{r}
+DT::datatable(combined_pip_by_types[combined_pip_by_types$combined_pip>0.8,])
+```
+
+### Combined PIP by contexts
+```{r}
+DT::datatable(combined_pip_by_contexts[combined_pip_by_contexts$combined_pip>0.8,])
+```
+
+## SBP 
+```{r echo=FALSE}
+gwas_n <- 317754
+param <- readRDS("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/results/SBP-ukb-a-360/SBP-ukb-a-360.param.RDS")
+ctwas_parameters <- summarize_param(param, gwas_n)
+```
+
+### Heritability contribution by types
+```{r}
+sum_pve_across_types(ctwas_parameters)
+```
+
+### Heritability contribution by contexts
+```{r}
+sum_pve_across_contexts(ctwas_parameters)
+```
+
+```{r echo=FALSE}
+finemap_res <- readRDS("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/results/SBP-ukb-a-360/SBP-ukb-a-360.finemap_res.RDS")
+combined_pip_by_types <- sum_pip_across_types(finemap_res,E_S_A_mapping)
+combined_pip_by_contexts <- sum_pip_across_contexts(finemap_res,E_S_A_mapping)
+```
+
+### Combined PIP by types
+```{r}
+DT::datatable(combined_pip_by_types[combined_pip_by_types$combined_pip>0.8,])
+```
+
+### Combined PIP by contexts
+```{r}
+DT::datatable(combined_pip_by_contexts[combined_pip_by_contexts$combined_pip>0.8,])
+```
+
+## WBC 
+```{r echo=FALSE}
+gwas_n <- 563946
+param <- readRDS("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/results/WBC-ieu-b-30/WBC-ieu-b-30.param.RDS")
+ctwas_parameters <- summarize_param(param, gwas_n)
+```
+
+### Heritability contribution by types
+```{r}
+sum_pve_across_types(ctwas_parameters)
+```
+
+### Heritability contribution by contexts
+```{r}
+sum_pve_across_contexts(ctwas_parameters)
+```
+
+```{r echo=FALSE}
+finemap_res <- readRDS("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/results/WBC-ieu-b-30/WBC-ieu-b-30.finemap_res.RDS")
+combined_pip_by_types <- sum_pip_across_types(finemap_res,E_S_A_mapping)
+combined_pip_by_contexts <- sum_pip_across_contexts(finemap_res,E_S_A_mapping)
+```
+
+### Combined PIP by types
+```{r}
+DT::datatable(combined_pip_by_types[combined_pip_by_types$combined_pip>0.8,])
+```
+
+### Combined PIP by contexts
+```{r}
+DT::datatable(combined_pip_by_contexts[combined_pip_by_contexts$combined_pip>0.8,])
+```
