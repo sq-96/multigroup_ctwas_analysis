@@ -33,7 +33,8 @@ PredictDB, 32 tissues with sample size (RNASeq.and.Genotyped.samples below) >= 2
 ```{r }
 load("/project/xinhe/xsun/multi_group_ctwas/1.single_tissue/summary/para_pip08.rdata")
 sum_all <- para_sum
-colnames(sum_all)[ncol(sum_all)] <-"%PVE"
+colnames(sum_all)[ncol(sum_all)] <-"PVE(%)"
+sum_all$`PVE(%)` <- as.numeric(sum_all$`PVE(%)`)*100
 
 weights <- read.csv("/project/xinhe/xsun/ctwas/1.matching_tissue/results_data/gtex_samplesize.csv")
 DT::datatable(weights,options = list(pageLength = 5))
