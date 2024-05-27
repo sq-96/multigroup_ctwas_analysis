@@ -238,8 +238,14 @@ draw_gene_piechart(combined_pip_by_types)
 ### Comparing with eQTL results (the tissue with the largest number of sig genes)
 
 ```{r echo=FALSE}
-file_res_single <- paste0("/project/xinhe/xsun/multi_group_ctwas/1.single_tissue/results/",trait,"/",trait,".finemap_res.RDS")
+tissue <- "Cells_Cultured_fibroblasts"
+sprintf("the top tissue is %s",tissue)
+
+file_res_single <- paste0("/project/xinhe/xsun/multi_group_ctwas/1.single_tissue/results/",trait,"/",tissue,"/",trait,"_",tissue,".finemap_res.RDS")
 finemap_res_single <- readRDS(file_res_single)
+
+sig_gene_single <- finemap_res_single[finemap_res_single$type !="SNP" & finemap_res_single$cs_index != 0 & finemap_res_single$susie_pip >0.8,]
+sig_gene_multi <- combined_pip_by_types[combined_pip_by_types$combined_pip > 0.8,]
 
 ```
 
