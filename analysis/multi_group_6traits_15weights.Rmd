@@ -243,35 +243,89 @@ process_fm_res_single <- function(finemap_res, mapping_data) {
   return(finemap_gene_res)
 }
 
-calculate_sum_overlap <- function(tissues, trait, combined_pip_by_contexts, E_S_A_mapping) {
+# calculate_sum_overlap <- function(tissues, trait, combined_pip_by_contexts, E_S_A_mapping) {
+#   sum_overlap_for_all <- c()
+#   
+#   for (i in seq_along(tissues)) {
+#     tissue <- tissues[i]
+#     file_res_single <- paste0("/project/xinhe/xsun/multi_group_ctwas/1.single_tissue/results/", trait, "/", tissue, "/", trait, "_", tissue, ".finemap_res.RDS")
+#     finemap_res_single <- readRDS(file_res_single)
+#     
+#     finemap_res_single <- process_fm_res_single(finemap_res = finemap_res_single, mapping_data = E_S_A_mapping)
+#     finemap_res_multi <- combined_pip_by_contexts
+#     
+#     sig_gene_single <- finemap_res_single[finemap_res_single$PIP_single_group > 0.8, ]
+#     sig_gene_multi <- finemap_res_multi[finemap_res_multi$combined_pip > 0.8, ]
+#     
+#     merged_siggene <- merge(sig_gene_single, sig_gene_multi, by = "genename", all.x = TRUE, all.y = TRUE)
+#     
+#     tmp <- c(
+#       sum(merged_siggene$PIP_single_group > 0.8, na.rm = TRUE),
+#       sum(merged_siggene$PIP_single_group > 0.8 & merged_siggene$combined_pip > 0.8, na.rm = TRUE),
+#       sum(merged_siggene$combined_pip > 0.8, na.rm = TRUE)
+#     )
+#     
+#     sum_overlap_for_all <- rbind(sum_overlap_for_all, tmp)
+#   }
+#   
+#   rownames(sum_overlap_for_all) <- tissues
+#   colnames(sum_overlap_for_all) <- c("#of.sig.gene_single_group_cs_filtered", "#of.overlap", "#of.sig.gene_multi_group_cs_filtered")
+#   
+#   return(sum_overlap_for_all)
+# }
+
+calculate_sum_overlap_and_pve <- function(tissues, trait, combined_pip_by_contexts, E_S_A_mapping, ctwas_parameters) {
   sum_overlap_for_all <- c()
+  sum_pve_for_all <- c()
   
   for (i in seq_along(tissues)) {
     tissue <- tissues[i]
+    
+    # Load single tissue fine-mapping results
     file_res_single <- paste0("/project/xinhe/xsun/multi_group_ctwas/1.single_tissue/results/", trait, "/", tissue, "/", trait, "_", tissue, ".finemap_res.RDS")
     finemap_res_single <- readRDS(file_res_single)
-    
     finemap_res_single <- process_fm_res_single(finemap_res = finemap_res_single, mapping_data = E_S_A_mapping)
+    
+    # Load multi-group fine-mapping results
     finemap_res_multi <- combined_pip_by_contexts
     
+    # Identify significant genes
     sig_gene_single <- finemap_res_single[finemap_res_single$PIP_single_group > 0.8, ]
     sig_gene_multi <- finemap_res_multi[finemap_res_multi$combined_pip > 0.8, ]
     
+    # Merge significant genes
     merged_siggene <- merge(sig_gene_single, sig_gene_multi, by = "genename", all.x = TRUE, all.y = TRUE)
     
+    # Calculate overlap statistics
     tmp <- c(
       sum(merged_siggene$PIP_single_group > 0.8, na.rm = TRUE),
       sum(merged_siggene$PIP_single_group > 0.8 & merged_siggene$combined_pip > 0.8, na.rm = TRUE),
       sum(merged_siggene$combined_pip > 0.8, na.rm = TRUE)
     )
-    
     sum_overlap_for_all <- rbind(sum_overlap_for_all, tmp)
+    
+    # Calculate PVE for multi-group
+    group_pve_multi <- ctwas_parameters$group_pve
+    group_pve_multi_tissue <- round(group_pve_multi[paste0("eQTL|", tissue)], digits = 4)
+    
+    # Load single tissue parameter results
+    file_para_single <- paste0("/project/xinhe/xsun/multi_group_ctwas/1.single_tissue/results/", trait, "/", tissue, "/", trait, "_", tissue, ".param.RDS")
+    para_single <- readRDS(file_para_single)
+    group_pve_single_tissue <- round(para_single$group_prior[paste0("eQTL|", tissue)], digits = 4)
+    
+    # Combine PVE results
+    tmp2 <- c(group_pve_single_tissue, group_pve_multi_tissue)
+    sum_pve_for_all <- rbind(sum_pve_for_all, tmp2)
   }
   
+  # Set row and column names for the result matrices
   rownames(sum_overlap_for_all) <- tissues
   colnames(sum_overlap_for_all) <- c("#of.sig.gene_single_group_cs_filtered", "#of.overlap", "#of.sig.gene_multi_group_cs_filtered")
   
-  return(sum_overlap_for_all)
+  rownames(sum_pve_for_all) <- tissues
+  colnames(sum_pve_for_all) <- c("pve_single_group", "pve_eqtl_multi_group")
+  
+  return(list(sum_overlap_for_all = sum_overlap_for_all, sum_pve_for_all = sum_pve_for_all))
 }
 
 ```
@@ -339,8 +393,10 @@ draw_gene_piechart(combined_pip_by_types)
 tissues <- c("Cells_Cultured_fibroblasts","Whole_Blood","Adipose_Subcutaneous","Esophagus_Mucosa","Heart_Left_Ventricle")
 sprintf("the top tissues from single group analyses are %s",paste0(tissues,collapse = ","))
 
-sum_overlap_for_all <- calculate_sum_overlap(tissues, trait, combined_pip_by_contexts, E_S_A_mapping)
-DT::datatable(sum_overlap_for_all,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;  font-size:150% ;','#of overlap for single eqtl analysis and multi group analysis'),options = list(pageLength = 5) )
+result <- calculate_sum_overlap_and_pve(tissues, trait, combined_pip_by_contexts, E_S_A_mapping, ctwas_parameters)
+
+DT::datatable(result$sum_overlap_for_all,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;  font-size:150% ;','#of overlap for single eqtl analysis and multi group analysis'),options = list(pageLength = 5) )
+DT::datatable(result$sum_pve_for_all,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;  font-size:150% ;','pve changes'),options = list(pageLength = 5) )
 
 ```
 
@@ -378,8 +434,10 @@ draw_gene_piechart(combined_pip_by_types)
 tissues <- c("Liver","Spleen","Adipose_Subcutaneous","Adrenal_Gland","Esophagus_Mucosa")
 sprintf("the top tissues from single group analyses are %s",paste0(tissues,collapse = ","))
 
-sum_overlap_for_all <- calculate_sum_overlap(tissues, trait, combined_pip_by_contexts, E_S_A_mapping)
-DT::datatable(sum_overlap_for_all,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;  font-size:150% ;','#of overlap for single eqtl analysis and multi group analysis'),options = list(pageLength = 5) )
+result <- calculate_sum_overlap_and_pve(tissues, trait, combined_pip_by_contexts, E_S_A_mapping, ctwas_parameters)
+
+DT::datatable(result$sum_overlap_for_all,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;  font-size:150% ;','#of overlap for single eqtl analysis and multi group analysis'),options = list(pageLength = 5) )
+DT::datatable(result$sum_pve_for_all,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;  font-size:150% ;','pve changes'),options = list(pageLength = 5) )
 
 ```
 
@@ -417,8 +475,10 @@ draw_gene_piechart(combined_pip_by_types)
 tissues <- c("Artery_Tibial","Adipose_Subcutaneous","Brain_Cortex","Heart_Left_Ventricle","Spleen")
 sprintf("the top tissues from single group analyses are %s",paste0(tissues,collapse = ","))
 
-sum_overlap_for_all <- calculate_sum_overlap(tissues, trait, combined_pip_by_contexts, E_S_A_mapping)
-DT::datatable(sum_overlap_for_all,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;  font-size:150% ;','#of overlap for single eqtl analysis and multi group analysis'),options = list(pageLength = 5) )
+result <- calculate_sum_overlap_and_pve(tissues, trait, combined_pip_by_contexts, E_S_A_mapping, ctwas_parameters)
+
+DT::datatable(result$sum_overlap_for_all,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;  font-size:150% ;','#of overlap for single eqtl analysis and multi group analysis'),options = list(pageLength = 5) )
+DT::datatable(result$sum_pve_for_all,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;  font-size:150% ;','pve changes'),options = list(pageLength = 5) )
 
 ```
 
@@ -456,8 +516,10 @@ draw_gene_piechart(combined_pip_by_types)
 tissues <- c("Heart_Left_Ventricle","Adrenal_Gland","Artery_Coronary","Brain_Cerebellum","Stomach")
 sprintf("the top tissues from single group analyses are %s",paste0(tissues,collapse = ","))
 
-sum_overlap_for_all <- calculate_sum_overlap(tissues, trait, combined_pip_by_contexts, E_S_A_mapping)
-DT::datatable(sum_overlap_for_all,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;  font-size:150% ;','#of overlap for single eqtl analysis and multi group analysis'),options = list(pageLength = 5) )
+result <- calculate_sum_overlap_and_pve(tissues, trait, combined_pip_by_contexts, E_S_A_mapping, ctwas_parameters)
+
+DT::datatable(result$sum_overlap_for_all,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;  font-size:150% ;','#of overlap for single eqtl analysis and multi group analysis'),options = list(pageLength = 5) )
+DT::datatable(result$sum_pve_for_all,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;  font-size:150% ;','pve changes'),options = list(pageLength = 5) )
 
 ```
 
@@ -496,7 +558,9 @@ draw_gene_piechart(combined_pip_by_types)
 tissues <- c("Whole_Blood","Adipose_Subcutaneous","Artery_Aorta","Skin_Sun_Exposed_Lower_leg","Spleen")
 sprintf("the top tissues from single group analyses are %s",paste0(tissues,collapse = ","))
 
-sum_overlap_for_all <- calculate_sum_overlap(tissues, trait, combined_pip_by_contexts, E_S_A_mapping)
-DT::datatable(sum_overlap_for_all,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;  font-size:150% ;','#of overlap for single eqtl analysis and multi group analysis'),options = list(pageLength = 5) )
+result <- calculate_sum_overlap_and_pve(tissues, trait, combined_pip_by_contexts, E_S_A_mapping, ctwas_parameters)
+
+DT::datatable(result$sum_overlap_for_all,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;  font-size:150% ;','#of overlap for single eqtl analysis and multi group analysis'),options = list(pageLength = 5) )
+DT::datatable(result$sum_pve_for_all,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;  font-size:150% ;','pve changes'),options = list(pageLength = 5) )
 
 ```
