@@ -1,0 +1,350 @@
+---
+title: "Multi group analysis: 6 traits, 5 tissues, eQTL + sQTL + apaQTL"
+author: "XSun"
+date: "2024-05-27"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+    toc: true
+---
+
+# Overview
+
+## Traits
+
+aFib, IBD, LDL, SBP, SCZ, WBC 
+
+[details](https://sq-96.github.io/multigroup_ctwas_analysis/data.html)
+
+## Tissues
+
+The independent tissues are selected by [single tissue analysis](https://sq-96.github.io/multigroup_ctwas_analysis/matching_tissue_v2.html)
+
+## Omics
+
+eQTL, sQTL weights are from GTEx PredictDB 
+
+apaQTL wetights are from https://www.nature.com/articles/s41467-024-46064-7#Sec2. Top 10 SNPs with largest abs(weights) were selected after harmonization
+
+## Settings
+
+1. Weight processing: 
+
+PredictDB:
+
+- drop_strand_ambig = TRUE,
+- scale_by_ld_variance = TRUE,
+- load_predictdb_LD = T,  
+
+FUSION:
+
+- method_FUSION = "enet",
+- fusion_top_n_snps = 10, 
+- drop_strand_ambig = TRUE,
+- scale_by_ld_variance = F, 
+- load_predictdb_LD = F,  
+
+2. Parameter estimation and fine-mapping
+
+- niter_prefit = 5,
+- niter = 60,
+- L = 3,
+- group_prior_var_structure = "shared_type",
+- maxSNP = 20000,
+- min_nonSNP_PIP = 0.5,
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(ctwas)
+library(data.table)
+library(tidyverse)
+library(ggplot2)
+library(RColorBrewer)
+#source("/project2/xinhe/shengqian/cTWAS/for_xiaotong/R/ctwas_summarize_finemap_res.R")
+load("/project2/xinhe/shared_data/multigroup_ctwas/weights/E_S_A_mapping.RData")
+E_S_A_mapping <- E_S_A_mapping[E_S_A_mapping$gene_type=="protein_coding",] #limit to protein coding genes
+palette <- c(brewer.pal(12, "Paired"), brewer.pal(12, "Set3"), brewer.pal(6, "Dark2"))
+
+sum_pip_across_contexts <- function(finemap_res, mapping_data){
+
+  finemap_res <- finemap_res[finemap_res$cs_index!=0,]
+  finemap_gene_res <- finemap_res[finemap_res$type!="SNP",]
+  finemap_gene_res$gene <- sapply(finemap_gene_res$id, function(x){unlist(strsplit(x,"[|]"))[1]})
+  finemap_gene_res <- finemap_gene_res %>% plyr::join(mapping_data, by = "gene") %>% dplyr::select(-gene) %>% na.omit()
+  finemap_gene_res <- finemap_gene_res %>% group_by(id) %>% mutate(susie_pip_adjusted = ifelse(n() > 1, susie_pip / n(), susie_pip)) %>% ungroup() %>% dplyr::select(-susie_pip) %>% dplyr::rename(susie_pip = susie_pip_adjusted)
+
+  df_gene <- aggregate(finemap_gene_res$susie_pip, by=list(finemap_gene_res$genename), FUN=sum)
+  colnames(df_gene) <- c("genename", "combined_pip")
+  for(j in unique(finemap_gene_res$context)){
+    tmp_res <- finemap_gene_res[finemap_gene_res$context==j,]
+    tmp_res <- tmp_res[,c("genename","susie_pip")]
+    tmp_res <- aggregate(tmp_res$susie_pip, by=list(tmp_res$genename), FUN=sum)
+    colnames(tmp_res) <- c("genename",j)
+    tmp_res[,j] <- round(tmp_res[,j],3)
+    df_gene <- df_gene %>% plyr::join(tmp_res, by = "genename") %>% replace(is.na(.), 0)
+  }
+  df_gene$combined_pip <- round(df_gene$combined_pip,3)
+  df_gene <- df_gene[order(-df_gene$combined_pip),]
+  return(df_gene)
+}
+
+sum_pip_across_types <- function(finemap_res, mapping_data){
+
+  finemap_res <- finemap_res[finemap_res$cs_index!=0,]
+  finemap_gene_res <- finemap_res[finemap_res$type!="SNP",]
+  finemap_gene_res$gene <- sapply(finemap_gene_res$id, function(x){unlist(strsplit(x,"[|]"))[1]})
+  finemap_gene_res <- finemap_gene_res %>% plyr::join(mapping_data, by = "gene") %>% dplyr::select(-gene) %>% na.omit()
+  finemap_gene_res <- finemap_gene_res %>% group_by(id) %>% mutate(susie_pip_adjusted = ifelse(n() > 1, susie_pip / n(), susie_pip)) %>% ungroup() %>% dplyr::select(-susie_pip) %>% dplyr::rename(susie_pip = susie_pip_adjusted)
+
+  df_gene <- aggregate(finemap_gene_res$susie_pip, by=list(finemap_gene_res$genename), FUN=sum)
+  colnames(df_gene) <- c("genename", "combined_pip")
+  for(j in unique(finemap_gene_res$type)){
+    tmp_res <- finemap_gene_res[finemap_gene_res$type==j,]
+    tmp_res <- tmp_res[,c("genename","susie_pip")]
+    tmp_res <- aggregate(tmp_res$susie_pip, by=list(tmp_res$genename), FUN=sum)
+    colnames(tmp_res) <- c("genename",j)
+    tmp_res[,j] <- round(tmp_res[,j],3)
+    df_gene <- df_gene %>% plyr::join(tmp_res, by = "genename") %>% replace(is.na(.), 0)
+  }
+  df_gene$combined_pip <- round(df_gene$combined_pip,3)
+  df_gene <- df_gene[order(-df_gene$combined_pip),]
+  return(df_gene)
+}
+
+draw_gene_piechart <- function(data){
+  byeQTL <- nrow(data[data$eQTL/data$combined_pip>0.8,])
+  bysQTL <- nrow(data[data$sQTL/data$combined_pip>0.8,])
+  byapaQTL <- nrow(data[data$apaQTL/data$combined_pip>0.8,])
+  bysQTLapaQTL <- nrow(data[((data$apaQTL+data$sQTL)/data$combined_pip)>0.8 &
+                              data$apaQTL/data$combined_pip < 0.8 &
+                              data$sQTL/data$combined_pip < 0.8,])
+  unspecified <- nrow(data)-byeQTL-bysQTL-byapaQTL-bysQTLapaQTL
+  n <- c(byeQTL,bysQTL,byapaQTL,bysQTLapaQTL,unspecified)
+  prop <- round(n/nrow(data),3)
+  labels = c("by eQTL","by sQTL","by apaQTL","by sQTL+apaQTL","unspecified")
+  lab.ypos = cumsum(prop) - 0.5*prop
+  df <- data.frame("n" = n,
+                   "class" = labels,
+                   "prop" = prop,
+                   "lab.ypos" = lab.ypos)
+  ggplot(df, aes(x = "", y = prop, fill = class)) +
+    geom_bar(width = 1, stat = "identity", color = "white") +
+    coord_polar("y", start = 0)+
+    geom_text(aes(label = n),
+              position = position_stack(vjust = 0.5))+
+    scale_fill_manual(values = palette) +
+    theme_void()
+  #pie(Prop , labels = c("by eQTL","by sQTL","by apaQTL","by sQTL+apaQTL","unspecified"), col=palette)
+}
+
+sum_pve_across_types <- function(ctwas_parameters) {
+  # Round the group_pve values
+  pve <- round(ctwas_parameters$group_pve, 4)
+  pve <- as.data.frame(pve)
+  
+  # Extract SNP PVE for later use
+  SNP_pve <- pve["SNP", ]
+  
+  # Add type and context columns
+  pve$type <- sapply(rownames(pve), function(x) { unlist(strsplit(x, "[|]"))[1] })
+  pve$context <- sapply(rownames(pve), function(x) { unlist(strsplit(x, "[|]"))[2] })
+  
+  # Remove rows with NA values and sort
+  pve <- na.omit(pve)
+  pve <- pve[order(rownames(pve)), ]
+  
+  # Aggregate PVE by type
+  df_pve <- aggregate(pve$pve, by = list(pve$type), FUN = sum)
+  colnames(df_pve) <- c("type", "total_pve")
+  df_pve$total_pve <- round(df_pve$total_pve, 4)
+  
+  # Add context-specific columns
+  for (context in unique(pve$context)) {
+    context_pve <- aggregate(pve$pve, by = list(pve$type, pve$context), FUN = sum)
+    context_pve <- context_pve[context_pve$Group.2 == context, ]
+    colnames(context_pve)[3] <- context
+    df_pve <- merge(df_pve, context_pve[, c("Group.1", context)], by.x = "type", by.y = "Group.1", all.x = TRUE)
+  }
+  
+  # Insert SNP PVE
+  SNP_row <- c("SNP", SNP_pve, rep(0, ncol(df_pve) - 2))
+  df_pve <- rbind(df_pve, SNP_row)
+  
+  # Convert to numeric except for the type column
+  df_pve[, -1] <- lapply(df_pve[, -1], as.numeric)
+  
+  # Sum all rows and add a sum_pve row
+  sum_row <- colSums(df_pve[, -1], na.rm = TRUE)
+  sum_row <- c("total_pve", sum_row)
+  df_pve <- rbind(df_pve, sum_row)
+  
+  # Clean up row names and return
+  row.names(df_pve) <- NULL
+  return(df_pve)
+}
+
+load("/project2/xinhe/shared_data/multigroup_ctwas/gwas/samplesize.rdata")
+
+```
+
+# Results
+
+The results are summarized by 
+
+1. Heritability contribution by contexts: we aggregate the PVE values by omics and tissues, making it easier to understand the distribution of PVE across different genetic contexts.
+
+2. Combined PIP by omics:  we aggregate the Susie PIPs by omics 
+
+3. Combined PIP by contexts: we aggregate the Susie PIPs by tissues, making it easier to understand the distribution of PIP across different genetic contexts.
+
+4. Specific molecular traits of top genes: we creates a pie chart to visualize the proportion of genes classified into different categories based on their PIPs contributed by each genetics contexts. The categories are based on the proportion of each QTL type relative to the combined PIP value: 
+
+- by eQTL: Number of genes where the ratio of eQTL to combined PIP is greater than 0.8.
+- by sQTL: Number of genes where the ratio of sQTL to combined PIP is greater than 0.8.
+- by apaQTL: Number of genes where the ratio of apaQTL to combined PIP is greater than 0.8.
+- by sQTL+apaQTL: Number of genes where the combined ratio of apaQTL and sQTL to combined PIP is greater than 0.8, but neither apaQTL nor sQTL individually exceed 0.8.
+- unspecified: Number of genes not classified into any of the above categories.
+
+## aFib
+
+TO DO
+
+## IBD
+
+### Results from multi-group analysis
+
+```{r echo=FALSE}
+trait <- "IBD-ebi-a-GCST004131"
+gwas_n <- samplesize[trait]
+
+file_para <- paste0("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/results/",trait,"/",trait,".param.RDS")
+param <- readRDS(file_para)
+ctwas_parameters <- summarize_param(param, gwas_n)
+
+
+DT::datatable(sum_pve_across_types(ctwas_parameters),caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;  font-size:150% ;','Heritability contribution by contexts'),options = list(pageLength = 5) )
+
+file_res <- paste0("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/results/",trait,"/",trait,".finemap_res.RDS")
+finemap_res <- readRDS(file_res)
+combined_pip_by_types <- sum_pip_across_types(finemap_res,E_S_A_mapping)
+combined_pip_by_contexts <- sum_pip_across_contexts(finemap_res,E_S_A_mapping)
+
+DT::datatable(combined_pip_by_types[combined_pip_by_types$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;  font-size:150% ;','Combined PIP by omics'),options = list(pageLength = 5) )
+
+DT::datatable(combined_pip_by_contexts[combined_pip_by_contexts$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;  font-size:150% ;','Combined PIP by tissue'),options = list(pageLength = 5) )
+
+draw_gene_piechart(combined_pip_by_types)
+```
+
+### Comparing with eQTL results (the tissue with the largest number of sig genes)
+
+```{r echo=FALSE}
+tissue <- "Cells_Cultured_fibroblasts"
+sprintf("the top tissue is %s",tissue)
+
+file_res_single <- paste0("/project/xinhe/xsun/multi_group_ctwas/1.single_tissue/results/",trait,"/",tissue,"/",trait,"_",tissue,".finemap_res.RDS")
+finemap_res_single <- readRDS(file_res_single)
+
+sig_gene_single <- finemap_res_single[finemap_res_single$type !="SNP" & finemap_res_single$cs_index != 0 & finemap_res_single$susie_pip >0.8,]
+sig_gene_multi <- combined_pip_by_types[combined_pip_by_types$combined_pip > 0.8,]
+
+```
+
+## LDL
+
+```{r echo=FALSE}
+trait <- "LDL-ukb-d-30780_irnt"
+gwas_n <- samplesize[trait]
+
+file_para <- paste0("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/results/",trait,"/",trait,".param.RDS")
+param <- readRDS(file_para)
+ctwas_parameters <- summarize_param(param, gwas_n)
+
+
+DT::datatable(sum_pve_across_types(ctwas_parameters),caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;  font-size:150% ;','Heritability contribution by contexts'),options = list(pageLength = 5) )
+
+file_res <- paste0("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/results/",trait,"/",trait,".finemap_res.RDS")
+finemap_res <- readRDS(file_res)
+combined_pip_by_types <- sum_pip_across_types(finemap_res,E_S_A_mapping)
+combined_pip_by_contexts <- sum_pip_across_contexts(finemap_res,E_S_A_mapping)
+
+DT::datatable(combined_pip_by_types[combined_pip_by_types$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;  font-size:150% ;','Combined PIP by omics'),options = list(pageLength = 5) )
+
+DT::datatable(combined_pip_by_contexts[combined_pip_by_contexts$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;  font-size:150% ;','Combined PIP by tissue'),options = list(pageLength = 5) )
+
+draw_gene_piechart(combined_pip_by_types)
+```
+
+## SBP
+
+```{r echo=FALSE}
+trait <- "SBP-ukb-a-360"
+gwas_n <- samplesize[trait]
+
+file_para <- paste0("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/results/",trait,"/",trait,".param.RDS")
+param <- readRDS(file_para)
+ctwas_parameters <- summarize_param(param, gwas_n)
+
+
+DT::datatable(sum_pve_across_types(ctwas_parameters),caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;  font-size:150% ;','Heritability contribution by contexts'),options = list(pageLength = 5) )
+
+file_res <- paste0("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/results/",trait,"/",trait,".finemap_res.RDS")
+finemap_res <- readRDS(file_res)
+combined_pip_by_types <- sum_pip_across_types(finemap_res,E_S_A_mapping)
+combined_pip_by_contexts <- sum_pip_across_contexts(finemap_res,E_S_A_mapping)
+
+DT::datatable(combined_pip_by_types[combined_pip_by_types$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;  font-size:150% ;','Combined PIP by omics'),options = list(pageLength = 5) )
+
+DT::datatable(combined_pip_by_contexts[combined_pip_by_contexts$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;  font-size:150% ;','Combined PIP by tissue'),options = list(pageLength = 5) )
+
+draw_gene_piechart(combined_pip_by_types)
+```
+
+## SCZ
+
+```{r echo=FALSE}
+trait <- "SCZ-ieu-b-5102"
+gwas_n <- samplesize[trait]
+
+file_para <- paste0("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/results/",trait,"/",trait,".param.RDS")
+param <- readRDS(file_para)
+ctwas_parameters <- summarize_param(param, gwas_n)
+
+
+DT::datatable(sum_pve_across_types(ctwas_parameters),caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;  font-size:150% ;','Heritability contribution by contexts'),options = list(pageLength = 5) )
+
+file_res <- paste0("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/results/",trait,"/",trait,".finemap_res.RDS")
+finemap_res <- readRDS(file_res)
+combined_pip_by_types <- sum_pip_across_types(finemap_res,E_S_A_mapping)
+combined_pip_by_contexts <- sum_pip_across_contexts(finemap_res,E_S_A_mapping)
+
+DT::datatable(combined_pip_by_types[combined_pip_by_types$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;  font-size:150% ;','Combined PIP by omics'),options = list(pageLength = 5) )
+
+DT::datatable(combined_pip_by_contexts[combined_pip_by_contexts$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;  font-size:150% ;','Combined PIP by tissue'),options = list(pageLength = 5) )
+
+draw_gene_piechart(combined_pip_by_types)
+```
+
+## WBC
+
+```{r echo=FALSE}
+trait <- "WBC-ieu-b-30"
+gwas_n <- samplesize[trait]
+
+file_para <- paste0("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/results/",trait,"/",trait,".param.RDS")
+param <- readRDS(file_para)
+ctwas_parameters <- summarize_param(param, gwas_n)
+
+
+DT::datatable(sum_pve_across_types(ctwas_parameters),caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;  font-size:150% ;','Heritability contribution by contexts'),options = list(pageLength = 5) )
+
+file_res <- paste0("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/results/",trait,"/",trait,".finemap_res.RDS")
+finemap_res <- readRDS(file_res)
+combined_pip_by_types <- sum_pip_across_types(finemap_res,E_S_A_mapping)
+combined_pip_by_contexts <- sum_pip_across_contexts(finemap_res,E_S_A_mapping)
+
+DT::datatable(combined_pip_by_types[combined_pip_by_types$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;  font-size:150% ;','Combined PIP by omics'),options = list(pageLength = 5) )
+
+DT::datatable(combined_pip_by_contexts[combined_pip_by_contexts$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;  font-size:150% ;','Combined PIP by tissue'),options = list(pageLength = 5) )
+
+draw_gene_piechart(combined_pip_by_types)
+```
