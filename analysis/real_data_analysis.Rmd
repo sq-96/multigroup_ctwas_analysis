@@ -11,6 +11,7 @@ editor_options:
 library(ctwas)
 library(data.table)
 library(tidyverse)
+library(ggplot2)
 source("/project2/xinhe/shengqian/cTWAS/for_xiaotong/R/ctwas_summarize_finemap_res.R")
 load("/project2/xinhe/shared_data/multigroup_ctwas/weights/E_S_A_mapping.RData")
 E_S_A_mapping <- E_S_A_mapping[E_S_A_mapping$gene_type=="protein_coding",] #limit to protein coding genes
@@ -49,6 +50,13 @@ DT::datatable(combined_pip_by_types[combined_pip_by_types$combined_pip>0.8,])
 DT::datatable(combined_pip_by_contexts[combined_pip_by_contexts$combined_pip>0.8,])
 ```
 
+### Specific molecular traits of top genes
+```{r}
+draw_gene_piechart(combined_pip_by_types)
+```
+
+
+
 ## IBD
 ```{r echo=FALSE}
 gwas_n <- 59957
@@ -80,6 +88,11 @@ DT::datatable(combined_pip_by_types[combined_pip_by_types$combined_pip>0.8,])
 ### Combined PIP by contexts
 ```{r}
 DT::datatable(combined_pip_by_contexts[combined_pip_by_contexts$combined_pip>0.8,])
+```
+
+### Specific molecular traits of top genes
+```{r}
+draw_gene_piechart(combined_pip_by_types)
 ```
 
 ## SCZ
@@ -115,6 +128,11 @@ DT::datatable(combined_pip_by_types[combined_pip_by_types$combined_pip>0.8,])
 DT::datatable(combined_pip_by_contexts[combined_pip_by_contexts$combined_pip>0.8,])
 ```
 
+### Specific molecular traits of top genes
+```{r}
+draw_gene_piechart(combined_pip_by_types)
+```
+
 ## SBP 
 ```{r echo=FALSE}
 gwas_n <- 317754
@@ -148,6 +166,10 @@ DT::datatable(combined_pip_by_types[combined_pip_by_types$combined_pip>0.8,])
 DT::datatable(combined_pip_by_contexts[combined_pip_by_contexts$combined_pip>0.8,])
 ```
 
+### Specific molecular traits of top genes
+```{r}
+draw_gene_piechart(combined_pip_by_types)
+```
 ## WBC 
 ```{r echo=FALSE}
 gwas_n <- 563946
@@ -179,4 +201,9 @@ DT::datatable(combined_pip_by_types[combined_pip_by_types$combined_pip>0.8,])
 ### Combined PIP by contexts
 ```{r}
 DT::datatable(combined_pip_by_contexts[combined_pip_by_contexts$combined_pip>0.8,])
+```
+
+### Specific molecular traits of top genes
+```{r}
+draw_gene_piechart(combined_pip_by_types)
 ```
