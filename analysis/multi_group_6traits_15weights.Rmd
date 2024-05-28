@@ -155,6 +155,7 @@ sum_pip_across_types <- function(finemap_res, mapping_data){
 }
 
 draw_gene_piechart <- function(data){
+  data <- data[data$combined_pip>0.8,]
   byeQTL <- nrow(data[data$eQTL/data$combined_pip>0.8,])
   bysQTL <- nrow(data[data$sQTL/data$combined_pip>0.8,])
   byapaQTL <- nrow(data[data$apaQTL/data$combined_pip>0.8,])
@@ -179,6 +180,32 @@ draw_gene_piechart <- function(data){
     theme_void()
   #pie(Prop , labels = c("by eQTL","by sQTL","by apaQTL","by sQTL+apaQTL","unspecified"), col=palette)
 }
+
+# draw_gene_piechart <- function(data){
+#   byeQTL <- nrow(data[data$eQTL/data$combined_pip>0.8,])
+#   bysQTL <- nrow(data[data$sQTL/data$combined_pip>0.8,])
+#   byapaQTL <- nrow(data[data$apaQTL/data$combined_pip>0.8,])
+#   bysQTLapaQTL <- nrow(data[((data$apaQTL+data$sQTL)/data$combined_pip)>0.8 &
+#                               data$apaQTL/data$combined_pip < 0.8 &
+#                               data$sQTL/data$combined_pip < 0.8,])
+#   unspecified <- nrow(data)-byeQTL-bysQTL-byapaQTL-bysQTLapaQTL
+#   n <- c(byeQTL,bysQTL,byapaQTL,bysQTLapaQTL,unspecified)
+#   prop <- round(n/nrow(data),3)
+#   labels = c("by eQTL","by sQTL","by apaQTL","by sQTL+apaQTL","unspecified")
+#   lab.ypos = cumsum(prop) - 0.5*prop
+#   df <- data.frame("n" = n,
+#                    "class" = labels,
+#                    "prop" = prop,
+#                    "lab.ypos" = lab.ypos)
+#   ggplot(df, aes(x = "", y = prop, fill = class)) +
+#     geom_bar(width = 1, stat = "identity", color = "white") +
+#     coord_polar("y", start = 0)+
+#     geom_text(aes(label = n),
+#               position = position_stack(vjust = 0.5))+
+#     scale_fill_manual(values = palette) +
+#     theme_void()
+#   #pie(Prop , labels = c("by eQTL","by sQTL","by apaQTL","by sQTL+apaQTL","unspecified"), col=palette)
+# }
 
 sum_pve_across_types <- function(ctwas_parameters) {
   # Round the group_pve values
@@ -332,7 +359,7 @@ calculate_sum_overlap_and_pve <- function(tissues, trait, combined_pip_by_contex
 
 # Results
 
-* Results from multi-group analysis
+**Results from multi-group analysis**
 
 The results are summarized by 
 
@@ -350,9 +377,11 @@ The results are summarized by
 - by sQTL+apaQTL: Number of genes where the combined ratio of apaQTL and sQTL to combined PIP is greater than 0.8, but neither apaQTL nor sQTL individually exceed 0.8.
 - unspecified: Number of genes not classified into any of the above categories.
 
-* Comparing with single group eQTL results 
+**Comparing with single group eQTL results**
 
-**Please not that the ealier single group eQTL analyses were performed under L=5 but the current analyses were under L=3**
+*Please not that the ealier single group eQTL analyses were performed under L=5 but the current analyses were under L=3*
+
+We compared number of significant genes, overlapping genes and the changes in PVE for eQTLs across five tissues reported by single eQTL analysi
 
 
 ## aFib
