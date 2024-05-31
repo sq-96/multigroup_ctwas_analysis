@@ -361,6 +361,14 @@ DT::datatable(combined_pip_by_types[combined_pip_by_types$combined_pip>0.8,],cap
 DT::datatable(combined_pip_by_contexts[combined_pip_by_contexts$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by tissue'),options = list(pageLength = 5) )
 
 draw_gene_piechart(combined_pip_by_types)
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/analy_results/compare_pip_pval_",trait,".rdata"))
+
+ggplot(finemap_gene_res_highpip, aes(x = 10^(-log10p), y = susie_pip)) +
+  geom_point() +
+  labs(x = "P-values", y = "SuSiE PIP", title = "Scatter plot of imputed TWAS P-value vs SuSiE PIP (CS filtered, PIP>0.5 included)") +
+  theme_minimal()
+
 ```
 
 ### Comparing with single group eQTL results 
@@ -453,6 +461,13 @@ DT::datatable(combined_pip_by_types[combined_pip_by_types$combined_pip>0.8,],cap
 DT::datatable(combined_pip_by_contexts[combined_pip_by_contexts$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by tissue'),options = list(pageLength = 5) )
 
 draw_gene_piechart(combined_pip_by_types)
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/analy_results/compare_pip_pval_",trait,".rdata"))
+
+ggplot(finemap_gene_res_highpip, aes(x = 10^(-log10p), y = susie_pip)) +
+  geom_point() +
+  labs(x = "P-values", y = "SuSiE PIP", title = "Scatter plot of imputed TWAS P-value vs SuSiE PIP (CS filtered, PIP>0.5 included)") +
+  theme_minimal()
 ```
 
 ### Comparing with single group eQTL results
@@ -511,7 +526,7 @@ ggplot(df_summary, aes(x = combined_pip_multi_group, y = combined_pip_nonzero_cs
 
 ### Results from multi-group analysis
 
-```{r echo=FALSE}
+```{r echo=FALSE, message=FALSE}
 trait <- "SBP-ukb-a-360"
 gwas_n <- samplesize[trait]
 
@@ -541,7 +556,22 @@ DT::datatable(combined_pip_by_types[combined_pip_by_types$combined_pip>0.8,],cap
 DT::datatable(combined_pip_by_contexts[combined_pip_by_contexts$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by tissue'),options = list(pageLength = 5) )
 
 draw_gene_piechart(combined_pip_by_types)
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/analy_results/compare_pip_pval_",trait,".rdata"))
+
+ggplot(finemap_gene_res_highpip, aes(x = 10^(-log10p), y = susie_pip)) +
+  geom_point() +
+  labs(x = "P-values", y = "SuSiE PIP", title = "Scatter plot of imputed TWAS P-value vs SuSiE PIP (CS filtered, PIP>0.5 included)") +
+  theme_minimal()
+
+finemap_gene_res_highpip$p <- 10^(-finemap_gene_res_highpip$log10p)
+DT::datatable(finemap_gene_res_highpip[finemap_gene_res_highpip$gene_name == "NAA60",],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','The one with high PIP but also high TWAS p'),options = list(pageLength = 5) )
+load("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/analy_results/naa60.rdata")
+DT::datatable(naa60,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','All signals for NAA60'),options = list(pageLength = 5) )
+
 ```
+
+plot for this locus https://uchicago.box.com/s/uca02ksxb4hz67lohjpko35nkjhp5pti
 
 ### Comparing with single group eQTL results
 
@@ -590,6 +620,13 @@ DT::datatable(combined_pip_by_types[combined_pip_by_types$combined_pip>0.8,],cap
 DT::datatable(combined_pip_by_contexts[combined_pip_by_contexts$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by tissue'),options = list(pageLength = 5) )
 
 draw_gene_piechart(combined_pip_by_types)
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/analy_results/compare_pip_pval_",trait,".rdata"))
+
+ggplot(finemap_gene_res_highpip, aes(x = 10^(-log10p), y = susie_pip)) +
+  geom_point() +
+  labs(x = "P-values", y = "SuSiE PIP", title = "Scatter plot of imputed TWAS P-value vs SuSiE PIP (CS filtered, PIP>0.5 included)") +
+  theme_minimal()
 ```
 
 ### Comparing with single group eQTL results
@@ -640,7 +677,31 @@ DT::datatable(combined_pip_by_types[combined_pip_by_types$combined_pip>0.8,],cap
 DT::datatable(combined_pip_by_contexts[combined_pip_by_contexts$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by tissue'),options = list(pageLength = 5) )
 
 draw_gene_piechart(combined_pip_by_types)
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/analy_results/compare_pip_pval_",trait,".rdata"))
+
+ggplot(finemap_gene_res_highpip, aes(x = 10^(-log10p), y = susie_pip)) +
+  geom_point() +
+  labs(x = "P-values", y = "SuSiE PIP", title = "Scatter plot of imputed TWAS P-value vs SuSiE PIP (CS filtered, PIP>0.5 included)") +
+  theme_minimal()
+
+finemap_gene_res_highpip$p <- 10^(-finemap_gene_res_highpip$log10p)
+
+gene_problem <- c("CCZ1","ELMO1","ING5")
+
+DT::datatable(finemap_gene_res_highpip[finemap_gene_res_highpip$gene_name %in% gene_problem,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','The one with high PIP but also high TWAS p'),options = list(pageLength = 5) )
+
 ```
+
+Locus zoom plots for these 3 genes
+
+https://uchicago.box.com/s/a1qej83jaabft9z7nqmzewzpsxrg6uui
+
+https://uchicago.box.com/s/fzmv9ypzaa9vt7a4u0al37w7s77qrzdu
+
+
+https://uchicago.box.com/s/70tk99ifpz7xshknh57u2pnf7jygx5zh
+
 
 
 ### Comparing with single group eQTL results
