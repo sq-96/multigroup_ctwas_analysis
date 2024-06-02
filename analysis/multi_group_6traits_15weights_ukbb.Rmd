@@ -146,6 +146,44 @@ draw_gene_piechart <- function(data){
   #pie(Prop , labels = c("by eQTL","by sQTL","by apaQTL","by sQTL+apaQTL","unspecified"), col=palette)
 }
 
+
+
+draw_gene_piechart_tissue <- function(data){
+  
+  data <- data[data$combined_pip>0.8,]
+  tissues <- colnames(data)[3:7]
+  colnames(data)[3:7] <- paste0("tissue",c(1:5))
+  
+  
+  bytissue1 <- nrow(data[data$tissue1/data$combined_pip>0.8,])
+  bytissue2 <- nrow(data[data$tissue2/data$combined_pip>0.8,])
+  bytissue3 <- nrow(data[data$tissue3/data$combined_pip>0.8,])
+  bytissue4 <- nrow(data[data$tissue4/data$combined_pip>0.8,])
+  bytissue5 <- nrow(data[data$tissue5/data$combined_pip>0.8,])
+  unspecified <- nrow(data)-bytissue1-bytissue2-bytissue3-bytissue4-bytissue5
+  
+  n <- c(bytissue1,bytissue2,bytissue3,bytissue4,bytissue5,unspecified)
+  
+  prop <- round(n/nrow(data),3)
+  labels = c(tissues,"unspecified")
+  lab.ypos = cumsum(prop) - 0.5*prop
+  df <- data.frame("n" = n,
+                   "class" = labels,
+                   "prop" = prop,
+                   "lab.ypos" = lab.ypos)
+  p <- ggplot(df, aes(x = "", y = prop, fill = class)) +
+    geom_bar(width = 1, stat = "identity", color = "white") +
+    coord_polar("y", start = 0)+
+    geom_text(aes(label = n),
+              position = position_stack(vjust = 0.5))+
+    scale_fill_manual(values = palette) +
+    theme_void()
+  
+  print(p)
+  print(tissues)
+
+}
+
 sum_pve_across_types <- function(ctwas_parameters) {
   # Round the group_pve values
   pve <- round(ctwas_parameters$group_pve, 4)
@@ -361,10 +399,11 @@ DT::datatable(combined_pip_by_types[combined_pip_by_types$combined_pip>0.8,],cap
 DT::datatable(combined_pip_by_contexts[combined_pip_by_contexts$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by tissue'),options = list(pageLength = 5) )
 
 draw_gene_piechart(combined_pip_by_types)
+draw_gene_piechart_tissue(combined_pip_by_contexts)
 
 load(paste0("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/analy_results/compare_pip_pval_",trait,".rdata"))
 
-ggplot(finemap_gene_res_highpip, aes(x = 10^(-log10p), y = susie_pip)) +
+ggplot(finemap_gene_res_highpip, aes(x = log10p, y = susie_pip)) +
   geom_point() +
   labs(x = "P-values", y = "SuSiE PIP", title = "Scatter plot of imputed TWAS P-value vs SuSiE PIP (CS filtered, PIP>0.5 included)") +
   theme_minimal()
@@ -461,10 +500,10 @@ DT::datatable(combined_pip_by_types[combined_pip_by_types$combined_pip>0.8,],cap
 DT::datatable(combined_pip_by_contexts[combined_pip_by_contexts$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by tissue'),options = list(pageLength = 5) )
 
 draw_gene_piechart(combined_pip_by_types)
-
+draw_gene_piechart_tissue(combined_pip_by_contexts)
 load(paste0("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/analy_results/compare_pip_pval_",trait,".rdata"))
 
-ggplot(finemap_gene_res_highpip, aes(x = 10^(-log10p), y = susie_pip)) +
+ggplot(finemap_gene_res_highpip, aes(x = log10p, y = susie_pip)) +
   geom_point() +
   labs(x = "P-values", y = "SuSiE PIP", title = "Scatter plot of imputed TWAS P-value vs SuSiE PIP (CS filtered, PIP>0.5 included)") +
   theme_minimal()
@@ -556,10 +595,10 @@ DT::datatable(combined_pip_by_types[combined_pip_by_types$combined_pip>0.8,],cap
 DT::datatable(combined_pip_by_contexts[combined_pip_by_contexts$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by tissue'),options = list(pageLength = 5) )
 
 draw_gene_piechart(combined_pip_by_types)
-
+draw_gene_piechart_tissue(combined_pip_by_contexts)
 load(paste0("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/analy_results/compare_pip_pval_",trait,".rdata"))
 
-ggplot(finemap_gene_res_highpip, aes(x = 10^(-log10p), y = susie_pip)) +
+ggplot(finemap_gene_res_highpip, aes(x = log10p, y = susie_pip)) +
   geom_point() +
   labs(x = "P-values", y = "SuSiE PIP", title = "Scatter plot of imputed TWAS P-value vs SuSiE PIP (CS filtered, PIP>0.5 included)") +
   theme_minimal()
@@ -620,10 +659,10 @@ DT::datatable(combined_pip_by_types[combined_pip_by_types$combined_pip>0.8,],cap
 DT::datatable(combined_pip_by_contexts[combined_pip_by_contexts$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by tissue'),options = list(pageLength = 5) )
 
 draw_gene_piechart(combined_pip_by_types)
-
+draw_gene_piechart_tissue(combined_pip_by_contexts)
 load(paste0("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/analy_results/compare_pip_pval_",trait,".rdata"))
 
-ggplot(finemap_gene_res_highpip, aes(x = 10^(-log10p), y = susie_pip)) +
+ggplot(finemap_gene_res_highpip, aes(x = log10p, y = susie_pip)) +
   geom_point() +
   labs(x = "P-values", y = "SuSiE PIP", title = "Scatter plot of imputed TWAS P-value vs SuSiE PIP (CS filtered, PIP>0.5 included)") +
   theme_minimal()
@@ -677,10 +716,10 @@ DT::datatable(combined_pip_by_types[combined_pip_by_types$combined_pip>0.8,],cap
 DT::datatable(combined_pip_by_contexts[combined_pip_by_contexts$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by tissue'),options = list(pageLength = 5) )
 
 draw_gene_piechart(combined_pip_by_types)
-
+draw_gene_piechart_tissue(combined_pip_by_contexts)
 load(paste0("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/analy_results/compare_pip_pval_",trait,".rdata"))
 
-ggplot(finemap_gene_res_highpip, aes(x = 10^(-log10p), y = susie_pip)) +
+ggplot(finemap_gene_res_highpip, aes(x = log10p, y = susie_pip)) +
   geom_point() +
   labs(x = "P-values", y = "SuSiE PIP", title = "Scatter plot of imputed TWAS P-value vs SuSiE PIP (CS filtered, PIP>0.5 included)") +
   theme_minimal()

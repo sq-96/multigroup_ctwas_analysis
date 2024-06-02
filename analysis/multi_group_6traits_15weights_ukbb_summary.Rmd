@@ -1,0 +1,351 @@
+---
+title: "Summary for 6 Traits, 5 tissues, eQTL + sQTL + apaQTL -- compute ukbb LD"
+author: "XSun"
+date: "2024-06-02"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+    toc: true
+---
+
+
+We summarize the results here: https://sq-96.github.io/multigroup_ctwas_analysis/multi_group_6traits_15weights_ukbb.html
+
+```{r message=FALSE,warning=FALSE}
+library(ggplot2)
+library(ctwas)
+library(dplyr)
+library(tidyr)
+
+source("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/0.functions.R")
+
+traits <- c("IBD-ebi-a-GCST004131", "LDL-ukb-d-30780_irnt", "SBP-ukb-a-360", "SCZ-ieu-b-5102", "WBC-ieu-b-30")
+load("/project2/xinhe/shared_data/multigroup_ctwas/gwas/samplesize.rdata")
+```
+
+## Genetic Architecture
+
+```{r message=FALSE,warning=FALSE}
+sum_pve_tissue_alltraits <- list()
+sum_pve_modality_alltraits <- list()
+for (i in 1:length(traits)) {
+  
+  trait <- traits[i]
+  gwas_n <- samplesize[trait]
+  
+  param <-readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/results_ukbb/",trait,"/",trait,".param.RDS"))
+  ctwas_parameters <- summarize_param(param, gwas_n)
+
+  sum_pve_tissue <- sum_pve_across_contexts(ctwas_parameters)
+  sum_pve_tissue_total <- sum_pve_tissue$total_pve
+  names(sum_pve_tissue_total) <- sum_pve_tissue$type
+  sum_pve_tissue_alltraits[[i]] <- sum_pve_tissue_total
+  
+  sum_pve_modality <- sum_pve_across_types(ctwas_parameters)
+  sum_pve_modality_total <- sum_pve_modality$total_pve
+  names(sum_pve_modality_total) <- sum_pve_modality$type
+  sum_pve_modality_alltraits[[i]] <- sum_pve_modality_total
+  
+}
+names(sum_pve_tissue_alltraits) <- traits
+names(sum_pve_modality_alltraits) <- traits
+```
+
+
+Bubble plot: show %h2g explained by molecular QTLs of each tissue on each trait. Use union of five tissues across all traits. 
+
+Message: cTWAS is able to find the right tissues. 
+
+```{r message=FALSE,warning=FALSE}
+sum_pve_tissue_percentages <- lapply(sum_pve_tissue_alltraits, function(x) x / sum(x) * 100)
+cluster_names <- names(sum_pve_tissue_percentages)
+
+filtered_list <- lapply(sum_pve_tissue_percentages, function(x) x[!names(x) %in% c("SNP")])
+
+# Calculate the sum of each vector in the filtered list
+sum_values <- sapply(filtered_list, sum)
+max_values <- sapply(filtered_list, max)
+# Calculate the names of maximum values for each vector in the filtered list
+max_names <- sapply(filtered_list, function(x) names(x)[which.max(x)])
+
+```
+
+```{r message=FALSE,warning=FALSE,fig.width=12,fig.height=6}
+df <- bind_rows(
+  lapply(names(filtered_list), function(x) {
+    data.frame(Trait = x, Tissue = names(filtered_list[[x]]), Expression = filtered_list[[x]], stringsAsFactors = FALSE)
+  }),
+  .id = "id"
+) %>%
+  dplyr::select(-id) %>%
+  spread(Trait, Expression)
+
+
+df_long <- reshape2::melt(df, id.vars = "Tissue", variable.name = "Trait", value.name = "Expression")
+
+ggplot(df_long, aes(x = Trait, y = Tissue, size = Expression)) +
+  geom_point(alpha = 0.5, color = "blue") +  # Using a fixed color for all bubbles
+  scale_size(range = c(1, 20), name = "%h2g") +  # Customizing the size legend title
+  labs(x = "Trait", y = "Tissue") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(size = 16, angle = 45, hjust = 1),
+        axis.text.y = element_text(size = 16),
+        axis.title.x = element_text(size = 16),
+        axis.title.y = element_text(size = 16),
+        legend.text = element_text(size = 16),  # Increase legend text size
+        legend.title = element_text(size = 18))
+
+```
+
+
+Contributions of top tissue vs. all tissues together. 
+
+Bar plot of %h2g: two bars, top tissue vs. all tissues together, per trait. Use the top tissue from joint analysis.
+
+Message: genetics of complex traits involve multiple tissues.
+
+```{r message=FALSE,warning=FALSE,fig.width=12,fig.height=6}
+# Create the data frame including names of maximum values
+data <- data.frame(
+  cluster = rep(cluster_names, times = 3),
+  value = c(max_values, sum_values, max_values),
+  type = c(rep("toptissue", times = length(cluster_names)), 
+           rep("sum_alltissues", times = length(cluster_names)), 
+           rep("max_name", times = length(cluster_names))),
+  label = c(rep("", times = length(cluster_names) * 2), max_names)
+)
+
+ggplot(data[data$type != "max_name", ], aes(x = cluster, y = value, fill = type)) +
+  geom_bar(stat = "identity", position = position_dodge(), width = 0.7) +
+  geom_text(data = data[data$type == "max_name", ], aes(label = label, y = value + 2), 
+            position = position_dodge(width = 0.7), vjust = -0.5, hjust=-0.01) +
+  labs(x = "Traits", y = "%h2g", fill = "Group") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(size = 16, angle = 45, hjust = 1),
+        axis.text.y = element_text(size = 16),
+        axis.title.x = element_text(size = 16),
+        axis.title.y = element_text(size = 16),
+        legend.text = element_text(size = 16),  # Increase legend text size
+        legend.title = element_text(size = 18))
+```
+
+Contribution of different modalities: Bar plot of %h2g: eQTL, sQTL, APA-QTL, per trait. 
+
+Message: genetics involves multiple modalities   
+
+```{r message=FALSE,warning=FALSE,fig.width=12,fig.height=6}
+sum_pve_modality_percentages <- lapply(sum_pve_modality_alltraits, function(x) x / sum(x) * 100)
+cluster_names <- names(sum_pve_modality_percentages)
+filtered_list <- lapply(sum_pve_modality_percentages, function(x) x[!names(x) %in% c("SNP")])
+
+# Calculate the sum of each vector in the filtered list
+sum_values <- sapply(filtered_list, sum)
+max_values <- sapply(filtered_list, max)
+# Calculate the names of maximum values for each vector in the filtered list
+max_names <- sapply(filtered_list, function(x) names(x)[which.max(x)])
+
+df <- do.call(rbind, lapply(filtered_list, function(x) data.frame(Group = names(x), h2g = x)))
+df$Trait <- rep(names(filtered_list), each = length(filtered_list[[1]]))
+
+# Reshape data frame if necessary
+df <- reshape2::melt(df, id.vars = c("Trait", "Group"))
+
+ggplot(df, aes(x = Trait, y = value, fill = Group)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Trait", y = "%h2g") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(size = 16, angle = 45, hjust = 1),
+        axis.text.y = element_text(size = 16),
+        axis.title.x = element_text(size = 16),
+        axis.title.y = element_text(size = 16),
+        legend.text = element_text(size = 16),  # Increase legend text size
+        legend.title = element_text(size = 18))
+```
+
+
+## Gene Discovery
+
+Number of high PIP genes: all tissues vs. best tissue eQTL (from single tissue analysis). 
+
+Bar plot. 
+
+Message: increased power from multi-omics multi-tissue analysis. 
+
+```{r message=FALSE,warning=FALSE,fig.width=12,fig.height=6}
+
+data <- data.frame(
+  trait = traits,
+  num_single = c(16,40,35,23,109),
+  tissue_single = c("Cells_Cultured_fibroblasts","Liver","Artery_Tibial","Heart_Left_Ventricle","Whole_Blood"),
+  num_multi = c(32,67,84,28,220)
+)
+
+data_long <- pivot_longer(data, cols = c(num_single, num_multi), names_to = "category", values_to = "count")
+
+ggplot(data_long, aes(x = trait, y = count, fill = category)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  labs(x = "Trait", y = "number of sig genes") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(size = 12, angle = 45, hjust = 1), 
+        axis.text.y = element_text(size = 12),
+        axis.title.x = element_text(size = 14), 
+        axis.title.y = element_text(size = 14))
+
+
+```
+
+Overlap of high PIP genes: single tissue eQTL vs. all tissues. 
+
+Bar plot: percent of overlap, choose top 2 tissues per trait (by number of high PIP genes from single-tissue eQTL), one bar per trait-tissue pair. 
+
+Message: reduce FPs. 
+
+```{r message=FALSE,warning=FALSE,fig.width=12,fig.height=6}
+
+data <- data.frame(
+  trait = c("IBD-ebi-a-GCST004131","IBD-ebi-a-GCST004131", "LDL-ukb-d-30780_irnt", "LDL-ukb-d-30780_irnt","SBP-ukb-a-360", "SBP-ukb-a-360","SCZ-ieu-b-5102","SCZ-ieu-b-5102", "WBC-ieu-b-30", "WBC-ieu-b-30"),
+  num_single = c(16,14,40,24,35,29,23,22,109,68),
+  overlap = c(5,7,26,15,19,10,12,10,73,40),
+  tissue_single = c("Cells_Cultured_fibroblasts","Whole_Blood","Liver","Spleen","Artery_Tibial","Adipose_Subcutaneous","Heart_Left_Ventricle","Adrenal_Gland","Whole_Blood","Adipose_Subcutaneous"),
+  num_multi = c(32,32,67,67,84,84,28,28,220,220)
+)
+
+data$overlap_pct <- data$overlap/data$num_single*100
+
+ggplot(data, aes(x = tissue_single, y = overlap_pct, fill = tissue_single)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  facet_wrap(~ trait, nrow = 1, scales = "free_x") +  # Display all facets in one row with free scales on x
+  labs(x = "Tissues", y = "Overlap Percentage") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(size = 12,angle = 45, hjust = 1),
+        axis.text.y = element_text(size = 12),
+        axis.title.x = element_text(size = 14), 
+        axis.title.y = element_text(size = 14),
+        strip.background = element_blank(),
+        strip.text.x = element_text(size = 12, face = "bold"))
+
+```
+
+Percent of high PIP genes driven by single type (eQTL, sQTL, apa-QTL and apa+sQTL together). 
+
+Bar plot: Y-axis, percent of genes. Single bar per trait (sum to 1), color  different types: 3 molecular QTLs, and un-specified.
+
+Message: in the majority of cases, we can identify the molecular mechanisms.
+
+
+```{r message=FALSE,warning=FALSE,fig.width=12,fig.height=6}
+df <- data.frame(
+  trait = c("IBD-ebi-a-GCST004131", "LDL-ukb-o-30780_irnt", "SBP-ukb-a-360", "SCZ-ieu-b-5102", "WBC-ieu-b-30"),
+  by_eQTL = c(16, 34, 33, 16, 129),
+  by_sQTL = c(10, 23, 39, 6, 49),
+  by_apaQTL = c(3, 3, 3, 2, 7),
+  by_sQTLapaQTL = c(0, 2, 0, 0, 3),
+  unspecified = c(3, 5, 9, 4, 32)
+)
+
+# Calculate the row sums for all columns except the first (trait)
+row_totals <- rowSums(df[, -1])
+
+# Convert counts to percentages
+df_percent <- df
+df_percent[, -1] <- sweep(df[, -1], 1, row_totals, FUN = "/") * 100
+
+df_long <- tidyr::pivot_longer(df_percent, cols = -trait, names_to = "Category", values_to = "Percentage")
+
+ggplot(df_long, aes(x = trait, y = Percentage, fill = Category)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  theme_minimal() +
+  labs(x = "Trait",
+       y = "Percentage (%)",
+       fill = "Category") +
+  scale_fill_brewer(palette = "Paired") +  # This sets nice colors, you can change the palette
+  theme(axis.text.x = element_text(size = 16, angle = 45, hjust = 1),
+        axis.text.y = element_text(size = 16),
+        axis.title.x = element_text(size = 16),
+        axis.title.y = element_text(size = 16),
+        legend.text = element_text(size = 16),  # Increase legend text size
+        legend.title = element_text(size = 18))
+
+```
+
+Percent of high PIP genes driven by a single tissue
+
+bar plot, one bar per trait.
+
+Message: more uncertainty, but cTWAS still can resolve likely causal tissues in many cases. 
+
+```{r message=FALSE,warning=FALSE,fig.width=12,fig.height=6}
+df_new <- data.frame(
+  trait = c("IBD-ebi-a-GCST004131", "LDL-ukb-d-30780_irnt", "SBP-ukb-a-360", "SCZ-ieu-b-5102", "WBC-ieu-b-30"),
+  tissue1 = c(6, 7, 20, 3, 52),
+  tissue2 = c(2, 20, 8, 2, 18),
+  tissue3 = c(6, 12, 5, 0, 14),
+  tissue4 = c(3, 1, 11, 1, 18),
+  tissue5 = c(0, 2, 4, 3, 14),
+  unspecified = c(15, 25, 36, 19, 104)
+)
+
+# Calculate row totals
+row_totals_new <- rowSums(df_new[, -1])
+
+# Convert counts to percentages
+df_percent_new <- df_new
+df_percent_new[, -1] <- sweep(df_new[, -1], 1, row_totals_new, FUN = "/") * 100
+
+# Convert the data frame from wide to long format for plotting
+df_long_new <- tidyr::pivot_longer(df_percent_new, cols = -trait, names_to = "Tissue", values_to = "Percentage")
+
+
+tissue_map <- list(
+  `IBD-ebi-a-GCST004131` = c("Adipose_Subcutaneous", "Esophagus_Mucosa", "Whole_Blood", "Heart_Left_Ventricle", "Cells_Cultured_fibroblasts","unspecified"),
+  `LDL-ukb-d-30780_irnt` = c("Esophagus_Mucosa", "Liver", "Spleen", "Adipose_Subcutaneous", "Adrenal_Gland","unspecified"),
+  `SBP-ukb-a-360` = c("Artery_Tibial", "Heart_Left_Ventricle", "Spleen", "Brain_Cortex", "Adipose_Subcutaneous","unspecified"),
+  `SCZ-ieu-b-5102` = c("Heart_Left_Ventricle", "Adrenal_Gland", "Artery_Coronary", "Stomach", "Brain_Cerebellum","unspecified"),
+  `WBC-ieu-b-30` = c("Whole_Blood", "Adipose_Subcutaneous", "Artery_Aorta", "Skin_Sun_Exposed_Lower_leg", "Spleen","unspecified")
+)
+
+tissue_map <- unlist(tissue_map)
+
+df_long_new$Tissue <- tissue_map
+
+ggplot(df_long_new, aes(x = Tissue, y = Percentage, fill = Tissue)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  facet_wrap(~ trait, nrow = 1, scales = "free_x") +  # Display all facets in one row with free scales on x
+  labs(x = "Tissues", y = "Percentage") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(size = 12,angle = 45, hjust = 1),
+        axis.text.y = element_text(size = 12),
+        axis.title.x = element_text(size = 14), 
+        axis.title.y = element_text(size = 14),
+        strip.background = element_blank(),
+        strip.text.x = element_text(size = 12, face = "bold"))
+```
+
+Table of novel genes: genes found by MG-cTWAS but not single-tissue eQTL (union). Total PIP, PIP from each molecular type, PIP from single tissue analysis. 
+
+
+```{r message=FALSE,warning=FALSE}
+
+load("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/analy_results/novelgenes_IBD-ebi-a-GCST004131.rdata")
+
+DT::datatable(novelgenes,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Novel genes identified by MG-cTWAS, IBD-ebi-a-GCST004131'),options = list(pageLength = 5) )
+
+load("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/analy_results/novelgenes_LDL-ukb-d-30780_irnt.rdata")
+
+DT::datatable(novelgenes,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Novel genes identified by MG-cTWAS, LDL-ukb-o-30780_irnt'),options = list(pageLength = 5) )
+
+load("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/analy_results/novelgenes_SBP-ukb-a-360.rdata")
+
+DT::datatable(novelgenes,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Novel genes identified by MG-cTWAS, SBP-ukb-a-360'),options = list(pageLength = 5) )
+
+load("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/analy_results/novelgenes_SCZ-ieu-b-5102.rdata")
+
+DT::datatable(novelgenes,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Novel genes identified by MG-cTWAS, SCZ-ieu-b-5102'),options = list(pageLength = 5) )
+
+load("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/analy_results/novelgenes_WBC-ieu-b-30.rdata")
+
+DT::datatable(novelgenes,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Novel genes identified by MG-cTWAS, WBC-ieu-b-30'),options = list(pageLength = 5) )
+```
+
+
+
