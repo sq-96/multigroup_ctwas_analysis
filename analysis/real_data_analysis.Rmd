@@ -55,7 +55,29 @@ DT::datatable(combined_pip_by_contexts[combined_pip_by_contexts$combined_pip>0.8
 draw_gene_piechart(combined_pip_by_types)
 ```
 
+```{r}
+library(EnsDb.Hsapiens.v86)
+#finemap_res <- finemap_res[finemap_res$cs_index!=0,]
+finemap_SNP_res <- finemap_res[finemap_res$type=="SNP",]
+finemap_gene_res <- finemap_res[finemap_res$type!="SNP",]
+finemap_gene_res$gene <- sapply(finemap_gene_res$id, function(x){unlist(strsplit(x,"[|]"))[1]})
+finemap_gene_res <- finemap_gene_res %>% plyr::join(mapping_data, by = "gene") %>% dplyr::select(-gene) %>% na.omit()
+finemap_gene_res <- finemap_gene_res %>% group_by(id) %>% mutate(susie_pip_adjusted = ifelse(n() > 1, susie_pip / n(), susie_pip)) %>% ungroup() %>% dplyr::select(-susie_pip) %>% dplyr::rename(susie_pip = susie_pip_adjusted)
+finemap_gene_res$pos <- (as.numeric(finemap_gene_res$start) + as.numeric(finemap_gene_res$end))/2
+finemap_gene_res <- finemap_gene_res[,c("chrom","pos","id","type","context","group","z","region_id","mu2","cs_index","genename","susie_pip")]
+colnames(finemap_gene_res) <- c("chrom","pos","id","type","context","group","z","region_id","mu2","cs_index","gene_name","susie_pip")
+finemap_SNP_res$gene_name <- NA
+finemap_SNP_res <- finemap_SNP_res[,c("chrom","pos","id","type","context","group","z","region_id","mu2","cs_index","gene_name","susie_pip")]
+finemap_res <- rbind(finemap_SNP_res,finemap_gene_res)
+weights <- readRDS("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/results/LDL-ukb-d-30780_irnt/LDL-ukb-d-30780_irnt.preprocessed.weights.RDS")
+ens_db <- EnsDb.Hsapiens.v86
+region_info <- readRDS("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/results/LDL-ukb-d-30780_irnt/region_info.RDS")
+region_data <- readRDS("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/results/LDL-ukb-d-30780_irnt/LDL-ukb-d-30780_irnt.region_data.RDS")
+```
 
+```{r}
+make_locusplot(finemap_res = finemap_res,region_id = "19:9127717-11173352",weights=weights,ens_db = ens_db,cor_dir = "/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/results/LDL-ukb-d-30780_irnt/cor_matrix/",region_info = region_info,region_data = region_data)
+```
 
 ## IBD
 ```{r echo=FALSE}
