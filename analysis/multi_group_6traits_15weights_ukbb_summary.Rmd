@@ -173,24 +173,64 @@ Message: increased power from multi-omics multi-tissue analysis.
 
 ```{r message=FALSE,warning=FALSE,fig.width=12,fig.height=6}
 
-data <- data.frame(
-  trait = traits,
-  num_single = c(16,40,35,23,109),
-  tissue_single = c("Cells_Cultured_fibroblasts","Liver","Artery_Tibial","Heart_Left_Ventricle","Whole_Blood"),
-  num_multi = c(32,67,84,28,220)
-)
+folder_data <- "/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/analy_results/"
 
-data_long <- pivot_longer(data, cols = c(num_single, num_multi), names_to = "category", values_to = "count")
+sum <- c()
+for (i in 1:length(traits)) {
+  
+  file_mg_sig <- paste0(folder_data,"MG_fineres_sig_",traits[i],".rdata")
+  load(file_mg_sig)
+  
+  file_sg_sig <- paste0(folder_data,"SG_fineres_sig_",traits[i],".rdata")
+  load(file_sg_sig)
+  
+  context_counts <- sig_gene_alltissue %>%
+  group_by(context) %>%
+  summarise(count = n()) %>%
+  ungroup()
+  
+  most_rows_context <- context_counts %>%
+  filter(count == max(count)) %>%
+  pull(context) # Extracts the context name
 
-ggplot(data_long, aes(x = trait, y = count, fill = category)) +
-  geom_bar(stat = "identity", position = position_dodge()) +
-  labs(x = "Trait", y = "number of sig genes") +
+  sig_gene_toptissue <- sig_gene_alltissue %>%
+  filter(context == most_rows_context)
+
+  overlap <- sum(sig_gene_multi$genename %in% sig_gene_toptissue$gene_name)
+  
+  tmp <- c(nrow(sig_gene_multi),overlap, nrow(sig_gene_toptissue),unique(sig_gene_toptissue$context))
+  sum <- rbind(sum,tmp)
+}
+
+sum <- as.data.frame(sum)
+colnames(sum) <- c("num_multi","overlap","num_single","tissue_single")
+rownames(sum) <- seq(1:nrow(sum))
+sum$trait <- traits
+
+sum$num_multi <- as.numeric(sum$num_multi)
+sum$num_single <- as.numeric(sum$num_single)
+sum$overlap <- as.numeric(sum$overlap)
+sum$overlap_adj <- as.numeric(sum$overlap) * 1.1  # Adjust the value to slightly offset behind the main bars
+
+sum <- sum %>%
+  mutate(tissue_single = str_replace(tissue_single, "_singlegroup", ""))
+
+data_long <- pivot_longer(sum, cols = c(num_single, num_multi), names_to = "category", values_to = "count")
+
+# Facet by trait, with tissues as the bars
+ggplot(data_long, aes(x = tissue_single, y = count, fill = category)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.8), width = 0.8) +
+  geom_bar(data = sum, aes(x = tissue_single, y = overlap_adj), stat = "identity", position = position_dodge(width = 0.8), fill = "grey", alpha = 0.7, width = 0.8) +
+  facet_wrap(~ trait, nrow = 1, scales = "free_x") +  # Display all facets in one row with free scales on x
+  labs(x = "Tissue", y = "Number of Significant Genes") +
+  scale_fill_manual(values = c("num_single" = "skyblue", "num_multi" = "orange")) +
   theme_minimal() +
-  theme(axis.text.x = element_text(size = 12, angle = 45, hjust = 1), 
+  theme(axis.text.x = element_text(size = 12, angle = 45, vjust = 0.7, hjust = 0.6),  # Adjusted hjust here
         axis.text.y = element_text(size = 12),
-        axis.title.x = element_text(size = 14), 
-        axis.title.y = element_text(size = 14))
-
+        axis.title.x = element_text(size = 14),
+        axis.title.y = element_text(size = 14),
+        strip.background = element_blank(),
+        strip.text.x = element_text(size = 12, face = "bold"))
 
 ```
 
@@ -242,6 +282,9 @@ df <- data.frame(
   by_sQTLapaQTL = c(0, 2, 0, 0, 3),
   unspecified = c(3, 5, 9, 4, 32)
 )
+
+df$by_apaQTL <- df$by_apaQTL + df$by_sQTLapaQTL
+df <- df[,-5]
 
 # Calculate the row sums for all columns except the first (trait)
 row_totals <- rowSums(df[, -1])
