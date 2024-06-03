@@ -199,24 +199,34 @@ f1 <- pip_partition_across_tissue(results_dir, runtag, simutags, "UKBBLD", PIP_t
 f1
 ```
 
-### PIP Calibration Plot of expression traits - four settings (filter out cs index 0)
-```{r, fig.width= 24, fig.height= 4, echo=FALSE, warning=FALSE}
+### PIP Calibration Plot of expression traits - Estimated Parameter (filter out cs index 0)
+```{r, fig.width= 12, fig.height= 4, echo=FALSE, warning=FALSE}
 f1 <- plot_PIP(results_dir, runtag, simutags, "UKBBLD", main = "Estimated Parameter Default L")
-f2 <- plot_PIP_true_parameter(results_dir, runtag, simutags, "UKBBLD", main = "True Parameter Default L")
-f3 <- plot_PIP_true_parameter_true_L(results_dir, runtag, simutags, "UKBBLD", main = "True Parameter True L")
-f4 <- plot_PIP_true_parameter_estimated_L(results_dir, runtag, simutags, "UKBBLD", main = "True Parameter Estimated L")
-f5 <- plot_PIP_estimated_parameter_true_L(results_dir, runtag, simutags, "UKBBLD", main = "Estimated Parameter True L")
-f6 <- plot_PIP_estimated_parameter_estimated_L(results_dir, runtag, simutags, "UKBBLD", main = "Estimated Parameter Estimated L")
-gridExtra::grid.arrange(f1, f2, f3, f4, f5, f6, ncol = 6)
+f2 <- plot_PIP_estimated_parameter_true_L(results_dir, runtag, simutags, "UKBBLD", main = "Estimated Parameter True L")
+f3 <- plot_PIP_estimated_parameter_estimated_L(results_dir, runtag, simutags, "UKBBLD", main = "Estimated Parameter Estimated L")
+gridExtra::grid.arrange(f1, f2, f3, ncol = 3)
 ```
 
-### PIP Calibration Plot of gene level PIP - four settings (filter out cs index 0)
-```{r, fig.width= 24, fig.height= 4, echo=FALSE, warning=FALSE}
+### PIP Calibration Plot of expression traits - True Parameter (filter out cs index 0)
+```{r, fig.width= 12, fig.height= 4, echo=FALSE, warning=FALSE}
+f1 <- plot_PIP_true_parameter(results_dir, runtag, simutags, "UKBBLD", main = "True Parameter Default L")
+f2 <- plot_PIP_true_parameter_true_L(results_dir, runtag, simutags, "UKBBLD", main = "True Parameter True L")
+f3 <- plot_PIP_true_parameter_estimated_L(results_dir, runtag, simutags, "UKBBLD", main = "True Parameter Estimated L")
+gridExtra::grid.arrange(f1, f2, f3, ncol = 3)
+```
+
+### PIP Calibration Plot of gene level PIP - Estimated Parameter (filter out cs index 0)
+```{r, fig.width= 12, fig.height= 4, echo=FALSE, warning=FALSE}
 f1 <- plot_combined_PIP(results_dir, runtag, simutags, "UKBBLD", main = "Estimated Parameter Default L")
-f2 <- plot_combined_PIP_true_parameter(results_dir, runtag, simutags, "UKBBLD", main = "True Parameter Default L")
-f3 <- plot_combined_PIP_true_parameter_true_L(results_dir, runtag, simutags, "UKBBLD", main = "True Parameter True L")
-f4 <- plot_combined_PIP_true_parameter_estimated_L(results_dir, runtag, simutags, "UKBBLD", main = "True Parameter Estimated L")
-f5 <- plot_combined_PIP_estimated_parameter_true_L(results_dir, runtag, simutags, "UKBBLD", main = "Estimated Parameter True L")
-f6 <- plot_combined_PIP_estimated_parameter_estimated_L(results_dir, runtag, simutags, "UKBBLD", main = "Estimated Parameter Estimated L")
-gridExtra::grid.arrange(f1, f2, f3, f4, f5, f6, ncol = 6)
+f2 <- plot_combined_PIP_estimated_parameter_true_L(results_dir, runtag, simutags, "UKBBLD", main = "Estimated Parameter True L")
+f3 <- plot_combined_PIP_estimated_parameter_estimated_L(results_dir, runtag, simutags, "UKBBLD", main = "Estimated Parameter Estimated L")
+gridExtra::grid.arrange(f1, f2, f3, ncol = 3)
+```
+
+### PIP Calibration Plot of gene level PIP - True Parameter (filter out cs index 0)
+```{r, fig.width= 12, fig.height= 4, echo=FALSE, warning=FALSE}
+f1 <- plot_combined_PIP_true_parameter(results_dir, runtag, simutags, "UKBBLD", main = "True Parameter Default L")
+f2 <- plot_combined_PIP_true_parameter_true_L(results_dir, runtag, simutags, "UKBBLD", main = "True Parameter True L")
+f3 <- plot_combined_PIP_true_parameter_estimated_L(results_dir, runtag, simutags, "UKBBLD", main = "True Parameter Estimated L")
+gridExtra::grid.arrange(f1, f2, f3, ncol = 3)
 ```
