@@ -1,0 +1,77 @@
+---
+title: "6 modality weights from Munro et al."
+author: "XSun"
+date: "2024-06-05"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+```{r}
+library(ggplot2)
+```
+
+# Introduction
+
+The data is from [Multimodal analysis of RNA sequencing data powers discovery of complex trait genetics](https://www.biorxiv.org/content/10.1101/2024.05.14.594051v1.full). It provides FUSION weights for gene expression, isoform ratios, splice junction usage, alternative TSS/polyA usage, and RNA stability. 
+
+
+```{r}
+dat_sum <- readxl::read_excel("/project2/xinhe/shared_data/multigroup_ctwas/weights/files_Munro/Munro_data_summary.xlsx")
+
+DT::datatable(dat_sum,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Table S1 from the paper: Counts of xGenes and xQTLs per GTEx tissue, modalities mapped separately'),options = list(pageLength = 10) )
+```
+
+genes_expression_only: Number of genes with at least one cis-QTL for expression (cis-eQTL) and none for any other modality
+
+genes_expression_and_others:	Number of genes with at least one cis-QTL for expression and at least one for any other modality
+
+genes_others_only:	Number of genes with no cis-QTLs for expression and at least one for any other modality
+
+genes_total:	Number of genes with any cis-QTL, i.e. the sum of the previous three columns
+
+genes_expression/isoforms/splicing/alt_TSS/alt_polyA/stability:	Number of genes with at least one cis-QTL for expression/isoforms/splicing/alt_TSS/alt_polyA/stability
+
+qtls_expression/isoforms/splicing/alt_TSS/alt_polyA/stability	Number of conditionally independent cis-QTLs for expression/isoforms/splicing/alt_TSS/alt_polyA/stability
+
+
+# APA models
+
+## Some stats
+
+```{r}
+
+load("/project2/xinhe/shared_data/multigroup_ctwas/weights/files_Munro/apa.stat.rdata")
+
+colnames(sum) <- c("tissue","#of genes","average # of non-zero weights_lasso","average # of non-zero weights_enet")
+
+DT::datatable(sum,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;'),options = list(pageLength = 5))
+
+```
+
+## Comparing the APA model from Chen et al
+
+Chen et al: https://sq-96.github.io/multigroup_ctwas_analysis/apa_weights_analysis_chenetal.html
+
+```{r}
+
+
+dat_chen <- get(load("/project2/xinhe/shared_data/multigroup_ctwas/weights/apa.stat.rdata"))
+dat_chen$tissue <- rownames(dat_chen)
+
+load("/project2/xinhe/shared_data/multigroup_ctwas/weights/files_Munro/apa.stat.rdata")
+
+overlap <- merge(sum,dat_chen, by="tissue")
+
+ggplot(data = overlap, aes(x=ngene_alltissue.x, y=ngene_alltissue.y)) +
+  geom_point()+
+  geom_abline(slope = 1, intercept = 0, col="red") +
+  labs(x="#of apa target in Munro et al (current study)", y="#of apa target in Chen et al", title = "Comparing apa targets reported by 2 studies") +
+  theme_minimal()
+  
+
+```
+
+
+
+
