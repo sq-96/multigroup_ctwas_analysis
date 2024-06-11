@@ -742,6 +742,22 @@ https://uchicago.box.com/s/fzmv9ypzaa9vt7a4u0al37w7s77qrzdu
 https://uchicago.box.com/s/70tk99ifpz7xshknh57u2pnf7jygx5zh
 
 
+This PIP vs. p-value analysis suggests that some of the high PIP genes can be FPs. When the number of true signals in a region is < L (3 in our case), SuSiE will still try to report L results. This type of FP findings can be removed in the regular SuSiE by the CS filter. But it’s likely less effective in the cTWAS case, because our prior heavily favors genes. We may end up with a single gene in a CS with PIP > 0.95, then that gene will not be filtered by the purity filter.
+
+One simple way to get the true number of signals is: run regular SuSiE (uniform prior) in a region, and obtain the number of CS from the results. This should be a pretty good estimate of the number of true signals. 
+
+By doing these, for these 3 regions, 
+
+For ING5, we have 
+
+```{r}
+load("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/analy_results/ING5.preL.rdata")
+DT::datatable(finemap_res_region_multi,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Updated PIP (run with pre-estimated L)'),options = list(pageLength = 5) )
+```
+
+For CCZ1, region 7:5814895-6534226 didn't pass the screen_regions step 
+
+For ELMO1, region 7:36173929-37515581 didn't pass the screen_regions step 
 
 ### Comparing with single group eQTL results
 
