@@ -10,6 +10,8 @@ output:
 
 ```{r}
 library(ggplot2)
+library(RSQLite)
+
 ```
 
 # Introduction
@@ -34,6 +36,65 @@ genes_total:	Number of genes with any cis-QTL, i.e. the sum of the previous thre
 genes_expression/isoforms/splicing/alt_TSS/alt_polyA/stability:	Number of genes with at least one cis-QTL for expression/isoforms/splicing/alt_TSS/alt_polyA/stability
 
 qtls_expression/isoforms/splicing/alt_TSS/alt_polyA/stability	Number of conditionally independent cis-QTLs for expression/isoforms/splicing/alt_TSS/alt_polyA/stability
+
+# Expression models
+
+## Comparing with predictdb exression models
+
+```{r}
+
+folder_weight_predictdb <- "/project2/xinhe/shared_data/multigroup_ctwas/weights/expression_models/"
+files_predictdb <- list.files(path = folder_weight_predictdb, pattern = ".db")
+
+folder_weight_munro <- "/project2/xinhe/shared_data/multigroup_ctwas/weights/Munro_expression_PredictDB/"
+files_munro <- list.files(path = folder_weight_munro, pattern = ".db")
+
+files_overlap <- files_predictdb[files_predictdb %in% files_munro]
+tissue <- sub("expression_(.*?)\\.db", "\\1", files_overlap)
+
+sqlite.driver <- dbDriver("SQLite")
+
+gene_num_pred <- c()
+gene_num_munro <- c()
+overlap <- c()
+for (i in 1:length(files_overlap)) {
+  
+  
+  
+  file_pred <- paste0(folder_weight_predictdb,files_overlap[i])
+  
+  db <- dbConnect(sqlite.driver,dbname = file_pred)
+  extra <- dbReadTable(db,"extra")
+  dbDisconnect(db)
+  
+  genes_pred <- extra$genename
+  gene_num_pred <- c(gene_num_pred,nrow(extra))
+  
+  file_munro <- paste0(folder_weight_munro,files_overlap[i])
+  
+  db <- dbConnect(sqlite.driver,dbname = file_munro)
+  extra <- dbReadTable(db,"extra")
+  dbDisconnect(db)
+  
+  genes_munro <- extra$genename
+  gene_num_munro <- c(gene_num_munro,nrow(extra))
+  
+  num_overlap <- sum(genes_pred%in%genes_munro)
+  overlap <- c(overlap, num_overlap)
+}
+
+df_summary <- data.frame(
+  tissue = tissue,
+  num_gene_predictdb = gene_num_pred,
+  num_gene_munro = gene_num_munro,
+  num_gene_overlap = overlap
+)
+
+DT::datatable(df_summary,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%; ', 'Number of genes in each data set and the number of overlaps'),options = list(pageLength = 5))
+
+
+```
+
 
 
 # APA models
