@@ -1,0 +1,163 @@
+---
+title: "Summary for 6 Traits, 5 tissues, eQTL + sQTL + apaQTL -- compute ukbb LD, weights are from Munro et al"
+author: "XSun"
+date: "2024-06-13"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+    toc: true
+---
+
+We summarize the results here: https://sq-96.github.io/multigroup_ctwas_analysis/multi_group_6traits_15weights_ukbb_munro.html
+
+```{r message=FALSE,warning=FALSE}
+library(ggplot2)
+library(ctwas)
+library(dplyr)
+library(tidyr)
+
+source("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/0.functions.R")
+
+traits <- c("IBD-ebi-a-GCST004131", "LDL-ukb-d-30780_irnt", "SBP-ukb-a-360", "SCZ-ieu-b-5102", "WBC-ieu-b-30")
+load("/project2/xinhe/shared_data/multigroup_ctwas/gwas/samplesize.rdata")
+```
+
+## Genetic Architecture
+
+```{r message=FALSE,warning=FALSE}
+sum_pve_tissue_alltraits <- list()
+sum_pve_modality_alltraits <- list()
+for (i in 1:length(traits)) {
+  
+  trait <- traits[i]
+  gwas_n <- samplesize[trait]
+  
+  param <-readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/6.multi_group_munro/results/",trait,"/",trait,".param.RDS"))
+  ctwas_parameters <- summarize_param(param, gwas_n)
+
+  sum_pve_tissue <- sum_pve_across_contexts(ctwas_parameters)
+  sum_pve_tissue_total <- sum_pve_tissue$total_pve
+  names(sum_pve_tissue_total) <- sum_pve_tissue$type
+  sum_pve_tissue_alltraits[[i]] <- sum_pve_tissue_total
+  
+  sum_pve_modality <- sum_pve_across_types(ctwas_parameters)
+  sum_pve_modality_total <- sum_pve_modality$total_pve
+  names(sum_pve_modality_total) <- sum_pve_modality$type
+  sum_pve_modality_alltraits[[i]] <- sum_pve_modality_total
+  
+}
+names(sum_pve_tissue_alltraits) <- traits
+names(sum_pve_modality_alltraits) <- traits
+```
+
+
+Bubble plot: show %h2g explained by molecular QTLs of each tissue on each trait. Use union of five tissues across all traits. 
+
+Message: cTWAS is able to find the right tissues. 
+
+```{r message=FALSE,warning=FALSE}
+sum_pve_tissue_percentages <- lapply(sum_pve_tissue_alltraits, function(x) x / sum(x) * 100)
+cluster_names <- names(sum_pve_tissue_percentages)
+
+filtered_list <- lapply(sum_pve_tissue_percentages, function(x) x[!names(x) %in% c("SNP")])
+
+# Calculate the sum of each vector in the filtered list
+sum_values <- sapply(filtered_list, sum)
+max_values <- sapply(filtered_list, max)
+# Calculate the names of maximum values for each vector in the filtered list
+max_names <- sapply(filtered_list, function(x) names(x)[which.max(x)])
+
+```
+
+```{r message=FALSE,warning=FALSE,fig.width=12,fig.height=6}
+df <- bind_rows(
+  lapply(names(filtered_list), function(x) {
+    data.frame(Trait = x, Tissue = names(filtered_list[[x]]), Expression = filtered_list[[x]], stringsAsFactors = FALSE)
+  }),
+  .id = "id"
+) %>%
+  dplyr::select(-id) %>%
+  spread(Trait, Expression)
+
+
+df_long <- reshape2::melt(df, id.vars = "Tissue", variable.name = "Trait", value.name = "Expression")
+
+ggplot(df_long, aes(x = Trait, y = Tissue, size = Expression)) +
+  geom_point(alpha = 0.5, color = "blue") +  # Using a fixed color for all bubbles
+  scale_size(range = c(1, 20), name = "%h2g") +  # Customizing the size legend title
+  labs(x = "Trait", y = "Tissue") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(size = 16, angle = 45, hjust = 1),
+        axis.text.y = element_text(size = 16),
+        axis.title.x = element_text(size = 16),
+        axis.title.y = element_text(size = 16),
+        legend.text = element_text(size = 16),  # Increase legend text size
+        legend.title = element_text(size = 18))
+
+```
+
+
+Contributions of top tissue vs. all tissues together. 
+
+Bar plot of %h2g: two bars, top tissue vs. all tissues together, per trait. Use the top tissue from joint analysis.
+
+Message: genetics of complex traits involve multiple tissues.
+
+```{r message=FALSE,warning=FALSE,fig.width=12,fig.height=6}
+# Create the data frame including names of maximum values
+data <- data.frame(
+  cluster = rep(cluster_names, times = 3),
+  value = c(max_values, sum_values, max_values),
+  type = c(rep("toptissue", times = length(cluster_names)), 
+           rep("sum_alltissues", times = length(cluster_names)), 
+           rep("max_name", times = length(cluster_names))),
+  label = c(rep("", times = length(cluster_names) * 2), max_names)
+)
+
+ggplot(data[data$type != "max_name", ], aes(x = cluster, y = value, fill = type)) +
+  geom_bar(stat = "identity", position = position_dodge(), width = 0.7) +
+  geom_text(data = data[data$type == "max_name", ], aes(label = label, y = value + 2), 
+            position = position_dodge(width = 0.7), vjust = -0.5, hjust=-0.01) +
+  labs(x = "Traits", y = "%h2g", fill = "Group") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(size = 16, angle = 45, hjust = 1),
+        axis.text.y = element_text(size = 16),
+        axis.title.x = element_text(size = 16),
+        axis.title.y = element_text(size = 16),
+        legend.text = element_text(size = 16),  # Increase legend text size
+        legend.title = element_text(size = 18))
+```
+
+Contribution of different modalities: Bar plot of %h2g: eQTL, sQTL, APA-QTL (apa, apa+s), per trait. 
+
+Message: genetics involves multiple modalities   
+
+```{r message=FALSE,warning=FALSE,fig.width=12,fig.height=6}
+sum_pve_modality_percentages <- lapply(sum_pve_modality_alltraits, function(x) x / sum(x) * 100)
+cluster_names <- names(sum_pve_modality_percentages)
+filtered_list <- lapply(sum_pve_modality_percentages, function(x) x[!names(x) %in% c("SNP")])
+
+# Calculate the sum of each vector in the filtered list
+sum_values <- sapply(filtered_list, sum)
+max_values <- sapply(filtered_list, max)
+# Calculate the names of maximum values for each vector in the filtered list
+max_names <- sapply(filtered_list, function(x) names(x)[which.max(x)])
+
+df <- do.call(rbind, lapply(filtered_list, function(x) data.frame(Group = names(x), h2g = x)))
+df$Trait <- rep(names(filtered_list), each = length(filtered_list[[1]]))
+
+# Reshape data frame if necessary
+df <- reshape2::melt(df, id.vars = c("Trait", "Group"))
+
+ggplot(df, aes(x = Trait, y = value, fill = Group)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Trait", y = "%h2g") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(size = 16, angle = 45, hjust = 1),
+        axis.text.y = element_text(size = 16),
+        axis.title.x = element_text(size = 16),
+        axis.title.y = element_text(size = 16),
+        legend.text = element_text(size = 16),  # Increase legend text size
+        legend.title = element_text(size = 18))
+```
+

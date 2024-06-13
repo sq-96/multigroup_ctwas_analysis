@@ -1,5 +1,5 @@
 ---
-title: "Multi group analysis: 6 traits, 5 tissues, eQTL + sQTL + apaQTL -- Compute UKBB LD"
+title: "6 Traits, 5 tissues, eQTL + sQTL + apaQTL -- compute ukbb LD, weights are from Munro et al"
 author: "XSun"
 date: "2024-05-27"
 output:
@@ -22,9 +22,7 @@ The independent tissues are selected by [single tissue analysis](https://sq-96.g
 
 ## Omics
 
-eQTL, sQTL weights are from GTEx PredictDB 
-
-apaQTL wetights are from https://www.nature.com/articles/s41467-024-46064-7#Sec2. Top 10 SNPs with largest abs(weights) were selected after harmonization
+eQTL, sQTL, apaQTL weights are from [Munro et al.](https://sq-96.github.io/multigroup_ctwas_analysis/data_6modality_Munro.html)
 
 ## Settings
 
@@ -32,16 +30,10 @@ apaQTL wetights are from https://www.nature.com/articles/s41467-024-46064-7#Sec2
 
 PredictDB:
 
-- drop_strand_ambig = TRUE,
-- scale_by_ld_variance = TRUE,
-- load_predictdb_LD = F,  
+all the PredictDB are converted from FUSION weights
 
-FUSION:
-
-- method_FUSION = "enet",
-- fusion_top_n_snps = 10, 
 - drop_strand_ambig = TRUE,
-- scale_by_ld_variance = F, 
+- scale_by_ld_variance = F (FUSION converted weights)
 - load_predictdb_LD = F,  
 
 2. Parameter estimation and fine-mapping
@@ -58,8 +50,7 @@ FUSION:
 - cpus-per-task=2
 - mem=200G
 
-100G 2core got killed
-
+over 30h running time
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 library(ctwas)
@@ -70,7 +61,15 @@ library(RColorBrewer)
 library(gridExtra)
 #source("/project2/xinhe/shengqian/cTWAS/for_xiaotong/R/ctwas_summarize_finemap_res.R")
 load("/project2/xinhe/shared_data/multigroup_ctwas/weights/E_S_A_mapping.RData")
+
+E_S_A_mapping_earlier <- get(load("/project2/xinhe/shared_data/multigroup_ctwas/weights/E_S_A_mapping.RData"))
+E_S_A_mapping_earlier <- E_S_A_mapping_earlier[E_S_A_mapping_earlier$gene_type=="protein_coding",] #limit to p
+
+
+E_S_A_mapping <-readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/Munro_mapping.RDS")
 E_S_A_mapping <- E_S_A_mapping[E_S_A_mapping$gene_type=="protein_coding",] #limit to protein coding genes
+
+
 palette <- c(brewer.pal(12, "Paired"), brewer.pal(12, "Set3"), brewer.pal(6, "Dark2"))
 
 sum_pip_across_contexts <- function(finemap_res, mapping_data){
@@ -372,7 +371,7 @@ TO DO
 trait <- "IBD-ebi-a-GCST004131"
 gwas_n <- samplesize[trait]
 
-file_para <- paste0("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/results_ukbb/",trait,"/",trait,".param.RDS")
+file_para <- paste0("/project/xinhe/xsun/multi_group_ctwas/6.multi_group_munro/results/",trait,"/",trait,".param.RDS")
 param <- readRDS(file_para)
 ctwas_parameters <- summarize_param(param, gwas_n)
 
@@ -395,7 +394,7 @@ names(pve_vector) <- c("1SNP",colnames(para)[3:7])
 pve_pie_chart(pve_vector, title = "Pie Chart of PVE across Tissues", palette)
 
 
-file_res <- paste0("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/results_ukbb/",trait,"/",trait,".finemap_res.RDS")
+file_res <- paste0("/project/xinhe/xsun/multi_group_ctwas/6.multi_group_munro/results/",trait,"/",trait,".ctwas.res.RDS")
 finemap_res <- readRDS(file_res)
 combined_pip_by_types <- sum_pip_across_types(finemap_res,E_S_A_mapping)
 combined_pip_by_contexts <- sum_pip_across_contexts(finemap_res,E_S_A_mapping)
@@ -414,61 +413,6 @@ ggplot(finemap_gene_res_highpip, aes(x = 10^(-log10p), y = susie_pip)) +
   labs(x = "P-values", y = "SuSiE PIP", title = "Scatter plot of imputed TWAS P-value vs SuSiE PIP (CS filtered, PIP>0.5 included)") +
   theme_minimal()
 
-```
-
-### Comparing with single group eQTL results 
-
-```{r echo=FALSE}
-
-tissues <- c("Cells_Cultured_fibroblasts","Whole_Blood","Adipose_Subcutaneous","Esophagus_Mucosa","Heart_Left_Ventricle")
-sprintf("the top tissues from single group analyses are %s",paste0(tissues,collapse = ","))
-
-result <- calculate_sum_overlap_and_pve(tissues, trait, combined_pip_by_contexts, E_S_A_mapping, ctwas_parameters)
-
-DT::datatable(result$sum_overlap_for_all,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','#of overlap for single eqtl analysis and multi group analysis'),options = list(pageLength = 5) )
-
-DT::datatable(result$sum_pve_for_all,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','pve changes'),options = list(pageLength = 5) )
-
-```
-
-We then looked into `Whole_Blood`. Please not that the ealier single group eQTL analyses were performed under `L=5` but the current analyses were under `L=3`. 
-
-So we re-ran the single group analysis using `L=3` with for `Whole_Blood`. 
-
-
-```{r echo=FALSE}
-load("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/analy_results/compare_multi_single_IBD-ebi-a-GCST004131.rdata")
-
-unique_single <- df_summary[complete.cases(df_summary$PIP_single_group),]
-
-sprintf("The number of sig genes reported by single group analysis under L=3 is %s",nrow(unique_single[unique_single$PIP_single_group > 0.8 & unique_single$cs_index_single_group !=0,]))
-sprintf("The number of overlapped genes is %s",sum(df_summary$overlap))
-
-unique_single <- unique_single[unique_single$PIP_single_group > 0.8 & unique_single$cs_index_single_group !=0 & !unique_single$overlap,]
-
-DT::datatable(unique_single,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Sig genes from single group analysis but not reported in muilti-group analysis'),options = list(pageLength = 5) )
-
-
-```
-
-
-locus zoom plot for the regions containing these genes: https://uchicago.box.com/s/ziv0v006pxwnuprhxbagdfr0cnfk5e23
-
-
-
-```{r}
-
-
-DT::datatable(df_summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','All genes with pip > 0.8 from single group analysis and all genes with combined pip >0.8 from multi group analysis'),options = list(pageLength = 5) )
-
-
-ggplot(df_summary, aes(x = combined_pip_multi_group, y = combined_pip_nonzero_cs_multi_group)) +
-  geom_point() +  # Add points
-  geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed") +  
-  labs(x = "Combined PIP Multi Group (adding up all pips)", 
-       y = "Combined PIP Nonzero CS Multi Group (only pips with non-zero CS added)",
-       title = "Comparison for combined pip") +
-  theme_minimal()
 ```
 
 
@@ -480,7 +424,7 @@ ggplot(df_summary, aes(x = combined_pip_multi_group, y = combined_pip_nonzero_cs
 trait <- "LDL-ukb-d-30780_irnt"
 gwas_n <- samplesize[trait]
 
-file_para <- paste0("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/results_ukbb/",trait,"/",trait,".param.RDS")
+file_para <- paste0("/project/xinhe/xsun/multi_group_ctwas/6.multi_group_munro/results/",trait,"/",trait,".param.RDS")
 param <- readRDS(file_para)
 ctwas_parameters <- summarize_param(param, gwas_n)
 
@@ -502,7 +446,7 @@ pve_vector <- c(as.numeric(para[5,2])-sum(pve_vector),pve_vector)
 names(pve_vector) <- c("1SNP",colnames(para)[3:7])
 pve_pie_chart(pve_vector, title = "Pie Chart of PVE across Tissues", palette)
 
-file_res <- paste0("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/results_ukbb/",trait,"/",trait,".finemap_res.RDS")
+file_res <- paste0("/project/xinhe/xsun/multi_group_ctwas/6.multi_group_munro/results/",trait,"/",trait,".ctwas.res.RDS")
 finemap_res <- readRDS(file_res)
 combined_pip_by_types <- sum_pip_across_types(finemap_res,E_S_A_mapping)
 combined_pip_by_contexts <- sum_pip_across_contexts(finemap_res,E_S_A_mapping)
@@ -521,57 +465,14 @@ ggplot(finemap_gene_res_highpip, aes(x = 10^(-log10p), y = susie_pip)) +
   theme_minimal()
 ```
 
-### Comparing with single group eQTL results
+### Comparing with earlier weights 
 
 ```{r echo=FALSE}
 
-tissues <- c("Liver","Spleen","Adipose_Subcutaneous","Adrenal_Gland","Esophagus_Mucosa")
-sprintf("the top tissues from single group analyses are %s",paste0(tissues,collapse = ","))
 
-result <- calculate_sum_overlap_and_pve(tissues, trait, combined_pip_by_contexts, E_S_A_mapping, ctwas_parameters)
-
-DT::datatable(result$sum_overlap_for_all,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','#of overlap for single eqtl analysis and multi group analysis'),options = list(pageLength = 5) )
-DT::datatable(result$sum_pve_for_all,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','pve changes'),options = list(pageLength = 5) )
 
 ```
 
-
-We then looked into `Adipose_Subcutaneous`. Please not that the ealier single group eQTL analyses were performed under `L=5` but the current analyses were under `L=3`.
-
-So we re-ran the single group analysis using `L=3` with for `Adipose_Subcutaneous`.
-
-
-```{r echo=FALSE}
-load("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/analy_results/compare_multi_single_LDL-ukb-d-30780_irnt.rdata")
-
-df_summary$region_ids[df_summary$gene_name=="TPD52"] <- "8:78220626-81044160"
-
-unique_single <- df_summary[complete.cases(df_summary$PIP_single_group),]
-
-sprintf("The number of sig genes reported by single group analysis under L=3 is %s",nrow(unique_single[unique_single$PIP_single_group > 0.8 & unique_single$cs_index_single_group !=0,]))
-sprintf("The number of overlapped genes is %s",sum(df_summary$overlap))
-
-unique_single <- unique_single[unique_single$PIP_single_group > 0.8 & unique_single$cs_index_single_group !=0 & !unique_single$overlap,]
-
-DT::datatable(unique_single,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Sig genes from single group analysis but not reported in muilti-group analysis'),options = list(pageLength = 5) )
-```
-
-
-locus zoom plot for the regions containing these genes: https://uchicago.box.com/s/u93gpgil79ybf7akrl1obfkpgkxq5wkn
-
-
-
-```{r}
-DT::datatable(df_summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','All genes with pip > 0.8 from single group analysis and all genes with combined pip >0.8 from multi group analysis'),options = list(pageLength = 5) )
-
-ggplot(df_summary, aes(x = combined_pip_multi_group, y = combined_pip_nonzero_cs_multi_group)) +
-  geom_point() +  # Add points
-  geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed") +
-  labs(x = "Combined PIP Multi Group (adding up all pips)",
-       y = "Combined PIP Nonzero CS Multi Group (only pips with non-zero CS added)",
-       title = "Comparison for combined pip") +
-  theme_minimal()
-```
 
 ## SBP
 
@@ -581,7 +482,7 @@ ggplot(df_summary, aes(x = combined_pip_multi_group, y = combined_pip_nonzero_cs
 trait <- "SBP-ukb-a-360"
 gwas_n <- samplesize[trait]
 
-file_para <- paste0("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/results_ukbb/",trait,"/",trait,".param.RDS")
+file_para <- paste0("/project/xinhe/xsun/multi_group_ctwas/6.multi_group_munro/results/",trait,"/",trait,".param.RDS")
 param <- readRDS(file_para)
 ctwas_parameters <- summarize_param(param, gwas_n)
 
@@ -603,7 +504,7 @@ pve_vector <- c(as.numeric(para[5,2])-sum(pve_vector),pve_vector)
 names(pve_vector) <- c("1SNP",colnames(para)[3:7])
 pve_pie_chart(pve_vector, title = "Pie Chart of PVE across Tissues", palette)
 
-file_res <- paste0("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/results_ukbb/",trait,"/",trait,".finemap_res.RDS")
+file_res <- paste0("/project/xinhe/xsun/multi_group_ctwas/6.multi_group_munro/results/",trait,"/",trait,".ctwas.res.RDS")
 finemap_res <- readRDS(file_res)
 combined_pip_by_types <- sum_pip_across_types(finemap_res,E_S_A_mapping)
 combined_pip_by_contexts <- sum_pip_across_contexts(finemap_res,E_S_A_mapping)
@@ -646,20 +547,6 @@ DT::datatable(finemap_res_region_multi,caption = htmltools::tags$caption( style 
 ```
 
 
-### Comparing with single group eQTL results
-
-```{r echo=FALSE}
-
-tissues <- c("Artery_Tibial","Adipose_Subcutaneous","Brain_Cortex","Heart_Left_Ventricle","Spleen")
-sprintf("the top tissues from single group analyses are %s",paste0(tissues,collapse = ","))
-
-result <- calculate_sum_overlap_and_pve(tissues, trait, combined_pip_by_contexts, E_S_A_mapping, ctwas_parameters)
-
-DT::datatable(result$sum_overlap_for_all,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','#of overlap for single eqtl analysis and multi group analysis'),options = list(pageLength = 5) )
-DT::datatable(result$sum_pve_for_all,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','pve changes'),options = list(pageLength = 5) )
-
-```
-
 ## SCZ
 
 ### Results from multi-group analysis
@@ -668,7 +555,7 @@ DT::datatable(result$sum_pve_for_all,caption = htmltools::tags$caption( style = 
 trait <- "SCZ-ieu-b-5102"
 gwas_n <- samplesize[trait]
 
-file_para <- paste0("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/results_ukbb/",trait,"/",trait,".param.RDS")
+file_para <- paste0("/project/xinhe/xsun/multi_group_ctwas/6.multi_group_munro/results/",trait,"/",trait,".param.RDS")
 param <- readRDS(file_para)
 ctwas_parameters <- summarize_param(param, gwas_n)
 
@@ -690,7 +577,7 @@ pve_vector <- c(as.numeric(para[5,2])-sum(pve_vector),pve_vector)
 names(pve_vector) <- c("1SNP",colnames(para)[3:7])
 pve_pie_chart(pve_vector, title = "Pie Chart of PVE across Tissues", palette)
 
-file_res <- paste0("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/results_ukbb/",trait,"/",trait,".finemap_res.RDS")
+file_res <- paste0("/project/xinhe/xsun/multi_group_ctwas/6.multi_group_munro/results/",trait,"/",trait,".ctwas.res.RDS")
 finemap_res <- readRDS(file_res)
 combined_pip_by_types <- sum_pip_across_types(finemap_res,E_S_A_mapping)
 combined_pip_by_contexts <- sum_pip_across_contexts(finemap_res,E_S_A_mapping)
@@ -709,19 +596,6 @@ ggplot(finemap_gene_res_highpip, aes(x = 10^(-log10p), y = susie_pip)) +
   theme_minimal()
 ```
 
-### Comparing with single group eQTL results
-
-```{r echo=FALSE}
-
-tissues <- c("Heart_Left_Ventricle","Adrenal_Gland","Artery_Coronary","Brain_Cerebellum","Stomach")
-sprintf("the top tissues from single group analyses are %s",paste0(tissues,collapse = ","))
-
-result <- calculate_sum_overlap_and_pve(tissues, trait, combined_pip_by_contexts, E_S_A_mapping, ctwas_parameters)
-
-DT::datatable(result$sum_overlap_for_all,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','#of overlap for single eqtl analysis and multi group analysis'),options = list(pageLength = 5) )
-DT::datatable(result$sum_pve_for_all,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','pve changes'),options = list(pageLength = 5) )
-
-```
 
 ## WBC
 
@@ -731,7 +605,7 @@ DT::datatable(result$sum_pve_for_all,caption = htmltools::tags$caption( style = 
 trait <- "WBC-ieu-b-30"
 gwas_n <- samplesize[trait]
 
-file_para <- paste0("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/results_ukbb/",trait,"/",trait,".param.RDS")
+file_para <- paste0("/project/xinhe/xsun/multi_group_ctwas/6.multi_group_munro/results/",trait,"/",trait,".param.RDS")
 param <- readRDS(file_para)
 ctwas_parameters <- summarize_param(param, gwas_n)
 
@@ -753,7 +627,7 @@ pve_vector <- c(as.numeric(para[5,2])-sum(pve_vector),pve_vector)
 names(pve_vector) <- c("1SNP",colnames(para)[3:7])
 pve_pie_chart(pve_vector, title = "Pie Chart of PVE across Tissues", palette)
 
-file_res <- paste0("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/results_ukbb/",trait,"/",trait,".finemap_res.RDS")
+file_res <- paste0("/project/xinhe/xsun/multi_group_ctwas/6.multi_group_munro/results/",trait,"/",trait,".ctwas.res.RDS")
 finemap_res <- readRDS(file_res)
 combined_pip_by_types <- sum_pip_across_types(finemap_res,E_S_A_mapping)
 combined_pip_by_contexts <- sum_pip_across_contexts(finemap_res,E_S_A_mapping)
@@ -766,6 +640,7 @@ draw_gene_piechart(combined_pip_by_types)
 draw_gene_piechart_tissue(combined_pip_by_contexts)
 load(paste0("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/analy_results/compare_pip_pval_",trait,".rdata"))
 
+#ggplot(finemap_gene_res_highpip, aes(x = log10p, y = susie_pip)) +
 ggplot(finemap_gene_res_highpip, aes(x = 10^(-log10p), y = susie_pip)) +
   geom_point() +
   labs(x = "P-values", y = "SuSiE PIP", title = "Scatter plot of imputed TWAS P-value vs SuSiE PIP (CS filtered, PIP>0.5 included)") +
@@ -779,48 +654,3 @@ DT::datatable(finemap_gene_res_highpip[finemap_gene_res_highpip$gene_name %in% g
 
 ```
 
-Locus zoom plots for these 3 genes
-
-https://uchicago.box.com/s/a1qej83jaabft9z7nqmzewzpsxrg6uui
-
-https://uchicago.box.com/s/fzmv9ypzaa9vt7a4u0al37w7s77qrzdu
-
-
-https://uchicago.box.com/s/70tk99ifpz7xshknh57u2pnf7jygx5zh
-
-
-This PIP vs. p-value analysis suggests that some of the high PIP genes can be FPs. When the number of true signals in a region is < L (3 in our case), SuSiE will still try to report L results. This type of FP findings can be removed in the regular SuSiE by the CS filter. But it’s likely less effective in the cTWAS case, because our prior heavily favors genes. We may end up with a single gene in a CS with PIP > 0.95, then that gene will not be filtered by the purity filter.
-
-One simple way to get the true number of signals is: run regular SuSiE (uniform prior) in a region, and obtain the number of CS from the results. This should be a pretty good estimate of the number of true signals. 
-
-By doing these, for these 3 regions, 
-
-For ING5, we have 
-
-```{r}
-
-estimated_L <- readRDS("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/results_preL/WBC-ieu-b-30/WBC-ieu-b-30.estimated_L.RDS")
-
-sprintf("the pre-estimated L is %s", estimated_L["2:241210506-242147200"])
-
-load("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/analy_results/ING5.preL.rdata")
-DT::datatable(finemap_res_region_multi,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Updated PIP (run with pre-estimated L)'),options = list(pageLength = 5) )
-```
-
-For CCZ1, region 7:5814895-6534226 didn't pass the screen_regions step 
-
-For ELMO1, region 7:36173929-37515581 didn't pass the screen_regions step 
-
-### Comparing with single group eQTL results
-
-```{r echo=FALSE}
-
-tissues <- c("Whole_Blood","Adipose_Subcutaneous","Artery_Aorta","Skin_Sun_Exposed_Lower_leg","Spleen")
-sprintf("the top tissues from single group analyses are %s",paste0(tissues,collapse = ","))
-
-result <- calculate_sum_overlap_and_pve(tissues, trait, combined_pip_by_contexts, E_S_A_mapping, ctwas_parameters)
-
-DT::datatable(result$sum_overlap_for_all,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','#of overlap for single eqtl analysis and multi group analysis'),options = list(pageLength = 5) )
-DT::datatable(result$sum_pve_for_all,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','pve changes'),options = list(pageLength = 5) )
-
-```
