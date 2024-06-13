@@ -95,6 +95,7 @@ sum_pip_across_contexts <- function(finemap_res, mapping_data){
   return(df_gene)
 }
 
+
 sum_pip_across_types <- function(finemap_res, mapping_data){
 
   finemap_res <- finemap_res[finemap_res$cs_index!=0,]
@@ -231,76 +232,6 @@ sum_pve_across_types <- function(ctwas_parameters) {
 
 load("/project2/xinhe/shared_data/multigroup_ctwas/gwas/samplesize.rdata")
 
-process_fm_res_single <- function(finemap_res, mapping_data) {
-  
-  finemap_res <- finemap_res
-  mapping_data <- mapping_data
-  
-  finemap_gene_res <- finemap_res[finemap_res$type!="SNP",]
-  finemap_gene_res <- finemap_gene_res[finemap_gene_res$cs_index!=0,]
-  finemap_gene_res$gene <- sapply(finemap_gene_res$id, function(x){unlist(strsplit(x,"[|]"))[1]})
-  finemap_gene_res <- finemap_gene_res %>% plyr::join(mapping_data, by = "gene") %>% dplyr::select(-gene) %>% na.omit()
-  
-  finemap_gene_res <- finemap_gene_res[,c("genename","susie_pip")]
-  colnames(finemap_gene_res) <- c("genename","PIP_single_group")
-  return(finemap_gene_res)
-}
-
-
-calculate_sum_overlap_and_pve <- function(tissues, trait, combined_pip_by_contexts, E_S_A_mapping, ctwas_parameters) {
-  sum_overlap_for_all <- c()
-  sum_pve_for_all <- c()
-  
-  for (i in seq_along(tissues)) {
-    tissue <- tissues[i]
-    
-    # Load single tissue fine-mapping results
-    file_res_single <- paste0("/project/xinhe/xsun/multi_group_ctwas/1.single_tissue/results/", trait, "/", tissue, "/", trait, "_", tissue, ".finemap_res.RDS")
-    finemap_res_single <- readRDS(file_res_single)
-    finemap_res_single <- process_fm_res_single(finemap_res = finemap_res_single, mapping_data = E_S_A_mapping)
-    
-    # Load multi-group fine-mapping results
-    finemap_res_multi <- combined_pip_by_contexts
-    
-    # Identify significant genes
-    sig_gene_single <- finemap_res_single[finemap_res_single$PIP_single_group > 0.8, ]
-    sig_gene_multi <- finemap_res_multi[finemap_res_multi$combined_pip > 0.8, ]
-    
-    # Merge significant genes
-    merged_siggene <- merge(sig_gene_single, sig_gene_multi, by = "genename", all.x = TRUE, all.y = TRUE)
-    
-    # Calculate overlap statistics
-    tmp <- c(
-      sum(merged_siggene$PIP_single_group > 0.8, na.rm = TRUE),
-      sum(merged_siggene$PIP_single_group > 0.8 & merged_siggene$combined_pip > 0.8, na.rm = TRUE),
-      sum(merged_siggene$combined_pip > 0.8, na.rm = TRUE)
-    )
-    sum_overlap_for_all <- rbind(sum_overlap_for_all, tmp)
-    
-    # Calculate PVE for multi-group
-    group_pve_multi <- ctwas_parameters$group_pve
-    group_pve_multi_tissue <- round(group_pve_multi[paste0("eQTL|", tissue)], digits = 4)
-    
-    # Load single tissue parameter results
-    file_para_single <- paste0("/project/xinhe/xsun/multi_group_ctwas/1.single_tissue/results/", trait, "/", tissue, "/", trait, "_", tissue, ".param.RDS")
-    para_single <- readRDS(file_para_single)
-    group_pve_single_tissue <- round(para_single$group_prior[paste0("eQTL|", tissue)], digits = 4)
-    
-    # Combine PVE results
-    tmp2 <- c(group_pve_single_tissue, group_pve_multi_tissue)
-    sum_pve_for_all <- rbind(sum_pve_for_all, tmp2)
-  }
-  
-  # Set row and column names for the result matrices
-  rownames(sum_overlap_for_all) <- tissues
-  colnames(sum_overlap_for_all) <- c("#of.sig.gene_single_group_cs_filtered", "#of.overlap", "#of.sig.gene_multi_group_cs_filtered")
-  
-  rownames(sum_pve_for_all) <- tissues
-  colnames(sum_pve_for_all) <- c("pve_single_group", "pve_eqtl_multi_group")
-  
-  return(list(sum_overlap_for_all = sum_overlap_for_all, sum_pve_for_all = sum_pve_for_all))
-}
-
 pve_pie_chart <- function(pve_vector, palette=NULL, title) {
   # Create data frame for plotting
   data <- data.frame(
@@ -330,6 +261,19 @@ pve_pie_chart <- function(pve_vector, palette=NULL, title) {
     geom_text(aes(label = paste(Percentage, "%", sep="")), position = position_stack(vjust = 0.5))
 }
 
+sum_pip_across_contexts_nocs <- function(finemap_res, mapping_data){
+
+  #finemap_res <- finemap_res[finemap_res$cs_index!=0,]
+  finemap_gene_res <- finemap_res[finemap_res$type!="SNP",]
+  finemap_gene_res$gene <- sapply(finemap_gene_res$id, function(x){unlist(strsplit(x,"[|]"))[1]})
+  finemap_gene_res <- finemap_gene_res %>% plyr::join(mapping_data, by = "gene") %>% dplyr::select(-gene) %>% na.omit()
+  finemap_gene_res <- finemap_gene_res %>% group_by(id) %>% mutate(susie_pip_adjusted = ifelse(n() > 1, susie_pip / n(), susie_pip)) %>% ungroup() %>% dplyr::select(-susie_pip) %>% dplyr::rename(susie_pip = susie_pip_adjusted)
+
+  df_gene <- aggregate(finemap_gene_res$susie_pip, by=list(finemap_gene_res$genename), FUN=sum)
+  colnames(df_gene) <- c("genename","combined_pip")
+  return(df_gene)
+}
+
 ```
 
 # Results
@@ -352,11 +296,9 @@ The results are summarized by
 - by sQTL+apaQTL: Number of genes where the combined ratio of apaQTL and sQTL to combined PIP is greater than 0.8, but neither apaQTL nor sQTL individually exceed 0.8.
 - unspecified: Number of genes not classified into any of the above categories.
 
-**Comparing with single group eQTL results**
+**Comparing with earlier multi-group analysis results**
 
-*Please not that the ealier single group eQTL analyses were performed under L=5 but the current analyses were under L=3*
-
-We compared number of significant genes, overlapping genes and the changes in PVE for eQTLs across five tissues reported by single eQTL analysi
+We compared number of significant genes, overlapping genes. The earlier results are here: https://sq-96.github.io/multigroup_ctwas_analysis/multi_group_6traits_15weights_ukbb.html
 
 
 ## aFib
@@ -415,6 +357,67 @@ ggplot(finemap_gene_res_highpip, aes(x = 10^(-log10p), y = susie_pip)) +
 
 ```
 
+### Comparing with earlier weights 
+
+#### overlaps
+
+```{r echo=FALSE}
+
+siggene_current <- combined_pip_by_contexts[combined_pip_by_contexts$combined_pip > 0.8,]
+
+file_res <- paste0("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/results_ukbb/",trait,"/",trait,".finemap_res.RDS")
+finemap_res_earlier <- readRDS(file_res)
+combined_pip_by_contexts_earlier <- sum_pip_across_contexts(finemap_res_earlier,E_S_A_mapping_earlier)
+siggene_earlier <- combined_pip_by_contexts_earlier[combined_pip_by_contexts_earlier$combined_pip > 0.8,]
+
+sprintf("current # of sig. genes = %s", nrow(siggene_current))
+sprintf("earlier # of sig. genes = %s", nrow(siggene_earlier))
+sprintf("# of overlap between them = %s", sum(siggene_current$genename %in% siggene_earlier$genename))
+```
+
+#### Why earlier genes were not reported in current settings
+
+In the table below, NA means: current weights do not have this gene. If `combined_pip_current_weights >0.8`, it means in current setting, this gene is not included in CS. `combined_pip_current_weights < 0.8` means in current setting, the gene is filtered out by either credible set or combined_pip.
+
+```{r echo=FALSE}
+genepip_current <- sum_pip_across_contexts_nocs(finemap_res,E_S_A_mapping)
+
+siggene_earlier_total <- siggene_earlier[,c("genename","combined_pip")]
+notoverlapped_earlier <- siggene_earlier_total[!siggene_earlier_total$genename%in%siggene_current$genename,]
+gene_notsig_current <- merge(notoverlapped_earlier,genepip_current, by="genename", all.x = T)
+colnames(gene_notsig_current) <- c("genename","combined_pip_earlier_weights","combined_pip_current_weights")
+
+DT::datatable(gene_notsig_current,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Earlier sig genes but not reported in current setting'),options = list(pageLength = 5) )
+
+sprintf("%s were not included (NAs) because they are not in the weight files", sum(is.na(gene_notsig_current$combined_pip_current_weights)))
+
+sprintf("%s were not included (combined_pip > 0.8) because they are not in CS", sum(as.numeric(gene_notsig_current$combined_pip_current_weights >0.8),na.rm = T))
+
+sprintf("%s were not included (combined_pip < 0.8) because of the low combined PIPs", sum(as.numeric(gene_notsig_current$combined_pip_current_weights < 0.8),na.rm = T))
+```
+
+
+#### Why current genes were not reported in earlier settings
+
+In the table below, NA means: earlier weights do not have this gene. If `combined_pip_current_weights >0.8`, it means in earlier setting, this gene is not included in CS. `combined_pip_earlier_weights < 0.8` means in earlier setting, the gene is filtered out by either credible set or combined_pip.
+
+```{r echo=FALSE}
+genepip_earlier <- sum_pip_across_contexts_nocs(finemap_res_earlier,E_S_A_mapping_earlier)
+
+siggene_current_total <- siggene_current[,c("genename","combined_pip")]
+notoverlapped_current <- siggene_current_total[!siggene_current_total$genename%in%siggene_earlier$genename,]
+gene_notsig_earlier <- merge(notoverlapped_current,genepip_earlier, by="genename", all.x = T)
+colnames(gene_notsig_earlier) <- c("genename","combined_pip_current_weights","combined_pip_earlier_weights")
+
+DT::datatable(gene_notsig_earlier,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','current sig genes but not reported in earlier setting'),options = list(pageLength = 5) )
+
+sprintf("%s were not included (NAs) because they are not in the weight files", sum(is.na(gene_notsig_earlier$combined_pip_earlier_weights)))
+
+sprintf("%s were not included (combined_pip > 0.8) because they are not in CS", sum(as.numeric(gene_notsig_earlier$combined_pip_earlier_weights >0.8),na.rm = T))
+
+sprintf("%s were not included (combined_pip < 0.8) because of the low combined PIPs", sum(as.numeric(gene_notsig_earlier$combined_pip_earlier_weights < 0.8),na.rm = T))
+```
+
 
 ## LDL
 
@@ -467,10 +470,63 @@ ggplot(finemap_gene_res_highpip, aes(x = 10^(-log10p), y = susie_pip)) +
 
 ### Comparing with earlier weights 
 
+#### overlaps
+
 ```{r echo=FALSE}
 
+siggene_current <- combined_pip_by_contexts[combined_pip_by_contexts$combined_pip > 0.8,]
+
+file_res <- paste0("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/results_ukbb/",trait,"/",trait,".finemap_res.RDS")
+finemap_res_earlier <- readRDS(file_res)
+combined_pip_by_contexts_earlier <- sum_pip_across_contexts(finemap_res_earlier,E_S_A_mapping_earlier)
+siggene_earlier <- combined_pip_by_contexts_earlier[combined_pip_by_contexts_earlier$combined_pip > 0.8,]
+
+sprintf("current # of sig. genes = %s", nrow(siggene_current))
+sprintf("earlier # of sig. genes = %s", nrow(siggene_earlier))
+sprintf("# of overlap between them = %s", sum(siggene_current$genename %in% siggene_earlier$genename))
+```
+
+#### Why earlier genes were not reported in current settings
+
+In the table below, NA means: current weights do not have this gene. If `combined_pip_current_weights >0.8`, it means in current setting, this gene is not included in CS. `combined_pip_current_weights < 0.8` means in current setting, the gene is filtered out by either credible set or combined_pip.
+
+```{r echo=FALSE}
+genepip_current <- sum_pip_across_contexts_nocs(finemap_res,E_S_A_mapping)
+
+siggene_earlier_total <- siggene_earlier[,c("genename","combined_pip")]
+notoverlapped_earlier <- siggene_earlier_total[!siggene_earlier_total$genename%in%siggene_current$genename,]
+gene_notsig_current <- merge(notoverlapped_earlier,genepip_current, by="genename", all.x = T)
+colnames(gene_notsig_current) <- c("genename","combined_pip_earlier_weights","combined_pip_current_weights")
+
+DT::datatable(gene_notsig_current,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Earlier sig genes but not reported in current setting'),options = list(pageLength = 5) )
+
+sprintf("%s were not included (NAs) because they are not in the weight files", sum(is.na(gene_notsig_current$combined_pip_current_weights)))
+
+sprintf("%s were not included (combined_pip > 0.8) because they are not in CS", sum(as.numeric(gene_notsig_current$combined_pip_current_weights >0.8),na.rm = T))
+
+sprintf("%s were not included (combined_pip < 0.8) because of the low combined PIPs", sum(as.numeric(gene_notsig_current$combined_pip_current_weights < 0.8),na.rm = T))
+```
 
 
+#### Why current genes were not reported in earlier settings
+
+In the table below, NA means: earlier weights do not have this gene. If `combined_pip_current_weights >0.8`, it means in earlier setting, this gene is not included in CS. `combined_pip_earlier_weights < 0.8` means in earlier setting, the gene is filtered out by either credible set or combined_pip.
+
+```{r echo=FALSE}
+genepip_earlier <- sum_pip_across_contexts_nocs(finemap_res_earlier,E_S_A_mapping_earlier)
+
+siggene_current_total <- siggene_current[,c("genename","combined_pip")]
+notoverlapped_current <- siggene_current_total[!siggene_current_total$genename%in%siggene_earlier$genename,]
+gene_notsig_earlier <- merge(notoverlapped_current,genepip_earlier, by="genename", all.x = T)
+colnames(gene_notsig_earlier) <- c("genename","combined_pip_current_weights","combined_pip_earlier_weights")
+
+DT::datatable(gene_notsig_earlier,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','current sig genes but not reported in earlier setting'),options = list(pageLength = 5) )
+
+sprintf("%s were not included (NAs) because they are not in the weight files", sum(is.na(gene_notsig_earlier$combined_pip_earlier_weights)))
+
+sprintf("%s were not included (combined_pip > 0.8) because they are not in CS", sum(as.numeric(gene_notsig_earlier$combined_pip_earlier_weights >0.8),na.rm = T))
+
+sprintf("%s were not included (combined_pip < 0.8) because of the low combined PIPs", sum(as.numeric(gene_notsig_earlier$combined_pip_earlier_weights < 0.8),na.rm = T))
 ```
 
 
@@ -529,21 +585,65 @@ DT::datatable(naa60,caption = htmltools::tags$caption( style = 'caption-side: to
 
 ```
 
-plot for this locus https://uchicago.box.com/s/uca02ksxb4hz67lohjpko35nkjhp5pti
+### Comparing with earlier weights 
+
+#### overlaps
+
+```{r echo=FALSE}
+
+siggene_current <- combined_pip_by_contexts[combined_pip_by_contexts$combined_pip > 0.8,]
+
+file_res <- paste0("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/results_ukbb/",trait,"/",trait,".finemap_res.RDS")
+finemap_res_earlier <- readRDS(file_res)
+combined_pip_by_contexts_earlier <- sum_pip_across_contexts(finemap_res_earlier,E_S_A_mapping_earlier)
+siggene_earlier <- combined_pip_by_contexts_earlier[combined_pip_by_contexts_earlier$combined_pip > 0.8,]
+
+sprintf("current # of sig. genes = %s", nrow(siggene_current))
+sprintf("earlier # of sig. genes = %s", nrow(siggene_earlier))
+sprintf("# of overlap between them = %s", sum(siggene_current$genename %in% siggene_earlier$genename))
+```
+
+#### Why earlier genes were not reported in current settings
+
+In the table below, NA means: current weights do not have this gene. If `combined_pip_current_weights >0.8`, it means in current setting, this gene is not included in CS. `combined_pip_current_weights < 0.8` means in current setting, the gene is filtered out by either credible set or combined_pip.
+
+```{r echo=FALSE}
+genepip_current <- sum_pip_across_contexts_nocs(finemap_res,E_S_A_mapping)
+
+siggene_earlier_total <- siggene_earlier[,c("genename","combined_pip")]
+notoverlapped_earlier <- siggene_earlier_total[!siggene_earlier_total$genename%in%siggene_current$genename,]
+gene_notsig_current <- merge(notoverlapped_earlier,genepip_current, by="genename", all.x = T)
+colnames(gene_notsig_current) <- c("genename","combined_pip_earlier_weights","combined_pip_current_weights")
+
+DT::datatable(gene_notsig_current,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Earlier sig genes but not reported in current setting'),options = list(pageLength = 5) )
+
+sprintf("%s were not included (NAs) because they are not in the weight files", sum(is.na(gene_notsig_current$combined_pip_current_weights)))
+
+sprintf("%s were not included (combined_pip > 0.8) because they are not in CS", sum(as.numeric(gene_notsig_current$combined_pip_current_weights >0.8),na.rm = T))
+
+sprintf("%s were not included (combined_pip < 0.8) because of the low combined PIPs", sum(as.numeric(gene_notsig_current$combined_pip_current_weights < 0.8),na.rm = T))
+```
 
 
-We ran regular SuSiE (uniform prior) in a region, and obtain the number of CS from the results. Then we ran fine-mapping step for this region. 
+#### Why current genes were not reported in earlier settings
 
-By doing these, we have 
+In the table below, NA means: earlier weights do not have this gene. If `combined_pip_current_weights >0.8`, it means in earlier setting, this gene is not included in CS. `combined_pip_earlier_weights < 0.8` means in earlier setting, the gene is filtered out by either credible set or combined_pip.
 
-```{r}
+```{r echo=FALSE}
+genepip_earlier <- sum_pip_across_contexts_nocs(finemap_res_earlier,E_S_A_mapping_earlier)
 
-estimated_L <- readRDS("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/results_preL/SBP-ukb-a-360/SBP-ukb-a-360.estimated_L.RDS")
+siggene_current_total <- siggene_current[,c("genename","combined_pip")]
+notoverlapped_current <- siggene_current_total[!siggene_current_total$genename%in%siggene_earlier$genename,]
+gene_notsig_earlier <- merge(notoverlapped_current,genepip_earlier, by="genename", all.x = T)
+colnames(gene_notsig_earlier) <- c("genename","combined_pip_current_weights","combined_pip_earlier_weights")
 
-sprintf("the pre-estimated L is %s", estimated_L["16:2714828-3951195"])
+DT::datatable(gene_notsig_earlier,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','current sig genes but not reported in earlier setting'),options = list(pageLength = 5) )
 
-load("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/analy_results/NAA60.preL.rdata")
-DT::datatable(finemap_res_region_multi,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Updated PIP (run with pre-estimated L)'),options = list(pageLength = 5) )
+sprintf("%s were not included (NAs) because they are not in the weight files", sum(is.na(gene_notsig_earlier$combined_pip_earlier_weights)))
+
+sprintf("%s were not included (combined_pip > 0.8) because they are not in CS", sum(as.numeric(gene_notsig_earlier$combined_pip_earlier_weights >0.8),na.rm = T))
+
+sprintf("%s were not included (combined_pip < 0.8) because of the low combined PIPs", sum(as.numeric(gene_notsig_earlier$combined_pip_earlier_weights < 0.8),na.rm = T))
 ```
 
 
@@ -594,6 +694,67 @@ ggplot(finemap_gene_res_highpip, aes(x = 10^(-log10p), y = susie_pip)) +
   geom_point() +
   labs(x = "P-values", y = "SuSiE PIP", title = "Scatter plot of imputed TWAS P-value vs SuSiE PIP (CS filtered, PIP>0.5 included)") +
   theme_minimal()
+```
+
+### Comparing with earlier weights 
+
+#### overlaps
+
+```{r echo=FALSE}
+
+siggene_current <- combined_pip_by_contexts[combined_pip_by_contexts$combined_pip > 0.8,]
+
+file_res <- paste0("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/results_ukbb/",trait,"/",trait,".finemap_res.RDS")
+finemap_res_earlier <- readRDS(file_res)
+combined_pip_by_contexts_earlier <- sum_pip_across_contexts(finemap_res_earlier,E_S_A_mapping_earlier)
+siggene_earlier <- combined_pip_by_contexts_earlier[combined_pip_by_contexts_earlier$combined_pip > 0.8,]
+
+sprintf("current # of sig. genes = %s", nrow(siggene_current))
+sprintf("earlier # of sig. genes = %s", nrow(siggene_earlier))
+sprintf("# of overlap between them = %s", sum(siggene_current$genename %in% siggene_earlier$genename))
+```
+
+#### Why earlier genes were not reported in current settings
+
+In the table below, NA means: current weights do not have this gene. If `combined_pip_current_weights >0.8`, it means in current setting, this gene is not included in CS. `combined_pip_current_weights < 0.8` means in current setting, the gene is filtered out by either credible set or combined_pip.
+
+```{r echo=FALSE}
+genepip_current <- sum_pip_across_contexts_nocs(finemap_res,E_S_A_mapping)
+
+siggene_earlier_total <- siggene_earlier[,c("genename","combined_pip")]
+notoverlapped_earlier <- siggene_earlier_total[!siggene_earlier_total$genename%in%siggene_current$genename,]
+gene_notsig_current <- merge(notoverlapped_earlier,genepip_current, by="genename", all.x = T)
+colnames(gene_notsig_current) <- c("genename","combined_pip_earlier_weights","combined_pip_current_weights")
+
+DT::datatable(gene_notsig_current,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Earlier sig genes but not reported in current setting'),options = list(pageLength = 5) )
+
+sprintf("%s were not included (NAs) because they are not in the weight files", sum(is.na(gene_notsig_current$combined_pip_current_weights)))
+
+sprintf("%s were not included (combined_pip > 0.8) because they are not in CS", sum(as.numeric(gene_notsig_current$combined_pip_current_weights >0.8),na.rm = T))
+
+sprintf("%s were not included (combined_pip < 0.8) because of the low combined PIPs", sum(as.numeric(gene_notsig_current$combined_pip_current_weights < 0.8),na.rm = T))
+```
+
+
+#### Why current genes were not reported in earlier settings
+
+In the table below, NA means: earlier weights do not have this gene. If `combined_pip_current_weights >0.8`, it means in earlier setting, this gene is not included in CS. `combined_pip_earlier_weights < 0.8` means in earlier setting, the gene is filtered out by either credible set or combined_pip.
+
+```{r echo=FALSE}
+genepip_earlier <- sum_pip_across_contexts_nocs(finemap_res_earlier,E_S_A_mapping_earlier)
+
+siggene_current_total <- siggene_current[,c("genename","combined_pip")]
+notoverlapped_current <- siggene_current_total[!siggene_current_total$genename%in%siggene_earlier$genename,]
+gene_notsig_earlier <- merge(notoverlapped_current,genepip_earlier, by="genename", all.x = T)
+colnames(gene_notsig_earlier) <- c("genename","combined_pip_current_weights","combined_pip_earlier_weights")
+
+DT::datatable(gene_notsig_earlier,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','current sig genes but not reported in earlier setting'),options = list(pageLength = 5) )
+
+sprintf("%s were not included (NAs) because they are not in the weight files", sum(is.na(gene_notsig_earlier$combined_pip_earlier_weights)))
+
+sprintf("%s were not included (combined_pip > 0.8) because they are not in CS", sum(as.numeric(gene_notsig_earlier$combined_pip_earlier_weights >0.8),na.rm = T))
+
+sprintf("%s were not included (combined_pip < 0.8) because of the low combined PIPs", sum(as.numeric(gene_notsig_earlier$combined_pip_earlier_weights < 0.8),na.rm = T))
 ```
 
 
@@ -652,5 +813,66 @@ gene_problem <- c("CCZ1","ELMO1","ING5")
 
 DT::datatable(finemap_gene_res_highpip[finemap_gene_res_highpip$gene_name %in% gene_problem,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','The one with high PIP but also high TWAS p'),options = list(pageLength = 5) )
 
+```
+
+### Comparing with earlier weights 
+
+#### overlaps
+
+```{r echo=FALSE}
+
+siggene_current <- combined_pip_by_contexts[combined_pip_by_contexts$combined_pip > 0.8,]
+
+file_res <- paste0("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/results_ukbb/",trait,"/",trait,".finemap_res.RDS")
+finemap_res_earlier <- readRDS(file_res)
+combined_pip_by_contexts_earlier <- sum_pip_across_contexts(finemap_res_earlier,E_S_A_mapping_earlier)
+siggene_earlier <- combined_pip_by_contexts_earlier[combined_pip_by_contexts_earlier$combined_pip > 0.8,]
+
+sprintf("current # of sig. genes = %s", nrow(siggene_current))
+sprintf("earlier # of sig. genes = %s", nrow(siggene_earlier))
+sprintf("# of overlap between them = %s", sum(siggene_current$genename %in% siggene_earlier$genename))
+```
+
+#### Why earlier genes were not reported in current settings
+
+In the table below, NA means: current weights do not have this gene. If `combined_pip_current_weights >0.8`, it means in current setting, this gene is not included in CS. `combined_pip_current_weights < 0.8` means in current setting, the gene is filtered out by either credible set or combined_pip.
+
+```{r echo=FALSE}
+genepip_current <- sum_pip_across_contexts_nocs(finemap_res,E_S_A_mapping)
+
+siggene_earlier_total <- siggene_earlier[,c("genename","combined_pip")]
+notoverlapped_earlier <- siggene_earlier_total[!siggene_earlier_total$genename%in%siggene_current$genename,]
+gene_notsig_current <- merge(notoverlapped_earlier,genepip_current, by="genename", all.x = T)
+colnames(gene_notsig_current) <- c("genename","combined_pip_earlier_weights","combined_pip_current_weights")
+
+DT::datatable(gene_notsig_current,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Earlier sig genes but not reported in current setting'),options = list(pageLength = 5) )
+
+sprintf("%s were not included (NAs) because they are not in the weight files", sum(is.na(gene_notsig_current$combined_pip_current_weights)))
+
+sprintf("%s were not included (combined_pip > 0.8) because they are not in CS", sum(as.numeric(gene_notsig_current$combined_pip_current_weights >0.8),na.rm = T))
+
+sprintf("%s were not included (combined_pip < 0.8) because of the low combined PIPs", sum(as.numeric(gene_notsig_current$combined_pip_current_weights < 0.8),na.rm = T))
+```
+
+
+#### Why current genes were not reported in earlier settings
+
+In the table below, NA means: earlier weights do not have this gene. If `combined_pip_current_weights >0.8`, it means in earlier setting, this gene is not included in CS. `combined_pip_earlier_weights < 0.8` means in earlier setting, the gene is filtered out by either credible set or combined_pip.
+
+```{r echo=FALSE}
+genepip_earlier <- sum_pip_across_contexts_nocs(finemap_res_earlier,E_S_A_mapping_earlier)
+
+siggene_current_total <- siggene_current[,c("genename","combined_pip")]
+notoverlapped_current <- siggene_current_total[!siggene_current_total$genename%in%siggene_earlier$genename,]
+gene_notsig_earlier <- merge(notoverlapped_current,genepip_earlier, by="genename", all.x = T)
+colnames(gene_notsig_earlier) <- c("genename","combined_pip_current_weights","combined_pip_earlier_weights")
+
+DT::datatable(gene_notsig_earlier,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','current sig genes but not reported in earlier setting'),options = list(pageLength = 5) )
+
+sprintf("%s were not included (NAs) because they are not in the weight files", sum(is.na(gene_notsig_earlier$combined_pip_earlier_weights)))
+
+sprintf("%s were not included (combined_pip > 0.8) because they are not in CS", sum(as.numeric(gene_notsig_earlier$combined_pip_earlier_weights >0.8),na.rm = T))
+
+sprintf("%s were not included (combined_pip < 0.8) because of the low combined PIPs", sum(as.numeric(gene_notsig_earlier$combined_pip_earlier_weights < 0.8),na.rm = T))
 ```
 
