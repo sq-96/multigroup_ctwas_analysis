@@ -8,8 +8,9 @@ output:
     toc: true
 ---
 
-```{r}
+```{r warning=F, message=F}
 library(ggplot2)
+library(tidyverse)
 ```
 
 # Introduction
@@ -47,6 +48,48 @@ DT::datatable(df_summary,caption = htmltools::tags$caption(style = 'caption-side
 
 ```
 
+## An example: LDL-Liver as an example (from the single group analysis)
+
+### z-scores for the overlapped genes
+
+We compared the imputed gene-zscores for the overlapped genes between these 2 datasets. 
+
+Taking LDL-Liver as an example (from the single group analysis), 
+
+```{r}
+
+z_gene_earlier <- readRDS("/project/xinhe/xsun/multi_group_ctwas/1.single_tissue/results/LDL-ukb-d-30780_irnt/Liver/LDL-ukb-d-30780_irnt_Liver.z_gene.RDS")
+z_gene_earlier$ensg_id <- sub("\\..*", "", z_gene_earlier$id)
+
+z_gene_current <- readRDS("/project/xinhe/xsun/multi_group_ctwas/6.multi_group_munro/results_ldl_liver/LDL-ukb-d-30780_irnt/LDL-ukb-d-30780_irnt.z_gene.RDS")
+z_gene_current$ensg_id <- sub("\\|.*", "", z_gene_current$id)
+
+overlap <- merge(z_gene_current,z_gene_earlier, by="ensg_id")
+ggplot(data = overlap) + aes(x = z.x, y=z.y) +
+  geom_point() +
+  geom_abline(slope = 1, intercept = 0, col="red") +
+  labs(x="Munro zscores (LDL-liver, single group)",y="Predictdb zscores (LDL-liver, single group)")+
+  theme_minimal()
+
+```
+
+
+
+### Comparing results with the published ctwas paper
+
+```{r}
+mapping_data <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/Munro_mapping.RDS")
+finemap_res <- readRDS("/project/xinhe/xsun/multi_group_ctwas/6.multi_group_munro/results_ldl_liver/LDL-ukb-d-30780_irnt/LDL-ukb-d-30780_irnt.ctwas.res.RDS")
+
+finemap_gene_res <- finemap_res[finemap_res$type!="SNP",]
+finemap_gene_res$gene <- sapply(finemap_gene_res$id, function(x){unlist(strsplit(x,"[|]"))[1]})
+finemap_gene_res <- finemap_gene_res %>% plyr::join(mapping_data, by = "gene") %>% dplyr::select(-gene) %>% na.omit()
+finemap_gene_res <- finemap_gene_res %>% group_by(id) %>% mutate(susie_pip_adjusted = ifelse(n() > 1, susie_pip / n(), susie_pip)) %>% ungroup() %>% dplyr::select(-susie_pip) %>% dplyr::rename(susie_pip = susie_pip_adjusted)
+
+finemap_gene_res <- finemap_gene_res[,c("genename","susie_pip","z","type","context","gene_type")]
+
+DT::datatable(finemap_gene_res,caption = htmltools::tags$caption(style = 'caption-side: left; text-align: left; color:black; font-size:150%;','Gene PIPs for the LDL-liver single group analysis'),options = list(pageLength = 5))
+```
 
 
 # APA models
