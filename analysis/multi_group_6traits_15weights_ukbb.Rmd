@@ -773,9 +773,11 @@ ggplot(finemap_gene_res_highpip, aes(x = 10^(-log10p), y = susie_pip)) +
 
 finemap_gene_res_highpip$p <- 10^(-finemap_gene_res_highpip$log10p)
 
-gene_problem <- c("CCZ1","ELMO1","ING5")
+gene_problem <- c("CCZ1","ELMO1","ING5","SLC22A5")
 
-DT::datatable(finemap_gene_res_highpip[finemap_gene_res_highpip$gene_name %in% gene_problem,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','The one with high PIP but also high TWAS p'),options = list(pageLength = 5) )
+gene_show <- finemap_gene_res_highpip[finemap_gene_res_highpip$gene_name %in% gene_problem,]
+gene_show <- gene_show[gene_show$p > 0.1,]
+DT::datatable(gene_show,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','The one with high PIP but also high TWAS p'),options = list(pageLength = 5) )
 
 ```
 
