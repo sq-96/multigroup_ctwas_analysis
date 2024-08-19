@@ -414,6 +414,7 @@ We noticed that, when using Munro's weights, we have GNA12 as the top1 IBD risk 
 
 But when using predictdb weights, we missed this gene.
 
+
 ```{r echo=FALSE}
 # cor_dir <- paste0("/project/xinhe/xsun/multi_group_ctwas/7.multi_omics_predicdb/results_predictdb_main/",trait,"/cor_matrix")
 # cor_res <- get_region_cor(region_id = "7_2732593_4533797", cor_dir = cor_dir)
@@ -426,6 +427,61 @@ But when using predictdb weights, we missed this gene.
 #                R_snp_gene = cor_res$R_snp_gene,
 #                R_gene = cor_res$R_gene)
 ```
+
+We are trying to figure out why GNA12 was missed by predictdb weights.
+
+
+```{r echo=FALSE}
+munro.weights <- readRDS("/project/xinhe/xsun/multi_group_ctwas/7.multi_omics_predicdb/results_munro_main/IBD-ebi-a-GCST004131/IBD-ebi-a-GCST004131.preprocessed.weights.RDS")
+gna12_munro_eqtl <- munro.weights[["ENSG00000146535|expression_Colon_Transverse"]]
+
+predictdb.weights <- readRDS("/project/xinhe/xsun/multi_group_ctwas/7.multi_omics_predicdb/results_predictdb_main/IBD-ebi-a-GCST004131/IBD-ebi-a-GCST004131.preprocessed.weights.RDS")
+gna12_predictdb_eqtl <- predictdb.weights[["ENSG00000146535.13|expression_Colon_Transverse"]]
+```
+
+In predictdb eQTL model, there are 2 SNPs, 
+
+```{r echo=FALSE}
+print(gna12_predictdb_eqtl[["wgt"]])
+snps_pred <- rownames(gna12_predictdb_eqtl[["wgt"]])
+```
+
+In Munro eQTL model, there are 5 SNPs, 
+
+```{r echo=FALSE}
+print(gna12_munro_eqtl[["wgt"]])
+snps_munro <- rownames(gna12_munro_eqtl[["wgt"]])
+```
+
+
+We extracted the EUR LD R2 from 1000G using https://ldlink.nih.gov/?tab=ldmatrix
+
+We noticed that, the 2 SNPs in predictdb weights are either in Munro weights (rs208345) or in LD with the Munro eQTLs (rs2533879).
+
+  |           | rs755179 | rs798544 | rs798502 | rs208345 | rs12540595 |
+  |-----------|----------|----------|----------|----------|------------|
+  | rs208345  | 0.004    | 0.049    | 0.051    | 1.0      | 0.001      |
+  | rs2533879 | 0.002    | 0.8      | 0.929    | 0.051    | 0.004      |
+
+We also noticed that, 2 (rs798502,rs798544) of the 5 Munro eQTLs are in LD with each other 
+
+|            | rs755179 | rs798544 | rs798502 | rs208345 | rs12540595 |
+|------------|----------|----------|----------|----------|------------|
+| rs755179   | 1.0      | 0.003    | 0.003    | 0.004    | 0.0        |
+| rs798544   | 0.003    | 1.0      | 0.838    | 0.049    | 0.005      |
+| rs798502   | 0.003    | 0.838    | 1.0      | 0.051    | 0.005      |
+| rs208345   | 0.004    | 0.049    | 0.051    | 1.0      | 0.001      |
+| rs12540595 | 0.0      | 0.005    | 0.005    | 0.001    | 1.0        |
+
+We checked the z scores for these SNPs, 
+
+```{r echo=FALSE}
+z_snp <- readRDS("/project/xinhe/xsun/multi_group_ctwas/7.multi_omics_predicdb/results_munro_main/IBD-ebi-a-GCST004131/IBD-ebi-a-GCST004131.preprocessed.z_snp.RDS")
+
+snps <- unique(c(snps_munro,snps_pred))
+print(z_snp[z_snp$id %in% snps,])
+```
+
 
 ### Checking why Predicdb results missed many Munro genes
 
