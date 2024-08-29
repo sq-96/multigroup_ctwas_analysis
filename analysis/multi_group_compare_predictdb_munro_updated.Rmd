@@ -389,6 +389,8 @@ colnames(overlapped_gene) <- c("genename", "combined_pip_predictdb","eQTL_predic
 overlapped_gene <- overlapped_gene[order(as.numeric(overlapped_gene$combined_pip_munro),decreasing = T),]
 
 DT::datatable(overlapped_gene,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Overlapped genes, not filtered by combined_pip, filtered by credible sets'),options = list(pageLength = 5) )
+
+overlapped_gene_all <- overlapped_gene
 ```
 
 If we filter by combined pip >0.8 in both settings, we have
@@ -482,6 +484,11 @@ snps <- unique(c(snps_munro,snps_pred))
 print(z_snp[z_snp$id %in% snps,])
 ```
 
+The z-scores for GNA12 are:
+
+predictdb: -4.461474
+
+Munro: -6.736242
 
 ### Checking why Predicdb results missed many Munro genes
 
@@ -496,3 +503,70 @@ print(paste0("# of Unique munro genes included in predictdb data = ", length(uni
 
 DT::datatable(genes_munro_unique_pred_res,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Unique munro genes in predictdb setting'),options = list(pageLength = 5) )
 ```
+
+### Comparing z-scores
+
+```{r}
+
+gene_predictdb <- finemap_res_predictdb[finemap_res_predictdb$type =="eQTL",]
+gene_predictdb <- gene_predictdb[,c("gene_name","z","susie_pip")]
+gene_munro <- finemap_res_munro[finemap_res_munro$type =="eQTL",]
+gene_munro <- gene_munro[,c("gene_name","z","susie_pip")]
+
+merge_eqtl <- merge(gene_predictdb, gene_munro, by="gene_name")
+colnames(merge_eqtl) <- c("gene_name","z_predictdb", "pip_predictdb","z_munro", "pip_munro")
+
+merge_eqtl <- data.frame(lapply(merge_eqtl, function(x) {
+  if(is.numeric(x)) format(round(x, 4), nsmall = 4)
+  else x
+}))
+
+
+merge_eqtl$label <- ifelse(merge_eqtl$gene_name %in% overlapped_gene_all$genename, merge_eqtl$gene_name, NA)
+
+merge_eqtl$z_predictdb <- as.numeric(merge_eqtl$z_predictdb)
+merge_eqtl$z_munro<- as.numeric(merge_eqtl$z_munro)
+merge_eqtl$pip_predictdb <- as.numeric(merge_eqtl$pip_predictdb)
+merge_eqtl$pip_munro<- as.numeric(merge_eqtl$pip_munro)
+
+# Create the scatter plot with labels for specific genes
+ggplot(merge_eqtl, aes(x = z_predictdb, y = z_munro)) +
+  geom_point(aes(color = !is.na(label))) +  # Color based on whether label is NA
+  geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed") +  # Add y=x line
+  theme_minimal() +
+  labs(
+    x = "Z PredictDB",
+    y = "Z Munro",
+    title = "Scatter Plot of Z PredictDB vs Z Munro"
+  ) +
+  geom_text(aes(label = label), vjust = 1.5, hjust = 1.5, size = 3, color = "red") +  # Label the points with red color
+  scale_color_manual(values = c("black", "red")) +  # Set colors: black for non-labeled, red for labeled
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    axis.text = element_text(size = 12),
+    axis.title = element_text(size = 14),
+    legend.position = "none"  # Remove the legend
+  )
+
+ggplot(merge_eqtl, aes(x = pip_predictdb, y = pip_munro)) +
+  geom_point(aes(color = !is.na(label))) +  # Color based on whether label is NA
+  geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed") +  # Add y=x line
+  theme_minimal() +
+  labs(
+    x = "PIP PredictDB",
+    y = "PIP Munro",
+    title = "Scatter Plot of PIP PredictDB vs PIP Munro"
+  ) +
+  geom_text(aes(label = label), vjust = 1.5, hjust = 1.5, size = 3, color = "red") +  # Label the points with red color
+  scale_color_manual(values = c("black", "red")) +  # Set colors: black for non-labeled, red for labeled
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    axis.text = element_text(size = 12),
+    axis.title = element_text(size = 14),
+    legend.position = "none"  # Remove the legend
+  )
+
+
+DT::datatable(merge_eqtl,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Z-scores and PIPs computed from eQTL, for the overlapped genes'),options = list(pageLength = 5) )
+```
+
