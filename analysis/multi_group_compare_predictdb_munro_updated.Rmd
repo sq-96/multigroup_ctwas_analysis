@@ -389,6 +389,8 @@ colnames(overlapped_gene) <- c("genename", "combined_pip_predictdb","eQTL_predic
 overlapped_gene <- overlapped_gene[order(as.numeric(overlapped_gene$combined_pip_munro),decreasing = T),]
 
 DT::datatable(overlapped_gene,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Overlapped genes, not filtered by combined_pip, filtered by credible sets'),options = list(pageLength = 5) )
+
+overlapped_gene_all <- overlapped_gene
 ```
 
 If we filter by combined pip >0.8 in both settings, we have
@@ -482,6 +484,11 @@ snps <- unique(c(snps_munro,snps_pred))
 print(z_snp[z_snp$id %in% snps,])
 ```
 
+The z-scores for GNA12 are:
+
+predictdb: -4.461474
+
+Munro: -6.736242
 
 ### Checking why Predicdb results missed many Munro genes
 
@@ -496,3 +503,27 @@ print(paste0("# of Unique munro genes included in predictdb data = ", length(uni
 
 DT::datatable(genes_munro_unique_pred_res,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Unique munro genes in predictdb setting'),options = list(pageLength = 5) )
 ```
+
+### Comparing z-scores
+
+```{r}
+finemap_res_predictdb_overlapped <- finemap_res_predictdb[finemap_res_predictdb$gene_name %in% overlapped_gene_all$genename,]
+
+finemap_res_munro_overlapped <- finemap_res_munro[finemap_res_munro$gene_name %in% overlapped_gene_all$genename,]
+
+finemap_res_predictdb_overlapped_eqtl <- finemap_res_predictdb_overlapped[finemap_res_predictdb_overlapped$type =="eQTL",]
+overlapped_eqtl_predictdb <- finemap_res_predictdb_overlapped_eqtl[,c("gene_name","z","susie_pip")]
+finemap_res_munro_overlapped_eqtl <- finemap_res_munro_overlapped[finemap_res_munro_overlapped$type =="eQTL",]
+overlapped_eqtl_munro <- finemap_res_munro_overlapped_eqtl[,c("gene_name","z","susie_pip")]
+merge_eqtl <- merge(overlapped_eqtl_predictdb, overlapped_eqtl_munro, by="gene_name")
+colnames(merge_eqtl) <- c("gene_name","z_predictdb", "pip_predictdb","z_munro", "pip_munro")
+
+merge_eqtl <- data.frame(lapply(merge_eqtl, function(x) {
+  if(is.numeric(x)) format(round(x, 4), nsmall = 4)
+  else x
+}))
+
+DT::datatable(merge_eqtl,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Z-scores and PIPs computed from eQTL, for the overlapped genes'),options = list(pageLength = 5) )
+
+```
+
