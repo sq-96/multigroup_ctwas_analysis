@@ -1,0 +1,262 @@
+---
+title: "Comparing single-group & multi-group for LDL -- old PIP_combine_function" 
+author: "XSun"
+date: "2024-08-25"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+    toc: true
+---
+
+```{r warning=FALSE,message=F}
+library(ctwas)
+library(EnsDb.Hsapiens.v86)
+library(ggplot2)
+library(RColorBrewer)
+library(dplyr)
+
+load("/project2/xinhe/shared_data/multigroup_ctwas/weights/E_S_A_mapping_updated.RData")
+ens_db <- EnsDb.Hsapiens.v86
+
+trait <- "LDL-ukb-d-30780_irnt"
+gwas_n <- 343621
+
+source("/project/xinhe/xsun/r_functions/combine_pip_old_ctwas.R")
+
+sum_pve_across_types <- function(ctwas_parameters) {
+  # Round the group_pve values
+  pve <- round(ctwas_parameters$group_pve, 4)
+  pve <- as.data.frame(pve)
+
+  # Extract SNP PVE for later use
+  SNP_pve <- pve["SNP", ]
+
+  # Add type and context columns
+  pve$type <- sapply(rownames(pve), function(x) { unlist(strsplit(x, "[|]"))[1] })
+  pve$context <- sapply(rownames(pve), function(x) { unlist(strsplit(x, "[|]"))[2] })
+
+  # Remove rows with NA values and sort
+  pve <- na.omit(pve)
+  pve <- pve[order(rownames(pve)), ]
+
+  # Aggregate PVE by type
+  df_pve <- aggregate(pve$pve, by = list(pve$type), FUN = sum)
+  colnames(df_pve) <- c("type", "total_pve")
+  df_pve$total_pve <- round(df_pve$total_pve, 4)
+
+  # Add context-specific columns
+  for (context in unique(pve$context)) {
+    context_pve <- aggregate(pve$pve, by = list(pve$type, pve$context), FUN = sum)
+    context_pve <- context_pve[context_pve$Group.2 == context, ]
+    colnames(context_pve)[3] <- context
+    df_pve <- merge(df_pve, context_pve[, c("Group.1", context)], by.x = "type", by.y = "Group.1", all.x = TRUE)
+  }
+
+  # Insert SNP PVE
+  SNP_row <- c("SNP", SNP_pve, rep(0, ncol(df_pve) - 2))
+  df_pve <- rbind(df_pve, SNP_row)
+
+  # Convert to numeric except for the type column
+  df_pve[, -1] <- lapply(df_pve[, -1], as.numeric)
+
+  # Sum all rows and add a sum_pve row
+  sum_row <- colSums(df_pve[, -1], na.rm = TRUE)
+  sum_row <- c("total_pve", sum_row)
+  df_pve <- rbind(df_pve, sum_row)
+
+  # Clean up row names and return
+  row.names(df_pve) <- NULL
+  return(df_pve)
+}
+
+palette <- c(brewer.pal(12, "Paired"), brewer.pal(12, "Set3"), brewer.pal(6, "Dark2"))
+
+pve_pie_chart <- function(pve_vector, palette=NULL, title) {
+  # Create data frame for plotting
+  data <- data.frame(
+    Group = names(pve_vector),
+    Value = pve_vector
+  )
+  
+  # Calculate percentages
+  data$Percentage <- round(100 * data$Value / sum(data$Value), 1)
+  
+  # Set palette if not specified
+  if (is.null(palette)) {
+    palette <- brewer.pal(min(8, length(data$Group)), "Set3")
+  }
+  
+  # Create pie chart
+  ggplot(data, aes(x = "", y = Value, fill = Group)) +
+    geom_bar(stat = "identity", width = 1, color = "white") +
+    coord_polar(theta = "y") +  # This transforms the bar chart into a pie chart
+    scale_fill_manual(values = palette, name = "Group") +
+    labs(title = title, x = NULL, y = NULL) +
+    theme_void() +
+    theme(plot.title = element_text(hjust = 0.5), 
+          legend.position = "right", 
+          legend.title = element_text(face = "bold"), 
+          legend.text = element_text(size = 12)) +
+    geom_text(aes(label = paste(Percentage, "%", sep="")), position = position_stack(vjust = 0.5))
+}
+```
+
+
+# Settings
+
+Weights: 
+
+single group: Liver, eQTL
+
+multi group: Liver, Spleen, Adipose_Subcutaneous, Adrenal_Gland, Esophagus_Mucosa; eQTL + sQTL
+
+
+- drop_strand_ambig = TRUE,
+- scale_by_ld_variance = TRUE,
+- load_predictdb_LD = F,
+
+Main function
+
+- niter_prefit = default,
+- niter = default,
+- pre-estimate L
+
+# Results
+
+## Single group
+
+
+### Parameters
+
+```{r}
+
+results_dir_single <- paste0("/project/xinhe/xsun/multi_group_ctwas/xxxintalk/results_predictdb_main_single/",trait,"/")
+
+
+finemap.res.single <- readRDS(paste0(results_dir_single,trait,".ctwas.res.RDS"))
+snp_map.single <- readRDS(paste0(results_dir_single,trait,".snp_map.RDS"))
+res.single <- finemap.res.single$finemap_res
+
+
+param.single <- finemap.res.single$param
+make_convergence_plots(param.single, gwas_n)
+ctwas_parameters.single <- summarize_param(param.single, gwas_n)
+
+
+group_size.single <- data.frame(group = names(ctwas_parameters.single$group_size),
+                         group_size = as.vector(ctwas_parameters.single$group_size))
+group_size.single <- t(group_size.single)
+DT::datatable(group_size.single,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Group size'),options = list(pageLength = 5) )
+
+```
+
+
+### ctwas results 
+
+
+```{r}
+annotated_finemap_res.single <- anno_finemap_res(finemap_res = res.single,
+                                          snp_map = snp_map.single,
+                                          gene_annot = E_S_A_mapping,
+                                          use_gene_pos = "mid",
+                                          filter_protein_coding_genes = T,
+                                          drop_unannotated_genes = T,
+                                          filter_cs = T)
+
+res_gene.single <- annotated_finemap_res.single[annotated_finemap_res.single$type != "SNP",]
+
+combined_pip_by_context.single <- combine_gene_pips_old(finemap_res = annotated_finemap_res.single,
+                                             by = "type", digits = 4)
+highpip.single <- combined_pip_by_context.single[combined_pip_by_context.single$combined_pip > 0.8,]
+
+DT::datatable(highpip.single,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Genes with PIP > 0.8'),options = list(pageLength = 5) )
+
+
+```
+
+
+
+## Multi group
+
+### Parameters
+
+```{r}
+
+results_dir_multi <- paste0("/project/xinhe/xsun/multi_group_ctwas/xxxintalk/results_predictdb_main_multi/",trait,"/")
+
+
+finemap.res.multi <- readRDS(paste0(results_dir_multi,trait,".ctwas.res.RDS"))
+snp_map.multi <- readRDS(paste0(results_dir_multi,trait,".snp_map.RDS"))
+res.multi <- finemap.res.multi$finemap_res
+
+
+param.multi <- finemap.res.multi$param
+make_convergence_plots(param.multi, gwas_n,colors = palette)
+ctwas_parameters.multi <- summarize_param(param.multi, gwas_n)
+
+
+group_size.multi <- data.frame(group = names(ctwas_parameters.multi$group_size),
+                         group_size = as.vector(ctwas_parameters.multi$group_size))
+group_size.multi <- t(group_size.multi)
+DT::datatable(group_size.multi,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Group size'),options = list(pageLength = 5) )
+
+
+para.multi <- sum_pve_across_types(ctwas_parameters.multi)
+DT::datatable(para.multi,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Heritability contribution by contexts'),options = list(pageLength = 5) )
+
+pve_vector.multi <- as.numeric(para.multi$total_pve[1:3])
+names(pve_vector.multi) <- para.multi$type[1:3]
+pve_pie_chart(pve_vector.multi, title = "Pie Chart of PVE across Types", palette)
+```
+
+
+### ctwas results 
+
+
+```{r}
+annotated_finemap_res.multi <- anno_finemap_res(finemap_res = res.multi,
+                                          snp_map = snp_map.multi,
+                                          gene_annot = E_S_A_mapping,
+                                          use_gene_pos = "mid",
+                                          filter_protein_coding_genes = T,
+                                          drop_unannotated_genes = T,
+                                          filter_cs = T)
+
+res_gene.multi <- annotated_finemap_res.multi[annotated_finemap_res.multi$type != "SNP",]
+
+
+combined_pip_by_context.multi <- combine_gene_pips_old(finemap_res = annotated_finemap_res.multi,
+                                             by = "type", digits = 4)
+highpip.multi <- combined_pip_by_context.multi[combined_pip_by_context.multi$combined_pip > 0.8,]
+
+DT::datatable(highpip.multi,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Genes with PIP > 0.8'),options = list(pageLength = 5) )
+
+
+```
+
+
+
+
+## Comparing the results
+
+```{r}
+
+overlap <- highpip.multi[highpip.multi$gene_name %in% highpip.single$gene_name,]
+
+sprintf("the number of genes reported by single group analysis: %s", nrow(highpip.single))
+sprintf("the number of genes reported by multi group analysis: %s", nrow(highpip.multi))
+sprintf("the number of overlapped gene: %s", nrow(overlap))
+
+DT::datatable(overlap,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','overlapped genes'),options = list(pageLength = 5) )
+
+multi_unique <- combined_pip_by_context.multi[!combined_pip_by_context.multi$gene_name %in% overlap$gene_name,]
+multi_unique <- multi_unique[multi_unique$combined_pip > 0.8,]
+DT::datatable(multi_unique,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Unique genes -- multi group'),options = list(pageLength = 5) )
+
+unique_detail <- res_gene.multi[!res_gene.multi$gene_name %in%overlap$gene_name,]
+unique_detail <- unique_detail[unique_detail$gene_name %in% highpip.multi$gene_name,]
+save(unique_detail, file = "/project/xinhe/xsun/multi_group_ctwas/xxxintalk/unique_detail.rdata")
+```
+
+
+
