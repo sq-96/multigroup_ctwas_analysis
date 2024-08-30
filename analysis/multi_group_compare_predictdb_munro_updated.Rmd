@@ -570,3 +570,45 @@ ggplot(merge_eqtl, aes(x = pip_predictdb, y = pip_munro)) +
 DT::datatable(merge_eqtl,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Z-scores and PIPs computed from eQTL, for the overlapped genes'),options = list(pageLength = 5) )
 ```
 
+If we don't consider CS, I noticed there is a gene NXPE1. The z-predictdb = 4.5985 and z-munro = 4.4947. But pip_predictdb = 0.5289 and pip_munro = 0.0142.
+
+
+```{r echo=FALSE}
+NXPE1_munro_eqtl <- munro.weights[["ENSG00000095110|expression_Colon_Transverse"]]
+NXPE1_predictdb_eqtl <- predictdb.weights[["ENSG00000095110.7|expression_Colon_Transverse"]]
+```
+
+In predictdb eQTL model, there are 1 SNPs, 
+
+```{r echo=FALSE}
+print(NXPE1_predictdb_eqtl[["wgt"]])
+snps_pred <- rownames(NXPE1_predictdb_eqtl[["wgt"]])
+```
+
+In Munro eQTL model, there are 3 SNPs, 
+
+```{r echo=FALSE}
+print(NXPE1_munro_eqtl[["wgt"]])
+snps_munro <- rownames(NXPE1_munro_eqtl[["wgt"]])
+```
+
+We checked the z scores for these SNPs, 
+
+```{r echo=FALSE}
+z_snp <- readRDS("/project/xinhe/xsun/multi_group_ctwas/7.multi_omics_predicdb/results_munro_main/IBD-ebi-a-GCST004131/IBD-ebi-a-GCST004131.preprocessed.z_snp.RDS")
+
+snps <- unique(c(snps_munro,snps_pred))
+print(z_snp[z_snp$id %in% snps,])
+```
+
+The both predictdb eQTL and munro eQTLs have large GWAS z-score. We checked more about the finemapping results
+
+```{r echo=FALSE}
+
+DT::datatable(finemap_res_predictdb[finemap_res_predictdb$gene_name == "NXPE1" & complete.cases(finemap_res_predictdb$gene_name),],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Fine mapping results for NXPE1 -- predictdb'),options = list(pageLength = 5) )
+
+
+DT::datatable(finemap_res_munro[finemap_res_munro$gene_name == "NXPE1" & complete.cases(finemap_res_munro$gene_name),],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Fine mapping results for NXPE1 -- Munro'),options = list(pageLength = 5) )
+```
+
+The Munro PIPs are from sQTLs. So, as shown in the earlier scatter plot, the eQTL PIP is very low. 
