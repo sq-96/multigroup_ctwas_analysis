@@ -14,6 +14,9 @@ library(EnsDb.Hsapiens.v86)
 library(ggplot2)
 library(RColorBrewer)
 library(dplyr)
+library(logging)
+library(readr)
+library(data.table)
 
 load("/project2/xinhe/shared_data/multigroup_ctwas/weights/E_S_A_mapping_updated.RData")
 ens_db <- EnsDb.Hsapiens.v86
@@ -22,6 +25,7 @@ trait <- "LDL-ukb-d-30780_irnt"
 gwas_n <- 343621
 
 source("/project/xinhe/xsun/r_functions/combine_pip_old_ctwas.R")
+source("/project/xinhe/xsun/r_functions/anno_finemap_res_old_ctwas.R")
 
 sum_pve_across_types <- function(ctwas_parameters) {
   # Round the group_pve values
@@ -128,7 +132,7 @@ Main function
 
 ### Parameters
 
-```{r}
+```{r message=F,warning=F}
 
 results_dir_single <- paste0("/project/xinhe/xsun/multi_group_ctwas/xxxintalk/results_predictdb_main_single/",trait,"/")
 
@@ -154,8 +158,8 @@ DT::datatable(group_size.single,caption = htmltools::tags$caption( style = 'capt
 ### ctwas results 
 
 
-```{r}
-annotated_finemap_res.single <- anno_finemap_res(finemap_res = res.single,
+```{r message=F,warning=F}
+annotated_finemap_res.single <- anno_finemap_res_old(finemap_res = res.single,
                                           snp_map = snp_map.single,
                                           gene_annot = E_S_A_mapping,
                                           use_gene_pos = "mid",
@@ -180,7 +184,7 @@ DT::datatable(highpip.single,caption = htmltools::tags$caption( style = 'caption
 
 ### Parameters
 
-```{r}
+```{r message=F,warning=F}
 
 results_dir_multi <- paste0("/project/xinhe/xsun/multi_group_ctwas/xxxintalk/results_predictdb_main_multi/",trait,"/")
 
@@ -213,14 +217,15 @@ pve_pie_chart(pve_vector.multi, title = "Pie Chart of PVE across Types", palette
 ### ctwas results 
 
 
-```{r}
-annotated_finemap_res.multi <- anno_finemap_res(finemap_res = res.multi,
+```{r message=F,warning=F}
+annotated_finemap_res.multi <- anno_finemap_res_old(finemap_res = res.multi,
                                           snp_map = snp_map.multi,
                                           gene_annot = E_S_A_mapping,
                                           use_gene_pos = "mid",
                                           filter_protein_coding_genes = T,
                                           drop_unannotated_genes = T,
                                           filter_cs = T)
+
 
 res_gene.multi <- annotated_finemap_res.multi[annotated_finemap_res.multi$type != "SNP",]
 
@@ -231,13 +236,35 @@ highpip.multi <- combined_pip_by_context.multi[combined_pip_by_context.multi$com
 
 DT::datatable(highpip.multi,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Genes with PIP > 0.8'),options = list(pageLength = 5) )
 
+```
 
+
+
+### Comparing old PIP and new PIP
+
+```{r message=F,warning=F}
+
+combined_pip_by_context.multi.new <- combine_gene_pips_new(finemap_res = annotated_finemap_res.multi,
+                                             by = "type", digits = 4)
+
+
+merge_combined_pip <- merge(combined_pip_by_context.multi, combined_pip_by_context.multi.new, by = "gene_name")
+colnames(merge_combined_pip) <- c("gene_name", "combined_pip_old","eQTL_pip","sQTL_pip","combined_pip_new","eQTL_pip.y","sQTL_pip.y")
+merge_combined_pip <- merge_combined_pip[,c("gene_name", "eQTL_pip","sQTL_pip","combined_pip_old","combined_pip_new")]
+
+ggplot(merge_combined_pip, aes(x = combined_pip_old, y = combined_pip_new)) +
+  geom_point() +  # Scatter plot
+  geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed") +  # Add y = x line
+  labs(x = "Combined PIP Old", y = "Combined PIP New") +
+  theme_minimal()
+
+DT::datatable(merge_combined_pip,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Comparing old combined pip and new combined pip'),options = list(pageLength = 5) )
 ```
 
 
 
 
-## Comparing the results
+## Comparing the single-group results and multi-group results
 
 ```{r}
 
@@ -257,6 +284,8 @@ unique_detail <- res_gene.multi[!res_gene.multi$gene_name %in%overlap$gene_name,
 unique_detail <- unique_detail[unique_detail$gene_name %in% highpip.multi$gene_name,]
 save(unique_detail, file = "/project/xinhe/xsun/multi_group_ctwas/xxxintalk/unique_detail.rdata")
 ```
+
+
 
 
 
