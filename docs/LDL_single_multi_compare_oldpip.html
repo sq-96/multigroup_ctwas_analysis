@@ -411,7 +411,7 @@ aria-hidden="true"></span> </a>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2024-08-29
+<strong>Last updated:</strong> 2024-09-05
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -449,10 +449,10 @@ changes </a>
 <div id="strongRMarkdownfilestronguncommittedchanges"
 class="panel-collapse collapse">
 <div class="panel-body">
-<p>The R Markdown is untracked by Git. To know which version of the R
-Markdown file created these results, you’ll want to first commit it to
-the Git repo. If you’re still working on the analysis, you can ignore
-this warning. When you’re finished, you can run
+<p>The R Markdown file has unstaged changes. To know which version of
+the R Markdown file created these results, you’ll want to first commit
+it to the Git repo. If you’re still working on the analysis, you can
+ignore this warning. When you’re finished, you can run
 <code>wflow_publish</code> to commit the R Markdown file and build the
 HTML.</p>
 </div>
@@ -545,15 +545,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree184fb61061cc2097e8edaf7f0744793291fd0b4atargetblank184fb61a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree064975b77f98ee2f88c7b5c75939d3981d193eectargetblank064975ba">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/184fb61061cc2097e8edaf7f0744793291fd0b4a" target="_blank">184fb61</a>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/064975b77f98ee2f88c7b5c75939d3981d193eec" target="_blank">064975b</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree184fb61061cc2097e8edaf7f0744793291fd0b4atargetblank184fb61a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree064975b77f98ee2f88c7b5c75939d3981d193eectargetblank064975ba"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -563,7 +563,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/184fb61061cc2097e8edaf7f0744793291fd0b4a" target="_blank">184fb61</a>.
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/064975b77f98ee2f88c7b5c75939d3981d193eec" target="_blank">064975b</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -579,11 +579,13 @@ were generated:
 <pre><code>
 Ignored files:
     Ignored:    .Rhistory
-    Ignored:    analysis/figure/
     Ignored:    results/
 
-Untracked files:
-    Untracked:  analysis/LDL_single_multi_compare_oldpip.Rmd
+Unstaged changes:
+    Modified:   analysis/LDL_single_multi_compare_oldpip.Rmd
+
+Staged changes:
+    Modified:   analysis/index.Rmd
 
 </code></pre>
 <p>
@@ -598,10 +600,75 @@ have uncommitted changes.
 <hr>
 </div>
 <div id="versions" class="tab-pane fade">
+
 <p>
-There are no past versions. Publish this analysis with
-<code>wflow_publish()</code> to start tracking its development.
+These are the previous versions of the repository in which changes were
+made to the R Markdown
+(<code>analysis/LDL_single_multi_compare_oldpip.Rmd</code>) and HTML
+(<code>docs/LDL_single_multi_compare_oldpip.html</code>) files. If
+you’ve configured a remote Git repository (see
+<code>?wflow_git_remote</code>), click on the hyperlinks in the table
+below to view the files as they were in that past version.
 </p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/2053ed29a5ad7acb04fce157a35ec09be196f918/analysis/LDL_single_multi_compare_oldpip.Rmd" target="_blank">2053ed2</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2024-08-29
+</td>
+<td>
+update
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/sq-96/multigroup_ctwas_analysis/2053ed29a5ad7acb04fce157a35ec09be196f918/docs/LDL_single_multi_compare_oldpip.html" target="_blank">2053ed2</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2024-08-29
+</td>
+<td>
+update
+</td>
+</tr>
+</tbody>
+</table>
+</div>
 <hr>
 </div>
 </div>
@@ -611,6 +678,9 @@ library(EnsDb.Hsapiens.v86)
 library(ggplot2)
 library(RColorBrewer)
 library(dplyr)
+library(logging)
+library(readr)
+library(data.table)
 
 load(&quot;/project2/xinhe/shared_data/multigroup_ctwas/weights/E_S_A_mapping_updated.RData&quot;)
 ens_db &lt;- EnsDb.Hsapiens.v86
@@ -619,6 +689,7 @@ trait &lt;- &quot;LDL-ukb-d-30780_irnt&quot;
 gwas_n &lt;- 343621
 
 source(&quot;/project/xinhe/xsun/r_functions/combine_pip_old_ctwas.R&quot;)
+source(&quot;/project/xinhe/xsun/r_functions/anno_finemap_res_old_ctwas.R&quot;)
 
 sum_pve_across_types &lt;- function(ctwas_parameters) {
   # Round the group_pve values
@@ -731,6 +802,43 @@ res.single &lt;- finemap.res.single$finemap_res
 param.single &lt;- finemap.res.single$param
 make_convergence_plots(param.single, gwas_n)</code></pre>
 <p><img src="figure/LDL_single_multi_compare_oldpip.Rmd/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-2-1">
+Past versions of unnamed-chunk-2-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-2-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/2053ed29a5ad7acb04fce157a35ec09be196f918/docs/figure/LDL_single_multi_compare_oldpip.Rmd/unnamed-chunk-2-1.png" target="_blank">2053ed2</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2024-08-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>ctwas_parameters.single &lt;- summarize_param(param.single, gwas_n)
 
 
@@ -743,19 +851,19 @@ DT::datatable(group_size.single,caption = htmltools::tags$caption( style = &#39;
 </div>
 <div id="ctwas-results" class="section level3">
 <h3>ctwas results</h3>
-<pre class="r"><code>annotated_finemap_res.single &lt;- anno_finemap_res(finemap_res = res.single,
+<pre class="r"><code>annotated_finemap_res.single &lt;- anno_finemap_res_old(finemap_res = res.single,
                                           snp_map = snp_map.single,
                                           gene_annot = E_S_A_mapping,
                                           use_gene_pos = &quot;mid&quot;,
                                           filter_protein_coding_genes = T,
                                           drop_unannotated_genes = T,
                                           filter_cs = T)</code></pre>
-<pre><code>2024-08-29 10:44:10 INFO::Annotating ctwas finemapping result ...
-2024-08-29 10:44:20 INFO::keep only protein coding genes
-2024-08-29 10:44:21 INFO::keep only results in credible sets
-2024-08-29 10:44:21 INFO::add gene_name and gene_type
-2024-08-29 10:44:21 INFO::use gene mid positions
-2024-08-29 10:44:21 INFO::add SNP positions</code></pre>
+<pre><code>2024-09-05 14:58:26 INFO::Annotating ctwas finemapping result ...
+2024-09-05 14:58:38 INFO::keep only protein coding genes
+2024-09-05 14:58:38 INFO::keep only results in credible sets
+2024-09-05 14:58:38 INFO::add gene_name and gene_type
+2024-09-05 14:58:38 INFO::use gene mid positions
+2024-09-05 14:58:38 INFO::add SNP positions</code></pre>
 <pre class="r"><code>res_gene.single &lt;- annotated_finemap_res.single[annotated_finemap_res.single$type != &quot;SNP&quot;,]
 
 combined_pip_by_context.single &lt;- combine_gene_pips_old(finemap_res = annotated_finemap_res.single,
@@ -782,6 +890,43 @@ res.multi &lt;- finemap.res.multi$finemap_res
 param.multi &lt;- finemap.res.multi$param
 make_convergence_plots(param.multi, gwas_n,colors = palette)</code></pre>
 <p><img src="figure/LDL_single_multi_compare_oldpip.Rmd/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-4-1">
+Past versions of unnamed-chunk-4-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-4-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/2053ed29a5ad7acb04fce157a35ec09be196f918/docs/figure/LDL_single_multi_compare_oldpip.Rmd/unnamed-chunk-4-1.png" target="_blank">2053ed2</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2024-08-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>ctwas_parameters.multi &lt;- summarize_param(param.multi, gwas_n)
 
 
@@ -799,23 +944,60 @@ DT::datatable(para.multi,caption = htmltools::tags$caption( style = &#39;caption
 names(pve_vector.multi) &lt;- para.multi$type[1:3]
 pve_pie_chart(pve_vector.multi, title = &quot;Pie Chart of PVE across Types&quot;, palette)</code></pre>
 <p><img src="figure/LDL_single_multi_compare_oldpip.Rmd/unnamed-chunk-4-4.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-4-4">
+Past versions of unnamed-chunk-4-4.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-4-4" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/2053ed29a5ad7acb04fce157a35ec09be196f918/docs/figure/LDL_single_multi_compare_oldpip.Rmd/unnamed-chunk-4-4.png" target="_blank">2053ed2</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2024-08-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="ctwas-results-1" class="section level3">
 <h3>ctwas results</h3>
-<pre class="r"><code>annotated_finemap_res.multi &lt;- anno_finemap_res(finemap_res = res.multi,
+<pre class="r"><code>annotated_finemap_res.multi &lt;- anno_finemap_res_old(finemap_res = res.multi,
                                           snp_map = snp_map.multi,
                                           gene_annot = E_S_A_mapping,
                                           use_gene_pos = &quot;mid&quot;,
                                           filter_protein_coding_genes = T,
                                           drop_unannotated_genes = T,
                                           filter_cs = T)</code></pre>
-<pre><code>2024-08-29 10:44:41 INFO::Annotating ctwas finemapping result ...
-2024-08-29 10:44:46 INFO::keep only protein coding genes
-2024-08-29 10:44:46 INFO::keep only results in credible sets
-2024-08-29 10:44:46 INFO::add gene_name and gene_type
-2024-08-29 10:44:46 INFO::split PIPs for traits mapped to multiple genes
-2024-08-29 10:44:46 INFO::use gene mid positions
-2024-08-29 10:44:46 INFO::add SNP positions</code></pre>
+<pre><code>2024-09-05 14:59:00 INFO::Annotating ctwas finemapping result ...
+2024-09-05 14:59:05 INFO::keep only protein coding genes
+2024-09-05 14:59:05 INFO::keep only results in credible sets
+2024-09-05 14:59:05 INFO::add gene_name and gene_type
+2024-09-05 14:59:05 INFO::split PIPs for traits mapped to multiple genes
+2024-09-05 14:59:05 INFO::use gene mid positions
+2024-09-05 14:59:05 INFO::add SNP positions</code></pre>
 <pre class="r"><code>res_gene.multi &lt;- annotated_finemap_res.multi[annotated_finemap_res.multi$type != &quot;SNP&quot;,]
 
 
@@ -827,9 +1009,30 @@ DT::datatable(highpip.multi,caption = htmltools::tags$caption( style = &#39;capt
 <div id="htmlwidget-16707cd634e93674753d" style="width:100%;height:auto;" class="datatables html-widget"></div>
 <script type="application/json" data-for="htmlwidget-16707cd634e93674753d">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: topleft; text-align = left; color:black;\">Genes with PIP &gt; 0.8<\/caption>","data":[["1","60","252","15","134","185","251","125","118","272","31","240","68","163","39","20","174","248","275","117","270","89","16","168","123","222","8","98","42","137","111","161","47","2","228","75","171","265","128","146","155","245","69","170","85","53","141","51","190","181","239","135","208","223","108","263","216","24","9","273","107","178","19","13","266"],["ABCA1","DNAJC13","TRIM39","APOB","LDLR","PSRC1","TRAK2","INSIG2","HPR","ZGPAT","C10orf88","TIMD4","FADS1","PCSK9","CETP","ASGR1","PKN3","TNKS","ZNF227","HP","ZDHHC18","GAS6","APOC1","PELO","INHBB","SP4","ADH1B","GSK3B","CNIH4","LRCH4","HMGCR","PARP9","CSNK1G3","ABCA8","STAT5B","FCGRT","PHC1","USP53","KDSR","MYPOP","NPEPPS","TMEM57","FAM117B","PGS1","FUT2","CYP4F12","MITF","CYP2A6","R3HDM2","PRKD2","THOP1","LIPC","SEPT2","SPHK2","HLA-DQB2","USP1","SLC22A1","BCAT2","ADRB1","ZHX3","HLA-DQB1","POP7","ASAP3","ALLC","XPNPEP3"],[1.317,1.2751,1.1333,1,1,1,1,1,1,0.9999,0.9999,0.9998,0.9992,0.9985,0.9981,0.9968,0.9927,0.9917,0.988,0.9876,0.9868,0.9867,0.9867,0.9803,0.9797,0.9749,0.9733,0.9719,0.9687,0.9669,0.9669,0.9649,0.9625,0.9613,0.9587,0.958,0.957,0.9553,0.9537,0.9535,0.9524,0.9361,0.9198,0.9162,0.9156,0.9148,0.9137,0.911,0.9098,0.9015,0.8846,0.8842,0.8729,0.8623,0.8596,0.857,0.8441,0.8333,0.8307,0.8286,0.8241,0.8223,0.8213,0.8095,0.8062],[null,1.0248,0.9889,1,null,1,1,1,1,0.9999,0.9999,0.9998,0.9992,0.9985,0.9981,null,0.9927,0.9917,null,null,null,0.9867,0.9867,0.9803,0.9797,0.9749,null,0.9719,0.1097,null,null,null,0.9625,null,0.9587,0.0967,null,0.2043,0.9537,null,0.2682,0.073,0.9198,null,0.9156,0.3154,0.9137,0.911,null,0.8627,null,null,null,0.0052,0.0369,0.857,0.8441,null,0.8307,null,0.0014,0.8223,0.8213,0.8095,0.5096],[1.317,0.2503,0.1444,null,1,null,null,null,null,null,null,null,null,null,null,0.9968,null,null,0.988,0.9876,0.9868,null,null,null,null,null,0.9733,null,0.8589,0.9669,0.9669,0.9649,null,0.9613,null,0.8612,0.957,0.7511,null,0.9535,0.6842,0.8631,null,0.9162,null,0.5993,null,null,0.9098,0.0389,0.8846,0.8842,0.8729,0.8571,0.8227,null,null,0.8333,null,0.8286,0.8227,null,null,null,0.2967]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>gene_name<\/th>\n      <th>combined_pip<\/th>\n      <th>eQTL_pip<\/th>\n      <th>sQTL_pip<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":5,"columnDefs":[{"className":"dt-right","targets":[2,3,4]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[5,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
 </div>
+<div id="comparing-old-pip-and-new-pip" class="section level3">
+<h3>Comparing old PIP and new PIP</h3>
+<pre class="r"><code>combined_pip_by_context.multi.new &lt;- combine_gene_pips_new(finemap_res = annotated_finemap_res.multi,
+                                             by = &quot;type&quot;, digits = 4)
+
+
+merge_combined_pip &lt;- merge(combined_pip_by_context.multi, combined_pip_by_context.multi.new, by = &quot;gene_name&quot;)
+colnames(merge_combined_pip) &lt;- c(&quot;gene_name&quot;, &quot;combined_pip_old&quot;,&quot;eQTL_pip&quot;,&quot;sQTL_pip&quot;,&quot;combined_pip_new&quot;,&quot;eQTL_pip.y&quot;,&quot;sQTL_pip.y&quot;)
+merge_combined_pip &lt;- merge_combined_pip[,c(&quot;gene_name&quot;, &quot;eQTL_pip&quot;,&quot;sQTL_pip&quot;,&quot;combined_pip_old&quot;,&quot;combined_pip_new&quot;)]
+
+ggplot(merge_combined_pip, aes(x = combined_pip_old, y = combined_pip_new)) +
+  geom_point() +  # Scatter plot
+  geom_abline(intercept = 0, slope = 1, color = &quot;red&quot;, linetype = &quot;dashed&quot;) +  # Add y = x line
+  labs(x = &quot;Combined PIP Old&quot;, y = &quot;Combined PIP New&quot;) +
+  theme_minimal()</code></pre>
+<p><img src="figure/LDL_single_multi_compare_oldpip.Rmd/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>DT::datatable(merge_combined_pip,caption = htmltools::tags$caption( style = &#39;caption-side: topleft; text-align = left; color:black;&#39;,&#39;Comparing old combined pip and new combined pip&#39;),options = list(pageLength = 5) )</code></pre>
+<div id="htmlwidget-37e46cf92521dcbed3f8" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-37e46cf92521dcbed3f8">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: topleft; text-align = left; color:black;\">Comparing old combined pip and new combined pip<\/caption>","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92","93","94","95","96","97","98","99","100","101","102","103","104","105","106","107","108","109","110","111","112","113","114","115","116","117","118","119","120","121","122","123","124","125","126","127","128","129","130","131","132","133","134","135","136","137","138","139","140","141","142","143","144","145","146","147","148","149","150","151","152","153","154","155","156","157","158","159","160","161","162","163","164","165","166","167","168","169","170","171","172","173","174","175","176","177","178","179","180","181","182","183","184","185","186","187","188","189","190","191","192","193","194","195","196","197","198","199","200","201","202","203","204","205","206","207","208","209","210","211","212","213","214","215","216","217","218","219","220","221","222","223","224","225","226","227","228","229","230","231","232","233","234","235","236","237","238","239","240","241","242","243","244","245","246","247","248","249","250","251","252","253","254","255","256","257","258","259","260","261","262","263","264","265","266","267","268","269","270","271","272","273","274","275","276","277","278","279","280","281","282"],["ABCA1","ABCA8","ABCB4","ABHD12","ACAD11","ACHE","ACMSD","ADH1B","ADRB1","AFF1","AGPAT5","ALDH16A1","ALLC","ANGPTL3","APOB","APOC1","ARPC1A","ARPC1B","ASAP3","ASGR1","ATF1","ATP5J2","BBS1","BCAT2","BLOC1S2","BMPR2","BRCA2","BRD9","BRI3","BRWD1","C10orf88","C5","C5orf56","CARF","CCDC57","CD163","CD163L1","CEP250","CETP","CHUK","CLK2","CNIH4","CNPY3","CNTRL","COBLL1","CSK","CSNK1G3","CTSF","CWF19L1","CYP20A1","CYP2A6","CYP3A5","CYP4F12","DAGLB","DBP","DDX56","DENND4C","DHRS13","DMTN","DNAJC13","DPP3","EFNA1","ELOC","ERGIC3","EVI2A","EVI2B","EVI5","FADS1","FAM117B","FAM189B","FAM228A","FAM228B","FARP2","FASN","FCGRT","FDPS","FES","FGF7","FKRP","FLOT2","FLT3LG","FMO2","FMO3","FURIN","FUT2","GABBR1","GALK2","GARS","GAS6","GATA3","GBA","GCC2","GGCT","GIGYF1","GNB2","GNMT","GPAM","GSK3B","GSN","HCN3","HFE","HLA-A","HLA-B","HLA-C","HLA-DQA1","HLA-DQA2","HLA-DQB1","HLA-DQB2","HLA-DRB1","HLA-DRB5","HMGCR","HMGXB4","HOXB3","HOXB5","HOXB6","HOXB7","HP","HPR","HSD17B14","ICA1L","IFT80","IGF2R","INHBB","INPP5E","INSIG2","ITSN2","JMJD1C","KDSR","KIAA0100","KLRG1","KPNA4","LAMC1","LAMC2","LDLR","LIPC","LMAN1L","LRCH4","LRRK2","M6PR","MDH2","MITF","MOSPD3","MRPS14","MRPS18B","MUC1","MYPOP","MZF1","N4BP2L1","N4BP2L2","NBEAL1","NEK8","NF1","NOP58","NPC1L1","NPEPPS","NPHP3","NYNRIN","OMG","PAQR9","PARP10","PARP9","PCOLCE","PCSK9","PDAP1","PDGFD","PDHB","PELI3","PELO","PEX6","PGS1","PHC1","PIGS","PIH1D1","PKN3","PLEC","PMPCA","POLDIP2","POP7","POR","PPP6R2","PRKD2","PRMT6","PROCA1","PSMG1","PSRC1","PTCD1","PTK2","PXK","PYGB","R3HDM2","RAB2A","RAB34","RAB3A","RABGAP1L","RAC1","RAD50","RAPH1","RASIP1","REEP3","RHCE","RPAP2","RPP14","RPS6","SARM1","SBF1","SCAMP3","SEC16A","SEPT2","SGMS1","SGTA","SH3TC1","SKAP1","SLC12A9","SLC16A3","SLC17A7","SLC22A1","SLC25A17","SLC27A5","SLC50A1","SMC4","SNAPC4","SP4","SPHK2","SPTY2D1","SRRT","ST13","ST3GAL4","STAT5B","STRN4","SUGP1","SULT1C4","SUMO1","SUPT6H","SYNJ2BP","TCF7L2","TECPR1","TFR2","THBS3","THOP1","TIMD4","TLCD1","TMED4","TMEM120A","TMEM199","TMEM57","TMEM70","TMPRSS5","TNKS","TNPO1","TOM1","TRAK2","TRIM39","TRIP13","TRIP6","UBASH3B","UGT1A1","UGT1A10","UGT1A3","UGT1A4","UGT1A6","UGT1A8","UGT1A9","USP1","USP28","USP53","XPNPEP3","ZBTB45","ZDHHC11","ZDHHC11B","ZDHHC18","ZDHHC24","ZGPAT","ZHX3","ZNF132","ZNF227","ZNF329","ZNF446","ZNF518A","ZNF554","ZNF584","ZNF789","ZSCAN25"],[null,null,null,null,null,0.044,null,null,0.8307,null,0.1165,null,0.8095,0.1149,1,0.9867,0.2452,0.0288,0.8213,null,null,0.0158,null,null,0.0044,null,null,0.0191,0.4451,null,0.9999,null,null,0.038,0.0128,null,null,null,0.9981,0.1832,0.0283,0.1097,null,null,null,0.048,0.9625,null,0.4771,0.1996,0.911,null,0.3154,0.0167,null,0.7456,null,null,null,1.0248,0.0916,0.0324,0.0234,null,0.003,0.0042,0.5395,0.9992,0.9198,0.0041,0.0019,null,null,0.008,0.0967,0.0084,0.1023,null,0.0414,null,null,0.0986,null,0.091,0.9156,null,0.0287,null,0.9867,null,0.0027,null,null,null,null,0.1055,null,0.9719,0.1364,0.0239,0.4091,null,null,null,0.0008,0.005,0.0014,0.0369,null,null,null,0.0282,0.0144,0.0333,0.1281,0.0026,null,1,0.027,null,null,null,0.9797,0.0543,1,null,0.0695,0.9537,null,0.3874,0.0148,0.0826,0.0015,null,null,0.0377,null,0.6889,null,0.0977,0.9137,null,null,0.0083,null,null,0.4644,0.26,null,0.0057,0.0224,0.0783,null,0.685,0.2682,null,0.3945,0.0509,0.0813,0.0083,null,0.0017,0.9985,null,null,null,0.0403,0.9803,0.0709,null,null,null,null,0.9927,0.0206,0.0206,0.1042,0.8223,0.2504,null,0.8627,0.6038,0.0636,0.1856,1,0.0032,null,0.0161,0.0169,null,0.072,0.2779,0.0162,null,null,null,null,null,0.3182,0.0151,0.0047,null,0.0376,null,0.009,0.0043,0.0211,null,0.1142,0.0025,0.7777,0.023,null,0.0231,0.1518,0.8441,0.003,null,0.0066,0.0015,null,0.9749,0.0052,0.7729,0.5582,0.005,null,0.9587,null,null,0.0404,null,null,0.0667,null,0.0149,0.0246,null,null,0.9998,0.0111,0.2065,0.0581,0.1982,0.073,0.0696,null,0.9917,null,0.0872,1,0.9889,0.0112,null,0.4416,null,null,null,null,null,null,null,0.857,null,0.2043,0.5096,0.0024,0.0023,null,null,null,0.9999,null,0.0027,null,0.1769,0.0294,null,0.0164,0.0019,0.0034,null],[1.317,0.9613,0.0447,0.6558,0.0284,null,0.5593,0.9733,null,0.125,0.3461,0.1228,null,null,null,null,0.0089,0.0089,null,0.9968,0.0114,0.1263,0.3872,0.8333,null,0.002,0.7904,0.5018,0.1873,0.4072,null,0.2281,0.3507,0.2218,0.7439,0.6913,0.213,0.0197,null,null,0.2063,0.8589,0.0668,0.3596,0.3042,null,null,0.0069,0.2678,0.0267,null,0.2997,0.5993,0.2647,0.0083,null,0.603,0.3587,0.6617,0.2503,0.1652,0.6634,0.3246,0.7813,null,null,0.0063,null,null,0.0316,0.1082,0.11,0.0535,0.0124,0.8612,0.0966,0.5296,0.0943,null,0.3587,0.0127,null,0.3007,0.1844,null,0.7082,0.2528,0.0339,null,0.0034,0.0059,0.0304,0.3111,0.24,0.0243,0.1853,0.1197,null,null,0.0656,null,0.0378,0.4795,0.4795,0.0032,null,0.8227,0.8227,0.0006,0.0006,0.9669,0.4596,null,null,null,null,0.9876,null,0.0378,0.0032,0.1732,0.1092,null,0.4556,null,0.2877,null,null,0.0134,null,null,0.0155,null,1,0.8842,0.754,0.9669,null,0.0646,0.079,null,0.4625,0.0526,null,0.0165,0.9535,0.3153,null,0.3072,0.0713,null,0.0094,0.0222,null,0.6842,0.2053,null,null,null,null,0.9649,null,null,0.0472,0.6094,0.3644,0.0328,null,0.3826,0.9162,0.957,0.4611,0.6416,null,0.3905,0.0061,0.4087,null,0.3653,0.7024,0.0389,null,null,0.4072,null,0.0093,0.4628,0.5223,0.096,0.9098,0.4511,0.2425,null,0.3326,0.2654,0.3507,0.0209,0.0403,null,null,null,0.0064,0.1771,0.0975,null,0.4722,0.3611,0.8729,0.0033,null,null,null,0.0053,null,null,null,0.0569,0.0081,null,0.4833,0.0086,null,0.8571,null,0.24,null,0.1399,null,0.0101,0.4052,null,0.0018,0.0156,null,0.5339,0.1352,0.1454,0.0127,0.8846,null,0.0064,null,0.0505,0.0975,0.8631,null,0.0223,null,0.1251,0.1068,null,0.1444,0.045,0.0399,null,0.0888,0.0888,0.0888,0.0888,0.0888,0.0888,0.0888,null,0.0043,0.7511,0.2967,null,0.1585,0.1585,0.9868,0.1655,null,0.8286,null,0.988,null,null,0.5008,0.0316,0.0314,0.0074,0.0039],[1.317,0.9613,0.0447,0.6558,0.0284,0.044,0.5593,0.9733,0.8307,0.125,0.4626,0.1228,0.8095,0.1149,1,0.9867,0.2541,0.0377,0.8213,0.9968,0.0114,0.1421,0.3872,0.8333,0.0044,0.002,0.7904,0.5209,0.6324,0.4072,0.9999,0.2281,0.3507,0.2598,0.7567,0.6913,0.213,0.0197,0.9981,0.1832,0.2346,0.9687,0.0668,0.3596,0.3042,0.048,0.9625,0.0069,0.7449,0.2264,0.911,0.2997,0.9148,0.2813,0.0083,0.7456,0.603,0.3587,0.6617,1.2751,0.2568,0.6959,0.348,0.7813,0.003,0.0042,0.5459,0.9992,0.9198,0.0358,0.1101,0.11,0.0535,0.0203,0.958,0.105,0.6319,0.0943,0.0414,0.3587,0.0127,0.0986,0.3007,0.2754,0.9156,0.7082,0.2815,0.0339,0.9867,0.0034,0.0087,0.0304,0.3111,0.24,0.0243,0.2908,0.1197,0.9719,0.1364,0.0895,0.4091,0.0378,0.4795,0.4795,0.004,0.005,0.8241,0.8596,0.0006,0.0006,0.9669,0.4878,0.0144,0.0333,0.1281,0.0026,0.9876,1,0.0648,0.0032,0.1732,0.1092,0.9797,0.5099,1,0.2877,0.0695,0.9537,0.0134,0.3874,0.0148,0.0981,0.0015,1,0.8842,0.7916,0.9669,0.6889,0.0646,0.1767,0.9137,0.4625,0.0526,0.0083,0.0165,0.9535,0.7797,0.26,0.3072,0.077,0.0224,0.0877,0.0222,0.685,0.9524,0.2053,0.3945,0.0509,0.0813,0.0083,0.9649,0.0017,0.9985,0.0472,0.6094,0.3644,0.0731,0.9803,0.4535,0.9162,0.957,0.4611,0.6416,0.9927,0.4112,0.0267,0.5129,0.8223,0.6156,0.7024,0.9015,0.6038,0.0636,0.5928,1,0.0125,0.4628,0.5384,0.1129,0.9098,0.5232,0.5203,0.0162,0.3326,0.2654,0.3507,0.0209,0.0403,0.3182,0.0151,0.0047,0.0064,0.2147,0.0975,0.009,0.4765,0.3821,0.8729,0.1175,0.0025,0.7777,0.023,0.0053,0.0231,0.1518,0.8441,0.0599,0.0081,0.0066,0.4848,0.0086,0.9749,0.8623,0.7729,0.7981,0.005,0.1399,0.9587,0.0101,0.4052,0.0404,0.0018,0.0156,0.0667,0.5339,0.1501,0.17,0.0127,0.8846,0.9998,0.0175,0.2065,0.1086,0.2957,0.9361,0.0696,0.0223,0.9917,0.1251,0.1941,1,1.1333,0.0562,0.0399,0.4416,0.0888,0.0888,0.0888,0.0888,0.0888,0.0888,0.0888,0.857,0.0043,0.9553,0.8062,0.0024,0.1607,0.1585,0.9868,0.1655,0.9999,0.8286,0.0027,0.988,0.1769,0.0294,0.5008,0.0479,0.0333,0.0107,0.0039],[0.8786,0.6682,0.0447,0.4896,0.0283,0.044,0.4811,0.7365,0.8307,0.1211,0.4148,0.1172,0.8095,0.1149,1,0.9289,0.2462,0.0374,0.8213,0.7484,0.0114,0.1336,0.3311,0.8333,0.0044,0.002,0.7904,0.4088,0.5442,0.4072,0.9138,0.2281,0.3233,0.2313,0.5351,0.5583,0.2092,0.0196,0.9981,0.1749,0.2114,0.8366,0.0657,0.3271,0.2769,0.048,0.9625,0.0069,0.5712,0.221,0.911,0.2609,0.6584,0.2473,0.0083,0.7231,0.485,0.3239,0.5948,0.9906,0.2338,0.5315,0.3032,0.5594,0.003,0.0042,0.536,0.9992,0.9198,0.0352,0.1048,0.1047,0.0526,0.0202,0.6536,0.1,0.4894,0.0915,0.0414,0.3239,0.0127,0.0986,0.2759,0.2497,0.7065,0.5479,0.2559,0.0335,0.9867,0.0034,0.0087,0.0302,0.282,0.2177,0.0242,0.2636,0.1197,0.8412,0.1364,0.0865,0.4091,0.0378,0.4365,0.4365,0.004,0.005,0.6443,0.657,0.0006,0.0006,0.6902,0.3957,0.0144,0.033,0.1279,0.0026,0.9876,1,0.0633,0.0032,0.1684,0.1055,0.9797,0.4147,1,0.2586,0.0695,0.7053,0.0134,0.3874,0.0148,0.095,0.0015,1,0.8842,0.5706,0.7882,0.6889,0.0646,0.1662,0.9137,0.3856,0.0519,0.0083,0.0164,0.7616,0.5863,0.26,0.2854,0.0753,0.0223,0.0869,0.022,0.685,0.6548,0.1892,0.3945,0.0509,0.0813,0.0083,0.6692,0.0017,0.9985,0.0464,0.4984,0.3644,0.0717,0.9099,0.3816,0.662,0.6475,0.4408,0.4828,0.9927,0.3483,0.0265,0.4192,0.724,0.4934,0.5213,0.7527,0.6038,0.063,0.5172,0.7547,0.0124,0.3759,0.491,0.1103,0.626,0.4293,0.4386,0.0162,0.2899,0.2419,0.3233,0.0207,0.04,0.3182,0.015,0.0047,0.0064,0.1985,0.0945,0.009,0.3832,0.3244,0.6292,0.1171,0.0025,0.7696,0.023,0.0053,0.0231,0.1518,0.8441,0.0587,0.008,0.0066,0.4227,0.0086,0.9749,0.6419,0.7729,0.6404,0.005,0.1337,0.7161,0.0101,0.4052,0.0404,0.0018,0.0156,0.0654,0.5119,0.1437,0.1612,0.0126,0.6033,0.9998,0.0174,0.2043,0.1048,0.2638,0.6312,0.0683,0.0223,0.9917,0.1217,0.1833,1,0.9905,0.055,0.0397,0.4382,0.0888,0.0888,0.0888,0.0888,0.0888,0.0888,0.0888,0.857,0.0043,0.6443,0.635,0.0024,0.1497,0.1478,0.9868,0.1591,0.9999,0.6733,0.0027,0.988,0.1769,0.0292,0.4814,0.0473,0.0328,0.0107,0.0039]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>gene_name<\/th>\n      <th>eQTL_pip<\/th>\n      <th>sQTL_pip<\/th>\n      <th>combined_pip_old<\/th>\n      <th>combined_pip_new<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":5,"columnDefs":[{"className":"dt-right","targets":[2,3,4,5]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[5,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
 </div>
-<div id="comparing-the-results" class="section level2">
-<h2>Comparing the results</h2>
+</div>
+<div id="comparing-the-single-group-results-and-multi-group-results"
+class="section level2">
+<h2>Comparing the single-group results and multi-group results</h2>
 <pre class="r"><code>overlap &lt;- highpip.multi[highpip.multi$gene_name %in% highpip.single$gene_name,]
 
 sprintf(&quot;the number of genes reported by single group analysis: %s&quot;, nrow(highpip.single))</code></pre>
@@ -839,13 +1042,13 @@ sprintf(&quot;the number of genes reported by single group analysis: %s&quot;, n
 <pre class="r"><code>sprintf(&quot;the number of overlapped gene: %s&quot;, nrow(overlap))</code></pre>
 <pre><code>[1] &quot;the number of overlapped gene: 24&quot;</code></pre>
 <pre class="r"><code>DT::datatable(overlap,caption = htmltools::tags$caption( style = &#39;caption-side: topleft; text-align = left; color:black;&#39;,&#39;overlapped genes&#39;),options = list(pageLength = 5) )</code></pre>
-<div id="htmlwidget-37e46cf92521dcbed3f8" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-37e46cf92521dcbed3f8">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: topleft; text-align = left; color:black;\">overlapped genes<\/caption>","data":[["1","252","185","125","118","31","68","248","89","123","222","98","42","161","47","228","265","128","85","51","181","178","19","13"],["ABCA1","TRIM39","PSRC1","INSIG2","HPR","C10orf88","FADS1","TNKS","GAS6","INHBB","SP4","GSK3B","CNIH4","PARP9","CSNK1G3","STAT5B","USP53","KDSR","FUT2","CYP2A6","PRKD2","POP7","ASAP3","ALLC"],[1.317,1.1333,1,1,1,0.9999,0.9992,0.9917,0.9867,0.9797,0.9749,0.9719,0.9687,0.9649,0.9625,0.9587,0.9553,0.9537,0.9156,0.911,0.9015,0.8223,0.8213,0.8095],[null,0.9889,1,1,1,0.9999,0.9992,0.9917,0.9867,0.9797,0.9749,0.9719,0.1097,null,0.9625,0.9587,0.2043,0.9537,0.9156,0.911,0.8627,0.8223,0.8213,0.8095],[1.317,0.1444,null,null,null,null,null,null,null,null,null,null,0.8589,0.9649,null,null,0.7511,null,null,null,0.0389,null,null,null]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>gene_name<\/th>\n      <th>combined_pip<\/th>\n      <th>eQTL_pip<\/th>\n      <th>sQTL_pip<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":5,"columnDefs":[{"className":"dt-right","targets":[2,3,4]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[5,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-99e959167faff8d1fc37" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-99e959167faff8d1fc37">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: topleft; text-align = left; color:black;\">overlapped genes<\/caption>","data":[["1","252","185","125","118","31","68","248","89","123","222","98","42","161","47","228","265","128","85","51","181","178","19","13"],["ABCA1","TRIM39","PSRC1","INSIG2","HPR","C10orf88","FADS1","TNKS","GAS6","INHBB","SP4","GSK3B","CNIH4","PARP9","CSNK1G3","STAT5B","USP53","KDSR","FUT2","CYP2A6","PRKD2","POP7","ASAP3","ALLC"],[1.317,1.1333,1,1,1,0.9999,0.9992,0.9917,0.9867,0.9797,0.9749,0.9719,0.9687,0.9649,0.9625,0.9587,0.9553,0.9537,0.9156,0.911,0.9015,0.8223,0.8213,0.8095],[null,0.9889,1,1,1,0.9999,0.9992,0.9917,0.9867,0.9797,0.9749,0.9719,0.1097,null,0.9625,0.9587,0.2043,0.9537,0.9156,0.911,0.8627,0.8223,0.8213,0.8095],[1.317,0.1444,null,null,null,null,null,null,null,null,null,null,0.8589,0.9649,null,null,0.7511,null,null,null,0.0389,null,null,null]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>gene_name<\/th>\n      <th>combined_pip<\/th>\n      <th>eQTL_pip<\/th>\n      <th>sQTL_pip<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":5,"columnDefs":[{"className":"dt-right","targets":[2,3,4]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[5,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
 <pre class="r"><code>multi_unique &lt;- combined_pip_by_context.multi[!combined_pip_by_context.multi$gene_name %in% overlap$gene_name,]
 multi_unique &lt;- multi_unique[multi_unique$combined_pip &gt; 0.8,]
 DT::datatable(multi_unique,caption = htmltools::tags$caption( style = &#39;caption-side: topleft; text-align = left; color:black;&#39;,&#39;Unique genes -- multi group&#39;),options = list(pageLength = 5) )</code></pre>
-<div id="htmlwidget-99e959167faff8d1fc37" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-99e959167faff8d1fc37">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: topleft; text-align = left; color:black;\">Unique genes -- multi group<\/caption>","data":[["60","15","134","251","272","240","163","39","20","174","275","117","270","16","168","8","137","111","2","75","171","146","155","245","69","170","53","141","190","239","135","208","223","108","263","216","24","9","273","107","266"],["DNAJC13","APOB","LDLR","TRAK2","ZGPAT","TIMD4","PCSK9","CETP","ASGR1","PKN3","ZNF227","HP","ZDHHC18","APOC1","PELO","ADH1B","LRCH4","HMGCR","ABCA8","FCGRT","PHC1","MYPOP","NPEPPS","TMEM57","FAM117B","PGS1","CYP4F12","MITF","R3HDM2","THOP1","LIPC","SEPT2","SPHK2","HLA-DQB2","USP1","SLC22A1","BCAT2","ADRB1","ZHX3","HLA-DQB1","XPNPEP3"],[1.2751,1,1,1,0.9999,0.9998,0.9985,0.9981,0.9968,0.9927,0.988,0.9876,0.9868,0.9867,0.9803,0.9733,0.9669,0.9669,0.9613,0.958,0.957,0.9535,0.9524,0.9361,0.9198,0.9162,0.9148,0.9137,0.9098,0.8846,0.8842,0.8729,0.8623,0.8596,0.857,0.8441,0.8333,0.8307,0.8286,0.8241,0.8062],[1.0248,1,null,1,0.9999,0.9998,0.9985,0.9981,null,0.9927,null,null,null,0.9867,0.9803,null,null,null,null,0.0967,null,null,0.2682,0.073,0.9198,null,0.3154,0.9137,null,null,null,null,0.0052,0.0369,0.857,0.8441,null,0.8307,null,0.0014,0.5096],[0.2503,null,1,null,null,null,null,null,0.9968,null,0.988,0.9876,0.9868,null,null,0.9733,0.9669,0.9669,0.9613,0.8612,0.957,0.9535,0.6842,0.8631,null,0.9162,0.5993,null,0.9098,0.8846,0.8842,0.8729,0.8571,0.8227,null,null,0.8333,null,0.8286,0.8227,0.2967]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>gene_name<\/th>\n      <th>combined_pip<\/th>\n      <th>eQTL_pip<\/th>\n      <th>sQTL_pip<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":5,"columnDefs":[{"className":"dt-right","targets":[2,3,4]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[5,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-4a6133f685aa29daac40" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-4a6133f685aa29daac40">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: topleft; text-align = left; color:black;\">Unique genes -- multi group<\/caption>","data":[["60","15","134","251","272","240","163","39","20","174","275","117","270","16","168","8","137","111","2","75","171","146","155","245","69","170","53","141","190","239","135","208","223","108","263","216","24","9","273","107","266"],["DNAJC13","APOB","LDLR","TRAK2","ZGPAT","TIMD4","PCSK9","CETP","ASGR1","PKN3","ZNF227","HP","ZDHHC18","APOC1","PELO","ADH1B","LRCH4","HMGCR","ABCA8","FCGRT","PHC1","MYPOP","NPEPPS","TMEM57","FAM117B","PGS1","CYP4F12","MITF","R3HDM2","THOP1","LIPC","SEPT2","SPHK2","HLA-DQB2","USP1","SLC22A1","BCAT2","ADRB1","ZHX3","HLA-DQB1","XPNPEP3"],[1.2751,1,1,1,0.9999,0.9998,0.9985,0.9981,0.9968,0.9927,0.988,0.9876,0.9868,0.9867,0.9803,0.9733,0.9669,0.9669,0.9613,0.958,0.957,0.9535,0.9524,0.9361,0.9198,0.9162,0.9148,0.9137,0.9098,0.8846,0.8842,0.8729,0.8623,0.8596,0.857,0.8441,0.8333,0.8307,0.8286,0.8241,0.8062],[1.0248,1,null,1,0.9999,0.9998,0.9985,0.9981,null,0.9927,null,null,null,0.9867,0.9803,null,null,null,null,0.0967,null,null,0.2682,0.073,0.9198,null,0.3154,0.9137,null,null,null,null,0.0052,0.0369,0.857,0.8441,null,0.8307,null,0.0014,0.5096],[0.2503,null,1,null,null,null,null,null,0.9968,null,0.988,0.9876,0.9868,null,null,0.9733,0.9669,0.9669,0.9613,0.8612,0.957,0.9535,0.6842,0.8631,null,0.9162,0.5993,null,0.9098,0.8846,0.8842,0.8729,0.8571,0.8227,null,null,0.8333,null,0.8286,0.8227,0.2967]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>gene_name<\/th>\n      <th>combined_pip<\/th>\n      <th>eQTL_pip<\/th>\n      <th>sQTL_pip<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":5,"columnDefs":[{"className":"dt-right","targets":[2,3,4]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[5,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
 <pre class="r"><code>unique_detail &lt;- res_gene.multi[!res_gene.multi$gene_name %in%overlap$gene_name,]
 unique_detail &lt;- unique_detail[unique_detail$gene_name %in% highpip.multi$gene_name,]
 save(unique_detail, file = &quot;/project/xinhe/xsun/multi_group_ctwas/xxxintalk/unique_detail.rdata&quot;)</code></pre>
@@ -873,14 +1076,15 @@ attached base packages:
 [8] base     
 
 other attached packages:
- [1] dplyr_1.1.4               RColorBrewer_1.1-3       
- [3] ggplot2_3.5.1             EnsDb.Hsapiens.v86_2.99.0
- [5] ensembldb_2.20.2          AnnotationFilter_1.20.0  
- [7] GenomicFeatures_1.48.3    AnnotationDbi_1.58.0     
- [9] Biobase_2.56.0            GenomicRanges_1.48.0     
-[11] GenomeInfoDb_1.39.9       IRanges_2.30.0           
-[13] S4Vectors_0.34.0          BiocGenerics_0.42.0      
-[15] ctwas_0.4.7              
+ [1] data.table_1.14.2         readr_2.1.2              
+ [3] logging_0.10-108          dplyr_1.1.4              
+ [5] RColorBrewer_1.1-3        ggplot2_3.5.1            
+ [7] EnsDb.Hsapiens.v86_2.99.0 ensembldb_2.20.2         
+ [9] AnnotationFilter_1.20.0   GenomicFeatures_1.48.3   
+[11] AnnotationDbi_1.58.0      Biobase_2.56.0           
+[13] GenomicRanges_1.48.0      GenomeInfoDb_1.39.9      
+[15] IRanges_2.30.0            S4Vectors_0.34.0         
+[17] BiocGenerics_0.42.0       ctwas_0.4.11             
 
 loaded via a namespace (and not attached):
   [1] colorspace_2.0-3            rjson_0.2.21               
@@ -890,57 +1094,56 @@ loaded via a namespace (and not attached):
   [9] farver_2.1.0                DT_0.22                    
  [11] ggrepel_0.9.1               bit64_4.0.5                
  [13] fansi_1.0.3                 xml2_1.3.3                 
- [15] codetools_0.2-18            logging_0.10-108           
- [17] cachem_1.0.6                knitr_1.39                 
- [19] jsonlite_1.8.0              workflowr_1.7.0            
- [21] Rsamtools_2.12.0            dbplyr_2.1.1               
- [23] png_0.1-7                   readr_2.1.2                
- [25] compiler_4.2.0              httr_1.4.3                 
- [27] assertthat_0.2.1            Matrix_1.5-3               
- [29] fastmap_1.1.0               lazyeval_0.2.2             
- [31] cli_3.6.1                   later_1.3.0                
- [33] htmltools_0.5.2             prettyunits_1.1.1          
- [35] tools_4.2.0                 gtable_0.3.0               
- [37] glue_1.6.2                  GenomeInfoDbData_1.2.8     
- [39] rappdirs_0.3.3              Rcpp_1.0.12                
- [41] jquerylib_0.1.4             vctrs_0.6.5                
- [43] Biostrings_2.64.0           rtracklayer_1.56.0         
- [45] crosstalk_1.2.0             xfun_0.41                  
- [47] stringr_1.5.1               lifecycle_1.0.4            
- [49] irlba_2.3.5                 restfulr_0.0.14            
- [51] XML_3.99-0.14               zlibbioc_1.42.0            
- [53] zoo_1.8-10                  scales_1.3.0               
- [55] gggrid_0.2-0                hms_1.1.1                  
- [57] promises_1.2.0.1            MatrixGenerics_1.8.0       
- [59] ProtGenerics_1.28.0         parallel_4.2.0             
- [61] SummarizedExperiment_1.26.1 LDlinkR_1.2.3              
- [63] yaml_2.3.5                  curl_4.3.2                 
- [65] memoise_2.0.1               sass_0.4.1                 
- [67] biomaRt_2.54.1              stringi_1.7.6              
- [69] RSQLite_2.3.1               highr_0.9                  
- [71] BiocIO_1.6.0                filelock_1.0.2             
- [73] BiocParallel_1.30.3         rlang_1.1.2                
- [75] pkgconfig_2.0.3             matrixStats_0.62.0         
- [77] bitops_1.0-7                evaluate_0.15              
- [79] lattice_0.20-45             purrr_1.0.2                
- [81] labeling_0.4.2              GenomicAlignments_1.32.0   
- [83] htmlwidgets_1.5.4           cowplot_1.1.1              
- [85] bit_4.0.4                   tidyselect_1.2.0           
- [87] magrittr_2.0.3              R6_2.5.1                   
- [89] generics_0.1.2              DelayedArray_0.22.0        
- [91] DBI_1.2.2                   withr_2.5.0                
- [93] pgenlibr_0.3.3              pillar_1.9.0               
- [95] KEGGREST_1.36.3             RCurl_1.98-1.7             
- [97] mixsqp_0.3-43               tibble_3.2.1               
- [99] crayon_1.5.1                utf8_1.2.2                 
-[101] BiocFileCache_2.4.0         plotly_4.10.0              
-[103] tzdb_0.4.0                  rmarkdown_2.25             
-[105] progress_1.2.2              grid_4.2.0                 
-[107] data.table_1.14.2           blob_1.2.3                 
-[109] git2r_0.30.1                digest_0.6.29              
-[111] tidyr_1.3.0                 httpuv_1.6.5               
-[113] munsell_0.5.0               viridisLite_0.4.0          
-[115] bslib_0.3.1                </code></pre>
+ [15] codetools_0.2-18            cachem_1.0.6               
+ [17] knitr_1.39                  jsonlite_1.8.0             
+ [19] workflowr_1.7.0             Rsamtools_2.12.0           
+ [21] dbplyr_2.1.1                png_0.1-7                  
+ [23] compiler_4.2.0              httr_1.4.3                 
+ [25] assertthat_0.2.1            Matrix_1.5-3               
+ [27] fastmap_1.1.0               lazyeval_0.2.2             
+ [29] cli_3.6.1                   later_1.3.0                
+ [31] htmltools_0.5.2             prettyunits_1.1.1          
+ [33] tools_4.2.0                 gtable_0.3.0               
+ [35] glue_1.6.2                  GenomeInfoDbData_1.2.8     
+ [37] rappdirs_0.3.3              Rcpp_1.0.12                
+ [39] jquerylib_0.1.4             vctrs_0.6.5                
+ [41] Biostrings_2.64.0           rtracklayer_1.56.0         
+ [43] crosstalk_1.2.0             xfun_0.41                  
+ [45] stringr_1.5.1               lifecycle_1.0.4            
+ [47] irlba_2.3.5                 restfulr_0.0.14            
+ [49] XML_3.99-0.14               zlibbioc_1.42.0            
+ [51] zoo_1.8-10                  scales_1.3.0               
+ [53] gggrid_0.2-0                hms_1.1.1                  
+ [55] promises_1.2.0.1            MatrixGenerics_1.8.0       
+ [57] ProtGenerics_1.28.0         parallel_4.2.0             
+ [59] SummarizedExperiment_1.26.1 LDlinkR_1.2.3              
+ [61] yaml_2.3.5                  curl_4.3.2                 
+ [63] memoise_2.0.1               sass_0.4.1                 
+ [65] biomaRt_2.54.1              stringi_1.7.6              
+ [67] RSQLite_2.3.1               highr_0.9                  
+ [69] BiocIO_1.6.0                filelock_1.0.2             
+ [71] BiocParallel_1.30.3         rlang_1.1.2                
+ [73] pkgconfig_2.0.3             matrixStats_0.62.0         
+ [75] bitops_1.0-7                evaluate_0.15              
+ [77] lattice_0.20-45             purrr_1.0.2                
+ [79] labeling_0.4.2              GenomicAlignments_1.32.0   
+ [81] htmlwidgets_1.5.4           cowplot_1.1.1              
+ [83] bit_4.0.4                   tidyselect_1.2.0           
+ [85] magrittr_2.0.3              R6_2.5.1                   
+ [87] generics_0.1.2              DelayedArray_0.22.0        
+ [89] DBI_1.2.2                   withr_2.5.0                
+ [91] pgenlibr_0.3.3              pillar_1.9.0               
+ [93] whisker_0.4                 KEGGREST_1.36.3            
+ [95] RCurl_1.98-1.7              mixsqp_0.3-43              
+ [97] tibble_3.2.1                crayon_1.5.1               
+ [99] utf8_1.2.2                  BiocFileCache_2.4.0        
+[101] plotly_4.10.0               tzdb_0.4.0                 
+[103] rmarkdown_2.25              progress_1.2.2             
+[105] grid_4.2.0                  blob_1.2.3                 
+[107] git2r_0.30.1                digest_0.6.29              
+[109] tidyr_1.3.0                 httpuv_1.6.5               
+[111] munsell_0.5.0               viridisLite_0.4.0          
+[113] bslib_0.3.1                </code></pre>
 </div>
 </div>
 </div>
