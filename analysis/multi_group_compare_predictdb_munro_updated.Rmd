@@ -24,6 +24,9 @@ library(cowplot)
 ens_db <- EnsDb.Hsapiens.v86
 load("/project2/xinhe/shared_data/multigroup_ctwas/gwas/samplesize.rdata")
 
+source("/project/xinhe/xsun/r_functions/anno_finemap_res_old_ctwas.R")
+source("/project/xinhe/xsun/r_functions/combine_pip_old_ctwas.R")
+
 load("/project2/xinhe/shared_data/multigroup_ctwas/weights/E_S_A_mapping_updated.RData")
 E_S_A_mapping_predictdb <- E_S_A_mapping
 # colnames(E_S_A_mapping) <- c("gene_id","gene_name","gene_type","start","end")
@@ -185,10 +188,10 @@ DT::datatable(para_predictdb,caption = htmltools::tags$caption( style = 'caption
 
 finemap_res_predictdb <- ctwas_res_predictdb$finemap_res
 
-finemap_res_predictdb <- anno_finemap_res(finemap_res_predictdb, snp_map_predictdb,E_S_A_mapping_predictdb,
+finemap_res_predictdb <- anno_finemap_res_old(finemap_res_predictdb, snp_map_predictdb,E_S_A_mapping_predictdb,
                                 use_gene_pos = "mid")
 
-combined_pip_by_type_predictdb <- combine_gene_pips(finemap_res_predictdb, 
+combined_pip_by_type_predictdb <- combine_gene_pips_new(finemap_res_predictdb, 
                                              by = "type",
                                              filter_protein_coding_genes = TRUE,    
                                              filter_cs = TRUE,digits = 4)
@@ -227,10 +230,10 @@ DT::datatable(para_munro,caption = htmltools::tags$caption( style = 'caption-sid
 
 finemap_res_munro <- ctwas_res_munro$finemap_res
 
-finemap_res_munro <- anno_finemap_res(finemap_res_munro, snp_map_munro,E_S_A_mapping_munro,
+finemap_res_munro <- anno_finemap_res_old(finemap_res_munro, snp_map_munro,E_S_A_mapping_munro,
                                 use_gene_pos = "mid")
 
-combined_pip_by_type_munro <- combine_gene_pips(finemap_res_munro, 
+combined_pip_by_type_munro <- combine_gene_pips_new(finemap_res_munro, 
                                              by = "type",
                                              filter_protein_coding_genes = TRUE,    
                                              filter_cs = TRUE,digits = 4)
@@ -323,10 +326,10 @@ DT::datatable(para_predictdb,caption = htmltools::tags$caption( style = 'caption
 
 finemap_res_predictdb <- ctwas_res_predictdb$finemap_res
 
-finemap_res_predictdb <- anno_finemap_res(finemap_res_predictdb, snp_map_predictdb,E_S_A_mapping_predictdb,
+finemap_res_predictdb <- anno_finemap_res_old(finemap_res_predictdb, snp_map_predictdb,E_S_A_mapping_predictdb,
                                 use_gene_pos = "mid")
 
-combined_pip_by_type_predictdb <- combine_gene_pips(finemap_res_predictdb, 
+combined_pip_by_type_predictdb <- combine_gene_pips_new(finemap_res_predictdb, 
                                              by = "type",
                                              filter_protein_coding_genes = TRUE,    
                                              filter_cs = TRUE,digits = 4)
@@ -365,10 +368,10 @@ DT::datatable(para_munro,caption = htmltools::tags$caption( style = 'caption-sid
 
 finemap_res_munro <- ctwas_res_munro$finemap_res
 
-finemap_res_munro <- anno_finemap_res(finemap_res_munro, snp_map_munro,E_S_A_mapping_munro,
+finemap_res_munro <- anno_finemap_res_old(finemap_res_munro, snp_map_munro,E_S_A_mapping_munro,
                                 use_gene_pos = "mid")
 
-combined_pip_by_type_munro <- combine_gene_pips(finemap_res_munro, 
+combined_pip_by_type_munro <- combine_gene_pips_new(finemap_res_munro, 
                                              by = "type",
                                              filter_protein_coding_genes = TRUE,    
                                              filter_cs = TRUE,digits = 4)
@@ -417,17 +420,34 @@ We noticed that, when using Munro's weights, we have GNA12 as the top1 IBD risk 
 But when using predictdb weights, we missed this gene.
 
 
-```{r echo=FALSE}
-# cor_dir <- paste0("/project/xinhe/xsun/multi_group_ctwas/7.multi_omics_predicdb/results_predictdb_main/",trait,"/cor_matrix")
-# cor_res <- get_region_cor(region_id = "7_2732593_4533797", cor_dir = cor_dir)
-# make_locusplot_modified(finemap_res_predictdb,
-#                region_id = "7_2732593_4533797",
-#                weights = weights_predictdb,
-#                ens_db = ens_db,
-#                #locus_range = c(2732556,4533638),
-#                highlight_pip = 0.8,
-#                R_snp_gene = cor_res$R_snp_gene,
-#                R_gene = cor_res$R_gene)
+```{r echo=FALSE, warning=F, message=FALSE}
+print("Locus plot -- Predictdb")
+
+cor_dir <- paste0("/project/xinhe/xsun/multi_group_ctwas/7.multi_omics_predicdb/results_predictdb_main/",trait,"/cor_matrix")
+cor_res <- get_region_cor(region_id = "7_2732593_4533797", cor_dir = cor_dir)
+make_locusplot(finemap_res_predictdb,
+               region_id = "7_2732593_4533797",
+               weights = weights_predictdb,
+               ens_db = ens_db,
+               #locus_range = c(2732556,4533638),
+               highlight_pip = 0.8,
+               R_snp_gene = cor_res$R_snp_gene,
+               R_gene = cor_res$R_gene)
+```
+
+```{r echo=FALSE, warning=F, message=FALSE}
+print("Locus plot -- Munro")
+
+cor_dir <- paste0("/project/xinhe/xsun/multi_group_ctwas/7.multi_omics_predicdb/results_munro_main/",trait,"/cor_matrix")
+cor_res <- get_region_cor(region_id = "7_2732593_4533797", cor_dir = cor_dir)
+make_locusplot(finemap_res_munro,
+               region_id = "7_2732593_4533797",
+               weights = weights_munro,
+               ens_db = ens_db,
+               #locus_range = c(2732556,4533638),
+               highlight_pip = 0.8,
+               R_snp_gene = cor_res$R_snp_gene,
+               R_gene = cor_res$R_gene)
 ```
 
 We are trying to figure out why GNA12 was missed by predictdb weights.
@@ -502,6 +522,107 @@ print(paste0("# of Unique munro genes = ", nrow(genes_munro_unique)))
 print(paste0("# of Unique munro genes included in predictdb data = ", length(unique(genes_munro_unique_pred_res$gene_name))))
 
 DT::datatable(genes_munro_unique_pred_res,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Unique munro genes in predictdb setting'),options = list(pageLength = 5) )
+
+
+genes_munro_unique_munro_res <- finemap_res_munro[finemap_res_munro$gene_name %in%genes_munro_unique$gene_name,]
+
+DT::datatable(genes_munro_unique_munro_res,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Unique munro genes in munro setting'),options = list(pageLength = 5) )
+
+```
+
+There are some genes have large abs(z) but low PIPs in predictdb setting (RTEL1, USP4), we make locus plots for these genes to understand why 
+
+RTEL1: this gene was assigned to region 20_63558827_64333810 in predictdb setting but 20_62670503_63558827 in Munro setting
+
+```{r echo=FALSE, warning=F, message=FALSE}
+print("Locus plot -- Predictdb")
+
+cor_dir <- paste0("/project/xinhe/xsun/multi_group_ctwas/7.multi_omics_predicdb/results_predictdb_main/",trait,"/cor_matrix")
+cor_res <- get_region_cor(region_id = "20_63558827_64333810", cor_dir = cor_dir)
+make_locusplot(finemap_res_predictdb,
+               region_id = "20_63558827_64333810",
+               weights = weights_predictdb,
+               ens_db = ens_db,
+               #locus_range = c(2732556,4533638),
+               highlight_pip = 0.8,
+               focal_gene = "RTEL1",
+               R_snp_gene = cor_res$R_snp_gene,
+               R_gene = cor_res$R_gene)
+```
+
+```{r echo=FALSE, warning=F, message=FALSE}
+print("Locus plot -- Munro")
+
+cor_dir <- paste0("/project/xinhe/xsun/multi_group_ctwas/7.multi_omics_predicdb/results_munro_main/",trait,"/cor_matrix")
+cor_res <- get_region_cor(region_id = "20_62670503_63558827", cor_dir = cor_dir)
+make_locusplot(finemap_res_munro,
+               region_id = "20_62670503_63558827",
+               weights = weights_munro,
+               ens_db = ens_db,
+               #locus_range = c(2732556,4533638),
+               highlight_pip = 0.8,
+               focal_gene = "RTEL1",
+               R_snp_gene = cor_res$R_snp_gene,
+               R_gene = cor_res$R_gene)
+```
+
+USP4: this gene was assigned to region 3_49279539_51797999 in predictdb setting but 3_47685722_49279539 in Munro setting
+
+```{r echo=FALSE, warning=F, message=FALSE}
+print("Locus plot -- Predictdb")
+
+cor_dir <- paste0("/project/xinhe/xsun/multi_group_ctwas/7.multi_omics_predicdb/results_predictdb_main/",trait,"/cor_matrix")
+
+cor_res <- get_region_cor(region_id = "3_47685722_49279539", cor_dir = cor_dir)
+make_locusplot(finemap_res_predictdb,
+               region_id = "3_47685722_49279539",
+               weights = weights_predictdb,
+               ens_db = ens_db,
+               #locus_range = c(2732556,4533638),
+               highlight_pip = 0.8,
+               #focal_gene = "USP4",
+               R_snp_gene = cor_res$R_snp_gene,
+               R_gene = cor_res$R_gene)
+
+cor_res <- get_region_cor(region_id = "3_49279539_51797999", cor_dir = cor_dir)
+make_locusplot(finemap_res_predictdb,
+               region_id = "3_49279539_51797999",
+               weights = weights_predictdb,
+               ens_db = ens_db,
+               #locus_range = c(2732556,4533638),
+               highlight_pip = 0.8,
+               focal_gene = "USP4",
+               R_snp_gene = cor_res$R_snp_gene,
+               R_gene = cor_res$R_gene)
+```
+
+
+
+```{r echo=FALSE, warning=F, message=FALSE}
+print("Locus plot -- Munro")
+
+cor_dir <- paste0("/project/xinhe/xsun/multi_group_ctwas/7.multi_omics_predicdb/results_munro_main/",trait,"/cor_matrix")
+cor_res <- get_region_cor(region_id = "3_47685722_49279539", cor_dir = cor_dir)
+make_locusplot(finemap_res_munro,
+               region_id = "3_47685722_49279539",
+               weights = weights_munro,
+               ens_db = ens_db,
+               #locus_range = c(2732556,4533638),
+               highlight_pip = 0.8,
+               focal_gene = "USP4",
+               R_snp_gene = cor_res$R_snp_gene,
+               R_gene = cor_res$R_gene)
+
+cor_res <- get_region_cor(region_id = "3_49279539_51797999", cor_dir = cor_dir)
+make_locusplot(finemap_res_munro,
+               region_id = "3_49279539_51797999",
+               weights = weights_munro,
+               ens_db = ens_db,
+               #locus_range = c(2732556,4533638),
+               highlight_pip = 0.8,
+               #focal_gene = "USP4",
+               R_snp_gene = cor_res$R_snp_gene,
+               R_gene = cor_res$R_gene)
 ```
 
 ### Comparing z-scores
