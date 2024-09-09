@@ -420,7 +420,7 @@ We noticed that, when using Munro's weights, we have GNA12 as the top1 IBD risk 
 But when using predictdb weights, we missed this gene.
 
 
-```{r echo=FALSE, warning=F, message=FALSE}
+```{r echo=FALSE, warning=F, message=FALSE, fig.height=15}
 print("Locus plot -- Predictdb")
 
 cor_dir <- paste0("/project/xinhe/xsun/multi_group_ctwas/7.multi_omics_predicdb/results_predictdb_main/",trait,"/cor_matrix")
@@ -432,10 +432,12 @@ make_locusplot(finemap_res_predictdb,
                #locus_range = c(2732556,4533638),
                highlight_pip = 0.8,
                R_snp_gene = cor_res$R_snp_gene,
-               R_gene = cor_res$R_gene)
+               R_gene = cor_res$R_gene,
+               legend.position = "right",
+               point.shapes = c(16, 15, 18, 17,14,11,6,8,9))
 ```
 
-```{r echo=FALSE, warning=F, message=FALSE}
+```{r echo=FALSE, warning=F, message=FALSE, fig.height=15}
 print("Locus plot -- Munro")
 
 cor_dir <- paste0("/project/xinhe/xsun/multi_group_ctwas/7.multi_omics_predicdb/results_munro_main/",trait,"/cor_matrix")
@@ -447,7 +449,9 @@ make_locusplot(finemap_res_munro,
                #locus_range = c(2732556,4533638),
                highlight_pip = 0.8,
                R_snp_gene = cor_res$R_snp_gene,
-               R_gene = cor_res$R_gene)
+               R_gene = cor_res$R_gene,
+               legend.position = "right",
+               point.shapes = c(16, 15, 18, 17,14,11,6,8,9))
 ```
 
 We are trying to figure out why GNA12 was missed by predictdb weights.
@@ -534,7 +538,7 @@ There are some genes have large abs(z) but low PIPs in predictdb setting (RTEL1,
 
 RTEL1: this gene was assigned to region 20_63558827_64333810 in predictdb setting but 20_62670503_63558827 in Munro setting
 
-```{r echo=FALSE, warning=F, message=FALSE}
+```{r echo=FALSE, warning=F, message=FALSE, fig.height=15}
 print("Locus plot -- Predictdb")
 
 cor_dir <- paste0("/project/xinhe/xsun/multi_group_ctwas/7.multi_omics_predicdb/results_predictdb_main/",trait,"/cor_matrix")
@@ -547,10 +551,12 @@ make_locusplot(finemap_res_predictdb,
                highlight_pip = 0.8,
                focal_gene = "RTEL1",
                R_snp_gene = cor_res$R_snp_gene,
-               R_gene = cor_res$R_gene)
+               R_gene = cor_res$R_gene,
+               legend.position = "right",
+               point.shapes = c(16, 15, 18, 17,14,11,6,8,9))
 ```
 
-```{r echo=FALSE, warning=F, message=FALSE}
+```{r echo=FALSE, warning=F, message=FALSE, fig.height=15}
 print("Locus plot -- Munro")
 
 cor_dir <- paste0("/project/xinhe/xsun/multi_group_ctwas/7.multi_omics_predicdb/results_munro_main/",trait,"/cor_matrix")
@@ -563,12 +569,14 @@ make_locusplot(finemap_res_munro,
                highlight_pip = 0.8,
                focal_gene = "RTEL1",
                R_snp_gene = cor_res$R_snp_gene,
-               R_gene = cor_res$R_gene)
+               R_gene = cor_res$R_gene,
+               legend.position = "right",
+               point.shapes = c(16, 15, 18, 17,14,11,6,8,9))
 ```
 
 USP4: this gene was assigned to region 3_49279539_51797999 in predictdb setting but 3_47685722_49279539 in Munro setting
 
-```{r echo=FALSE, warning=F, message=FALSE}
+```{r echo=FALSE, warning=F, message=FALSE, fig.height=15}
 print("Locus plot -- Predictdb")
 
 cor_dir <- paste0("/project/xinhe/xsun/multi_group_ctwas/7.multi_omics_predicdb/results_predictdb_main/",trait,"/cor_matrix")
@@ -582,7 +590,9 @@ make_locusplot(finemap_res_predictdb,
                highlight_pip = 0.8,
                #focal_gene = "USP4",
                R_snp_gene = cor_res$R_snp_gene,
-               R_gene = cor_res$R_gene)
+               R_gene = cor_res$R_gene,
+               legend.position = "right",
+               point.shapes = c(16, 15, 18, 17,14,11,6,8,9))
 
 cor_res <- get_region_cor(region_id = "3_49279539_51797999", cor_dir = cor_dir)
 make_locusplot(finemap_res_predictdb,
@@ -593,12 +603,14 @@ make_locusplot(finemap_res_predictdb,
                highlight_pip = 0.8,
                focal_gene = "USP4",
                R_snp_gene = cor_res$R_snp_gene,
-               R_gene = cor_res$R_gene)
+               R_gene = cor_res$R_gene,
+               legend.position = "right",
+               point.shapes = c(16, 15, 18, 17,14,11,6,8,9))
 ```
 
 
 
-```{r echo=FALSE, warning=F, message=FALSE}
+```{r echo=FALSE, warning=F, message=FALSE, fig.height=15}
 print("Locus plot -- Munro")
 
 cor_dir <- paste0("/project/xinhe/xsun/multi_group_ctwas/7.multi_omics_predicdb/results_munro_main/",trait,"/cor_matrix")
@@ -611,7 +623,9 @@ make_locusplot(finemap_res_munro,
                highlight_pip = 0.8,
                focal_gene = "USP4",
                R_snp_gene = cor_res$R_snp_gene,
-               R_gene = cor_res$R_gene)
+               R_gene = cor_res$R_gene,
+               legend.position = "right",
+               point.shapes = c(16, 15, 18, 17,14,11,6,8,9))
 
 cor_res <- get_region_cor(region_id = "3_49279539_51797999", cor_dir = cor_dir)
 make_locusplot(finemap_res_munro,
@@ -622,7 +636,9 @@ make_locusplot(finemap_res_munro,
                highlight_pip = 0.8,
                #focal_gene = "USP4",
                R_snp_gene = cor_res$R_snp_gene,
-               R_gene = cor_res$R_gene)
+               R_gene = cor_res$R_gene,
+               legend.position = "right",
+               point.shapes = c(16, 15, 18, 17,14,11,6,8,9))
 ```
 
 ### Comparing z-scores
