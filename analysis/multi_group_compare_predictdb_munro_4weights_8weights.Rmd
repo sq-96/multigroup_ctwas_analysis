@@ -1,0 +1,211 @@
+---
+title: "Comparing predictdb & Munro: predictdb eQTL + sQTL + Munro rsQTL + apaQTL VS all 8 weights"
+author: "XSun"
+date: "2024-09-09"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(ctwas)
+library(logging)
+library(data.table)
+library(tidyverse)
+
+load("/project2/xinhe/shared_data/multigroup_ctwas/gwas/samplesize.rdata")
+
+source("/project/xinhe/xsun/r_functions/anno_finemap_res_old_ctwas.R")
+source("/project/xinhe/xsun/r_functions/combine_pip_old_ctwas.R")
+
+load("/project2/xinhe/shared_data/multigroup_ctwas/weights/E_S_A_mapping_updated.RData")
+E_S_A_mapping_predictdb <- E_S_A_mapping
+E_S_A_mapping_munro <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/Munro_mapping_updated.RDS")
+E_S_A_mapping_two <- rbind(E_S_A_mapping_munro,E_S_A_mapping_predictdb)
+
+sum_pve_across_types <- function(ctwas_parameters) {
+  # Round the group_pve values
+  pve <- round(ctwas_parameters$group_pve, 4)
+  pve <- as.data.frame(pve)
+
+  # Extract SNP PVE for later use
+  SNP_pve <- pve["SNP", ]
+
+  # Add type and context columns
+  pve$type <- sapply(rownames(pve), function(x) { unlist(strsplit(x, "[|]"))[1] })
+  pve$context <- sapply(rownames(pve), function(x) { unlist(strsplit(x, "[|]"))[2] })
+
+  # Remove rows with NA values and sort
+  pve <- na.omit(pve)
+  pve <- pve[order(rownames(pve)), ]
+
+  # Aggregate PVE by type
+  df_pve <- aggregate(pve$pve, by = list(pve$type), FUN = sum)
+  colnames(df_pve) <- c("type", "total_pve")
+  df_pve$total_pve <- round(df_pve$total_pve, 4)
+
+  # Add context-specific columns
+  for (context in unique(pve$context)) {
+    context_pve <- aggregate(pve$pve, by = list(pve$type, pve$context), FUN = sum)
+    context_pve <- context_pve[context_pve$Group.2 == context, ]
+    colnames(context_pve)[3] <- context
+    df_pve <- merge(df_pve, context_pve[, c("Group.1", context)], by.x = "type", by.y = "Group.1", all.x = TRUE)
+  }
+
+  # Insert SNP PVE
+  SNP_row <- c("SNP", SNP_pve, rep(0, ncol(df_pve) - 2))
+  df_pve <- rbind(df_pve, SNP_row)
+
+  # Convert to numeric except for the type column
+  df_pve[, -1] <- lapply(df_pve[, -1], as.numeric)
+
+  # Sum all rows and add a sum_pve row
+  sum_row <- colSums(df_pve[, -1], na.rm = TRUE)
+  sum_row <- c("total_pve", sum_row)
+  df_pve <- rbind(df_pve, sum_row)
+
+  # Clean up row names and return
+  row.names(df_pve) <- NULL
+  return(df_pve)
+}
+
+```
+
+# Settings
+
+## 6 modalities from Munro 
+
+1. Weight processing: 
+
+PredictDB:
+
+all the PredictDB are converted from FUSION weights
+
+- drop_strand_ambig = TRUE,
+- scale_by_ld_variance = F (FUSION converted weights)
+- load_predictdb_LD = F,  
+
+2. Parameter estimation and fine-mapping
+
+- niter_prefit = 5,
+- niter = 30(default),
+- L: determined by uniform susie,
+- group_prior_var_structure = "shared_type",
+- maxSNP = 20000,
+- min_nonSNP_PIP = 0.5,
+
+## weights from predictdb 
+
+1. Weight processing: 
+
+PredictDB (eqtl, sqtl)
+
+- drop_strand_ambig = TRUE,
+- scale_by_ld_variance = T
+- load_predictdb_LD = F,  
+
+
+2. Parameter estimation and fine-mapping
+
+- group_prior_var_structure = "shared_type", 
+- filter_L = TRUE,
+- filter_nonSNP_PIP = FALSE,
+- min_nonSNP_PIP = 0.5,
+- min_abs_corr = 0.1, 
+
+mem: 100g 5cores
+
+
+# Results
+
+## Four weights
+
+predictdb eQTL + sQTL + Munro rsQTL + apaQTL
+
+```{r echo=FALSE}
+trait <- "IBD-ebi-a-GCST004131"
+gwas_n <- samplesize[trait]
+
+results_dir_4weights <- paste0("/project/xinhe/xsun/multi_group_ctwas/8.deciding_weights/fourweights/",trait,"/")
+
+weights_4weights <- readRDS(paste0(results_dir_4weights,trait,".preprocessed.weights.RDS"))
+region_info_4weights <- readRDS(paste0(results_dir_4weights,trait,".region_info.RDS"))
+snp_map_4weights <- readRDS(paste0(results_dir_4weights,trait,".snp_map.RDS"))
+LD_map_4weights <- readRDS(paste0(results_dir_4weights,trait,".LD_map.RDS"))
+ctwas_res_4weights <- readRDS(paste0(results_dir_4weights,trait,".ctwas.res.RDS"))
+
+z_gene_4weights <- ctwas_res_4weights$z_gene
+param_4weights <- ctwas_res_4weights$param
+finemap_res_4weights <- ctwas_res_4weights$finemap_res
+boundary_genes_4weights <- ctwas_res_4weights$boundary_genes
+region_data_4weights <- ctwas_res_4weights$region_data
+screen_res_4weights <- ctwas_res_4weights$screen_res
+
+make_convergence_plots(param_4weights, gwas_n)
+
+ctwas_parameters_4weights <- summarize_param(param_4weights, gwas_n)
+
+para_4weights <- sum_pve_across_types(ctwas_parameters_4weights)
+DT::datatable(para_4weights,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Heritability contribution by contexts'),options = list(pageLength = 5) )
+
+finemap_res_4weights <- ctwas_res_4weights$finemap_res
+
+finemap_res_4weights <- anno_finemap_res_old(finemap_res_4weights, snp_map_4weights,E_S_A_mapping_two,
+                                use_gene_pos = "mid")
+
+combined_pip_by_type_4weights <- combine_gene_pips_old(finemap_res_4weights, 
+                                             by = "type",
+                                             filter_protein_coding_genes = TRUE,    
+                                             filter_cs = TRUE,digits = 4)
+
+DT::datatable(combined_pip_by_type_4weights[combined_pip_by_type_4weights$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by omics, credible set filtered'),options = list(pageLength = 5) )
+```
+
+
+## Eight weights
+
+predictdb eQTL + sQTL + Munro 6 modalities
+
+```{r echo=FALSE}
+trait <- "IBD-ebi-a-GCST004131"
+gwas_n <- samplesize[trait]
+
+results_dir_8weights <- paste0("/project/xinhe/xsun/multi_group_ctwas/8.deciding_weights/eightweights/",trait,"/")
+
+weights_8weights <- readRDS(paste0(results_dir_8weights,trait,".preprocessed.weights.RDS"))
+region_info_8weights <- readRDS(paste0(results_dir_8weights,trait,".region_info.RDS"))
+snp_map_8weights <- readRDS(paste0(results_dir_8weights,trait,".snp_map.RDS"))
+LD_map_8weights <- readRDS(paste0(results_dir_8weights,trait,".LD_map.RDS"))
+ctwas_res_8weights <- readRDS(paste0(results_dir_8weights,trait,".ctwas.res.RDS"))
+
+z_gene_8weights <- ctwas_res_8weights$z_gene
+param_8weights <- ctwas_res_8weights$param
+finemap_res_8weights <- ctwas_res_8weights$finemap_res
+boundary_genes_8weights <- ctwas_res_8weights$boundary_genes
+region_data_8weights <- ctwas_res_8weights$region_data
+screen_res_8weights <- ctwas_res_8weights$screen_res
+
+colors <- c("#1b9e77", "#d95f02", "#7570b3", "#e7298a", "#66a61e", 
+               "#e6ab02", "#a6761d", "#666666", "#a6cee3")
+
+make_convergence_plots(param_8weights, gwas_n,colors =colors)
+
+
+
+ctwas_parameters_8weights <- summarize_param(param_8weights, gwas_n)
+
+para_8weights <- sum_pve_across_types(ctwas_parameters_8weights)
+DT::datatable(para_8weights,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Heritability contribution by contexts'),options = list(pageLength = 5) )
+
+finemap_res_8weights <- ctwas_res_8weights$finemap_res
+
+finemap_res_8weights <- anno_finemap_res_old(finemap_res_8weights, snp_map_8weights,E_S_A_mapping_two,
+                                use_gene_pos = "mid")
+
+combined_pip_by_type_8weights <- combine_gene_pips_old(finemap_res_8weights, 
+                                             by = "type",
+                                             filter_protein_coding_genes = TRUE,    
+                                             filter_cs = TRUE,digits = 4)
+
+DT::datatable(combined_pip_by_type_8weights[combined_pip_by_type_8weights$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by omics, credible set filtered'),options = list(pageLength = 5) )
+```

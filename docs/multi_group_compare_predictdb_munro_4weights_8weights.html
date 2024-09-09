@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="XSun" />
+
+<meta name="date" content="2024-09-09" />
+
+<title>Comparing predictdb &amp; Munro: predictdb eQTL + sQTL + Munro rsQTL + apaQTL VS all 8 weights</title>
+
+<script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/htmlwidgets-1.5.4/htmlwidgets.js"></script>
+<link href="site_libs/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet" />
+<script src="site_libs/datatables-binding-0.22/datatables.js"></script>
+<link href="site_libs/dt-core-1.11.3/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="site_libs/dt-core-1.11.3/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="site_libs/dt-core-1.11.3/js/jquery.dataTables.min.js"></script>
+<link href="site_libs/crosstalk-1.2.0/css/crosstalk.min.css" rel="stylesheet" />
+<script src="site_libs/crosstalk-1.2.0/js/crosstalk.min.js"></script>
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">multigroup_ctwas_analysis</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/sq-96/multigroup_ctwas_analysis">
+    <span class="fab fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Comparing predictdb &amp; Munro: predictdb
+eQTL + sQTL + Munro rsQTL + apaQTL VS all 8 weights</h1>
+<h4 class="author">XSun</h4>
+<h4 class="date">2024-09-09</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span
+class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2024-09-09
+</p>
+<p>
+<strong>Checks:</strong> <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> 1
+</p>
+<p>
+<strong>Knit directory:</strong> <code>multigroup_ctwas_analysis/</code>
+<span class="glyphicon glyphicon-question-sign" aria-hidden="true"
+title="This is the local directory in which the code in this file was executed.">
+</span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version
+1.7.0). The <em>Checks</em> tab describes the reproducibility checks
+that were applied when the results were created. The <em>Past
+versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges">
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted
+changes </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguncommittedchanges"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The R Markdown is untracked by Git. To know which version of the R
+Markdown file created these results, you’ll want to first commit it to
+the Git repo. If you’re still working on the analysis, you can ignore
+this warning. When you’re finished, you can run
+<code>wflow_publish</code> to commit the R Markdown file and build the
+HTML.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the
+global environment can affect the analysis in your R Markdown file in
+unknown ways. For reproduciblity it’s best to always run the code in an
+empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20231112code">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Seed:</strong>
+<code>set.seed(20231112)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20231112code"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20231112)</code> was run prior to running
+the code in the R Markdown file. Setting a seed ensures that any results
+that rely on randomness, e.g. subsampling or permutations, are
+reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Session information:</strong>
+recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package
+versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be
+confident that you successfully produced the results during this
+run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr
+project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree2483a84de0329ec53a861b281b205f5887b0bdactargetblank2483a84a">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/2483a84de0329ec53a861b281b205f5887b0bdac" target="_blank">2483a84</a>
+</a>
+</p>
+</div>
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree2483a84de0329ec53a861b281b205f5887b0bdactargetblank2483a84a"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development
+and connecting the code version to the results is critical for
+reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/2483a84de0329ec53a861b281b205f5887b0bdac" target="_blank">2483a84</a>.
+See the <em>Past versions</em> tab to see a history of the changes made
+to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for
+the analysis have been committed to Git prior to generating the results
+(you can use <code>wflow_publish</code> or
+<code>wflow_git_commit</code>). workflowr only checks the R Markdown
+file, but you know if there are other scripts or data files that it
+depends on. Below is the status of the Git repository when the results
+were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .Rhistory
+    Ignored:    results/
+
+Untracked files:
+    Untracked:  analysis/multi_group_compare_predictdb_munro_4weights_8weights.Rmd
+
+Unstaged changes:
+    Modified:   analysis/index.Rmd
+    Modified:   analysis/multi_group_compare_predictdb_munro_updated.Rmd
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not
+included in this status report because it is ok for generated content to
+have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+<p>
+There are no past versions. Publish this analysis with
+<code>wflow_publish()</code> to start tracking its development.
+</p>
+<hr>
+</div>
+</div>
+</div>
+<div id="settings" class="section level1">
+<h1>Settings</h1>
+<div id="modalities-from-munro" class="section level2">
+<h2>6 modalities from Munro</h2>
+<ol style="list-style-type: decimal">
+<li>Weight processing:</li>
+</ol>
+<p>PredictDB:</p>
+<p>all the PredictDB are converted from FUSION weights</p>
+<ul>
+<li>drop_strand_ambig = TRUE,</li>
+<li>scale_by_ld_variance = F (FUSION converted weights)</li>
+<li>load_predictdb_LD = F,</li>
+</ul>
+<ol start="2" style="list-style-type: decimal">
+<li>Parameter estimation and fine-mapping</li>
+</ol>
+<ul>
+<li>niter_prefit = 5,</li>
+<li>niter = 30(default),</li>
+<li>L: determined by uniform susie,</li>
+<li>group_prior_var_structure = “shared_type”,</li>
+<li>maxSNP = 20000,</li>
+<li>min_nonSNP_PIP = 0.5,</li>
+</ul>
+</div>
+<div id="weights-from-predictdb" class="section level2">
+<h2>weights from predictdb</h2>
+<ol style="list-style-type: decimal">
+<li>Weight processing:</li>
+</ol>
+<p>PredictDB (eqtl, sqtl)</p>
+<ul>
+<li>drop_strand_ambig = TRUE,</li>
+<li>scale_by_ld_variance = T</li>
+<li>load_predictdb_LD = F,</li>
+</ul>
+<ol start="2" style="list-style-type: decimal">
+<li>Parameter estimation and fine-mapping</li>
+</ol>
+<ul>
+<li>group_prior_var_structure = “shared_type”,</li>
+<li>filter_L = TRUE,</li>
+<li>filter_nonSNP_PIP = FALSE,</li>
+<li>min_nonSNP_PIP = 0.5,</li>
+<li>min_abs_corr = 0.1,</li>
+</ul>
+<p>mem: 100g 5cores</p>
+</div>
+</div>
+<div id="results" class="section level1">
+<h1>Results</h1>
+<div id="four-weights" class="section level2">
+<h2>Four weights</h2>
+<p>predictdb eQTL + sQTL + Munro rsQTL + apaQTL</p>
+<p><img src="figure/multi_group_compare_predictdb_munro_4weights_8weights.Rmd/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
+<div id="htmlwidget-4de263013227ca78a293" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-4de263013227ca78a293">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: topleft; text-align = left; color:black;\">Heritability contribution by contexts<\/caption>","data":[["1","2","3","4","5","6"],["apaQTL","eQTL","rsQTL","sQTL","SNP","total_pve"],["0.0111","0.0149","0.0095","0.024","0.2011","0.2606"],["0.0111","0.0149","0.0095","0.024","0","0.0595"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>type<\/th>\n      <th>total_pve<\/th>\n      <th>Colon_Transverse<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":5,"columnDefs":[{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[5,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<pre><code>2024-09-09 14:16:06 INFO::Annotating ctwas finemapping result ...
+2024-09-09 14:16:17 INFO::add gene_name and gene_type
+2024-09-09 14:16:18 INFO::split PIPs for traits mapped to multiple genes
+2024-09-09 14:16:19 INFO::use gene mid positions
+2024-09-09 14:16:19 INFO::add SNP positions</code></pre>
+<div id="htmlwidget-20575149739a71fc930f" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-20575149739a71fc930f">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: topleft; text-align = left; color:black;\">Combined PIP by omics, credible set filtered<\/caption>","data":[["111","45","80","59","114","115","95","51","32","37","55","90","34","96","10","113","100"],["TYK2","GNA12","P4HTM","KANSL1","USP4","VPS25","RNF186","IFNGR2","DOCK8","ERI3","IRF8","PTPN2","EIF3C","SBNO2","ATG16L1","UBE2L3","SLC26A3"],[1.8181,1.0188,1,1,1,0.9995,0.9754,0.9638,0.9322,0.9294,0.922,0.9125,0.903,0.9029,0.8919,0.8693,0.8082],[0.984,null,null,1,null,null,null,null,0.9322,0.9294,null,0.9125,null,0.9029,0.8055,0.2394,null],[0.0093,null,null,null,null,0.9995,null,null,null,null,null,null,0.903,null,null,0.63,null],[null,0.0572,null,null,null,null,0.9754,0.9638,null,null,0.922,null,null,null,0.0864,null,0.8082],[0.8248,0.9616,1,null,1,null,null,null,null,null,null,null,null,null,null,null,null]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>gene_name<\/th>\n      <th>combined_pip<\/th>\n      <th>sQTL_pip<\/th>\n      <th>rsQTL_pip<\/th>\n      <th>eQTL_pip<\/th>\n      <th>apaQTL_pip<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":5,"columnDefs":[{"className":"dt-right","targets":[2,3,4,5,6]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[5,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="eight-weights" class="section level2">
+<h2>Eight weights</h2>
+<p>predictdb eQTL + sQTL + Munro 6 modalities</p>
+<p><img src="figure/multi_group_compare_predictdb_munro_4weights_8weights.Rmd/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
+<div id="htmlwidget-a23c348805048a1f64c7" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-a23c348805048a1f64c7">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: topleft; text-align = left; color:black;\">Heritability contribution by contexts<\/caption>","data":[["1","2","3","4","5","6","7","8"],["apaQTL","eQTL","isoQTL","rsQTL","sQTL","tssQTL","SNP","total_pve"],["0.0095","0.0161","0.0151","0.0073","0.0335","0","0.1871","0.2686"],["0.0095","1e-04","0.0151","0.0073","0.0122","0","0","0.0442"],[null,"0.016",null,null,"0.0213",null,"0","0.0373"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>type<\/th>\n      <th>total_pve<\/th>\n      <th>Colon_Transverse<\/th>\n      <th>Colon_Transverse_pred<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":5,"columnDefs":[{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[5,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<pre><code>2024-09-09 14:16:47 INFO::Annotating ctwas finemapping result ...
+2024-09-09 14:16:52 INFO::add gene_name and gene_type</code></pre>
+<pre><code>Warning in left_join(., gene_annot, by = &quot;gene_id&quot;, multiple = &quot;all&quot;): Detected an unexpected many-to-many relationship between `x` and `y`.
+i Row 185 of `x` matches multiple rows in `y`.
+i Row 3411 of `y` matches multiple rows in `x`.
+i If a many-to-many relationship is expected, set `relationship =
+  &quot;many-to-many&quot;` to silence this warning.</code></pre>
+<pre><code>2024-09-09 14:16:52 INFO::split PIPs for traits mapped to multiple genes
+2024-09-09 14:16:53 INFO::use gene mid positions
+2024-09-09 14:16:53 INFO::add SNP positions</code></pre>
+<div id="htmlwidget-93928d62269dcef60a51" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-93928d62269dcef60a51">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: topleft; text-align = left; color:black;\">Combined PIP by omics, credible set filtered<\/caption>","data":[["52","155","144","150","123","57","58","98","118","9","147","69","65","149","129","76","59","133","116","61","141","128","97","115","39","66","45","111","119","146","30","15","12","125","42","132"],["GNA12","ZNF585A","TYK2","WRB","SH3BGR","HLA-DQA1","HLA-DRB1","P4HTM","RTEL1","ARIH2","USP4","KANSL1","IP6K2","VPS25","SLC6A7","MICB","HMGN2","SRP54","RNF186","IFNGR2","TNFRSF6B","SLC51A","NXPE1","RGS14","DOCK8","IRF8","ERI3","PTPN2","SBNO2","UBE2L3","COQ8B","AUH","ATG16L1","SLC26A3","EIF3C","SNX32"],[1.9617,1.8843,1.7397,1.5598,1.2329,1,1,1,1,1,1,1,0.9994,0.9994,0.998,0.9951,0.9921,0.9812,0.9785,0.9683,0.9532,0.952,0.9501,0.95,0.9321,0.9319,0.9291,0.9036,0.8921,0.89,0.8846,0.8828,0.8686,0.8344,0.8193,0.8189],[null,1.8357,0.9822,0.5599,1.2329,null,1,null,null,null,null,1,null,null,0.998,null,null,null,null,null,0.9532,null,0.6746,0.2268,0.9321,null,0.9291,0.9036,0.8921,0.1822,0.8846,0.2444,0.7601,null,0.1482,null],[null,null,0.0091,null,null,null,null,null,null,null,null,null,null,0.9994,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,0.4479,null,null,null,null,0.6711,0.0145],[null,0.0217,null,0.9999,null,1,null,null,1,1,null,null,0.9994,null,null,0.9951,0.9921,0.9812,null,null,null,0.952,0.0689,0.7232,null,null,null,null,null,0.2598,null,0.6384,null,null,null,0.8045],[0.997,0.0269,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,0.9785,0.9683,null,null,0.0809,null,null,0.9319,null,null,null,null,null,null,0.1085,0.8344,null,null],[0.9647,null,0.7484,null,null,null,null,1,null,null,1,null,null,null,null,null,null,null,null,null,null,null,0.1257,null,null,null,null,null,null,null,null,null,null,null,null,null]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>gene_name<\/th>\n      <th>combined_pip<\/th>\n      <th>sQTL_pip<\/th>\n      <th>rsQTL_pip<\/th>\n      <th>isoQTL_pip<\/th>\n      <th>eQTL_pip<\/th>\n      <th>apaQTL_pip<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":5,"columnDefs":[{"className":"dt-right","targets":[2,3,4,5,6,7]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[5,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.2.0 (2022-04-22)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: CentOS Linux 7 (Core)
+
+Matrix products: default
+BLAS/LAPACK: /software/openblas-0.3.13-el7-x86_64/lib/libopenblas_haswellp-r0.3.13.so
+
+locale:
+[1] C
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+ [1] forcats_0.5.1     stringr_1.5.1     dplyr_1.1.4       purrr_1.0.2      
+ [5] readr_2.1.2       tidyr_1.3.0       tibble_3.2.1      ggplot2_3.5.1    
+ [9] tidyverse_1.3.1   data.table_1.14.2 logging_0.10-108  ctwas_0.4.11     
+
+loaded via a namespace (and not attached):
+  [1] colorspace_2.0-3            rjson_0.2.21               
+  [3] ellipsis_0.3.2              rprojroot_2.0.3            
+  [5] XVector_0.36.0              locuszoomr_0.2.1           
+  [7] GenomicRanges_1.48.0        fs_1.5.2                   
+  [9] rstudioapi_0.13             farver_2.1.0               
+ [11] DT_0.22                     ggrepel_0.9.1              
+ [13] bit64_4.0.5                 lubridate_1.8.0            
+ [15] AnnotationDbi_1.58.0        fansi_1.0.3                
+ [17] xml2_1.3.3                  codetools_0.2-18           
+ [19] cachem_1.0.6                knitr_1.39                 
+ [21] jsonlite_1.8.0              workflowr_1.7.0            
+ [23] Rsamtools_2.12.0            broom_0.8.0                
+ [25] dbplyr_2.1.1                png_0.1-7                  
+ [27] compiler_4.2.0              httr_1.4.3                 
+ [29] backports_1.4.1             assertthat_0.2.1           
+ [31] Matrix_1.5-3                fastmap_1.1.0              
+ [33] lazyeval_0.2.2              cli_3.6.1                  
+ [35] later_1.3.0                 htmltools_0.5.2            
+ [37] prettyunits_1.1.1           tools_4.2.0                
+ [39] gtable_0.3.0                glue_1.6.2                 
+ [41] GenomeInfoDbData_1.2.8      rappdirs_0.3.3             
+ [43] Rcpp_1.0.12                 Biobase_2.56.0             
+ [45] cellranger_1.1.0            jquerylib_0.1.4            
+ [47] vctrs_0.6.5                 Biostrings_2.64.0          
+ [49] rtracklayer_1.56.0          crosstalk_1.2.0            
+ [51] xfun_0.41                   rvest_1.0.2                
+ [53] lifecycle_1.0.4             irlba_2.3.5                
+ [55] restfulr_0.0.14             ensembldb_2.20.2           
+ [57] XML_3.99-0.14               zlibbioc_1.42.0            
+ [59] zoo_1.8-10                  scales_1.3.0               
+ [61] gggrid_0.2-0                hms_1.1.1                  
+ [63] promises_1.2.0.1            MatrixGenerics_1.8.0       
+ [65] ProtGenerics_1.28.0         parallel_4.2.0             
+ [67] SummarizedExperiment_1.26.1 AnnotationFilter_1.20.0    
+ [69] LDlinkR_1.2.3               yaml_2.3.5                 
+ [71] curl_4.3.2                  memoise_2.0.1              
+ [73] sass_0.4.1                  biomaRt_2.54.1             
+ [75] stringi_1.7.6               RSQLite_2.3.1              
+ [77] highr_0.9                   S4Vectors_0.34.0           
+ [79] BiocIO_1.6.0                GenomicFeatures_1.48.3     
+ [81] BiocGenerics_0.42.0         filelock_1.0.2             
+ [83] BiocParallel_1.30.3         GenomeInfoDb_1.39.9        
+ [85] rlang_1.1.2                 pkgconfig_2.0.3            
+ [87] matrixStats_0.62.0          bitops_1.0-7               
+ [89] evaluate_0.15               lattice_0.20-45            
+ [91] labeling_0.4.2              GenomicAlignments_1.32.0   
+ [93] htmlwidgets_1.5.4           cowplot_1.1.1              
+ [95] bit_4.0.4                   tidyselect_1.2.0           
+ [97] magrittr_2.0.3              R6_2.5.1                   
+ [99] IRanges_2.30.0              generics_0.1.2             
+[101] DelayedArray_0.22.0         DBI_1.2.2                  
+[103] withr_2.5.0                 haven_2.5.0                
+[105] pgenlibr_0.3.3              pillar_1.9.0               
+[107] KEGGREST_1.36.3             RCurl_1.98-1.7             
+[109] mixsqp_0.3-43               modelr_0.1.8               
+[111] crayon_1.5.1                utf8_1.2.2                 
+[113] BiocFileCache_2.4.0         plotly_4.10.0              
+[115] tzdb_0.4.0                  rmarkdown_2.25             
+[117] progress_1.2.2              readxl_1.4.0               
+[119] grid_4.2.0                  blob_1.2.3                 
+[121] git2r_0.30.1                reprex_2.0.1               
+[123] digest_0.6.29               httpuv_1.6.5               
+[125] stats4_4.2.0                munsell_0.5.0              
+[127] viridisLite_0.4.0           bslib_0.3.1                </code></pre>
+</div>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
