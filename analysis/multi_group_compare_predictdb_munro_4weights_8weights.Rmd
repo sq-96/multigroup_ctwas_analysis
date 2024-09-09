@@ -12,6 +12,9 @@ library(ctwas)
 library(logging)
 library(data.table)
 library(tidyverse)
+library(EnsDb.Hsapiens.v86)
+
+ens_db <- EnsDb.Hsapiens.v86
 
 load("/project2/xinhe/shared_data/multigroup_ctwas/gwas/samplesize.rdata")
 
@@ -146,19 +149,23 @@ make_convergence_plots(param_4weights, gwas_n)
 ctwas_parameters_4weights <- summarize_param(param_4weights, gwas_n)
 
 para_4weights <- sum_pve_across_types(ctwas_parameters_4weights)
-DT::datatable(para_4weights,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Heritability contribution by contexts'),options = list(pageLength = 5) )
+DT::datatable(para_4weights,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Heritability contribution by contexts'),options = list(pageLength = 10) )
 
 finemap_res_4weights <- ctwas_res_4weights$finemap_res
 
 finemap_res_4weights <- anno_finemap_res_old(finemap_res_4weights, snp_map_4weights,E_S_A_mapping_two,
                                 use_gene_pos = "mid")
 
+finemap_res_4weights$type <- ifelse(grepl("_pred$", finemap_res_4weights$context),
+                                         paste0(finemap_res_4weights$type, "_pred"),
+                                         finemap_res_4weights$type)
+
 combined_pip_by_type_4weights <- combine_gene_pips_old(finemap_res_4weights, 
                                              by = "type",
                                              filter_protein_coding_genes = TRUE,    
                                              filter_cs = TRUE,digits = 4)
 
-DT::datatable(combined_pip_by_type_4weights[combined_pip_by_type_4weights$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by omics, credible set filtered'),options = list(pageLength = 5) )
+DT::datatable(combined_pip_by_type_4weights[combined_pip_by_type_4weights$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by omics, credible set filtered'),options = list(pageLength = 10) )
 ```
 
 
@@ -195,17 +202,93 @@ make_convergence_plots(param_8weights, gwas_n,colors =colors)
 ctwas_parameters_8weights <- summarize_param(param_8weights, gwas_n)
 
 para_8weights <- sum_pve_across_types(ctwas_parameters_8weights)
-DT::datatable(para_8weights,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Heritability contribution by contexts'),options = list(pageLength = 5) )
+DT::datatable(para_8weights,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Heritability contribution by contexts'),options = list(pageLength = 10) )
 
 finemap_res_8weights <- ctwas_res_8weights$finemap_res
 
-finemap_res_8weights <- anno_finemap_res_old(finemap_res_8weights, snp_map_8weights,E_S_A_mapping_two,
-                                use_gene_pos = "mid")
+finemap_res_8weights <- anno_finemap_res_old(finemap_res_8weights,          
+                                             snp_map_8weights,
+                                             E_S_A_mapping_two,
+                                             use_gene_pos = "mid")
+
+finemap_res_8weights$type <- ifelse(grepl("_pred$", finemap_res_8weights$context),
+                                         paste0(finemap_res_8weights$type, "_pred"),
+                                         finemap_res_8weights$type)
 
 combined_pip_by_type_8weights <- combine_gene_pips_old(finemap_res_8weights, 
                                              by = "type",
                                              filter_protein_coding_genes = TRUE,    
                                              filter_cs = TRUE,digits = 4)
 
-DT::datatable(combined_pip_by_type_8weights[combined_pip_by_type_8weights$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by omics, credible set filtered'),options = list(pageLength = 5) )
+DT::datatable(combined_pip_by_type_8weights[combined_pip_by_type_8weights$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by omics, credible set filtered'),options = list(pageLength = 10) )
+```
+
+
+## Comparing results from 2 settings
+
+
+```{r echo=FALSE}
+
+overlapped_gene <- merge(combined_pip_by_type_4weights,combined_pip_by_type_8weights, by ="gene_name")
+
+colnames(overlapped_gene) <- c("genename", "combined_pip_4weights","sQTL_4weights_pred","rsQTL_4weights_munro","eQTL_4weights_pred","apaQTL_4weights_munro",
+"combined_pip_8weights","sQTL_8weights_munro","rsQTL_8weights_munro","sQTL_8weights_pred","isoQTL_8weights_munro","eQTL_8weights_pred","apaQTL_8weights_munro","eQTL_8weights_munro" )
+
+overlapped_gene <- overlapped_gene[order(as.numeric(overlapped_gene$combined_pip_4weights),decreasing = T),]
+
+DT::datatable(overlapped_gene[overlapped_gene$combined_pip_4weights > 0.8 & overlapped_gene$combined_pip_8weights > 0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Overlapped genes, combined_pip > 0.8, filtered by credible sets'),options = list(pageLength = 10) )
+
+print("all genes discovered by 4 weights setting were overlapped with 8 weights setting")
+```
+
+Unique genes reported by 8 weights setting
+
+```{r echo=FALSE}
+
+combined_pip_by_type_8weights_highpip <- combined_pip_by_type_8weights[combined_pip_by_type_8weights$combined_pip > 0.8,]
+
+combined_pip_by_type_4weights_highpip <- combined_pip_by_type_4weights[combined_pip_by_type_4weights$combined_pip > 0.8,]
+
+DT::datatable(combined_pip_by_type_8weights_highpip[!combined_pip_by_type_8weights_highpip$gene_name %in% combined_pip_by_type_4weights_highpip$gene_name, ],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Overlapped genes, combined_pip > 0.8, filtered by credible sets'),options = list(pageLength = 10) )
+
+```
+
+We notice TNFRSF6B PIP was from predictdb sQTL, it should be discovered in the 4 weights setting. 
+
+```{r echo=FALSE, warning=F, message=FALSE, fig.height=15}
+print("Locus plot -- 4 weights setting")
+
+cor_dir <- paste0("/project/xinhe/xsun/multi_group_ctwas/8.deciding_weights/fourweights/",trait,"/cor_matrix")
+cor_res <- get_region_cor(region_id = "20_63558827_64333810", cor_dir = cor_dir)
+make_locusplot(finemap_res_4weights,
+               region_id = "20_63558827_64333810",
+               weights = weights_4weights,
+               ens_db = ens_db,
+               #locus_range = c(2732556,4533638),
+               highlight_pip = 0.8,
+               focal_gene = "TNFRSF6B",
+               R_snp_gene = cor_res$R_snp_gene,
+               R_gene = cor_res$R_gene,
+               legend.position = "right",
+               point.shapes = c(16, 15, 18, 17,14,11,6,8,9))
+
+```
+
+```{r echo=FALSE, warning=F, message=FALSE, fig.height=15}
+print("Locus plot -- 8 weights setting")
+
+cor_dir <- paste0("/project/xinhe/xsun/multi_group_ctwas/8.deciding_weights/eightweights/",trait,"/cor_matrix")
+cor_res <- get_region_cor(region_id = "20_63558827_64333810", cor_dir = cor_dir)
+
+make_locusplot(finemap_res_8weights,
+               region_id = "20_63558827_64333810",
+               weights = weights_8weights,
+               ens_db = ens_db,
+               #locus_range = c(2732556,4533638),
+               highlight_pip = 0.8,
+               focal_gene = "TNFRSF6B",
+               R_snp_gene = cor_res$R_snp_gene,
+               R_gene = cor_res$R_gene,legend.position = "right",
+               point.shapes = c(16, 15, 18, 17,14,11,6,8,9))
+
 ```
