@@ -311,6 +311,7 @@ for (i in 1:nrow(df_gene)) {
 }
 
 
+
 ```
 
 The LD for the high pip SNPs in 4 weights setting and the sQTLs in 8 weights setting. The SNPs in row1 and row2 (column1 and column2) are the high pip SNPs in 4 weights setting.
@@ -328,3 +329,11 @@ We notice that, the 2 high pip SNPs are in LD themselves. And they are in LD wit
 | rs74748720  | 0.009     | 0.008       | 0.002      | 0.003      | 0.023     | 1.0        | 0.014     | 0.012  |
 | rs6011040   | 0.592     | 0.569       | 0.103      | 0.034      | 0.611     | 0.014      | 1.0       | 0.791  |
 | rs8957      | 0.447     | 0.445       | 0.128      | 0.028      | 0.486     | 0.012      | 0.791     | 1.0    |
+
+
+However, the earlier 2 SNPs still have high pip
+
+```{r echo=FALSE, warning=F, message=FALSE, fig.height=15}
+df_region <- finemap_res_8weights[finemap_res_8weights$region_id =="20_63558827_64333810",]
+DT::datatable(df_region[df_region$susie_pip > 0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','The two SNPs with high PIP'),options = list(pageLength = 10) )
+```
