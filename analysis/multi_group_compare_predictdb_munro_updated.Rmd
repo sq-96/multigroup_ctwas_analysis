@@ -156,144 +156,6 @@ mem: 150g 5cores
 
 # Results
 
-## LDL - Liver
-
-### Predictdb: eqtl and sqtl
-
-```{r echo=FALSE}
-trait <- "LDL-ukb-d-30780_irnt"
-gwas_n <- samplesize[trait]
-
-results_dir_predictdb <- paste0("/project/xinhe/xsun/multi_group_ctwas/7.multi_omics_predicdb/results_predictdb_main/",trait,"/")
-
-weights_predictdb <- readRDS(paste0(results_dir_predictdb,trait,".preprocessed.weights.RDS"))
-region_info_predictdb <- readRDS(paste0(results_dir_predictdb,trait,".region_info.RDS"))
-snp_map_predictdb <- readRDS(paste0(results_dir_predictdb,trait,".snp_map.RDS"))
-LD_map_predictdb <- readRDS(paste0(results_dir_predictdb,trait,".LD_map.RDS"))
-ctwas_res_predictdb <- readRDS(paste0(results_dir_predictdb,trait,".ctwas.res.RDS"))
-
-z_gene_predictdb <- ctwas_res_predictdb$z_gene
-param_predictdb <- ctwas_res_predictdb$param
-finemap_res_predictdb <- ctwas_res_predictdb$finemap_res
-boundary_genes_predictdb <- ctwas_res_predictdb$boundary_genes
-region_data_predictdb <- ctwas_res_predictdb$region_data
-screen_res_predictdb <- ctwas_res_predictdb$screen_res
-
-make_convergence_plots(param_predictdb, gwas_n)
-
-ctwas_parameters_predictdb <- summarize_param(param_predictdb, gwas_n)
-
-para_predictdb <- sum_pve_across_types(ctwas_parameters_predictdb)
-DT::datatable(para_predictdb,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Heritability contribution by contexts'),options = list(pageLength = 5) )
-
-finemap_res_predictdb <- ctwas_res_predictdb$finemap_res
-
-finemap_res_predictdb <- anno_finemap_res_old(finemap_res_predictdb, snp_map_predictdb,E_S_A_mapping_predictdb,
-                                use_gene_pos = "mid")
-
-combined_pip_by_type_predictdb <- combine_gene_pips_new(finemap_res_predictdb, 
-                                             by = "type",
-                                             filter_protein_coding_genes = TRUE,    
-                                             filter_cs = TRUE,digits = 4)
-
-DT::datatable(combined_pip_by_type_predictdb[combined_pip_by_type_predictdb$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by omics, credible set filtered'),options = list(pageLength = 5) )
-```
-
-
-### Munro et al : 6 modalities
-
-```{r echo=FALSE}
-trait <- "LDL-ukb-d-30780_irnt"
-gwas_n <- samplesize[trait]
-
-results_dir_munro <- paste0("/project/xinhe/xsun/multi_group_ctwas/7.multi_omics_predicdb/results_munro_main/",trait,"/")
-
-weights_munro <- readRDS(paste0(results_dir_munro,trait,".preprocessed.weights.RDS"))
-region_info_munro <- readRDS(paste0(results_dir_munro,trait,".region_info.RDS"))
-snp_map_munro <- readRDS(paste0(results_dir_munro,trait,".snp_map.RDS"))
-LD_map_munro <- readRDS(paste0(results_dir_munro,trait,".LD_map.RDS"))
-ctwas_res_munro <- readRDS(paste0(results_dir_munro,trait,".ctwas.res.RDS"))
-
-z_gene_munro <- ctwas_res_munro$z_gene
-param_munro <- ctwas_res_munro$param
-finemap_res_munro <- ctwas_res_munro$finemap_res
-boundary_genes_munro <- ctwas_res_munro$boundary_genes
-region_data_munro <- ctwas_res_munro$region_data
-screen_res_munro <- ctwas_res_munro$screen_res
-
-make_convergence_plots(param_munro, gwas_n)
-
-ctwas_parameters_munro <- summarize_param(param_munro, gwas_n)
-
-para_munro <- sum_pve_across_types(ctwas_parameters_munro)
-DT::datatable(para_munro,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Heritability contribution by contexts'),options = list(pageLength = 8) )
-
-finemap_res_munro <- ctwas_res_munro$finemap_res
-
-finemap_res_munro <- anno_finemap_res_old(finemap_res_munro, snp_map_munro,E_S_A_mapping_munro,
-                                use_gene_pos = "mid")
-
-combined_pip_by_type_munro <- combine_gene_pips_new(finemap_res_munro, 
-                                             by = "type",
-                                             filter_protein_coding_genes = TRUE,    
-                                             filter_cs = TRUE,digits = 4)
-
-DT::datatable(combined_pip_by_type_munro[combined_pip_by_type_munro$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by omics, credible set filtered'),options = list(pageLength = 5) )
-```
-
-
-### Compare the results from Predictdb & Munro weights
-
-```{r echo=FALSE}
-
-overlapped_gene <- merge(combined_pip_by_type_predictdb,combined_pip_by_type_munro, by ="gene_name")
-
-overlapped_gene <- overlapped_gene[,c("gene_name","combined_pip.x","eQTL_pip.x","sQTL_pip.x","combined_pip.y","sQTL_pip.y","isoQTL_pip","rsQTL_pip","eQTL_pip.y","tssQTL_pip","apaQTL_pip")]
-colnames(overlapped_gene) <- c("genename", "combined_pip_predictdb","eQTL_predictdb","sQTL_predictdb",
-"combined_pip_munro","sQTL_munro","isoQTL_munro","rsQTL_munro","eQTL_munro","tssQTL_munro","apaQTL_munro")
-
-overlapped_gene <- overlapped_gene[order(as.numeric(overlapped_gene$combined_pip_munro),decreasing = T),]
-
-DT::datatable(overlapped_gene,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Overlapped genes, not filtered by combined_pip, filtered by credible sets'),options = list(pageLength = 5) )
-```
-
-If we filter by combined pip >0.8 in both settings, we have
-
-```{r echo=FALSE}
-
-combined_pip_by_type_pred_pip08 <- combined_pip_by_type_predictdb[combined_pip_by_type_predictdb$combined_pip > 0.8,]
-combined_pip_by_type_munro_pip08 <- combined_pip_by_type_munro[combined_pip_by_type_munro$combined_pip > 0.8,]
-overlapped_gene <- merge(combined_pip_by_type_pred_pip08,combined_pip_by_type_munro_pip08, by ="gene_name")
-
-overlapped_gene <- overlapped_gene[,c("gene_name","combined_pip.x","eQTL_pip.x","sQTL_pip.x","combined_pip.y","sQTL_pip.y","isoQTL_pip","rsQTL_pip","eQTL_pip.y","tssQTL_pip","apaQTL_pip")]
-colnames(overlapped_gene) <- c("genename", "combined_pip_predictdb","eQTL_predictdb","sQTL_predictdb",
-"combined_pip_munro","sQTL_munro","isoQTL_munro","rsQTL_munro","eQTL_munro","tssQTL_munro","apaQTL_munro" )
-
-
-DT::datatable(overlapped_gene,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Overlapped genes, combined_pip > 0.8'),options = list(pageLength = 5) )
-
-```
-
-
-### Checking why Predicdb results missed many Munro genes
-
-```{r echo=FALSE}
-
-genes_munro_unique <- combined_pip_by_type_munro_pip08[!combined_pip_by_type_munro_pip08$gene_name %in% overlapped_gene$genename,]
-
-genes_munro_unique_pred_res <- finemap_res_predictdb[finemap_res_predictdb$gene_name %in%genes_munro_unique$gene_name,]
-
-print(paste0("# of Unique munro genes = ", nrow(genes_munro_unique)))
-print(paste0("# of Unique munro genes included in predictdb data = ", length(unique(genes_munro_unique_pred_res$gene_name))))
-
-DT::datatable(genes_munro_unique_pred_res,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Unique munro genes in predictdb setting'),options = list(pageLength = 5) )
-```
-
-
-
-
-
-
 ## IBD -- Colon_Transverse
 
 ### Predictdb: eqtl and sqtl
@@ -437,6 +299,7 @@ make_locusplot(finemap_res_predictdb,
                point.shapes = c(16, 15, 18, 17,14,11,6,8,9))
 ```
 
+
 ```{r echo=FALSE, warning=F, message=FALSE, fig.height=15}
 print("Locus plot -- Munro")
 
@@ -556,6 +419,50 @@ make_locusplot(finemap_res_predictdb,
                point.shapes = c(16, 15, 18, 17,14,11,6,8,9))
 ```
 
+We noticed in the top panel, there is a gene with outstanding pvalue, but 2 SNPs have the largest PIPs (second panel). We try to understand this case, we run ctwas in this region with L=1
+
+```{r echo=FALSE, warning=F, message=FALSE, fig.height=15}
+
+region_id <- "20_63558827_64333810"
+
+screened_region_data <- ctwas_res_predictdb$screen_res$screened_region_data
+selected_region_data <- screened_region_data[region_id]
+screened_region_L <- ctwas_res_predictdb$screen_res$screened_region_L
+selected_region_L <- screened_region_L[region_id]
+
+sprintf("the pre-estimated L for this region is %s", selected_region_L)
+
+finemap_region_res_predictdb <- finemap_regions(selected_region_data,
+                                      LD_map = LD_map_predictdb,
+                                      weights = weights_predictdb,
+                                      group_prior = ctwas_res_predictdb$param$group_prior,
+                                      group_prior_var = ctwas_res_predictdb$param$group_prior_var,
+                                      L = 1,
+                                      save_cor = TRUE,
+                                      cor_dir = paste0(results_dir_predictdb,"/cor_matrix_L1"))
+
+
+finemap_region_res_predictdb <- anno_finemap_res_old(finemap_region_res_predictdb, snp_map_predictdb,E_S_A_mapping_predictdb,
+                                              use_gene_pos = "mid")
+
+cor_dir <- paste0("/project/xinhe/xsun/multi_group_ctwas/7.multi_omics_predicdb/results_predictdb_main/",trait,"/cor_matrix_L1")
+cor_res <- get_region_cor(region_id = region_id, cor_dir = cor_dir)
+make_locusplot(finemap_region_res_predictdb,
+               region_id = region_id,
+               weights = weights_predictdb,
+               ens_db = ens_db,
+               #locus_range = c(2732556,4533638),
+               highlight_pip = 0.8,
+               R_snp_gene = cor_res$R_snp_gene,
+               R_gene = cor_res$R_gene,
+               legend.position = "right",
+               point.shapes = c(16, 15, 18, 17,14,11,6,8,9))
+
+
+
+```
+
+
 ```{r echo=FALSE, warning=F, message=FALSE, fig.height=15}
 print("Locus plot -- Munro")
 
@@ -572,6 +479,28 @@ make_locusplot(finemap_res_munro,
                R_gene = cor_res$R_gene,
                legend.position = "right",
                point.shapes = c(16, 15, 18, 17,14,11,6,8,9))
+```
+
+
+If we merge the RTEL1 region 
+
+```{r echo=FALSE, warning=F, message=FALSE, fig.height=15}
+
+load("/project/xinhe/xsun/multi_group_ctwas/7.multi_omics_predicdb/results_postprocess/RTEL1_mergedregion_plot.rdata")
+
+make_locusplot(finemap_merged_region_res_munro,
+               region_id = "20_62670503_64333810",
+               weights = weights_munro,
+               ens_db = ens_db,
+               #locus_range = c(2732556,4533638),
+               highlight_pip = 0.8,
+               R_snp_gene = cor_res$R_snp_gene,
+               R_gene = cor_res$R_gene,
+               legend.position = "right",
+               focal_gene = "RTEL1",
+               point.shapes = c(16, 15, 18, 17,14,11,6,8,9))
+
+DT::datatable(finemap_merged_region_res_munro,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Fine-mapping results after region merging'),options = list(pageLength = 5) )
 ```
 
 USP4: this gene was assigned to region 3_49279539_51797999 in predictdb setting but 3_47685722_49279539 in Munro setting
@@ -641,7 +570,92 @@ make_locusplot(finemap_res_munro,
                point.shapes = c(16, 15, 18, 17,14,11,6,8,9))
 ```
 
+If we merge the 2 regions above 
+
+```{r echo=FALSE, warning=F, message=FALSE, fig.height=15}
+
+load("/project/xinhe/xsun/multi_group_ctwas/7.multi_omics_predicdb/results_postprocess/USP4_mergedregion_plot.rdata")
+
+make_locusplot(finemap_merged_region_res_munro,
+               region_id = "3_47685722_51797999",
+               weights = weights_munro,
+               ens_db = ens_db,
+               #locus_range = c(2732556,4533638),
+               highlight_pip = 0.8,
+               R_snp_gene = cor_res$R_snp_gene,
+               R_gene = cor_res$R_gene,
+               legend.position = "right",
+               focal_gene = "USP4",
+               point.shapes = c(16, 15, 18, 17,14,11,6,8,9))
+
+DT::datatable(finemap_merged_region_res_munro,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Fine-mapping results after region merging'),options = list(pageLength = 5) )
+
+```
+
 ### Comparing z-scores
+
+```{r}
+library(dplyr)
+
+gene_predictdb <- finemap_res_predictdb[finemap_res_predictdb$type !="SNP",]
+gene_predictdb <- gene_predictdb[,c("gene_name","z","susie_pip")]
+
+gene_predictdb_clean <- gene_predictdb %>%
+  group_by(gene_name) %>%
+  dplyr::filter(abs(z) == max(abs(z))) %>%
+  ungroup()
+
+gene_munro <- finemap_res_munro[finemap_res_munro$type !="SNP",]
+gene_munro <- gene_munro[,c("gene_name","z","susie_pip")]
+
+gene_munro_clean <- gene_munro %>%
+  group_by(gene_name) %>%
+  dplyr::filter(abs(z) == max(abs(z))) %>%
+  ungroup()
+
+merge_eqtl <- merge(gene_predictdb_clean, gene_munro_clean, by="gene_name")
+colnames(merge_eqtl) <- c("gene_name","z_predictdb", "pip_predictdb","z_munro", "pip_munro")
+
+
+ggplot(merge_eqtl, aes(x = z_predictdb, y = z_munro)) +
+  geom_point() +  
+  geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed") +  # Add y=x line
+  theme_minimal() +
+  labs(
+    x = "Z PredictDB",
+    y = "Z Munro",
+    title = "Scatter Plot of Z PredictDB vs Z Munro"
+  ) +
+   theme(
+    plot.title = element_text(hjust = 0.5),
+    axis.text = element_text(size = 12),
+    axis.title = element_text(size = 14),
+    legend.position = "none"  # Remove the legend
+  )
+
+
+print("we take the abs(z)")
+merge_eqtl$z_predictdb <- abs(merge_eqtl$z_predictdb)
+merge_eqtl$z_munro <- abs(merge_eqtl$z_munro)
+ggplot(merge_eqtl, aes(x = z_predictdb, y = z_munro)) +
+  geom_point() +  
+  geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed") +  # Add y=x line
+  theme_minimal() +
+  labs(
+    x = "Z PredictDB",
+    y = "Z Munro",
+    title = "Scatter Plot of Z PredictDB vs Z Munro (abs z scores)"
+  ) +
+   theme(
+    plot.title = element_text(hjust = 0.5),
+    axis.text = element_text(size = 12),
+    axis.title = element_text(size = 14),
+    legend.position = "none"  # Remove the legend
+  )
+
+```
+
+
 
 ```{r}
 
@@ -749,3 +763,144 @@ DT::datatable(finemap_res_munro[finemap_res_munro$gene_name == "NXPE1" & complet
 ```
 
 The Munro PIPs are from sQTLs. So, as shown in the earlier scatter plot, the eQTL PIP is very low. 
+
+
+
+<!-- ## LDL - Liver -->
+
+<!-- ### Predictdb: eqtl and sqtl -->
+
+<!-- ```{r echo=FALSE} -->
+<!-- trait <- "LDL-ukb-d-30780_irnt" -->
+<!-- gwas_n <- samplesize[trait] -->
+
+<!-- results_dir_predictdb <- paste0("/project/xinhe/xsun/multi_group_ctwas/7.multi_omics_predicdb/results_predictdb_main/",trait,"/") -->
+
+<!-- weights_predictdb <- readRDS(paste0(results_dir_predictdb,trait,".preprocessed.weights.RDS")) -->
+<!-- region_info_predictdb <- readRDS(paste0(results_dir_predictdb,trait,".region_info.RDS")) -->
+<!-- snp_map_predictdb <- readRDS(paste0(results_dir_predictdb,trait,".snp_map.RDS")) -->
+<!-- LD_map_predictdb <- readRDS(paste0(results_dir_predictdb,trait,".LD_map.RDS")) -->
+<!-- ctwas_res_predictdb <- readRDS(paste0(results_dir_predictdb,trait,".ctwas.res.RDS")) -->
+
+<!-- z_gene_predictdb <- ctwas_res_predictdb$z_gene -->
+<!-- param_predictdb <- ctwas_res_predictdb$param -->
+<!-- finemap_res_predictdb <- ctwas_res_predictdb$finemap_res -->
+<!-- boundary_genes_predictdb <- ctwas_res_predictdb$boundary_genes -->
+<!-- region_data_predictdb <- ctwas_res_predictdb$region_data -->
+<!-- screen_res_predictdb <- ctwas_res_predictdb$screen_res -->
+
+<!-- make_convergence_plots(param_predictdb, gwas_n) -->
+
+<!-- ctwas_parameters_predictdb <- summarize_param(param_predictdb, gwas_n) -->
+
+<!-- para_predictdb <- sum_pve_across_types(ctwas_parameters_predictdb) -->
+<!-- DT::datatable(para_predictdb,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Heritability contribution by contexts'),options = list(pageLength = 5) ) -->
+
+<!-- finemap_res_predictdb <- ctwas_res_predictdb$finemap_res -->
+
+<!-- finemap_res_predictdb <- anno_finemap_res_old(finemap_res_predictdb, snp_map_predictdb,E_S_A_mapping_predictdb, -->
+<!--                                 use_gene_pos = "mid") -->
+
+<!-- combined_pip_by_type_predictdb <- combine_gene_pips_new(finemap_res_predictdb,  -->
+<!--                                              by = "type", -->
+<!--                                              filter_protein_coding_genes = TRUE,     -->
+<!--                                              filter_cs = TRUE,digits = 4) -->
+
+<!-- DT::datatable(combined_pip_by_type_predictdb[combined_pip_by_type_predictdb$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by omics, credible set filtered'),options = list(pageLength = 5) ) -->
+<!-- ``` -->
+
+
+<!-- ### Munro et al : 6 modalities -->
+
+<!-- ```{r echo=FALSE} -->
+<!-- trait <- "LDL-ukb-d-30780_irnt" -->
+<!-- gwas_n <- samplesize[trait] -->
+
+<!-- results_dir_munro <- paste0("/project/xinhe/xsun/multi_group_ctwas/7.multi_omics_predicdb/results_munro_main/",trait,"/") -->
+
+<!-- weights_munro <- readRDS(paste0(results_dir_munro,trait,".preprocessed.weights.RDS")) -->
+<!-- region_info_munro <- readRDS(paste0(results_dir_munro,trait,".region_info.RDS")) -->
+<!-- snp_map_munro <- readRDS(paste0(results_dir_munro,trait,".snp_map.RDS")) -->
+<!-- LD_map_munro <- readRDS(paste0(results_dir_munro,trait,".LD_map.RDS")) -->
+<!-- ctwas_res_munro <- readRDS(paste0(results_dir_munro,trait,".ctwas.res.RDS")) -->
+
+<!-- z_gene_munro <- ctwas_res_munro$z_gene -->
+<!-- param_munro <- ctwas_res_munro$param -->
+<!-- finemap_res_munro <- ctwas_res_munro$finemap_res -->
+<!-- boundary_genes_munro <- ctwas_res_munro$boundary_genes -->
+<!-- region_data_munro <- ctwas_res_munro$region_data -->
+<!-- screen_res_munro <- ctwas_res_munro$screen_res -->
+
+<!-- make_convergence_plots(param_munro, gwas_n) -->
+
+<!-- ctwas_parameters_munro <- summarize_param(param_munro, gwas_n) -->
+
+<!-- para_munro <- sum_pve_across_types(ctwas_parameters_munro) -->
+<!-- DT::datatable(para_munro,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Heritability contribution by contexts'),options = list(pageLength = 8) ) -->
+
+<!-- finemap_res_munro <- ctwas_res_munro$finemap_res -->
+
+<!-- finemap_res_munro <- anno_finemap_res_old(finemap_res_munro, snp_map_munro,E_S_A_mapping_munro, -->
+<!--                                 use_gene_pos = "mid") -->
+
+<!-- combined_pip_by_type_munro <- combine_gene_pips_new(finemap_res_munro,  -->
+<!--                                              by = "type", -->
+<!--                                              filter_protein_coding_genes = TRUE,     -->
+<!--                                              filter_cs = TRUE,digits = 4) -->
+
+<!-- DT::datatable(combined_pip_by_type_munro[combined_pip_by_type_munro$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by omics, credible set filtered'),options = list(pageLength = 5) ) -->
+<!-- ``` -->
+
+
+<!-- ### Compare the results from Predictdb & Munro weights -->
+
+<!-- ```{r echo=FALSE} -->
+
+<!-- overlapped_gene <- merge(combined_pip_by_type_predictdb,combined_pip_by_type_munro, by ="gene_name") -->
+
+<!-- overlapped_gene <- overlapped_gene[,c("gene_name","combined_pip.x","eQTL_pip.x","sQTL_pip.x","combined_pip.y","sQTL_pip.y","isoQTL_pip","rsQTL_pip","eQTL_pip.y","tssQTL_pip","apaQTL_pip")] -->
+<!-- colnames(overlapped_gene) <- c("genename", "combined_pip_predictdb","eQTL_predictdb","sQTL_predictdb", -->
+<!-- "combined_pip_munro","sQTL_munro","isoQTL_munro","rsQTL_munro","eQTL_munro","tssQTL_munro","apaQTL_munro") -->
+
+<!-- overlapped_gene <- overlapped_gene[order(as.numeric(overlapped_gene$combined_pip_munro),decreasing = T),] -->
+
+<!-- DT::datatable(overlapped_gene,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Overlapped genes, not filtered by combined_pip, filtered by credible sets'),options = list(pageLength = 5) ) -->
+<!-- ``` -->
+
+<!-- If we filter by combined pip >0.8 in both settings, we have -->
+
+<!-- ```{r echo=FALSE} -->
+
+<!-- combined_pip_by_type_pred_pip08 <- combined_pip_by_type_predictdb[combined_pip_by_type_predictdb$combined_pip > 0.8,] -->
+<!-- combined_pip_by_type_munro_pip08 <- combined_pip_by_type_munro[combined_pip_by_type_munro$combined_pip > 0.8,] -->
+<!-- overlapped_gene <- merge(combined_pip_by_type_pred_pip08,combined_pip_by_type_munro_pip08, by ="gene_name") -->
+
+<!-- overlapped_gene <- overlapped_gene[,c("gene_name","combined_pip.x","eQTL_pip.x","sQTL_pip.x","combined_pip.y","sQTL_pip.y","isoQTL_pip","rsQTL_pip","eQTL_pip.y","tssQTL_pip","apaQTL_pip")] -->
+<!-- colnames(overlapped_gene) <- c("genename", "combined_pip_predictdb","eQTL_predictdb","sQTL_predictdb", -->
+<!-- "combined_pip_munro","sQTL_munro","isoQTL_munro","rsQTL_munro","eQTL_munro","tssQTL_munro","apaQTL_munro" ) -->
+
+
+<!-- DT::datatable(overlapped_gene,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Overlapped genes, combined_pip > 0.8'),options = list(pageLength = 5) ) -->
+
+<!-- ``` -->
+
+
+<!-- ### Checking why Predicdb results missed many Munro genes -->
+
+<!-- ```{r echo=FALSE} -->
+
+<!-- genes_munro_unique <- combined_pip_by_type_munro_pip08[!combined_pip_by_type_munro_pip08$gene_name %in% overlapped_gene$genename,] -->
+
+<!-- genes_munro_unique_pred_res <- finemap_res_predictdb[finemap_res_predictdb$gene_name %in%genes_munro_unique$gene_name,] -->
+
+<!-- print(paste0("# of Unique munro genes = ", nrow(genes_munro_unique))) -->
+<!-- print(paste0("# of Unique munro genes included in predictdb data = ", length(unique(genes_munro_unique_pred_res$gene_name)))) -->
+
+<!-- DT::datatable(genes_munro_unique_pred_res,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Unique munro genes in predictdb setting'),options = list(pageLength = 5) ) -->
+<!-- ``` -->
+
+
+
+
+
+

@@ -249,11 +249,19 @@ combined_pip_by_type_8weights_highpip <- combined_pip_by_type_8weights[combined_
 
 combined_pip_by_type_4weights_highpip <- combined_pip_by_type_4weights[combined_pip_by_type_4weights$combined_pip > 0.8,]
 
-DT::datatable(combined_pip_by_type_8weights_highpip[!combined_pip_by_type_8weights_highpip$gene_name %in% combined_pip_by_type_4weights_highpip$gene_name, ],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Overlapped genes, combined_pip > 0.8, filtered by credible sets'),options = list(pageLength = 10) )
+DT::datatable(combined_pip_by_type_8weights_highpip[!combined_pip_by_type_8weights_highpip$gene_name %in% combined_pip_by_type_4weights_highpip$gene_name, ],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Unique genes reported by 8 weights setting'),options = list(pageLength = 10) )
 
 ```
 
-We notice TNFRSF6B PIP was from predictdb sQTL, it should be discovered in the 4 weights setting. 
+We notice TNFRSF6B PIP was from predictdb sQTL, it should be discovered in the 4 weights setting. And this gene has some known roles in IBD. 
+
+
+https://pubmed.ncbi.nlm.nih.gov/23965943/
+
+https://jbiomedsci.biomedcentral.com/articles/10.1186/s12929-017-0347-7
+
+https://www.nature.com/articles/s41598-021-88489-w
+
 
 ```{r echo=FALSE, warning=F, message=FALSE, fig.height=15}
 print("Locus plot -- 4 weights setting")
