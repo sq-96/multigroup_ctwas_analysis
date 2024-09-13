@@ -1,0 +1,107 @@
+---
+title: "Comparing different PIP combining functions"
+author: "XSun"
+date: "2024-09-13"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+    toc: true
+---
+
+```{r warning=FALSE,message=F}
+library(ctwas)
+library(EnsDb.Hsapiens.v86)
+library(ggplot2)
+library(RColorBrewer)
+library(dplyr)
+library(tidyr)
+library(gridExtra)
+
+load("/project2/xinhe/shared_data/multigroup_ctwas/weights/E_S_A_mapping_updated.RData")
+colnames(E_S_A_mapping)[1] <- "molecular_id"
+
+ens_db <- EnsDb.Hsapiens.v86
+
+trait <- "LDL-ukb-d-30780_irnt"
+gwas_n <- 343621
+
+source("/project/xinhe/xsun/r_functions/combine_pip_old_ctwas.R")
+source("/project/xinhe/xsun/r_functions/anno_finemap_res_old_ctwas.R")
+
+palette <- c(brewer.pal(12, "Paired"), brewer.pal(12, "Set3"), brewer.pal(6, "Dark2"))
+
+
+
+```
+
+# LDL -- eQTL + sQTL from predictdb
+
+
+```{r warning=FALSE,message=F}
+results_dir_multi <- paste0("/project/xinhe/xsun/multi_group_ctwas/xxxintalk/results_predictdb_main_multi/",trait,"/")
+
+finemap.res.multi <- readRDS(paste0(results_dir_multi,trait,".ctwas.res.RDS"))
+snp_map.multi <- readRDS(paste0(results_dir_multi,trait,".snp_map.RDS"))
+res.multi <- finemap.res.multi$finemap_res
+res.multi <- res.multi %>%
+  separate(id, into = c("molecular_id", "expression_info"), sep = "\\|", remove = FALSE)
+
+res.multi <- anno_finemap_res(res.multi,
+                                snp_map = snp_map.multi,
+                                mapping_table = E_S_A_mapping,
+                                add_gene_annot = TRUE,
+                                map_by = "molecular_id",
+                                drop_unmapped = TRUE,
+                                add_position = TRUE,
+                                use_gene_pos = "mid")
+
+
+combined_pip_cs <- combine_gene_pips(finemap_res = res.multi,
+                                     group_by = "gene_name",
+                                     by = "type",
+                                     method = "combine_cs",
+                                     filter_cs = TRUE)
+
+combined_pip_all <- combine_gene_pips(finemap_res = res.multi,
+                                     group_by = "gene_name",
+                                     by = "type",
+                                     method = "combine_all",
+                                     filter_cs = TRUE)
+
+combined_pip_sum <- combine_gene_pips(finemap_res = res.multi,
+                                     group_by = "gene_name",
+                                     by = "type",
+                                     method = "sum",
+                                     filter_cs = TRUE)
+
+
+merged_pip <- full_join(combined_pip_cs, combined_pip_all, by = "gene_name", suffix = c(".cs", ".all"))
+merged_pip <- full_join(merged_pip, combined_pip_sum, by = "gene_name")
+
+merged_pip <- merged_pip[,c("gene_name","eQTL_pip.cs", "sQTL_pip.cs","combined_pip.cs","combined_pip.all","combined_pip")]
+colnames(merged_pip) <- c("gene_name","eQTL_pip", "sQTL_pip","combined_pip.cs", "combined_pip.all","combined_pip.sum")
+
+DT::datatable(merged_pip,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Genes with PIP > 0.8'),options = list(pageLength = 10) )
+
+sprintf("setting 1: adding up signals, we have %s genes with combined_pip > 0.8", sum(merged_pip$combined_pip.sum > 0.8))
+sprintf("setting 2: combining by CS, we have %s genes with combined_pip > 0.8", sum(merged_pip$combined_pip.cs > 0.8))
+sprintf("setting 3: combining all molecular signals with in a gene, we have %s genes with combined_pip > 0.8", sum(merged_pip$combined_pip.all > 0.8))
+
+print("comparing combined_pip.cs and combined_pip.sum, the two missed genes are PSRC1 and ASGR1")
+
+p1 <- ggplot(merged_pip, aes(x = combined_pip.sum, y = combined_pip.cs)) +
+  geom_point() +  # Scatter plot
+  geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed") +  # Add y = x line
+  labs(x = "Combined PIP -- adding up all signals", y = "Combined by CS") +
+  theme_minimal()
+
+p2 <- ggplot(merged_pip, aes(x = combined_pip.sum, y = combined_pip.all)) +
+  geom_point() +  # Scatter plot
+  geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed") +  # Add y = x line
+  labs(x = "Combined PIP -- adding up all signals", y = "Combined by gene") +
+  theme_minimal()
+
+grid.arrange(p1, p2, ncol = 2)
+
+
+```
