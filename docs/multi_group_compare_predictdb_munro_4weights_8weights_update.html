@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="XSun" />
+
+<meta name="date" content="2024-09-18" />
+
+<title>Comparing predictdb &amp; Munro: predictdb eQTL + sQTL + Munro rsQTL + apaQTL VS all 8 weights – updated functions</title>
+
+<script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/htmlwidgets-1.5.4/htmlwidgets.js"></script>
+<link href="site_libs/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet" />
+<script src="site_libs/datatables-binding-0.22/datatables.js"></script>
+<link href="site_libs/dt-core-1.11.3/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="site_libs/dt-core-1.11.3/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="site_libs/dt-core-1.11.3/js/jquery.dataTables.min.js"></script>
+<link href="site_libs/crosstalk-1.2.0/css/crosstalk.min.css" rel="stylesheet" />
+<script src="site_libs/crosstalk-1.2.0/js/crosstalk.min.js"></script>
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">multigroup_ctwas_analysis</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/sq-96/multigroup_ctwas_analysis">
+    <span class="fab fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Comparing predictdb &amp; Munro: predictdb
+eQTL + sQTL + Munro rsQTL + apaQTL VS all 8 weights – updated
+functions</h1>
+<h4 class="author">XSun</h4>
+<h4 class="date">2024-09-18</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span
+class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2024-09-18
+</p>
+<p>
+<strong>Checks:</strong> <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> 1
+</p>
+<p>
+<strong>Knit directory:</strong> <code>multigroup_ctwas_analysis/</code>
+<span class="glyphicon glyphicon-question-sign" aria-hidden="true"
+title="This is the local directory in which the code in this file was executed.">
+</span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version
+1.7.0). The <em>Checks</em> tab describes the reproducibility checks
+that were applied when the results were created. The <em>Past
+versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges">
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted
+changes </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguncommittedchanges"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The R Markdown is untracked by Git. To know which version of the R
+Markdown file created these results, you’ll want to first commit it to
+the Git repo. If you’re still working on the analysis, you can ignore
+this warning. When you’re finished, you can run
+<code>wflow_publish</code> to commit the R Markdown file and build the
+HTML.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the
+global environment can affect the analysis in your R Markdown file in
+unknown ways. For reproduciblity it’s best to always run the code in an
+empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20231112code">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Seed:</strong>
+<code>set.seed(20231112)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20231112code"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20231112)</code> was run prior to running
+the code in the R Markdown file. Setting a seed ensures that any results
+that rely on randomness, e.g. subsampling or permutations, are
+reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Session information:</strong>
+recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package
+versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be
+confident that you successfully produced the results during this
+run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr
+project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree9d7af127c8b2fa478b56739c10afec63e8ca5492targetblank9d7af12a">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/9d7af127c8b2fa478b56739c10afec63e8ca5492" target="_blank">9d7af12</a>
+</a>
+</p>
+</div>
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree9d7af127c8b2fa478b56739c10afec63e8ca5492targetblank9d7af12a"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development
+and connecting the code version to the results is critical for
+reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/9d7af127c8b2fa478b56739c10afec63e8ca5492" target="_blank">9d7af12</a>.
+See the <em>Past versions</em> tab to see a history of the changes made
+to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for
+the analysis have been committed to Git prior to generating the results
+(you can use <code>wflow_publish</code> or
+<code>wflow_git_commit</code>). workflowr only checks the R Markdown
+file, but you know if there are other scripts or data files that it
+depends on. Below is the status of the Git repository when the results
+were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .Rhistory
+    Ignored:    results/
+
+Untracked files:
+    Untracked:  analysis/multi_group_compare_predictdb_munro_4weights_8weights_update.Rmd
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not
+included in this status report because it is ok for generated content to
+have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+<p>
+There are no past versions. Publish this analysis with
+<code>wflow_publish()</code> to start tracking its development.
+</p>
+<hr>
+</div>
+</div>
+</div>
+<div id="settings" class="section level1">
+<h1>Settings</h1>
+<div id="modalities-from-munro" class="section level2">
+<h2>6 modalities from Munro</h2>
+<ol style="list-style-type: decimal">
+<li>Weight processing:</li>
+</ol>
+<p>PredictDB:</p>
+<p>all the PredictDB are converted from FUSION weights</p>
+<ul>
+<li>drop_strand_ambig = TRUE,</li>
+<li>scale_by_ld_variance = F (FUSION converted weights)</li>
+<li>load_predictdb_LD = F,</li>
+</ul>
+<ol start="2" style="list-style-type: decimal">
+<li>Parameter estimation and fine-mapping</li>
+</ol>
+<ul>
+<li>niter_prefit = 5,</li>
+<li>niter = 30(default),</li>
+<li>L: determined by uniform susie,</li>
+<li>group_prior_var_structure = “shared_type”,</li>
+<li>maxSNP = 20000,</li>
+<li>min_nonSNP_PIP = 0.5,</li>
+</ul>
+</div>
+<div id="weights-from-predictdb" class="section level2">
+<h2>weights from predictdb</h2>
+<ol style="list-style-type: decimal">
+<li>Weight processing:</li>
+</ol>
+<p>PredictDB (eqtl, sqtl)</p>
+<ul>
+<li>drop_strand_ambig = TRUE,</li>
+<li>scale_by_ld_variance = T</li>
+<li>load_predictdb_LD = F,</li>
+</ul>
+<ol start="2" style="list-style-type: decimal">
+<li>Parameter estimation and fine-mapping</li>
+</ol>
+<ul>
+<li>group_prior_var_structure = “shared_type”,</li>
+<li>filter_L = TRUE,</li>
+<li>filter_nonSNP_PIP = FALSE,</li>
+<li>min_nonSNP_PIP = 0.5,</li>
+<li>min_abs_corr = 0.1,</li>
+</ul>
+<p>mem: 100g 5cores</p>
+</div>
+</div>
+<div id="results" class="section level1">
+<h1>Results</h1>
+<div id="four-weights" class="section level2">
+<h2>Four weights</h2>
+<p>predictdb eQTL + sQTL + Munro rsQTL + apaQTL</p>
+<p><img src="figure/multi_group_compare_predictdb_munro_4weights_8weights_update.Rmd/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
+<div id="htmlwidget-4de263013227ca78a293" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-4de263013227ca78a293">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: topleft; text-align = left; color:black;\">Heritability contribution by contexts<\/caption>","data":[["1","2","3","4","5","6"],["apaQTL","eQTL","rsQTL","sQTL","SNP","total_pve"],["0.0111","0.0149","0.0095","0.024","0.2011","0.2606"],["0.0111","0.0149","0.0095","0.024","0","0.0595"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>type<\/th>\n      <th>total_pve<\/th>\n      <th>Colon_Transverse<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<pre><code>Warning: Expected 2 pieces. Missing pieces filled with `NA` in 814514 rows [131, 132,
+133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148,
+149, 150, ...].</code></pre>
+<pre><code>2024-09-18 10:52:35 INFO::Annotating fine-mapping result ...
+2024-09-18 10:52:36 INFO::Map molecular traits to genes
+2024-09-18 10:52:36 INFO::Split PIPs for molecular traits mapped to multiple genes
+2024-09-18 10:52:43 INFO::Add gene positions
+2024-09-18 10:52:44 INFO::Add SNP positions</code></pre>
+<pre><code>2024-09-18 10:52:59 INFO::Limit gene results to credible sets</code></pre>
+<div id="htmlwidget-20575149739a71fc930f" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-20575149739a71fc930f">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: topleft; text-align = left; color:black;\">Combined PIP by omics, credible set filtered<\/caption>","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17"],["P4HTM","KANSL1","USP4","VPS25","TYK2","RNF186","GNA12","IFNGR2","DOCK8","ERI3","IRF8","PTPN2","EIF3C","SBNO2","ATG16L1","UBE2L3","SLC26A3"],[null,0.99999921834193,null,null,0.983962238624428,null,null,null,0.932240470571375,0.929446092300149,null,0.912523556562628,null,0.902911593514745,0.805533141308565,0.239378201137734,null],[null,null,null,0.999489582595131,0.00933597925848273,null,null,null,null,null,null,null,0.903030920873751,null,null,0.629966414698256,null],[null,null,null,null,null,0.975441035724956,0.0571969977481812,0.963763467811672,null,null,0.922025770173283,null,null,null,0.0863798188698655,null,0.80818190718994],[0.999999999999127,null,0.999991962873084,null,0.824781975143909,null,0.961632992350604,null,null,null,null,null,null,null,null,null,null],[0.999999999999127,0.99999921834193,0.999991962873084,0.999489582595131,0.997339623336214,0.975441035724956,0.963827470000731,0.963763467811672,0.932240470571375,0.929446092300149,0.922025770173283,0.912523556562628,0.903030920873751,0.902911593514745,0.89191296017843,0.869344615835989,0.80818190718994]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>gene_name<\/th>\n      <th>sQTL_pip<\/th>\n      <th>rsQTL_pip<\/th>\n      <th>eQTL_pip<\/th>\n      <th>apaQTL_pip<\/th>\n      <th>combined_pip<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[2,3,4,5,6]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="eight-weights" class="section level2">
+<h2>Eight weights</h2>
+<p>predictdb eQTL + sQTL + Munro 6 modalities</p>
+<p><img src="figure/multi_group_compare_predictdb_munro_4weights_8weights_update.Rmd/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
+<div id="htmlwidget-a23c348805048a1f64c7" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-a23c348805048a1f64c7">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: topleft; text-align = left; color:black;\">Heritability contribution by contexts<\/caption>","data":[["1","2","3","4","5","6","7","8"],["apaQTL","eQTL","isoQTL","rsQTL","sQTL","tssQTL","SNP","total_pve"],["0.0095","0.0161","0.0151","0.0073","0.0335","0","0.1871","0.2686"],["0.0095","1e-04","0.0151","0.0073","0.0122","0","0","0.0442"],[null,"0.016",null,null,"0.0213",null,"0","0.0373"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>type<\/th>\n      <th>total_pve<\/th>\n      <th>Colon_Transverse<\/th>\n      <th>Colon_Transverse_pred<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<pre><code>Warning: Expected 2 pieces. Missing pieces filled with `NA` in 852856 rows [243, 244,
+245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255, 256, 257, 258, 259, 260,
+261, 262, ...].</code></pre>
+<pre><code>2024-09-18 10:53:36 INFO::Annotating fine-mapping result ...
+2024-09-18 10:53:36 INFO::Map molecular traits to genes
+2024-09-18 10:53:37 INFO::Split PIPs for molecular traits mapped to multiple genes
+2024-09-18 10:53:39 INFO::Add gene positions
+2024-09-18 10:53:39 INFO::Add SNP positions</code></pre>
+<pre><code>2024-09-18 10:53:50 INFO::Limit gene results to credible sets</code></pre>
+<div id="htmlwidget-93928d62269dcef60a51" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-93928d62269dcef60a51">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: topleft; text-align = left; color:black;\">Combined PIP by omics, credible set filtered<\/caption>","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36"],["HLA-DQA1","HLA-DRB1","P4HTM","RTEL1","ARIH2","USP4","KANSL1","WRB","GNA12","IP6K2","VPS25","SLC6A7","ZNF585A","TYK2","MICB","HMGN2","SRP54","RNF186","IFNGR2","TNFRSF6B","SLC51A","NXPE1","RGS14","DOCK8","IRF8","ERI3","PTPN2","SBNO2","UBE2L3","COQ8B","SH3BGR","AUH","ATG16L1","SLC26A3","EIF3C","SNX32"],[null,1,null,null,null,null,null,0.559878777417151,null,null,null,0.998024590397121,0.993817215316025,null,null,null,null,null,null,null,null,0.649194184793812,0.20471618626758,null,null,null,null,null,null,0.884556031123738,0.883497210424414,null,null,null,0.148161703216618,null],[null,null,null,null,null,null,null,null,null,null,0.99936669221688,null,null,0.0091491217268016,null,null,null,null,null,null,null,null,null,null,null,null,null,null,0.447943404765489,null,null,null,null,null,0.671144470953865,0.0144644192603043],[null,null,null,null,null,null,0.999987650200051,null,null,null,null,null,null,0.9821921636401,null,null,null,null,null,0.953214814871617,null,0.0253650726520617,0.0220936423501216,0.932139169047312,null,0.929096881217853,0.903556428792046,0.892050265191471,0.182205782865,null,null,0.244383543985671,0.76012424753757,null,null,null],[1,null,null,1,0.999999974191358,null,null,0.999942562802363,null,0.999398303874582,null,null,0.0217288770544435,null,0.995108371519209,0.992144900741664,0.981236256092037,null,null,null,0.951957448319896,0.068928184539786,0.723197322113016,null,null,null,null,null,0.259834619512774,null,null,0.638406209509403,null,null,null,0.804470874601793],[null,null,null,null,null,null,null,null,null,null,null,null,0.0269027262479449,null,null,null,null,0.978549393987142,0.968316593328378,null,null,0.0808557396850378,null,null,0.931925976429336,null,null,null,null,null,null,null,0.1084847381142,0.834356040576517,null,null],[null,null,1,null,null,0.999994908546927,null,null,0.964686165006053,null,null,null,null,0.748389599521756,null,null,null,null,null,null,null,0.125734387118294,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,0.9970124128553,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[1,1,1,1,0.999999974191358,0.999994908546927,0.999987650200051,0.999974720670354,0.999894496840542,0.999398303874582,0.99936669221688,0.998024590397121,0.9966560160418,0.995682289224382,0.995108371519209,0.992144900741664,0.981236256092037,0.978549393987142,0.968316593328378,0.953214814871617,0.951957448319896,0.950077568788991,0.950007150730718,0.932139169047312,0.931925976429336,0.929096881217853,0.903556428792046,0.892050265191471,0.889983807143262,0.884556031123738,0.883497210424414,0.882789753495074,0.86860898565177,0.834356040576517,0.819306174170483,0.818935293862098]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>gene_name<\/th>\n      <th>sQTL_pip<\/th>\n      <th>rsQTL_pip<\/th>\n      <th>sQTL_pred_pip<\/th>\n      <th>isoQTL_pip<\/th>\n      <th>eQTL_pred_pip<\/th>\n      <th>apaQTL_pip<\/th>\n      <th>eQTL_pip<\/th>\n      <th>combined_pip<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[2,3,4,5,6,7,8,9]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="comparing-results-from-2-settings" class="section level2">
+<h2>Comparing results from 2 settings</h2>
+<div id="htmlwidget-16707cd634e93674753d" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-16707cd634e93674753d">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: topleft; text-align = left; color:black;\">Overlapped genes, combined_pip &gt; 0.8, filtered by credible sets<\/caption>","data":[["69","52","102","103","99","83","42","45","31","36","49","79","33","84","10","101","88"],["P4HTM","KANSL1","USP4","VPS25","TYK2","RNF186","GNA12","IFNGR2","DOCK8","ERI3","IRF8","PTPN2","EIF3C","SBNO2","ATG16L1","UBE2L3","SLC26A3"],[null,0.99999921834193,null,null,0.983962238624428,null,null,null,0.932240470571375,0.929446092300149,null,0.912523556562628,null,0.902911593514745,0.805533141308565,0.239378201137734,null],[null,null,null,0.999489582595131,0.00933597925848273,null,null,null,null,null,null,null,0.903030920873751,null,null,0.629966414698256,null],[null,null,null,null,null,0.975441035724956,0.0571969977481812,0.963763467811672,null,null,0.922025770173283,null,null,null,0.0863798188698655,null,0.80818190718994],[0.999999999999127,null,0.999991962873084,null,0.824781975143909,null,0.961632992350604,null,null,null,null,null,null,null,null,null,null],[0.999999999999127,0.99999921834193,0.999991962873084,0.999489582595131,0.997339623336214,0.975441035724956,0.963827470000731,0.963763467811672,0.932240470571375,0.929446092300149,0.922025770173283,0.912523556562628,0.903030920873751,0.902911593514745,0.89191296017843,0.869344615835989,0.80818190718994],[null,null,null,null,null,null,null,null,null,null,null,null,0.148161703216618,null,null,null,null],[null,null,null,0.99936669221688,0.0091491217268016,null,null,null,null,null,null,null,0.671144470953865,null,null,0.447943404765489,null],[null,0.999987650200051,null,null,0.9821921636401,null,null,null,0.932139169047312,0.929096881217853,null,0.903556428792046,null,0.892050265191471,0.76012424753757,0.182205782865,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,0.259834619512774,null],[null,null,null,null,null,0.978549393987142,null,0.968316593328378,null,null,0.931925976429336,null,null,null,0.1084847381142,null,0.834356040576517],[1,null,0.999994908546927,null,0.748389599521756,null,0.964686165006053,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,0.9970124128553,null,null,null,null,null,null,null,null,null,null],[1,0.999987650200051,0.999994908546927,0.99936669221688,0.995682289224382,0.978549393987142,0.999894496840542,0.968316593328378,0.932139169047312,0.929096881217853,0.931925976429336,0.903556428792046,0.819306174170483,0.892050265191471,0.86860898565177,0.889983807143262,0.834356040576517]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>genename<\/th>\n      <th>sQTL_4weights_pred<\/th>\n      <th>rsQTL_4weights_munro<\/th>\n      <th>eQTL_4weights_pred<\/th>\n      <th>apaQTL_4weights_munro<\/th>\n      <th>combined_pip_4weights<\/th>\n      <th>sQTL_8weights_munro<\/th>\n      <th>rsQTL_8weights_munro<\/th>\n      <th>sQTL_8weights_pred<\/th>\n      <th>isoQTL_8weights_munro<\/th>\n      <th>eQTL_8weights_pred<\/th>\n      <th>apaQTL_8weights_munro<\/th>\n      <th>eQTL_8weights_munro<\/th>\n      <th>combined_pip_8weights<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[2,3,4,5,6,7,8,9,10,11,12,13,14]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<pre><code>[1] &quot;all genes discovered by 4 weights setting were overlapped with 8 weights setting&quot;</code></pre>
+<p>Unique genes reported by 8 weights setting</p>
+<div id="htmlwidget-37e46cf92521dcbed3f8" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-37e46cf92521dcbed3f8">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: topleft; text-align = left; color:black;\">Unique genes reported by 8 weights setting<\/caption>","data":[["1","2","4","5","8","10","12","13","15","16","17","20","21","22","23","30","31","32","36"],["HLA-DQA1","HLA-DRB1","RTEL1","ARIH2","WRB","IP6K2","SLC6A7","ZNF585A","MICB","HMGN2","SRP54","TNFRSF6B","SLC51A","NXPE1","RGS14","COQ8B","SH3BGR","AUH","SNX32"],[null,1,null,null,0.559878777417151,null,0.998024590397121,0.993817215316025,null,null,null,null,null,0.649194184793812,0.20471618626758,0.884556031123738,0.883497210424414,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,0.0144644192603043],[null,null,null,null,null,null,null,null,null,null,null,0.953214814871617,null,0.0253650726520617,0.0220936423501216,null,null,0.244383543985671,null],[1,null,1,0.999999974191358,0.999942562802363,0.999398303874582,null,0.0217288770544435,0.995108371519209,0.992144900741664,0.981236256092037,null,0.951957448319896,0.068928184539786,0.723197322113016,null,null,0.638406209509403,0.804470874601793],[null,null,null,null,null,null,null,0.0269027262479449,null,null,null,null,null,0.0808557396850378,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,0.125734387118294,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[1,1,1,0.999999974191358,0.999974720670354,0.999398303874582,0.998024590397121,0.9966560160418,0.995108371519209,0.992144900741664,0.981236256092037,0.953214814871617,0.951957448319896,0.950077568788991,0.950007150730718,0.884556031123738,0.883497210424414,0.882789753495074,0.818935293862098]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>gene_name<\/th>\n      <th>sQTL_pip<\/th>\n      <th>rsQTL_pip<\/th>\n      <th>sQTL_pred_pip<\/th>\n      <th>isoQTL_pip<\/th>\n      <th>eQTL_pred_pip<\/th>\n      <th>apaQTL_pip<\/th>\n      <th>eQTL_pip<\/th>\n      <th>combined_pip<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[2,3,4,5,6,7,8,9]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<p>We notice TNFRSF6B PIP was from predictdb sQTL, it should be
+discovered in the 4 weights setting. And this gene has some known roles
+in IBD.</p>
+<p><a href="https://pubmed.ncbi.nlm.nih.gov/23965943/"
+class="uri">https://pubmed.ncbi.nlm.nih.gov/23965943/</a></p>
+<p><a
+href="https://jbiomedsci.biomedcentral.com/articles/10.1186/s12929-017-0347-7"
+class="uri">https://jbiomedsci.biomedcentral.com/articles/10.1186/s12929-017-0347-7</a></p>
+<p><a href="https://www.nature.com/articles/s41598-021-88489-w"
+class="uri">https://www.nature.com/articles/s41598-021-88489-w</a></p>
+<pre><code>[1] &quot;Locus plot -- 4 weights setting&quot;</code></pre>
+<pre><code>[1] &quot;The estimated L = 3&quot;</code></pre>
+<pre><code>2024-09-18 10:53:52 INFO::Limit to protein coding genes
+2024-09-18 10:53:52 INFO::focal id: intron_20_63701898_63702136|splicing_Colon_Transverse
+2024-09-18 10:53:52 INFO::focal molecular trait: ARFRP1 Colon_Transverse sQTL
+2024-09-18 10:53:52 INFO::Range of locus: chr20:63558727-64328976
+2024-09-18 10:53:52 INFO::focal molecular trait QTL positions: 63701763
+2024-09-18 10:53:52 INFO::Limit PIPs to credible sets</code></pre>
+<p><img src="figure/multi_group_compare_predictdb_munro_4weights_8weights_update.Rmd/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
+<div id="htmlwidget-99e959167faff8d1fc37" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-99e959167faff8d1fc37">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: topleft; text-align = left; color:black;\">The two SNPs with high PIP<\/caption>","data":[["785833","785835"],["rs6089961","rs202143810"],["rs6089961","rs202143810"],[null,null],["SNP","SNP"],["SNP","SNP"],["SNP","SNP"],[7.93877551020408,-7.57763975155279],["20_63558827_64333810","20_63558827_64333810"],[0.918183980239938,1],[6604.33597721426,6795.44150971574],[1,2],[null,null],[null,null],["20","20"],[null,null],[null,null],[63718139,63718338]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>id<\/th>\n      <th>molecular_id<\/th>\n      <th>expression_info<\/th>\n      <th>type<\/th>\n      <th>context<\/th>\n      <th>group<\/th>\n      <th>z<\/th>\n      <th>region_id<\/th>\n      <th>susie_pip<\/th>\n      <th>mu2<\/th>\n      <th>cs_index<\/th>\n      <th>gene_name<\/th>\n      <th>gene_type<\/th>\n      <th>chrom<\/th>\n      <th>start<\/th>\n      <th>end<\/th>\n      <th>pos<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[7,9,10,11,17]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<pre><code>[1] &quot;Locus plot -- 8 weights setting&quot;</code></pre>
+<pre><code>[1] &quot;The estimated L = 3&quot;</code></pre>
+<pre><code>2024-09-18 10:53:56 INFO::Limit to protein coding genes
+2024-09-18 10:53:56 INFO::focal id: intron_20_63695854_63696760|splicing_Colon_Transverse
+2024-09-18 10:53:56 INFO::focal molecular trait: TNFRSF6B Colon_Transverse_pred sQTL_pred
+2024-09-18 10:53:56 INFO::Range of locus: chr20:63558727-64328976
+2024-09-18 10:53:56 INFO::focal molecular trait QTL positions: 63697746
+2024-09-18 10:53:56 INFO::Limit PIPs to credible sets</code></pre>
+<p><img src="figure/multi_group_compare_predictdb_munro_4weights_8weights_update.Rmd/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
+<div id="htmlwidget-4a6133f685aa29daac40" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-4a6133f685aa29daac40">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: topleft; text-align = left; color:black;\">The molecular traits associated with TNFRSF6B<\/caption>","data":[["15117","15142","15178","15179","15226"],["ENSG00000243509:chr20:63695854:63696760:clu_44474_+|splicing_Colon_Transverse","ENSG00000243509.4|expression_Colon_Transverse","intron_20_63697191_63697328|splicing_Colon_Transverse","intron_20_63697522_63698280|splicing_Colon_Transverse","intron_20_63695854_63696760|splicing_Colon_Transverse"],["ENSG00000243509:chr20:63695854:63696760:clu_44474_+","ENSG00000243509.4","intron_20_63697191_63697328","intron_20_63697522_63698280","intron_20_63695854_63696760"],["splicing_Colon_Transverse","expression_Colon_Transverse","splicing_Colon_Transverse","splicing_Colon_Transverse","splicing_Colon_Transverse"],["sQTL","eQTL_pred","sQTL_pred","sQTL_pred","sQTL_pred"],["Colon_Transverse","Colon_Transverse_pred","Colon_Transverse_pred","Colon_Transverse_pred","Colon_Transverse_pred"],["sQTL|Colon_Transverse","eQTL|Colon_Transverse_pred","sQTL|Colon_Transverse_pred","sQTL|Colon_Transverse_pred","sQTL|Colon_Transverse_pred"],[7.8143781786096,-6.52365629209113,-5.51916376306811,4.61594202898811,10.6201550387628],["20_63558827_64333810","20_63558827_64333810","20_63558827_64333810","20_63558827_64333810","20_63558827_64333810"],[7.51669837484314e-11,0,0,0,0.953214814871617],[3667.00407584486,1095.49245119372,191.844585973821,99.2132441154102,2475.66931354879],[0,0,0,0,1],["TNFRSF6B","TNFRSF6B","TNFRSF6B","TNFRSF6B","TNFRSF6B"],["protein_coding","protein_coding","protein_coding","protein_coding","protein_coding"],["20","20","20","20","20"],["63696668","63696668","63697191","63697522","63695854"],["63698684","63698641","63697328","63698280","63696760"],[63697676,63697654,63697260,63697901,63696307]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>id<\/th>\n      <th>molecular_id<\/th>\n      <th>expression_info<\/th>\n      <th>type<\/th>\n      <th>context<\/th>\n      <th>group<\/th>\n      <th>z<\/th>\n      <th>region_id<\/th>\n      <th>susie_pip<\/th>\n      <th>mu2<\/th>\n      <th>cs_index<\/th>\n      <th>gene_name<\/th>\n      <th>gene_type<\/th>\n      <th>chrom<\/th>\n      <th>start<\/th>\n      <th>end<\/th>\n      <th>pos<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[7,9,10,11,17]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<pre><code>[1] &quot;weights for &quot;
+[1] &quot;ENSG00000243509:chr20:63695854:63696760:clu_44474_+|splicing_Colon_Transverse&quot;
+              weight
+rs6011040 -0.0211776
+rs8957    -0.0255221
+[1] &quot;weights for &quot;
+[1] &quot;ENSG00000243509.4|expression_Colon_Transverse&quot;
+               weight
+rs41298344 -0.1634486
+rs55765053  0.0848684
+[1] &quot;weights for &quot;
+[1] &quot;intron_20_63697191_63697328|splicing_Colon_Transverse&quot;
+              weight
+rs55765053 0.2576402
+[1] &quot;weights for &quot;
+[1] &quot;intron_20_63697522_63698280|splicing_Colon_Transverse&quot;
+                weight
+rs74748720 -0.01402964
+[1] &quot;weights for &quot;
+[1] &quot;intron_20_63695854_63696760|splicing_Colon_Transverse&quot;
+              weight
+rs6062496 -0.0549018</code></pre>
+<p>The LD for the high pip SNPs in 4 weights setting and the sQTLs in 8
+weights setting. The SNPs in row1 and row2 (column1 and column2) are the
+high pip SNPs in 4 weights setting.</p>
+<p>We notice that, the 2 high pip SNPs are in LD themselves. And they
+are in LD with rs6011040 and rs8957, the sQTL for
+ENSG00000243509:chr20:63695854:63696760:clu_44474_+|splicing_Colon_Transverse,
+whose susie pip = 7.516698e-11 in 8 weights setting.</p>
+<table style="width:100%;">
+<colgroup>
+<col width="12%" />
+<col width="10%" />
+<col width="12%" />
+<col width="11%" />
+<col width="11%" />
+<col width="10%" />
+<col width="11%" />
+<col width="10%" />
+<col width="7%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center">RS_number</th>
+<th>rs6089961</th>
+<th>rs202143810</th>
+<th align="center">rs41298344</th>
+<th align="center">rs55765053</th>
+<th>rs6062496</th>
+<th>rs74748720</th>
+<th>rs6011040</th>
+<th>rs8957</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">rs6089961</td>
+<td>1.0</td>
+<td>0.963</td>
+<td align="center">0.164</td>
+<td align="center">0.021</td>
+<td>0.364</td>
+<td>0.009</td>
+<td>0.592</td>
+<td>0.447</td>
+</tr>
+<tr class="even">
+<td align="center">rs202143810</td>
+<td>0.963</td>
+<td>1.0</td>
+<td align="center">0.152</td>
+<td align="center">0.02</td>
+<td>0.35</td>
+<td>0.008</td>
+<td>0.569</td>
+<td>0.445</td>
+</tr>
+<tr class="odd">
+<td align="center">rs41298344</td>
+<td>0.164</td>
+<td>0.152</td>
+<td align="center">1.0</td>
+<td align="center">0.004</td>
+<td>0.071</td>
+<td>0.002</td>
+<td>0.103</td>
+<td>0.128</td>
+</tr>
+<tr class="even">
+<td align="center">rs55765053</td>
+<td>0.021</td>
+<td>0.02</td>
+<td align="center">0.004</td>
+<td align="center">1.0</td>
+<td>0.055</td>
+<td>0.003</td>
+<td>0.034</td>
+<td>0.028</td>
+</tr>
+<tr class="odd">
+<td align="center">rs6062496</td>
+<td>0.364</td>
+<td>0.35</td>
+<td align="center">0.071</td>
+<td align="center">0.055</td>
+<td>1.0</td>
+<td>0.023</td>
+<td>0.611</td>
+<td>0.486</td>
+</tr>
+<tr class="even">
+<td align="center">rs74748720</td>
+<td>0.009</td>
+<td>0.008</td>
+<td align="center">0.002</td>
+<td align="center">0.003</td>
+<td>0.023</td>
+<td>1.0</td>
+<td>0.014</td>
+<td>0.012</td>
+</tr>
+<tr class="odd">
+<td align="center">rs6011040</td>
+<td>0.592</td>
+<td>0.569</td>
+<td align="center">0.103</td>
+<td align="center">0.034</td>
+<td>0.611</td>
+<td>0.014</td>
+<td>1.0</td>
+<td>0.791</td>
+</tr>
+<tr class="even">
+<td align="center">rs8957</td>
+<td>0.447</td>
+<td>0.445</td>
+<td align="center">0.128</td>
+<td align="center">0.028</td>
+<td>0.486</td>
+<td>0.012</td>
+<td>0.791</td>
+<td>1.0</td>
+</tr>
+</tbody>
+</table>
+<p>However, the earlier 2 SNPs still have high pip</p>
+<div id="htmlwidget-d72b6eff4afa454a8832" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-d72b6eff4afa454a8832">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: topleft; text-align = left; color:black;\">The two SNPs with high PIP<\/caption>","data":[["15226","829805","829807"],["intron_20_63695854_63696760|splicing_Colon_Transverse","rs6089961","rs202143810"],["intron_20_63695854_63696760","rs6089961","rs202143810"],["splicing_Colon_Transverse",null,null],["sQTL_pred","SNP","SNP"],["Colon_Transverse_pred","SNP","SNP"],["sQTL|Colon_Transverse_pred","SNP","SNP"],[10.6201550387628,7.93877551020408,-7.57763975155279],["20_63558827_64333810","20_63558827_64333810","20_63558827_64333810"],[0.953214814871617,0.877206283932919,1],[2475.66931354879,6164.639467033,6216.10967462976],[1,3,2],["TNFRSF6B",null,null],["protein_coding",null,null],["20","20","20"],["63695854",null,null],["63696760",null,null],[63696307,63718139,63718338]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>id<\/th>\n      <th>molecular_id<\/th>\n      <th>expression_info<\/th>\n      <th>type<\/th>\n      <th>context<\/th>\n      <th>group<\/th>\n      <th>z<\/th>\n      <th>region_id<\/th>\n      <th>susie_pip<\/th>\n      <th>mu2<\/th>\n      <th>cs_index<\/th>\n      <th>gene_name<\/th>\n      <th>gene_type<\/th>\n      <th>chrom<\/th>\n      <th>start<\/th>\n      <th>end<\/th>\n      <th>pos<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[7,9,10,11,17]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="sqtl-predictdb-only" class="section level2">
+<h2>sQTL (predictdb) only</h2>
+<p><img src="figure/multi_group_compare_predictdb_munro_4weights_8weights_update.Rmd/unnamed-chunk-9-1.png" width="672" style="display: block; margin: auto;" /></p>
+<div id="htmlwidget-73d12cd98287c4e0164c" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-73d12cd98287c4e0164c">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: topleft; text-align = left; color:black;\">Heritability contribution by contexts<\/caption>","data":[["1","2","3"],["sQTL","SNP","total_pve"],["0.0366","0.2143","0.2509"],["0.0366","0","0.0366"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>type<\/th>\n      <th>total_pve<\/th>\n      <th>Colon_Transverse<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<pre><code>Warning: Expected 2 pieces. Missing pieces filled with `NA` in 792906 rows [89, 90, 91,
+92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108,
+...].</code></pre>
+<pre><code>2024-09-18 10:54:31 INFO::Annotating fine-mapping result ...
+2024-09-18 10:54:31 INFO::Map molecular traits to genes
+2024-09-18 10:54:32 INFO::Split PIPs for molecular traits mapped to multiple genes
+2024-09-18 10:54:33 INFO::Add gene positions
+2024-09-18 10:54:33 INFO::Add SNP positions</code></pre>
+<pre><code>2024-09-18 10:54:37 INFO::Limit gene results to credible sets</code></pre>
+<div id="htmlwidget-0796cbf5802287e6981e" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-0796cbf5802287e6981e">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: topleft; text-align = left; color:black;\">Combined PIP by omics, credible set filtered<\/caption>","data":[["1","2","3","4","5","6","7","8"],["KANSL1","TYK2","TNFRSF6B","DOCK8","ERI3","PTPN2","SBNO2","ATG16L1"],[0.999989911276754,0.984489284305184,0.961004348896089,0.950027399865607,0.947685788286291,0.928273723572597,0.920150603760674,0.890871081689783],[0.999989911276754,0.984489284305184,0.961004348896089,0.950027399865607,0.947685788286291,0.928273723572597,0.920150603760674,0.890871081689783]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>gene_name<\/th>\n      <th>sQTL_pip<\/th>\n      <th>combined_pip<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[2,3]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<p>For the earlier example, TNFRSF6B.</p>
+<pre><code>[1] &quot;Locus plot -- sQTL setting&quot;</code></pre>
+<pre><code>[1] &quot;The estimated L = 3&quot;</code></pre>
+<pre><code>2024-09-18 10:54:38 INFO::Limit to protein coding genes
+2024-09-18 10:54:38 INFO::focal id: intron_20_63695854_63696760|splicing_Colon_Transverse
+2024-09-18 10:54:38 INFO::focal molecular trait: TNFRSF6B Colon_Transverse sQTL
+2024-09-18 10:54:38 INFO::Range of locus: chr20:63558727-64328976
+2024-09-18 10:54:38 INFO::focal molecular trait QTL positions: 63697746
+2024-09-18 10:54:38 INFO::Limit PIPs to credible sets</code></pre>
+<p><img src="figure/multi_group_compare_predictdb_munro_4weights_8weights_update.Rmd/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /></p>
+<div id="htmlwidget-35c46d2ddbc1fab8b4dc" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-35c46d2ddbc1fab8b4dc">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: topleft; text-align = left; color:black;\">The two SNPs with high PIP<\/caption>","data":[["6017","760673","760675"],["intron_20_63695854_63696760|splicing_Colon_Transverse","rs6089961","rs202143810"],["intron_20_63695854_63696760","rs6089961","rs202143810"],["splicing_Colon_Transverse",null,null],["sQTL","SNP","SNP"],["Colon_Transverse","SNP","SNP"],["sQTL|Colon_Transverse","SNP","SNP"],[10.6201550387628,7.93877551020408,-7.57763975155279],["20_63558827_64333810","20_63558827_64333810","20_63558827_64333810"],[0.961004348896089,0.867050512376436,1],[2339.6379149782,5803.82104037986,5854.08618822329],[1,3,2],["TNFRSF6B",null,null],["protein_coding",null,null],["20","20","20"],["63695854",null,null],["63696760",null,null],[63696307,63718139,63718338]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>id<\/th>\n      <th>molecular_id<\/th>\n      <th>expression_info<\/th>\n      <th>type<\/th>\n      <th>context<\/th>\n      <th>group<\/th>\n      <th>z<\/th>\n      <th>region_id<\/th>\n      <th>susie_pip<\/th>\n      <th>mu2<\/th>\n      <th>cs_index<\/th>\n      <th>gene_name<\/th>\n      <th>gene_type<\/th>\n      <th>chrom<\/th>\n      <th>start<\/th>\n      <th>end<\/th>\n      <th>pos<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[7,9,10,11,17]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="tnfrsf6b-and-different-settings" class="section level2">
+<h2>TNFRSF6B and different settings</h2>
+<p>rs202143810</p>
+<table>
+<colgroup>
+<col width="40%" />
+<col width="15%" />
+<col width="22%" />
+<col width="21%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>weights</th>
+<th>pre-estimated L</th>
+<th>genes with PIP &gt; 0.8</th>
+<th>SNPs with PIP &gt; 0.8</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>predictdb eQTL + sQTL</td>
+<td>3</td>
+<td>/</td>
+<td>rs6089961, rs202143810</td>
+</tr>
+<tr class="even">
+<td>predictdb eQTL + sQTL</td>
+<td>set L=1 manually</td>
+<td>TNFRSF6B</td>
+<td>/</td>
+</tr>
+<tr class="odd">
+<td>predictdb eQTL + sQTL</td>
+<td>set L=10 manually</td>
+<td>ARFRP: combined pip &gt; 0.8</td>
+<td>rs202143810</td>
+</tr>
+<tr class="even">
+<td>predictdb sQTL</td>
+<td>3</td>
+<td>TNFRSF6B</td>
+<td>rs6089961, rs202143810</td>
+</tr>
+<tr class="odd">
+<td>predictdb eQTL + sQTL + Munro rsQTL + apaQTL</td>
+<td>3</td>
+<td>/</td>
+<td>rs6089961, rs202143810</td>
+</tr>
+<tr class="even">
+<td>predictdb eQTL + sQTL + Munro rsQTL + apaQTL</td>
+<td>set L=10 manually</td>
+<td>ARFRP: combined pip &gt; 0.8</td>
+<td>rs6089961, rs202143810</td>
+</tr>
+<tr class="odd">
+<td>predictdb eQTL + sQTL + Munro 6 modalities</td>
+<td>3</td>
+<td>TNFRSF6B</td>
+<td>rs6089961, rs202143810</td>
+</tr>
+<tr class="even">
+<td>Munro 6 modalities, region merge</td>
+<td>4</td>
+<td>/</td>
+<td>rs6089961, rs202143810</td>
+</tr>
+</tbody>
+</table>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.2.0 (2022-04-22)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: CentOS Linux 7 (Core)
+
+Matrix products: default
+BLAS/LAPACK: /software/openblas-0.3.13-el7-x86_64/lib/libopenblas_haswellp-r0.3.13.so
+
+locale:
+[1] C
+
+attached base packages:
+[1] stats4    stats     graphics  grDevices utils     datasets  methods  
+[8] base     
+
+other attached packages:
+ [1] EnsDb.Hsapiens.v86_2.99.0 ensembldb_2.20.2         
+ [3] AnnotationFilter_1.20.0   GenomicFeatures_1.48.3   
+ [5] AnnotationDbi_1.58.0      Biobase_2.56.0           
+ [7] GenomicRanges_1.48.0      GenomeInfoDb_1.39.9      
+ [9] IRanges_2.30.0            S4Vectors_0.34.0         
+[11] BiocGenerics_0.42.0       forcats_0.5.1            
+[13] stringr_1.5.1             dplyr_1.1.4              
+[15] purrr_1.0.2               readr_2.1.2              
+[17] tidyr_1.3.0               tibble_3.2.1             
+[19] ggplot2_3.5.1             tidyverse_1.3.1          
+[21] data.table_1.14.2         ctwas_0.4.14             
+
+loaded via a namespace (and not attached):
+  [1] colorspace_2.0-3            rjson_0.2.21               
+  [3] ellipsis_0.3.2              rprojroot_2.0.3            
+  [5] XVector_0.36.0              locuszoomr_0.2.1           
+  [7] fs_1.5.2                    rstudioapi_0.13            
+  [9] farver_2.1.0                DT_0.22                    
+ [11] ggrepel_0.9.1               bit64_4.0.5                
+ [13] lubridate_1.8.0             fansi_1.0.3                
+ [15] xml2_1.3.3                  codetools_0.2-18           
+ [17] logging_0.10-108            cachem_1.0.6               
+ [19] knitr_1.39                  jsonlite_1.8.0             
+ [21] workflowr_1.7.0             Rsamtools_2.12.0           
+ [23] broom_0.8.0                 dbplyr_2.1.1               
+ [25] png_0.1-7                   compiler_4.2.0             
+ [27] httr_1.4.3                  backports_1.4.1            
+ [29] assertthat_0.2.1            Matrix_1.5-3               
+ [31] fastmap_1.1.0               lazyeval_0.2.2             
+ [33] cli_3.6.1                   later_1.3.0                
+ [35] htmltools_0.5.2             prettyunits_1.1.1          
+ [37] tools_4.2.0                 gtable_0.3.0               
+ [39] glue_1.6.2                  GenomeInfoDbData_1.2.8     
+ [41] rappdirs_0.3.3              Rcpp_1.0.12                
+ [43] cellranger_1.1.0            jquerylib_0.1.4            
+ [45] vctrs_0.6.5                 Biostrings_2.64.0          
+ [47] rtracklayer_1.56.0          crosstalk_1.2.0            
+ [49] xfun_0.41                   rvest_1.0.2                
+ [51] lifecycle_1.0.4             irlba_2.3.5                
+ [53] restfulr_0.0.14             XML_3.99-0.14              
+ [55] zlibbioc_1.42.0             zoo_1.8-10                 
+ [57] scales_1.3.0                gggrid_0.2-0               
+ [59] hms_1.1.1                   promises_1.2.0.1           
+ [61] MatrixGenerics_1.8.0        ProtGenerics_1.28.0        
+ [63] parallel_4.2.0              SummarizedExperiment_1.26.1
+ [65] LDlinkR_1.2.3               yaml_2.3.5                 
+ [67] curl_4.3.2                  memoise_2.0.1              
+ [69] sass_0.4.1                  biomaRt_2.54.1             
+ [71] stringi_1.7.6               RSQLite_2.3.1              
+ [73] highr_0.9                   BiocIO_1.6.0               
+ [75] filelock_1.0.2              BiocParallel_1.30.3        
+ [77] rlang_1.1.2                 pkgconfig_2.0.3            
+ [79] matrixStats_0.62.0          bitops_1.0-7               
+ [81] evaluate_0.15               lattice_0.20-45            
+ [83] labeling_0.4.2              GenomicAlignments_1.32.0   
+ [85] htmlwidgets_1.5.4           cowplot_1.1.1              
+ [87] bit_4.0.4                   tidyselect_1.2.0           
+ [89] magrittr_2.0.3              R6_2.5.1                   
+ [91] generics_0.1.2              DelayedArray_0.22.0        
+ [93] DBI_1.2.2                   withr_2.5.0                
+ [95] haven_2.5.0                 pgenlibr_0.3.3             
+ [97] pillar_1.9.0                KEGGREST_1.36.3            
+ [99] RCurl_1.98-1.7              mixsqp_0.3-43              
+[101] modelr_0.1.8                crayon_1.5.1               
+[103] utf8_1.2.2                  BiocFileCache_2.4.0        
+[105] plotly_4.10.0               tzdb_0.4.0                 
+[107] rmarkdown_2.25              progress_1.2.2             
+[109] readxl_1.4.0                grid_4.2.0                 
+[111] blob_1.2.3                  git2r_0.30.1               
+[113] reprex_2.0.1                digest_0.6.29              
+[115] httpuv_1.6.5                munsell_0.5.0              
+[117] viridisLite_0.4.0           bslib_0.3.1                </code></pre>
+</div>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
