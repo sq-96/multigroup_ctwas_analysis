@@ -450,8 +450,6 @@ DT::datatable(df_region[df_region$susie_pip > 0.8,],caption = htmltools::tags$ca
 
 ## TNFRSF6B and different settings 
 
-rs202143810
-
 | weights                                      | pre-estimated L  | genes with PIP > 0.8     | SNPs with PIP > 0.8    |
 |----------------------------------------------|------------------|--------------------------|------------------------|
 | predictdb eQTL + sQTL                        | 3                | /                        | rs6089961, rs202143810 |
@@ -464,3 +462,22 @@ rs202143810
 | Munro 6 modalities, region merge             | 4                | /                        | rs6089961, rs202143810 |
 
 
+predictdb sQTL, uniform prior
+
+| L  | PIP_TNFRSF6B | CS_TNFRSF6B | PIP_rs6062496(sQTL) | CS_rs6062496(sQTL) | PIP_rs6089961 | CS_rs6089961 | PIP_rs202143810 | CS_rs202143810 |
+|----|--------------|-------------|---------------------|--------------------|---------------|--------------|-----------------|----------------|
+| 1  | 0.98         | 1           | 0.02                | 0                  | 0             | 0            | 0               | 0              |
+| 2  | 0            | 0           | 0                   | 0                  | 0.87          | 1            | 1               | 2              |
+| 3  | 0.96         | 1           | 0                   | 0                  | 0.87          | 3            | 1               | 2              |
+| 4  | 0            | 0           | 0                   | 0                  | 0.97          | 1            | 1               | 2              |
+| 5  | 0.99         | 3           | 0.01                | 0                  | 0.97          | 3            | 1               | 2              |
+| 6  | 0            | 0           | 0                   | 0                  | 0.99          | 1            | 1               | 2              |
+| 7  | 0.99         | 1           | 0.01                | 0                  | 0.99          | 3            | 1               | 2              |
+| 8  | 0            | 0           | 0                   | 0                  | 0.99          | 1            | 1               | 2              |
+| 9  | 0.99         | 1           | 0.01                | 0                  | 1             | 3            | 1               | 2              |
+| 10 | 0            | 0           | 0                   | 0                  | 1             | 1            | 1               | 2              |
+
+
+IBD GWAS only, uniform prior
+
+L=1~10, rs6062496 is the only SNP with PIP > 0.8 & in CS. The PIP for this SNP is 1. For the other two SNPs, rs6089961 and rs202143810, the highest PIP is 0.002.
