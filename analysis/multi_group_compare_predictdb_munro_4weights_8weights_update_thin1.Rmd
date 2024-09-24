@@ -1,0 +1,477 @@
+---
+title: "Comparing predictdb & Munro: predictdb eQTL + sQTL + Munro rsQTL + apaQTL VS all 8 weights -- updated functions -- thin method V1"
+author: "XSun"
+date: "2024-09-23"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(ctwas)
+library(data.table)
+library(tidyverse)
+library(EnsDb.Hsapiens.v86)
+
+ens_db <- EnsDb.Hsapiens.v86
+
+load("/project2/xinhe/shared_data/multigroup_ctwas/gwas/samplesize.rdata")
+
+load("/project2/xinhe/shared_data/multigroup_ctwas/weights/E_S_A_mapping_updated.RData")
+E_S_A_mapping_predictdb <- E_S_A_mapping
+colnames(E_S_A_mapping_predictdb)[1] <- "molecular_id"
+E_S_A_mapping_munro <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/Munro_mapping_updated.RDS")
+colnames(E_S_A_mapping_munro)[1] <- "molecular_id"
+
+E_S_A_mapping_two <- rbind(E_S_A_mapping_munro,E_S_A_mapping_predictdb)
+
+sum_pve_across_types <- function(ctwas_parameters) {
+  # Round the group_pve values
+  pve <- round(ctwas_parameters$group_pve, 4)
+  pve <- as.data.frame(pve)
+
+  # Extract SNP PVE for later use
+  SNP_pve <- pve["SNP", ]
+
+  # Add type and context columns
+  pve$type <- sapply(rownames(pve), function(x) { unlist(strsplit(x, "[|]"))[1] })
+  pve$context <- sapply(rownames(pve), function(x) { unlist(strsplit(x, "[|]"))[2] })
+
+  # Remove rows with NA values and sort
+  pve <- na.omit(pve)
+  pve <- pve[order(rownames(pve)), ]
+
+  # Aggregate PVE by type
+  df_pve <- aggregate(pve$pve, by = list(pve$type), FUN = sum)
+  colnames(df_pve) <- c("type", "total_pve")
+  df_pve$total_pve <- round(df_pve$total_pve, 4)
+
+  # Add context-specific columns
+  for (context in unique(pve$context)) {
+    context_pve <- aggregate(pve$pve, by = list(pve$type, pve$context), FUN = sum)
+    context_pve <- context_pve[context_pve$Group.2 == context, ]
+    colnames(context_pve)[3] <- context
+    df_pve <- merge(df_pve, context_pve[, c("Group.1", context)], by.x = "type", by.y = "Group.1", all.x = TRUE)
+  }
+
+  # Insert SNP PVE
+  SNP_row <- c("SNP", SNP_pve, rep(0, ncol(df_pve) - 2))
+  df_pve <- rbind(df_pve, SNP_row)
+
+  # Convert to numeric except for the type column
+  df_pve[, -1] <- lapply(df_pve[, -1], as.numeric)
+
+  # Sum all rows and add a sum_pve row
+  sum_row <- colSums(df_pve[, -1], na.rm = TRUE)
+  sum_row <- c("total_pve", sum_row)
+  df_pve <- rbind(df_pve, sum_row)
+
+  # Clean up row names and return
+  row.names(df_pve) <- NULL
+  return(df_pve)
+}
+
+```
+
+# Settings
+
+## 6 modalities from Munro 
+
+1. Weight processing: 
+
+PredictDB:
+
+all the PredictDB are converted from FUSION weights
+
+- drop_strand_ambig = TRUE,
+- scale_by_ld_variance = F (FUSION converted weights)
+- load_predictdb_LD = F,  
+
+2. Parameter estimation and fine-mapping
+
+- niter_prefit = 5,
+- niter = 30(default),
+- L: determined by uniform susie,
+- group_prior_var_structure = "shared_type",
+- maxSNP = 20000,
+- min_nonSNP_PIP = 0.5,
+
+## weights from predictdb 
+
+1. Weight processing: 
+
+PredictDB (eqtl, sqtl)
+
+- drop_strand_ambig = TRUE,
+- scale_by_ld_variance = T
+- load_predictdb_LD = F,  
+
+
+2. Parameter estimation and fine-mapping
+
+- group_prior_var_structure = "shared_type", 
+- filter_L = TRUE,
+- filter_nonSNP_PIP = FALSE,
+- min_nonSNP_PIP = 0.5,
+- min_abs_corr = 0.1, 
+
+mem: 100g 5cores
+
+
+# Results
+
+## Four weights
+
+predictdb eQTL + sQTL + Munro rsQTL + apaQTL
+
+```{r echo=FALSE}
+trait <- "IBD-ebi-a-GCST004131"
+gwas_n <- samplesize[trait]
+
+results_dir_4weights <- paste0("/project/xinhe/xsun/multi_group_ctwas/8.deciding_weights/fourweights/",trait,"/")
+
+weights_4weights <- readRDS(paste0(results_dir_4weights,trait,".preprocessed.weights.RDS"))
+region_info_4weights <- readRDS(paste0(results_dir_4weights,trait,".region_info.RDS"))
+snp_map_4weights <- readRDS(paste0(results_dir_4weights,trait,".snp_map.RDS"))
+LD_map_4weights <- readRDS(paste0(results_dir_4weights,trait,".LD_map.RDS"))
+ctwas_res_4weights <- readRDS(paste0(results_dir_4weights,trait,".ctwas.res.RDS"))
+
+z_gene_4weights <- ctwas_res_4weights$z_gene
+param_4weights <- ctwas_res_4weights$param
+finemap_res_4weights <- ctwas_res_4weights$finemap_res
+boundary_genes_4weights <- ctwas_res_4weights$boundary_genes
+region_data_4weights <- ctwas_res_4weights$region_data
+screen_res_4weights <- ctwas_res_4weights$screen_res
+
+make_convergence_plots(param_4weights, gwas_n)
+
+ctwas_parameters_4weights <- summarize_param(param_4weights, gwas_n)
+
+para_4weights <- sum_pve_across_types(ctwas_parameters_4weights)
+DT::datatable(para_4weights,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Heritability contribution by contexts'),options = list(pageLength = 10) )
+
+finemap_res_4weights <- ctwas_res_4weights$finemap_res
+
+finemap_res_4weights <- finemap_res_4weights %>%
+  separate(id, into = c("molecular_id", "expression_info"), sep = "\\|", remove = FALSE)
+
+finemap_res_4weights <- anno_finemap_res(finemap_res_4weights,
+                              snp_map = snp_map_4weights,
+                              mapping_table = E_S_A_mapping_two,
+                              add_gene_annot = TRUE,
+                              map_by = "molecular_id",
+                              drop_unmapped = TRUE,
+                              add_position = TRUE,
+                              use_gene_pos = "mid")
+
+finemap_res_4weights$type <- ifelse(grepl("_pred$", finemap_res_4weights$context),
+                                         paste0(finemap_res_4weights$type, "_pred"),
+                                         finemap_res_4weights$type)
+
+combined_pip_by_type_4weights <- combine_gene_pips(finemap_res =finemap_res_4weights,
+                                  group_by = "gene_name",
+                                  by = "type", 
+                                  method = "combine_cs",
+                                  filter_cs = T )
+
+DT::datatable(combined_pip_by_type_4weights[combined_pip_by_type_4weights$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by omics, credible set filtered'),options = list(pageLength = 10) )
+```
+
+
+## Eight weights
+
+predictdb eQTL + sQTL + Munro 6 modalities
+
+```{r echo=FALSE}
+trait <- "IBD-ebi-a-GCST004131"
+gwas_n <- samplesize[trait]
+
+results_dir_8weights <- paste0("/project/xinhe/xsun/multi_group_ctwas/8.deciding_weights/eightweights/",trait,"/")
+
+weights_8weights <- readRDS(paste0(results_dir_8weights,trait,".preprocessed.weights.RDS"))
+region_info_8weights <- readRDS(paste0(results_dir_8weights,trait,".region_info.RDS"))
+snp_map_8weights <- readRDS(paste0(results_dir_8weights,trait,".snp_map.RDS"))
+LD_map_8weights <- readRDS(paste0(results_dir_8weights,trait,".LD_map.RDS"))
+ctwas_res_8weights <- readRDS(paste0(results_dir_8weights,trait,".ctwas.res.RDS"))
+
+z_gene_8weights <- ctwas_res_8weights$z_gene
+param_8weights <- ctwas_res_8weights$param
+finemap_res_8weights <- ctwas_res_8weights$finemap_res
+boundary_genes_8weights <- ctwas_res_8weights$boundary_genes
+region_data_8weights <- ctwas_res_8weights$region_data
+screen_res_8weights <- ctwas_res_8weights$screen_res
+
+colors <- c("#1b9e77", "#d95f02", "#7570b3", "#e7298a", "#66a61e", 
+               "#e6ab02", "#a6761d", "#666666", "#a6cee3")
+
+make_convergence_plots(param_8weights, gwas_n,colors =colors)
+
+
+
+ctwas_parameters_8weights <- summarize_param(param_8weights, gwas_n)
+
+para_8weights <- sum_pve_across_types(ctwas_parameters_8weights)
+DT::datatable(para_8weights,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Heritability contribution by contexts'),options = list(pageLength = 10) )
+
+finemap_res_8weights <- ctwas_res_8weights$finemap_res
+
+
+finemap_res_8weights <- finemap_res_8weights %>%
+  separate(id, into = c("molecular_id", "expression_info"), sep = "\\|", remove = FALSE)
+
+finemap_res_8weights <- anno_finemap_res(finemap_res_8weights,
+                              snp_map = snp_map_8weights,
+                              mapping_table = E_S_A_mapping_two,
+                              add_gene_annot = TRUE,
+                              map_by = "molecular_id",
+                              drop_unmapped = TRUE,
+                              add_position = TRUE,
+                              use_gene_pos = "mid")
+
+finemap_res_8weights$type <- ifelse(grepl("_pred$", finemap_res_8weights$context),
+                                         paste0(finemap_res_8weights$type, "_pred"),
+                                         finemap_res_8weights$type)
+
+combined_pip_by_type_8weights <- combine_gene_pips(finemap_res =finemap_res_8weights,
+                                  group_by = "gene_name",
+                                  by = "type", 
+                                  method = "combine_cs",
+                                  filter_cs = T )
+
+DT::datatable(combined_pip_by_type_8weights[combined_pip_by_type_8weights$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by omics, credible set filtered'),options = list(pageLength = 10) )
+```
+
+
+## Comparing results from 2 settings
+
+
+```{r echo=FALSE}
+
+overlapped_gene <- merge(combined_pip_by_type_4weights,combined_pip_by_type_8weights, by ="gene_name")
+
+colnames(overlapped_gene) <- c("genename", "sQTL_4weights_pred","rsQTL_4weights_munro","eQTL_4weights_pred","apaQTL_4weights_munro","combined_pip_4weights","sQTL_8weights_munro","rsQTL_8weights_munro","sQTL_8weights_pred","isoQTL_8weights_munro","eQTL_8weights_pred","apaQTL_8weights_munro","eQTL_8weights_munro","combined_pip_8weights")
+
+overlapped_gene <- overlapped_gene[order(as.numeric(overlapped_gene$combined_pip_4weights),decreasing = T),]
+
+DT::datatable(overlapped_gene[overlapped_gene$combined_pip_4weights > 0.8 & overlapped_gene$combined_pip_8weights > 0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Overlapped genes, combined_pip > 0.8, filtered by credible sets'),options = list(pageLength = 10) )
+
+print("all genes discovered by 4 weights setting were overlapped with 8 weights setting")
+```
+
+Unique genes reported by 8 weights setting
+
+```{r echo=FALSE}
+
+combined_pip_by_type_8weights_highpip <- combined_pip_by_type_8weights[combined_pip_by_type_8weights$combined_pip > 0.8,]
+
+combined_pip_by_type_4weights_highpip <- combined_pip_by_type_4weights[combined_pip_by_type_4weights$combined_pip > 0.8,]
+
+DT::datatable(combined_pip_by_type_8weights_highpip[!combined_pip_by_type_8weights_highpip$gene_name %in% combined_pip_by_type_4weights_highpip$gene_name, ],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Unique genes reported by 8 weights setting'),options = list(pageLength = 10) )
+
+```
+
+Neither of these two settings reported TNFRSF6B.
+
+```{r echo=FALSE, warning=F, message=FALSE, fig.height=15}
+print("Locus plot -- 4 weights setting")
+
+sprintf("The estimated L = %s", ctwas_res_4weights[["screen_res"]][["screened_region_L"]][["20_63558827_64333810"]])
+
+finemap_res_4weights <- finemap_res_4weights[complete.cases(finemap_res_4weights$pos),]
+
+make_locusplot(finemap_res_4weights,
+               region_id = "20_63558827_64333810",
+               ens_db = ens_db,
+               weights = weights_4weights,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = TRUE,
+               filter_cs = TRUE,
+               focal_id = "intron_20_63695854_63696760|Colon_Transverse_sQTL",
+               #focal_gene = "TNFRSF6B",
+               color_pval_by = "cs",
+               color_pip_by = "cs",
+               point.shapes = c(16, 15, 18, 17,14,11,6,8,9))
+
+df_region <- finemap_res_4weights[finemap_res_4weights$region_id =="20_63558827_64333810",]
+DT::datatable(df_region[df_region$susie_pip > 0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','The two SNPs with high PIP'),options = list(pageLength = 10) )
+
+```
+
+
+```{r echo=FALSE, warning=F, message=FALSE, fig.height=15}
+print("Locus plot -- 8 weights setting")
+
+sprintf("The estimated L = %s", ctwas_res_8weights[["screen_res"]][["screened_region_L"]][["20_63558827_64333810"]])
+
+finemap_res_8weights <- finemap_res_8weights[complete.cases(finemap_res_8weights$pos),]
+
+make_locusplot(finemap_res_8weights,
+               region_id = "20_63558827_64333810",
+               ens_db = ens_db,
+               weights = weights_8weights,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = TRUE,
+               filter_cs = TRUE,
+               focal_id = "intron_20_63695854_63696760|Colon_Transverse_sQTL",
+               color_pval_by = "cs",
+               color_pip_by = "cs",
+               point.shapes = c(16, 15, 18, 17,14,11,6,8,9))
+
+df_gene <- finemap_res_8weights[finemap_res_8weights$gene_name == "TNFRSF6B",]
+df_gene <- df_gene[complete.cases(df_gene$gene_name),]
+
+DT::datatable(df_gene,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','The molecular traits associated with TNFRSF6B'),options = list(pageLength = 10) )
+
+
+for (i in 1:nrow(df_gene)) {
+  
+  print("weights for ")
+  print(df_gene$id[i])
+  print(weights_8weights[[df_gene$id[[i]]]]$wgt)
+
+}
+
+
+
+```
+
+The LD for the high pip SNPs in 4 weights setting and the sQTLs in 8 weights setting. The SNPs in row1 and row2 (column1 and column2) are the high pip SNPs in 4 weights setting.
+
+We notice that, the 2 high pip SNPs are in LD themselves. And they are in LD with rs6011040 and rs8957, the sQTL for ENSG00000243509:chr20:63695854:63696760:clu_44474_+|splicing_Colon_Transverse, whose susie pip = 7.516698e-11 in 8 weights setting. 
+
+
+|  RS_number  | rs6089961 | rs202143810 | rs41298344 | rs55765053 | rs6062496 | rs74748720 | rs6011040 | rs8957 |
+|:-----------:|-----------|-------------|:----------:|:----------:|-----------|------------|-----------|--------|
+| rs6089961   | 1.0       | 0.963       | 0.164      | 0.021      | 0.364     | 0.009      | 0.592     | 0.447  |
+| rs202143810 | 0.963     | 1.0         | 0.152      | 0.02       | 0.35      | 0.008      | 0.569     | 0.445  |
+| rs41298344  | 0.164     | 0.152       | 1.0        | 0.004      | 0.071     | 0.002      | 0.103     | 0.128  |
+| rs55765053  | 0.021     | 0.02        | 0.004      | 1.0        | 0.055     | 0.003      | 0.034     | 0.028  |
+| rs6062496   | 0.364     | 0.35        | 0.071      | 0.055      | 1.0       | 0.023      | 0.611     | 0.486  |
+| rs74748720  | 0.009     | 0.008       | 0.002      | 0.003      | 0.023     | 1.0        | 0.014     | 0.012  |
+| rs6011040   | 0.592     | 0.569       | 0.103      | 0.034      | 0.611     | 0.014      | 1.0       | 0.791  |
+| rs8957      | 0.447     | 0.445       | 0.128      | 0.028      | 0.486     | 0.012      | 0.791     | 1.0    |
+
+
+However, the earlier 2 SNPs still have high pip
+
+```{r echo=FALSE, warning=F, message=FALSE, fig.height=15}
+df_region <- finemap_res_8weights[finemap_res_8weights$region_id =="20_63558827_64333810",]
+DT::datatable(df_region[df_region$susie_pip > 0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','The two SNPs with high PIP'),options = list(pageLength = 10) )
+```
+
+
+
+## sQTL (predictdb) only
+
+```{r echo=FALSE}
+trait <- "IBD-ebi-a-GCST004131"
+gwas_n <- samplesize[trait]
+
+results_dir_sqtlpred <- paste0("/project/xinhe/xsun/multi_group_ctwas/8.deciding_weights/sqtlpred/",trait,"/")
+
+weights_sqtlpred <- readRDS(paste0(results_dir_sqtlpred,trait,".preprocessed.weights.RDS"))
+region_info_sqtlpred <- readRDS(paste0(results_dir_sqtlpred,trait,".region_info.RDS"))
+snp_map_sqtlpred <- readRDS(paste0(results_dir_sqtlpred,trait,".snp_map.RDS"))
+LD_map_sqtlpred <- readRDS(paste0(results_dir_sqtlpred,trait,".LD_map.RDS"))
+ctwas_res_sqtlpred <- readRDS(paste0(results_dir_sqtlpred,trait,".ctwas.res.RDS"))
+
+z_gene_sqtlpred <- ctwas_res_sqtlpred$z_gene
+param_sqtlpred <- ctwas_res_sqtlpred$param
+finemap_res_sqtlpred <- ctwas_res_sqtlpred$finemap_res
+boundary_genes_sqtlpred <- ctwas_res_sqtlpred$boundary_genes
+region_data_sqtlpred <- ctwas_res_sqtlpred$region_data
+screen_res_sqtlpred <- ctwas_res_sqtlpred$screen_res
+
+make_convergence_plots(param_sqtlpred, gwas_n)
+
+ctwas_parameters_sqtlpred <- summarize_param(param_sqtlpred, gwas_n)
+
+para_sqtlpred <- sum_pve_across_types(ctwas_parameters_sqtlpred)
+DT::datatable(para_sqtlpred,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Heritability contribution by contexts'),options = list(pageLength = 10) )
+
+finemap_res_sqtlpred <- ctwas_res_sqtlpred$finemap_res
+
+finemap_res_sqtlpred <- finemap_res_sqtlpred %>%
+  separate(id, into = c("molecular_id", "expression_info"), sep = "\\|", remove = FALSE)
+
+finemap_res_sqtlpred <- anno_finemap_res(finemap_res_sqtlpred,
+                              snp_map = snp_map_sqtlpred,
+                              mapping_table = E_S_A_mapping_two,
+                              add_gene_annot = TRUE,
+                              map_by = "molecular_id",
+                              drop_unmapped = TRUE,
+                              add_position = TRUE,
+                              use_gene_pos = "mid")
+
+finemap_res_sqtlpred$type <- ifelse(grepl("_pred$", finemap_res_sqtlpred$context),
+                                         paste0(finemap_res_sqtlpred$type, "_pred"),
+                                         finemap_res_sqtlpred$type)
+
+combined_pip_by_type_sqtlpred <- combine_gene_pips(finemap_res =finemap_res_sqtlpred,
+                                  group_by = "gene_name",
+                                  by = "type", 
+                                  method = "combine_cs",
+                                  filter_cs = T )
+
+DT::datatable(combined_pip_by_type_sqtlpred[combined_pip_by_type_sqtlpred$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by omics, credible set filtered'),options = list(pageLength = 10) )
+```
+
+For the earlier example, TNFRSF6B. 
+
+```{r echo=FALSE, warning=F, message=FALSE, fig.height=15}
+print("Locus plot -- sQTL setting")
+
+sprintf("The estimated L = %s", ctwas_res_sqtlpred[["screen_res"]][["screened_region_L"]][["20_63558827_64333810"]])
+
+finemap_res_sqtlpred <- finemap_res_sqtlpred[complete.cases(finemap_res_sqtlpred$pos),]
+
+make_locusplot(finemap_res_sqtlpred,
+               region_id = "20_63558827_64333810",
+               ens_db = ens_db,
+               weights = weights_sqtlpred,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = TRUE,
+               filter_cs = TRUE,
+               focal_id = "intron_20_63695854_63696760|Colon_Transverse_sQTL",
+               color_pval_by = "cs",
+               color_pip_by = "cs",
+               point.shapes = c(16, 15, 18, 17,14,11,6,8,9))
+
+df_region <- finemap_res_sqtlpred[finemap_res_sqtlpred$region_id =="20_63558827_64333810",]
+DT::datatable(df_region[df_region$susie_pip > 0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','The two SNPs with high PIP'),options = list(pageLength = 10) )
+
+```
+
+
+## TNFRSF6B and different settings
+
+| weights                                      | pre-estimated L  | genes with PIP > 0.8     | SNPs with PIP > 0.8    |
+|----------------------------------------------|------------------|--------------------------|------------------------|
+| predictdb eQTL + sQTL                        | 2                | /                        | rs6089961, rs202143810 |
+| predictdb eQTL + sQTL                        | set L=1 manually | TNFRSF6B                 | /                      |
+| predictdb eQTL + sQTL                        | set L=10 manually| ARFRP: combined pip > 0.8| rs6089961，rs202143810 |
+| predictdb sQTL                               | 1                | TNFRSF6B                 | /                      |
+| predictdb eQTL + sQTL + Munro rsQTL + apaQTL | 2                | /                        | rs6089961, rs202143810 |
+| predictdb eQTL + sQTL + Munro 6 modalities   | 2                | /                        | rs6089961, rs202143810 |
+| Munro 6 modalities, region merge             | 3                | /                        | rs6089961, rs202143810 |
+
+
+<!-- predictdb sQTL, uniform prior -->
+
+<!-- | L  | PIP_TNFRSF6B | CS_TNFRSF6B | PIP_rs6062496(sQTL) | CS_rs6062496(sQTL) | PIP_rs6089961 | CS_rs6089961 | PIP_rs202143810 | CS_rs202143810 | -->
+<!-- |----|--------------|-------------|---------------------|--------------------|---------------|--------------|-----------------|----------------| -->
+<!-- | 1  | 0.98         | 1           | 0.02                | 0                  | 0             | 0            | 0               | 0              | -->
+<!-- | 2  | 0            | 0           | 0                   | 0                  | 0.87          | 1            | 1               | 2              | -->
+<!-- | 3  | 0.96         | 1           | 0                   | 0                  | 0.87          | 3            | 1               | 2              | -->
+<!-- | 4  | 0            | 0           | 0                   | 0                  | 0.97          | 1            | 1               | 2              | -->
+<!-- | 5  | 0.99         | 3           | 0.01                | 0                  | 0.97          | 3            | 1               | 2              | -->
+<!-- | 6  | 0            | 0           | 0                   | 0                  | 0.99          | 1            | 1               | 2              | -->
+<!-- | 7  | 0.99         | 1           | 0.01                | 0                  | 0.99          | 3            | 1               | 2              | -->
+<!-- | 8  | 0            | 0           | 0                   | 0                  | 0.99          | 1            | 1               | 2              | -->
+<!-- | 9  | 0.99         | 1           | 0.01                | 0                  | 1             | 3            | 1               | 2              | -->
+<!-- | 10 | 0            | 0           | 0                   | 0                  | 1             | 1            | 1               | 2              | -->
+
+
+IBD GWAS only, uniform prior
+
+L=1~10, rs6062496 is the only SNP with PIP > 0.8 & in CS. The PIP for this SNP is 1. For the other two SNPs, rs6089961 and rs202143810, the highest PIP is 0.002.
