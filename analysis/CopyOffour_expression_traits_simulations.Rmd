@@ -12,105 +12,35 @@ This four expression traits simulation study is conducted to evaluate our new cT
 ```{r, message=FALSE, warning=FALSE, echo=FALSE}
 library(ctwas)
 library(data.table)
-source("/project/xinhe/shengqian/cTWAS_simulation/help_functions.R")
-source("/project/xinhe/shengqian/cTWAS_simulation/summarize_basic_plots.R")
-source("/project/xinhe/shengqian/cTWAS_simulation/summarize_ctwas_plots.R")
+source("/project/xinhe/shengqian/cTWAS_simulation/code/simulation_help_functions.R")
+source("/project/xinhe/shengqian/cTWAS_simulation/code/summarize_basic_plots.R")
+source("/project/xinhe/shengqian/cTWAS_simulation/code/summarize_ctwas_plots.R")
 #source("/project2/xinhe/shengqian/cTWAS/cTWAS_analysis/analysis/simulation_help_functions.R")
 
-plot_PIP <- function(results_dir, runtag,  simutags, LD_type, ...){
+plot_PIP_estimatedL <- function(results_dir, runtag,  simutags, LD_type, ...){
    phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
-   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_", LD_type, ".finemap_regions.res.RDS")
+   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_", LD_type, ".estimatedL.finemap_regions_res.RDS")
    f1 <- caliPIP_plot_csindex(phenofs, susieIfs, ...) 
    return(f1)
 }
 
-plot_PIP_true_parameter <- function(results_dir, runtag,  simutags, LD_type, ...){
+plot_PIP_nonSNPpip <- function(results_dir, runtag,  simutags, LD_type, ...){
    phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
-   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_", LD_type, ".finemap_regions.true.parameter.res.RDS")
+   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_", LD_type, ".nonSNPpip.finemap_regions_res.RDS")
    f1 <- caliPIP_plot_csindex(phenofs, susieIfs, ...) 
    return(f1)
 }
 
-plot_PIP_true_parameter_true_L <- function(results_dir, runtag,  simutags, LD_type, ...){
-   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
-   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_", LD_type, ".finemap_regions.true.parameter.true.effects.res.RDS")
-   f1 <- caliPIP_plot_csindex(phenofs, susieIfs, ...) 
-   return(f1)
-}
-
-plot_PIP_true_parameter_estimated_L <- function(results_dir, runtag,  simutags, LD_type, ...){
-   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
-   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_", LD_type, ".finemap_regions.true.parameter.estimated.effects.res.RDS")
-   f1 <- caliPIP_plot_csindex(phenofs, susieIfs, ...) 
-   return(f1)
-}
-
-plot_PIP_estimated_parameter_true_L <- function(results_dir, runtag,  simutags, LD_type, ...){
-   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
-   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_", LD_type, ".finemap_regions.estimated.parameter.true.effects.res.RDS")
-   f1 <- caliPIP_plot_csindex(phenofs, susieIfs, ...) 
-   return(f1)
-}
-
-plot_PIP_estimated_parameter_estimated_L <- function(results_dir, runtag,  simutags, LD_type, ...){
-   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
-   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_", LD_type, ".finemap_regions.estimated.parameter.estimated.effects.res.RDS")
-   f1 <- caliPIP_plot_csindex(phenofs, susieIfs, ...) 
-   return(f1)
-}
-
-plot_PIP_merged <- function(results_dir, runtag,  simutags, LD_type, ...){
-   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
-   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_", LD_type,".finemap_merged_regions.res.RDS")
-   f1 <- caliPIP_plot_csindex(phenofs, susieIfs, ...) 
-   return(f1)
-}
-
-plot_combined_PIP <- function(configtag, runtag,  simutags, LD_type, ...){
+plot_gene_PIP_estimatedL <- function(configtag, runtag,  simutags, LD_type, ...){
    phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
    susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_", LD_type, ".finemap_regions.res.RDS")
    f1 <- caliPIP_plot_combined_csindex(phenofs, susieIfs, ...) 
    return(f1)
 }
 
-plot_combined_PIP_true_parameter <- function(results_dir, runtag,  simutags, LD_type, ...){
+plot_gene_PIP_nonSNPpip <- function(configtag, runtag,  simutags, LD_type, ...){
    phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
-   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_", LD_type, ".finemap_regions.true.parameter.res.RDS")
-   f1 <- caliPIP_plot_combined_csindex(phenofs, susieIfs, ...) 
-   return(f1)
-}
-
-plot_combined_PIP_true_parameter_true_L <- function(results_dir, runtag,  simutags, LD_type, ...){
-   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
-   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_", LD_type, ".finemap_regions.true.parameter.true.effects.res.RDS")
-   f1 <- caliPIP_plot_combined_csindex(phenofs, susieIfs, ...) 
-   return(f1)
-}
-
-plot_combined_PIP_true_parameter_estimated_L <- function(results_dir, runtag,  simutags, LD_type, ...){
-   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
-   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_", LD_type, ".finemap_regions.true.parameter.estimated.effects.res.RDS")
-   f1 <- caliPIP_plot_combined_csindex(phenofs, susieIfs, ...) 
-   return(f1)
-}
-
-plot_combined_PIP_estimated_parameter_true_L <- function(results_dir, runtag,  simutags, LD_type, ...){
-   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
-   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_", LD_type, ".finemap_regions.estimated.parameter.true.effects.res.RDS")
-   f1 <- caliPIP_plot_combined_csindex(phenofs, susieIfs, ...) 
-   return(f1)
-}
-
-plot_combined_PIP_estimated_parameter_estimated_L <- function(results_dir, runtag,  simutags, LD_type, ...){
-   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
-   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_", LD_type, ".finemap_regions.estimated.parameter.estimated.effects.res.RDS")
-   f1 <- caliPIP_plot_combined_csindex(phenofs, susieIfs, ...) 
-   return(f1)
-}
-
-plot_PIP_combined_merged_csindex <- function(configtag, runtag,  simutags, LD_type, ...){
-   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
-   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_", LD_type, ".finemap_merged_regions.res.RDS")
+   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_", LD_type, ".finemap_regions.res.RDS")
    f1 <- caliPIP_plot_combined_csindex(phenofs, susieIfs, ...) 
    return(f1)
 }
@@ -119,12 +49,23 @@ plot_PIP_combined_merged_csindex <- function(configtag, runtag,  simutags, LD_ty
 
 ## Simulation 1: Expression trait in liver with 3% PVE and 0.9% Prior
 
+
+```{r}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation_old/simulation_four_tissues_expression_old/"
+runtag = "four_tissues"
+simutags <- paste(1, 1:5, sep = "-")
+param_UKBB_df <- load_parameters(results_dir, runtag, simutags, "UKBBLD")
+```
+
+
 ```{r, message=FALSE, warning=FALSE, echo=FALSE}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_four_tissues_expression/"
 runtag = "four_tissues"
 simutags <- paste(1, 1:5, sep = "-")
-#param_GTEX_df <- load_parameters(results_dir, runtag, simutags, "GTEXLD")
-param_UKBB_df <- load_parameters(results_dir, runtag, simutags, "UKBBLD")
+for(simutag in simutags){
+    regions <- readRDS(paste0(results_dir,runtag,"_simu",simutag,"_","UKBBLD",".screened_region_data.RDS"))
+    print(length(regions))
+}
 ```
 
 ### Number of causal genes detected (GTEX LD)
@@ -198,6 +139,33 @@ plot_par_4(truth,est,xlabels = c("Liver", "Adipose", "Lung", "Stomach"),ylim=c(0
 f1 <- pip_partition_across_tissue(results_dir, runtag, simutags, "UKBBLD", PIP_threshold = 0.8)
 f1
 ```
+
+
+### PIP Calibration Plot of expression traits
+```{r, fig.width= 12, fig.height= 4, echo=FALSE, warning=FALSE}
+f1 <- plot_PIP_estimatedL(results_dir, runtag, simutags, "UKBBLD", main = "Estimated L")
+f2 <- plot_PIP_nonSNPpip(results_dir, runtag, simutags, "UKBBLD", main = "nonSNPpip")
+gridExtra::grid.arrange(f1, f2, ncol = 2)
+```
+
+
+### PIP Calibration Plot of genes
+```{r, fig.width= 12, fig.height= 4, echo=FALSE, warning=FALSE}
+f1 <- plot_gene_PIP_estimatedL(results_dir, runtag, simutags, "UKBBLD", main = "Estimated L")
+f2 <- plot_gene_PIP_nonSNPpip(results_dir, runtag, simutags, "UKBBLD", main = "nonSNPpip")
+gridExtra::grid.arrange(f1, f2, ncol = 2)
+```
+
+
+
+
+
+
+
+
+
+
+
 
 ### PIP Calibration Plot of expression traits - Estimated Parameter (filter out cs index 0)
 ```{r, fig.width= 12, fig.height= 4, echo=FALSE, warning=FALSE}
