@@ -6,6 +6,7 @@ output:
   workflowr::wflow_html:
     code_folding: hide
     toc: true
+    
 ---
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
@@ -142,6 +143,7 @@ weights_splicing1 <- preprocess_weights(weight_file = weight_files[2],
 weights <- c(weights_expression1,weights_splicing1)    
 ```
 
+
 # Running cTWAS analysis
 
 We use the ctwas main function `ctwas_sumstats()` to run the cTWAS analysis with LD. For more details on this function, refer to the cTWAS tutorial: https://xinhe-lab.github.io/multigroup_ctwas/articles/running_ctwas_analysis.html#running-ctwas-main-function
@@ -179,7 +181,9 @@ ctwas_res <- ctwas_sumstats(z_snp,
 
 ```
 
-# cTWAS results
+
+
+# Parameter estimation
 
 `ctwas_res` is the object contains the outputs of cTWAS
 
@@ -191,14 +195,11 @@ ctwas_res <- readRDS(paste0(results_dir,trait,".ctwas.res.RDS"))
 
 ```
 
-
-## Parameter estimation
-
 We extract the estimated parameters by `param <- ctwas_res$param`
 
 we make plots using the function `make_convergence_plots(param, gwas_n)` to see how estimated parameters converge during the execution of the program:
 
-```{r echo=F, eval=T}
+```{r echo=T, eval=T}
 param <- ctwas_res$param
 make_convergence_plots(param, gwas_n)
 ```
@@ -233,21 +234,33 @@ ggplot(data, aes(x = "", y = percentage, fill = category)) +
             position = position_stack(vjust = 0.5), size = 5) +
   scale_fill_manual(values = c("#FF9999", "#66B2FF", "#99FF99")) +  # Custom colors
   labs(fill = "Category") +
-  ggtitle("Attributable PVE")
+  ggtitle("Percent of heritability")
 ```
 
+# Diagnosis plots
 
-## Fine-mapping results
+For all genes analyzed, we compare the z-scores and fine-mapping PIPs
+
+```{r echo=T, eval=T}
+
+finemap_res <- ctwas_res$finemap_res 
+
+ggplot(data = finemap_res[finemap_res$type!="SNP",], aes(x = abs(z), y = susie_pip)) +
+  geom_point() +
+  labs(x = "abs(z-scores)", y = "PIPs") +
+  theme_minimal()
+
+```
+
+# Fine-mapping results
 
 We process the fine-mapping results here. 
 
 We first add gene annotations to cTWAS results
 
 ```{r echo=T, eval=T}
-load("/project2/xinhe/shared_data/multigroup_ctwas/weights/E_S_A_mapping_updated.RData")
-colnames(E_S_A_mapping)[1] <- "molecular_id"
+E_S_A_mapping <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
 
-finemap_res <- ctwas_res$finemap_res 
 finemap_res$molecular_id <- get_molecular_ids(finemap_res)
 
 snp_map <- readRDS(paste0(results_dir,trait,".snp_map.RDS"))
@@ -266,19 +279,6 @@ finemap_res_show <- finemap_res[finemap_res$cs_index!=0 &finemap_res$type !="SNP
 DT::datatable(finemap_res_show,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','The annotated fine-mapping results, ones within credible sets are shown'),options = list(pageLength = 5) )
 
 ```
-
-
-For all genes analyzed, we compare the z-scores and fine-mapping PIPs
-
-```{r echo=T, eval=T}
-
-ggplot(data = finemap_res[finemap_res$type!="SNP",], aes(x = abs(z), y = susie_pip)) +
-  geom_point() +
-  labs(x = "abs(z-scores)", y = "PIPs") +
-  theme_minimal()
-
-```
-
 
 Next, we compute gene PIPs across different types of molecular traits
 
@@ -313,23 +313,23 @@ DT::datatable(combined_pip_by_type,caption = htmltools::tags$caption( style = 'c
 ```
 
 
-## Visualization
+# Locus plots
 
 We make locuz plot for the region("16_71020125_72901251") containing the gene HPR. we limit PIP results to credible sets in the PIP track by setting `filter_cs = TRUE`.
 
-```{r}
-weights <- readRDS(paste0(results_dir,trait,".preprocessed.weights.RDS"))
+<!-- ```{r} -->
+<!-- weights <- readRDS(paste0(results_dir,trait,".preprocessed.weights.RDS")) -->
 
-make_locusplot(finemap_res = finemap_res,
-               region_id = "16_71020125_72901251",
-               ens_db = ens_db,
-               weights = weights,
-               highlight_pip = 0.8,
-               filter_protein_coding_genes = T,
-               filter_cs = T,
-               color_pval_by = "cs",
-               color_pip_by = "cs")
-```
+<!-- make_locusplot(finemap_res = finemap_res, -->
+<!--                region_id = "16_71020125_72901251", -->
+<!--                ens_db = ens_db, -->
+<!--                weights = weights, -->
+<!--                highlight_pip = 0.8, -->
+<!--                filter_protein_coding_genes = T, -->
+<!--                filter_cs = T, -->
+<!--                color_pval_by = "cs", -->
+<!--                color_pip_by = "cs") -->
+<!-- ``` -->
 
 - The top one shows -log10(p-value) of the association of variants (from LDL GWAS) and molecular traits (from the package computed z-scores) with the phenotype
 - The next track shows the PIPs of variants and molecular traits. By default, we limit PIP results to credible sets in the PIP track (`filter_cs = TRUE`)
