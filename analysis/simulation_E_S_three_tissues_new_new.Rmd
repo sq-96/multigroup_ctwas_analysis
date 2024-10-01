@@ -13,11 +13,10 @@ Only expression and splicing from liver are causal, each with 3% PVE, 0.9% $\pi$
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 library(ctwas)
 library(data.table)
-source("/project/xinhe/shengqian/cTWAS_simulation/help_functions.R")
-source("/project/xinhe/shengqian/cTWAS_simulation/summarize_basic_plots.R")
-source("/project/xinhe/shengqian/cTWAS_simulation/summarize_ctwas_plots.R")
-#source("/project2/xinhe/shengqian/cTWAS/cTWAS_analysis/analysis/simulation_help_functions.R")
-load("/project2/xinhe/shared_data/multigroup_ctwas/weights/E_S_A_mapping.RData")
+source("/project/xinhe/shengqian/cTWAS_simulation/code/simulation_help_functions.R")
+source("/project/xinhe/shengqian/cTWAS_simulation/code/summarize_basic_plots.R")
+source("/project/xinhe/shengqian/cTWAS_simulation/code/summarize_ctwas_plots.R")
+#load("/project2/xinhe/shared_data/multigroup_ctwas/weights/E_S_A_mapping.RData")
 
 plot_PIP <- function(results_dir, runtag,  simutags, LD_type, ...){
    phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
@@ -132,16 +131,37 @@ plot_PIP_combined_merged <- function(configtag, runtag, simutags, LD_type, ...){
 }
 ```
 
-### Simulation 1: Expression and Splicing from Liver (3% PVE)
+### Get parameters
 
 ```{r, message=FALSE, warning=FALSE, echo=FALSE}
-results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_E_S_three_tissues/"
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_three_tissues_expression_splicing//"
 runtag = "E_S_three_tissues"
 simutags <- paste(1, 1:5, sep = "-")
-param_GTEX_df <- load_parameters(results_dir, runtag, simutags, "GTEXLD")
 param_UKBB_df <- load_parameters(results_dir, runtag, simutags, "UKBBLD")
 ```
 
+
+### Compare number of screen regions
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_three_tissues_expression_splicing/"
+runtag = "E_S_three_tissues"
+simutags <- paste(1, 1:5, sep = "-")
+for(simutag in simutags){
+    regions <- readRDS(paste0(results_dir,runtag,"_simu",simutag,"_","UKBBLD",".estimatedL.screened_region_data.RDS"))
+    print(length(regions))
+}
+```
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_three_tissues_expression_splicing/"
+runtag = "E_S_three_tissues"
+simutags <- paste(1, 1:5, sep = "-")
+for(simutag in simutags){
+    regions <- readRDS(paste0(results_dir,runtag,"_simu",simutag,"_","UKBBLD",".nonSNPpip.screened_region_data.RDS"))
+    print(length(regions))
+}
+```
 
 ```{r}
 f1 <- pip_partition_across_tissue(results_dir, runtag, simutags, "UKBBLD", PIP_threshold = 0.8)
@@ -158,69 +178,35 @@ check_n_detected_multiomics(results_dir, runtag, simutags, "GTEXLD", PIP_thresho
 check_n_detected_multiomics(results_dir, runtag, simutags, "UKBBLD", PIP_threshold = 0.8)
 ```
 
-### Estimated Prior Inclusion Probability and PVE (GTEX LD)
-`````{r, fig.width= 15, fig.height= 4, message=FALSE, warning=FALSE, echo=FALSE}
-par(mfrow = c(1, 3))
-y1 <- param_GTEX_df$`prior_eQTL|Liver`
-y2 <- param_GTEX_df$`prior_sQTL|Liver`
-y3 <- param_GTEX_df$`prior_eQTL|Adipose`
-y4 <- param_GTEX_df$`prior_sQTL|Adipose`
-y5 <- param_GTEX_df$`prior_eQTL|Lung`
-y6 <- param_GTEX_df$`prior_sQTL|Lung`
-truth <- rbind(c(1,0.009),c(2,0.009),c(3,0),c(4,0),c(5,0),c(6,0))
-est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6))
-plot_par_6(truth,est,xlabels = c("Liver E", "Liver S", "Adipose E", "Adipose S", "Lung E", "Lung S"),ylim=c(0,0.025),ylab="Prior inclusion", main="Prior Inclusion Probability")
-
-y1 <- param_GTEX_df$`pve_eQTL|Liver`
-y2 <- param_GTEX_df$`pve_sQTL|Liver`
-y3 <- param_GTEX_df$`pve_eQTL|Adipose`
-y4 <- param_GTEX_df$`pve_sQTL|Adipose`
-y5 <- param_GTEX_df$`pve_eQTL|Lung`
-y6 <- param_GTEX_df$`pve_sQTL|Lung`
-truth <- rbind(c(1,0.03),c(2,0.03),c(3,0),c(4,0),c(5,0),c(6,0))
-est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6))
-plot_par_6(truth,est,xlabels = c("Liver E", "Liver S", "Adipose E", "Adipose S", "Lung E", "Lung S"),ylim=c(0,0.06),ylab="PVE", main="PVE")
-
-y1 <- param_GTEX_df$`enrichment_eQTL|Liver`
-y2 <- param_GTEX_df$`enrichment_sQTL|Liver`
-y3 <- param_GTEX_df$`enrichment_eQTL|Adipose`
-y4 <- param_GTEX_df$`enrichment_sQTL|Adipose`
-y5 <- param_GTEX_df$`enrichment_eQTL|Lung`
-y6 <- param_GTEX_df$`enrichment_sQTL|Lung`
-truth <- rbind(c(1,36),c(2,36),c(3,0),c(4,0),c(5,0),c(6,0))
-est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6))
-plot_par_6(truth,est,xlabels = c("Liver E", "Liver S", "Adipose E", "Adipose S", "Lung E", "Lung S"),ylim=c(0,80),ylab="Enrichment", main="Enrichment")
-```
-
 ### Estimated Prior Inclusion Probability and PVE (UKBB LD)
 `````{r, fig.width= 15, fig.height= 4, message=FALSE, warning=FALSE, echo=FALSE}
 par(mfrow = c(1, 3))
-y1 <- param_UKBB_df$`prior_eQTL|Liver`
-y2 <- param_UKBB_df$`prior_sQTL|Liver`
-y3 <- param_UKBB_df$`prior_eQTL|Adipose`
-y4 <- param_UKBB_df$`prior_sQTL|Adipose`
-y5 <- param_UKBB_df$`prior_eQTL|Lung`
-y6 <- param_UKBB_df$`prior_sQTL|Lung`
+y1 <- param_UKBB_df$`prior_Liver|expression`
+y2 <- param_UKBB_df$`prior_Liver|splicing`
+y3 <- param_UKBB_df$`prior_var_Adipose_Subcutaneous|expression`
+y4 <- param_UKBB_df$`prior_Adipose_Subcutaneous|splicing`
+y5 <- param_UKBB_df$`prior_Lung|expression`
+y6 <- param_UKBB_df$`prior_Lung|splicing`
 truth <- rbind(c(1,0.009),c(2,0.009),c(3,0),c(4,0),c(5,0),c(6,0))
 est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6))
 plot_par_6(truth,est,xlabels = c("Liver E", "Liver S", "Adipose E", "Adipose S", "Lung E", "Lung S"),ylim=c(0,0.025),ylab="Prior inclusion", main="Prior Inclusion Probability")
 
-y1 <- param_UKBB_df$`pve_eQTL|Liver`
-y2 <- param_UKBB_df$`pve_sQTL|Liver`
-y3 <- param_UKBB_df$`pve_eQTL|Adipose`
-y4 <- param_UKBB_df$`pve_sQTL|Adipose`
-y5 <- param_UKBB_df$`pve_eQTL|Lung`
-y6 <- param_UKBB_df$`pve_sQTL|Lung`
+y1 <- param_UKBB_df$`pve_Liver|expression`
+y2 <- param_UKBB_df$`pve_Liver|splicing`
+y3 <- param_UKBB_df$`pve_Adipose_Subcutaneous|expression`
+y4 <- param_UKBB_df$`pve_Adipose_Subcutaneous|splicing`
+y5 <- param_UKBB_df$`pve_Lung|expression`
+y6 <- param_UKBB_df$`prior_Lung|splicing`
 truth <- rbind(c(1,0.03),c(2,0.03),c(3,0),c(4,0),c(5,0),c(6,0))
 est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6))
 plot_par_6(truth,est,xlabels = c("Liver E", "Liver S", "Adipose E", "Adipose S", "Lung E", "Lung S"),ylim=c(0,0.06),ylab="PVE", main="PVE")
 
-y1 <- param_UKBB_df$`enrichment_eQTL|Liver`
-y2 <- param_UKBB_df$`enrichment_sQTL|Liver`
-y3 <- param_UKBB_df$`enrichment_eQTL|Adipose`
-y4 <- param_UKBB_df$`enrichment_sQTL|Adipose`
-y5 <- param_UKBB_df$`enrichment_eQTL|Lung`
-y6 <- param_UKBB_df$`enrichment_sQTL|Lung`
+y1 <- param_UKBB_df$`enrichment_Liver|expression`
+y2 <- param_UKBB_df$`enrichment_Liver|splicing`
+y3 <- param_UKBB_df$`enrichment_Adipose_Subcutaneous|expression`
+y4 <- param_UKBB_df$`enrichment_Adipose_Subcutaneous|splicing`
+y5 <- param_UKBB_df$`enrichment_Lung|expression`
+y6 <- param_UKBB_df$`enrichment_Lung|splicing`
 truth <- rbind(c(1,36),c(2,36),c(3,0),c(4,0),c(5,0),c(6,0))
 est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6))
 plot_par_6(truth,est,xlabels = c("Liver E", "Liver S", "Adipose E", "Adipose S", "Lung E", "Lung S"),ylim=c(0,80),ylab="Enrichment", main="Enrichment")

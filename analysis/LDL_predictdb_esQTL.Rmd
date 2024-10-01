@@ -1,12 +1,19 @@
 ---
 title: "An example for LDL ~ Predictdb eQTL&sQTL from Liver"
 author: "XSun"
-date: "2024-09-22"
+date: '2024-09-22'
 output:
+  html_document:
+    toc: yes
+    df_print: paged
   workflowr::wflow_html:
     code_folding: hide
+<<<<<<< HEAD
     toc: true
     
+=======
+    toc: yes
+>>>>>>> master
 ---
 
 ```{r setup, include=FALSE}
@@ -47,6 +54,7 @@ sprintf("gwas_n = %d", as.numeric(gwas_n))
 - Prediction models
 
 The prediction models used in this analysis are liver gene expression and splicing models, trained on GTEx v8 in the PredictDB format. These models can be downloaded from https://predictdb.org/post/2021/07/21/gtex-v8-models-on-eqtl-and-sqtl/
+
 
 ```{r echo=FALSE}
 
@@ -205,7 +213,7 @@ We extract the estimated parameters by `param <- ctwas_res$param`
 
 we make plots using the function `make_convergence_plots(param, gwas_n)` to see how estimated parameters converge during the execution of the program:
 
-```{r echo=T, eval=T,fig.path="docs/figure/LDL_predictdb_esQTL.Rmd/"}
+```{r echo=T, eval=T}
 param <- ctwas_res$param
 make_convergence_plots(param, gwas_n)
 ```
@@ -249,6 +257,11 @@ For all genes analyzed, we compare the z-scores and fine-mapping PIPs
 
 ```{r echo=T, eval=T}
 
+<<<<<<< HEAD
+=======
+finemap_res <- ctwas_res$finemap_res 
+
+>>>>>>> master
 ggplot(data = finemap_res[finemap_res$type!="SNP",], aes(x = abs(z), y = susie_pip)) +
   geom_point() +
   labs(x = "abs(z-scores)", y = "PIPs") +
@@ -263,10 +276,8 @@ We process the fine-mapping results here.
 We first add gene annotations to cTWAS results
 
 ```{r echo=T, eval=T}
-load("/project2/xinhe/shared_data/multigroup_ctwas/weights/E_S_A_mapping_updated.RData")
-colnames(E_S_A_mapping)[1] <- "molecular_id"
+E_S_A_mapping <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
 
-finemap_res <- ctwas_res$finemap_res 
 finemap_res$molecular_id <- get_molecular_ids(finemap_res)
 
 snp_map <- readRDS(paste0(results_dir,trait,".snp_map.RDS"))
@@ -341,4 +352,3 @@ We make locuz plot for the region("16_71020125_72901251") containing the gene HP
 - The next track shows the PIPs of variants and molecular traits. By default, we limit PIP results to credible sets in the PIP track (`filter_cs = TRUE`)
 - The next track shows the QTLs of the focal gene.
 - The bottom is the gene track.
-
