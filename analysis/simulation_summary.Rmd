@@ -1,0 +1,342 @@
+---
+title: "simulation_summary"
+output: html_document
+date: '2024-10-02'
+---
+
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+library(ctwas)
+library(data.table)
+source("/project/xinhe/shengqian/cTWAS_simulation/code/simulation_help_functions.R")
+source("/project/xinhe/shengqian/cTWAS_simulation/code/summarize_basic_plots.R")
+source("/project/xinhe/shengqian/cTWAS_simulation/code/summarize_ctwas_plots.R")
+```
+
+
+## Simulation 1: Four tissues expression trait
+Four expression traits from PredictDB are used in this study, which are Liver, Adipose, Lung and stomach. Liver and Adipose are selected as causal tissues, each with 3% PVE and 0.9% prior. Lung and stomach are non-causal tissues with 0% PVE.
+
+### Comparing number of regions screened
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_four_tissues_expression/"
+runtag = "four_tissues"
+simutags <- paste(1, 1:5, sep = "-")
+num_estimatedL <- c()
+for(simutag in simutags){
+    regions <- readRDS(paste0(results_dir,runtag,"_simu",simutag,"_","UKBBLD",".estimatedL.screened_region_data.RDS"))
+    num_estimatedL <- c(num_estimatedL,length(regions))
+}
+num_nonSNPpip <- c()
+for(simutag in simutags){
+    regions <- readRDS(paste0(results_dir,runtag,"_simu",simutag,"_","UKBBLD",".nonSNPpip.screened_region_data.RDS"))
+    num_nonSNPpip <- c(num_nonSNPpip,length(regions))
+}
+data.frame(cbind(simutags,num_estimatedL,num_nonSNPpip))
+```
+### Number of causal genes detected
+```{r echo=FALSE}
+check_power(results_dir, runtag, simutags, "UKBBLD", 'estimatedL', PIP_threshold = 0.8)
+```
+
+```{r echo=FALSE}
+check_power(results_dir, runtag, simutags, "UKBBLD", 'nonSNPpip', PIP_threshold = 0.8)
+```
+
+### Estimated parameters
+```{r, fig.width= 12, fig.height= 4, message=FALSE, warning=FALSE, echo=FALSE}
+param_UKBB_df <- load_parameters(results_dir, runtag, simutags, "UKBBLD")
+par(mfrow = c(1, 3))
+y1 <- param_UKBB_df$`prior_Liver|eQTL`
+y2 <- param_UKBB_df$`prior_Adipose_Subcutaneous|eQTL`
+y3 <- param_UKBB_df$`prior_Lung|eQTL`
+y4 <- param_UKBB_df$`prior_Stomach|eQTL`
+truth <- rbind(c(1,0.009),c(2,0.009),c(3,0),c(4,0))
+est <- rbind(cbind(1,y1),cbind(2,y2), cbind(3,y3), cbind(4,y4))
+plot_par_4(truth,est,xlabels = c("Liver", "Adipose", "Lung", "Stomach"),ylim=c(0,0.025),ylab="Prior inclusion", main="Prior Inclusion Probability")
+
+y1 <- param_UKBB_df$`pve_Liver|eQTL`
+y2 <- param_UKBB_df$`pve_Adipose_Subcutaneous|eQTL`
+y3 <- param_UKBB_df$`pve_Lung|eQTL`
+y4 <- param_UKBB_df$`prior_Stomach|eQTL`
+truth <- rbind(c(1,0.03),c(2,0.03),c(3,0),c(4,0))
+est <- rbind(cbind(1,y1),cbind(2,y2), cbind(3,y3), cbind(4,y4))
+plot_par_4(truth,est,xlabels = c("Liver", "Adipose", "Lung", "Stomach"),ylim=c(0,0.06),ylab="PVE", main="PVE")
+
+y1 <- param_UKBB_df$`enrichment_Liver|eQTL`
+y2 <- param_UKBB_df$`enrichment_Adipose_Subcutaneous|eQTL`
+y3 <- param_UKBB_df$`enrichment_Lung|eQTL`
+y4 <- param_UKBB_df$`enrichment_Stomach|eQTL`
+truth <- rbind(c(1,36),c(2,36),c(3,0),c(4,0))
+est <- rbind(cbind(1,y1),cbind(2,y2), cbind(3,y3), cbind(4,y4))
+plot_par_4(truth,est,xlabels = c("Liver", "Adipose", "Lung", "Stomach"),ylim=c(0,80),ylab="Enrichment", main="Enrichment")
+```
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+plot_PIP_estimatedL <- function(results_dir, runtag,  simutags, LD_type, ...){
+   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
+   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_", LD_type, ".estimatedL.finemap_regions_res.RDS")
+   f1 <- caliPIP_plot_csindex(phenofs, susieIfs, ...) 
+   return(f1)
+}
+
+plot_PIP_nonSNPpip <- function(results_dir, runtag,  simutags, LD_type, ...){
+   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
+   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_", LD_type, ".nonSNPpip.finemap_regions_res.RDS")
+   f1 <- caliPIP_plot_csindex(phenofs, susieIfs, ...) 
+   return(f1)
+}
+
+plot_gene_PIP_estimatedL <- function(configtag, runtag,  simutags, LD_type, ...){
+   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
+   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_", LD_type, ".estimatedL.finemap_regions_res.RDS")
+   f1 <- caliPIP_plot_multi_tissues(phenofs, susieIfs, ...) 
+   return(f1)
+}
+
+plot_gene_PIP_nonSNPpip <- function(configtag, runtag,  simutags, LD_type, ...){
+   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
+   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_", LD_type, ".nonSNPpip.finemap_regions_res.RDS")
+   f1 <- caliPIP_plot_multi_tissues(phenofs, susieIfs, ...) 
+   return(f1)
+}
+```
+
+### PIP Calibration Plot of molecular traits
+```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+f1 <- plot_PIP_estimatedL(results_dir, runtag, simutags, "UKBBLD", main = "Estimated L")
+f2 <- plot_PIP_nonSNPpip(results_dir, runtag, simutags, "UKBBLD", main = "nonSNPpip")
+gridExtra::grid.arrange(f1, f2, ncol = 2)
+```
+
+### PIP Calibration Plot of genes
+```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+f1 <- plot_gene_PIP_estimatedL(results_dir, runtag, simutags, "UKBBLD", main = "Estimated L")
+f2 <- plot_gene_PIP_nonSNPpip(results_dir, runtag, simutags, "UKBBLD", main = "nonSNPpip")
+gridExtra::grid.arrange(f1, f2, ncol = 2)
+```
+
+## Simulation 2: Three tissues expression and splicing trait
+A simulation of expression and splicing traits from three tissues is conducted to evaluate cTWAS performance (parameter estimation, PIP calibration ...). Three tissues used in this simulation are Liver, Adipose and Lung. Only expression and splicing from liver are causal, each with 3% PVE, 0.9% $\pi$. SNPs have 30% PVE, 2.5e-4 $\pi$.
+
+### Comparing number of regions screened
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_three_tissues_expression_splicing/"
+runtag = "E_S_three_tissues"
+simutags <- paste(1, 1:5, sep = "-")
+num_estimatedL <- c()
+for(simutag in simutags){
+    regions <- readRDS(paste0(results_dir,runtag,"_simu",simutag,"_","UKBBLD",".estimatedL.screened_region_data.RDS"))
+    num_estimatedL <- c(num_estimatedL,length(regions))
+}
+num_nonSNPpip <- c()
+for(simutag in simutags){
+    regions <- readRDS(paste0(results_dir,runtag,"_simu",simutag,"_","UKBBLD",".nonSNPpip.screened_region_data.RDS"))
+    num_nonSNPpip <- c(num_nonSNPpip,length(regions))
+}
+data.frame(cbind(simutags,num_estimatedL,num_nonSNPpip))
+```
+
+### Number of causal genes detected
+```{r echo=FALSE}
+check_power(results_dir, runtag, simutags, "UKBBLD", 'estimatedL', PIP_threshold = 0.8)
+```
+
+```{r echo=FALSE}
+check_power(results_dir, runtag, simutags, "UKBBLD", 'nonSNPpip', PIP_threshold = 0.8)
+```
+
+### Estimated parameters
+```{r, fig.width= 12, fig.height= 4, message=FALSE, warning=FALSE, echo=FALSE}
+param_UKBB_df <- load_parameters(results_dir, runtag, simutags, "UKBBLD")
+par(mfrow = c(1, 3))
+y1 <- param_UKBB_df$`prior_Liver|expression`
+y2 <- param_UKBB_df$`prior_Liver|splicing`
+y3 <- param_UKBB_df$`prior_Adipose_Subcutaneous|expression`
+y4 <- param_UKBB_df$`prior_Adipose_Subcutaneous|splicing`
+y5 <- param_UKBB_df$`prior_Lung|expression`
+y6 <- param_UKBB_df$`prior_Lung|splicing`
+truth <- rbind(c(1,0.009),c(2,0.009),c(3,0),c(4,0),c(5,0),c(6,0))
+est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6))
+plot_par_6(truth,est,xlabels = c("Liver E", "Liver S", "Adipose E", "Adipose S", "Lung E", "Lung S"),ylim=c(0,0.025),ylab="Prior inclusion", main="Prior Inclusion Probability")
+
+y1 <- param_UKBB_df$`pve_Liver|expression`
+y2 <- param_UKBB_df$`pve_Liver|splicing`
+y3 <- param_UKBB_df$`pve_Adipose_Subcutaneous|expression`
+y4 <- param_UKBB_df$`pve_Adipose_Subcutaneous|splicing`
+y5 <- param_UKBB_df$`pve_Lung|expression`
+y6 <- param_UKBB_df$`pve_Lung|splicing`
+truth <- rbind(c(1,0.03),c(2,0.03),c(3,0),c(4,0),c(5,0),c(6,0))
+est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6))
+plot_par_6(truth,est,xlabels = c("Liver E", "Liver S", "Adipose E", "Adipose S", "Lung E", "Lung S"),ylim=c(0,0.06),ylab="PVE", main="PVE")
+
+y1 <- param_UKBB_df$`enrichment_Liver|expression`
+y2 <- param_UKBB_df$`enrichment_Liver|splicing`
+y3 <- param_UKBB_df$`enrichment_Adipose_Subcutaneous|expression`
+y4 <- param_UKBB_df$`enrichment_Adipose_Subcutaneous|splicing`
+y5 <- param_UKBB_df$`enrichment_Lung|expression`
+y6 <- param_UKBB_df$`enrichment_Lung|splicing`
+truth <- rbind(c(1,36),c(2,36),c(3,0),c(4,0),c(5,0),c(6,0))
+est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6))
+plot_par_6(truth,est,xlabels = c("Liver E", "Liver S", "Adipose E", "Adipose S", "Lung E", "Lung S"),ylim=c(0,80),ylab="Enrichment", main="Enrichment")
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+plot_PIP_estimatedL <- function(results_dir, runtag,  simutags, LD_type, ...){
+   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
+   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_", LD_type, ".estimatedL.finemap_regions_res.RDS")
+   f1 <- caliPIP_plot_csindex(phenofs, susieIfs, ...) 
+   return(f1)
+}
+
+plot_PIP_nonSNPpip <- function(results_dir, runtag,  simutags, LD_type, ...){
+   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
+   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_", LD_type, ".nonSNPpip.finemap_regions_res.RDS")
+   f1 <- caliPIP_plot_csindex(phenofs, susieIfs, ...) 
+   return(f1)
+}
+
+plot_gene_PIP_estimatedL <- function(configtag, runtag,  simutags, LD_type, mapping_table, ...){
+   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
+   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_", LD_type, ".estimatedL.finemap_regions_res.RDS")
+   snp_mapfs <- paste0(results_dir, runtag, "_simu",simutags, "_", LD_type, ".snp_map.RDS")
+   f1 <- caliPIP_plot_multi_omics(phenofs, susieIfs, snp_mapfs, mapping_table, ...) 
+   return(f1)
+}
+
+plot_gene_PIP_nonSNPpip <- function(configtag, runtag,  simutags, LD_type, mapping_table, ...){
+   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
+   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_", LD_type, ".nonSNPpip.finemap_regions_res.RDS")
+   snp_mapfs <- paste0(results_dir, runtag, "_simu",simutags, "_", LD_type, ".snp_map.RDS")
+   f1 <- caliPIP_plot_multi_omics(phenofs, susieIfs, snp_mapfs, mapping_table, ...) 
+   return(f1)
+}
+```
+
+### PIP Calibration Plot of molecular traits
+```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+f1 <- plot_PIP_estimatedL(results_dir, runtag, simutags, "UKBBLD", main = "Estimated L")
+f2 <- plot_PIP_nonSNPpip(results_dir, runtag, simutags, "UKBBLD", main = "nonSNPpip")
+gridExtra::grid.arrange(f1, f2, ncol = 2)
+```
+
+### PIP Calibration Plot of genes
+```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+mapping_table <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
+f1 <- plot_gene_PIP_estimatedL(results_dir, runtag, simutags, "UKBBLD", mapping_table, main = "Estimated L")
+f2 <- plot_gene_PIP_nonSNPpip(results_dir, runtag, simutags, "UKBBLD", mapping_table, main = "nonSNPpip")
+gridExtra::grid.arrange(f1, f2, ncol = 2)
+```
+
+## Simulation 3: Seven tissues correlated tissues expression trait
+A simulation of seven correlated tissues is conducted to evaluate cTWAS performance (parameter estimation, PIP calibration ...). Seven tissues used in this simulation are Artery Aorta, Spleen, Skin (not sun exposed suprapubic), Lung, Adipose Subcutaneous, Pancreas, Heart Artial Appendage. Pairwise correlation of gene expression are with 0.6-0.8. The first three tissues are set to be causal, each with 3% PVE, 0.9% $\pi$ for causal tissues, 0% PVE, 0% $\pi$ for non-causal tissues and 30% PVE, 2.5e-4 $\pi$ for SNP.
+
+### Comparing number of regions screened
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_seven_correlated_tissues_expression/"
+runtag = "7corr"
+simutags <- paste(1, 1:5, sep = "-")
+num_estimatedL <- c()
+for(simutag in simutags){
+    regions <- readRDS(paste0(results_dir,runtag,"_simu",simutag,"_","UKBBLD",".estimatedL.screened_region_data.RDS"))
+    num_estimatedL <- c(num_estimatedL,length(regions))
+}
+num_nonSNPpip <- c()
+for(simutag in simutags){
+    regions <- readRDS(paste0(results_dir,runtag,"_simu",simutag,"_","UKBBLD",".nonSNPpip.screened_region_data.RDS"))
+    num_nonSNPpip <- c(num_nonSNPpip,length(regions))
+}
+data.frame(cbind(simutags,num_estimatedL,num_nonSNPpip))
+```
+
+### Number of causal genes detected
+```{r echo=FALSE}
+check_power(results_dir, runtag, simutags, "UKBBLD", 'estimatedL', PIP_threshold = 0.8)
+```
+
+```{r echo=FALSE}
+check_power(results_dir, runtag, simutags, "UKBBLD", 'nonSNPpip', PIP_threshold = 0.8)
+```
+
+### Estimated parameters
+```{r, fig.width= 12, fig.height= 4, message=FALSE, warning=FALSE, echo=FALSE}
+param_UKBB_df <- load_parameters(results_dir, runtag, simutags, "UKBBLD")
+par(mfrow = c(1, 3))
+y1 <- param_UKBB_df$`prior_Artery_Aorta|expression`
+y2 <- param_UKBB_df$`prior_Spleen|expression`
+y3 <- param_UKBB_df$`prior_Skin_Not_Sun_Exposed_Suprapubic|expression`
+y4 <- param_UKBB_df$`prior_Lung|expression`
+y5 <- param_UKBB_df$`prior_Adipose_Subcutaneous|expression`
+y6 <- param_UKBB_df$`prior_Pancreas|expression`
+y7 <- param_UKBB_df$`prior_Heart_Atrial_Appendage|expression`
+truth <- rbind(c(1,0.009),c(2,0.009),c(3,0.009),c(4,0),c(5,0),c(6,0),c(7,0))
+est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6),cbind(7,y7))
+plot_par_7(truth,est,xlabels = c("Artery","Spleen","Skin","Lung","Adipose","Pancreas","Heart"),ylim=c(0,0.025),ylab="Prior inclusion")
+
+y1 <- param_UKBB_df$`pve_Artery_Aorta|expression`
+y2 <- param_UKBB_df$`pve_Spleen|expression`
+y3 <- param_UKBB_df$`pve_Skin_Not_Sun_Exposed_Suprapubic|expression`
+y4 <- param_UKBB_df$`pve_Lung|expression`
+y5 <- param_UKBB_df$`pve_Adipose_Subcutaneous|expression`
+y6 <- param_UKBB_df$`pve_Pancreas|expression`
+y7 <- param_UKBB_df$`pve_Heart_Atrial_Appendage|expression`
+
+truth <- rbind(c(1,0.03),c(2,0.03),c(3,0.03),c(4,0),c(5,0),c(6,0),c(7,0))
+est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6),cbind(7,y7))
+plot_par_7(truth,est,xlabels = c("Artery","Spleen","Skin","Lung","Adipose","Pancreas","Heart"),ylim=c(0,0.06),ylab="PVE")
+
+y1 <- param_UKBB_df$`enrichment_Artery_Aorta|expression`
+y2 <- param_UKBB_df$`enrichment_Spleen|expression`
+y3 <- param_UKBB_df$`enrichment_Skin_Not_Sun_Exposed_Suprapubic|expression`
+y4 <- param_UKBB_df$`enrichment_Lung|expression`
+y5 <- param_UKBB_df$`enrichment_Adipose_Subcutaneous|expression`
+y6 <- param_UKBB_df$`enrichment_Pancreas|expression`
+y7 <- param_UKBB_df$`enrichment_Heart_Atrial_Appendage|expression`
+  
+truth <- rbind(c(1,36),c(2,36),c(3,36),c(4,0),c(5,0),c(6,0),c(7,0))
+est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6,y6),cbind(7,y7))
+plot_par_7(truth,est,xlabels = c("Artery","Spleen","Skin","Lung","Adipose","Pancreas","Heart"),ylim=c(0,250),ylab= "Enrichment")
+```
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+plot_PIP_estimatedL <- function(results_dir, runtag,  simutags, LD_type, ...){
+   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
+   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_", LD_type, ".estimatedL.finemap_regions_res.RDS")
+   f1 <- caliPIP_plot_csindex(phenofs, susieIfs, ...) 
+   return(f1)
+}
+
+plot_PIP_nonSNPpip <- function(results_dir, runtag,  simutags, LD_type, ...){
+   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
+   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_", LD_type, ".nonSNPpip.finemap_regions_res.RDS")
+   f1 <- caliPIP_plot_csindex(phenofs, susieIfs, ...) 
+   return(f1)
+}
+
+plot_gene_PIP_estimatedL <- function(configtag, runtag,  simutags, LD_type, ...){
+   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
+   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_", LD_type, ".estimatedL.finemap_regions_res.RDS")
+   f1 <- caliPIP_plot_multi_tissues(phenofs, susieIfs, ...) 
+   return(f1)
+}
+
+plot_gene_PIP_nonSNPpip <- function(configtag, runtag,  simutags, LD_type, ...){
+   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
+   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_", LD_type, ".nonSNPpip.finemap_regions_res.RDS")
+   f1 <- caliPIP_plot_multi_tissues(phenofs, susieIfs, ...) 
+   return(f1)
+}
+```
+
+### PIP Calibration Plot of molecular traits
+```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+f1 <- plot_PIP_estimatedL(results_dir, runtag, simutags, "UKBBLD", main = "Estimated L")
+f2 <- plot_PIP_nonSNPpip(results_dir, runtag, simutags, "UKBBLD", main = "nonSNPpip")
+gridExtra::grid.arrange(f1, f2, ncol = 2)
+```
+
+### PIP Calibration Plot of genes
+```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+f1 <- plot_gene_PIP_estimatedL(results_dir, runtag, simutags, "UKBBLD", main = "Estimated L")
+f2 <- plot_gene_PIP_nonSNPpip(results_dir, runtag, simutags, "UKBBLD", main = "nonSNPpip")
+gridExtra::grid.arrange(f1, f2, ncol = 2)
+```
