@@ -70,28 +70,41 @@ plot_3venn <- function(es, esra, all8) {
 
 plot_scatter <- function(overlap) {
   
-  p1 <- ggplot(data = overlap, aes(x=susie_pip_predictdb, y = susie_pip_munro)) +
+  overlap$pip_diff <- abs(overlap$susie_pip_predictdb - overlap$susie_pip_munro)
+  
+  overlap$pip_diff_category <- cut(overlap$pip_diff, breaks = c(-Inf, 0.3, 0.5, Inf), 
+                                 labels = c("0~0.3", "0.3~0.5", "0.5+"))
+  
+  p1 <- ggplot(data = overlap, aes(x = susie_pip_predictdb, y = susie_pip_munro, 
+                                 color = pip_diff_category)) +
         geom_point() +
+        scale_color_manual(values = c("0~0.3" = scales::alpha("blue", 0.3), 
+                                      "0.3~0.5" = "orange", 
+                                      "0.5+" = "red")) +
         ggtitle("Comparing susie PIPs") + 
         xlab("susie pip -- predictdb") +
         ylab("susie pip -- munro") +
-        theme_minimal()
+        theme_minimal() +
+        labs(color = "PIP diff") +
+        guides(color = guide_legend(override.aes = list(size = 3)))
 
-
-  p2 <- ggplot(data = overlap, aes(x=z_predictdb, y = z_munro)) +
+# Modify p2 to color points based on pip_diff categories with alpha for blue
+  p2 <- ggplot(data = overlap, aes(x = z_predictdb, y = z_munro, 
+                                 color = pip_diff_category)) +
         geom_point() +
+        scale_color_manual(values = c("0~0.3" = scales::alpha("blue", 0.3), 
+                                     "0.3~0.5" = "orange", 
+                                     "0.5+" = "red")) +
         ggtitle("Comparing zscores") + 
         xlab("zscores -- predictdb") +
         ylab("zscores -- munro") +
-        theme_minimal()
+        theme_minimal() +
+        labs(color = "PIP diff") +
+        guides(color = guide_legend(override.aes = list(size = 3)))
   
- # # return(list(p1,p2))
- #  combined_plot <- p1 + p2
- #  return(combined_plot)
+        combined_plot <- grid.arrange(p1, p2, ncol = 2)
   
-  combined_plot <- grid.arrange(p1, p2, ncol = 2)
-  
-  return(combined_plot)
+        return(combined_plot)
 }
 
 
