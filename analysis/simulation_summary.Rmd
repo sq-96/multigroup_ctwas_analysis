@@ -14,7 +14,7 @@ source("/project/xinhe/shengqian/cTWAS_simulation/code/summarize_ctwas_plots.R")
 ```
 
 
-## Simulation 1: Four tissues expression trait simulation
+## Simulation 1: Four tissues expression trait
 Four expression traits from PredictDB are used in this study, which are Liver, Adipose, Lung and stomach. Liver and Adipose are selected as causal tissues, each with 3% PVE and 0.9% prior. Lung and stomach are non-causal tissues with 0% PVE.
 
 ### Comparing number of regions screened
@@ -103,20 +103,20 @@ plot_gene_PIP_nonSNPpip <- function(configtag, runtag,  simutags, LD_type, ...){
 ```
 
 ### PIP Calibration Plot of molecular traits
-```{r, fig.width= 8, fig.height= 4, echo=FALSE, warning=FALSE}
+```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE, warning=FALSE}
 f1 <- plot_PIP_estimatedL(results_dir, runtag, simutags, "UKBBLD", main = "Estimated L")
 f2 <- plot_PIP_nonSNPpip(results_dir, runtag, simutags, "UKBBLD", main = "nonSNPpip")
 gridExtra::grid.arrange(f1, f2, ncol = 2)
 ```
 
 ### PIP Calibration Plot of genes
-```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE,warning=FALSE}
+```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE, warning=FALSE}
 f1 <- plot_gene_PIP_estimatedL(results_dir, runtag, simutags, "UKBBLD", main = "Estimated L")
 f2 <- plot_gene_PIP_nonSNPpip(results_dir, runtag, simutags, "UKBBLD", main = "nonSNPpip")
 gridExtra::grid.arrange(f1, f2, ncol = 2)
 ```
 
-## Simulation 2: Three tissues expression and splicing trait simulation
+## Simulation 2: Three tissues expression and splicing trait
 A simulation of expression and splicing traits from three tissues is conducted to evaluate cTWAS performance (parameter estimation, PIP calibration ...). Three tissues used in this simulation are Liver, Adipose and Lung. Only expression and splicing from liver are causal, each with 3% PVE, 0.9% $\pi$. SNPs have 30% PVE, 2.5e-4 $\pi$.
 
 ### Comparing number of regions screened
@@ -214,21 +214,21 @@ plot_gene_PIP_nonSNPpip <- function(configtag, runtag,  simutags, LD_type, mappi
 ```
 
 ### PIP Calibration Plot of molecular traits
-```{r, fig.width= 8, fig.height= 4, echo=FALSE, warning=FALSE}
+```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE, warning=FALSE}
 f1 <- plot_PIP_estimatedL(results_dir, runtag, simutags, "UKBBLD", main = "Estimated L")
 f2 <- plot_PIP_nonSNPpip(results_dir, runtag, simutags, "UKBBLD", main = "nonSNPpip")
 gridExtra::grid.arrange(f1, f2, ncol = 2)
 ```
 
 ### PIP Calibration Plot of genes
-```{r, fig.width= 8, fig.height= 4, echo=FALSE, warning=FALSE}
+```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE, warning=FALSE}
 mapping_table <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
 f1 <- plot_gene_PIP_estimatedL(results_dir, runtag, simutags, "UKBBLD", mapping_table, main = "Estimated L")
 f2 <- plot_gene_PIP_nonSNPpip(results_dir, runtag, simutags, "UKBBLD", mapping_table, main = "nonSNPpip")
 gridExtra::grid.arrange(f1, f2, ncol = 2)
 ```
 
-## Simulation 3: Seven tissues correlated tissues expression trait simulation
+## Simulation 3: Seven tissues correlated tissues expression trait
 A simulation of seven correlated tissues is conducted to evaluate cTWAS performance (parameter estimation, PIP calibration ...). Seven tissues used in this simulation are Artery Aorta, Spleen, Skin (not sun exposed suprapubic), Lung, Adipose Subcutaneous, Pancreas, Heart Artial Appendage. Pairwise correlation of gene expression are with 0.6-0.8. The first three tissues are set to be causal, each with 3% PVE, 0.9% $\pi$ for causal tissues, 0% PVE, 0% $\pi$ for non-causal tissues and 30% PVE, 2.5e-4 $\pi$ for SNP.
 
 ### Comparing number of regions screened
@@ -328,14 +328,14 @@ plot_gene_PIP_nonSNPpip <- function(configtag, runtag,  simutags, LD_type, ...){
 ```
 
 ### PIP Calibration Plot of molecular traits
-```{r, fig.width= 8, fig.height= 4, echo=FALSE, warning=FALSE}
+```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE, warning=FALSE}
 f1 <- plot_PIP_estimatedL(results_dir, runtag, simutags, "UKBBLD", main = "Estimated L")
 f2 <- plot_PIP_nonSNPpip(results_dir, runtag, simutags, "UKBBLD", main = "nonSNPpip")
 gridExtra::grid.arrange(f1, f2, ncol = 2)
 ```
 
 ### PIP Calibration Plot of genes
-```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE,warning=FALSE}
+```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE, warning=FALSE}
 f1 <- plot_gene_PIP_estimatedL(results_dir, runtag, simutags, "UKBBLD", main = "Estimated L")
 f2 <- plot_gene_PIP_nonSNPpip(results_dir, runtag, simutags, "UKBBLD", main = "nonSNPpip")
 gridExtra::grid.arrange(f1, f2, ncol = 2)
