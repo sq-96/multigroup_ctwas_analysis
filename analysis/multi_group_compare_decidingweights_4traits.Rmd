@@ -1,0 +1,1307 @@
+---
+title: "Comparing results from predictdb eQTL / Munro eQTL / predictdb eQTL + sQTL / predictdb eQTL + sQTL + Munro rsQTL + apaQTL / all 8 weights"
+author: "XSun"
+date: "2024-10-02"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+    toc: true
+---
+
+```{r, echo=T, message=FALSE, warning=FALSE}
+library(ctwas)
+library(EnsDb.Hsapiens.v86)
+library(VennDiagram)
+library(ggplot2)
+library(gridExtra)
+library(pheatmap)
+library(dplyr)
+
+ens_db <- EnsDb.Hsapiens.v86
+
+mapping_predictdb <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
+mapping_munro <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/Munro_mapping.RDS")
+mapping_two <- rbind(mapping_predictdb,mapping_munro)
+
+load("/project2/xinhe/shared_data/multigroup_ctwas/gwas/samplesize.rdata")
+
+
+colors <- c("#1b9e77", "#d95f02", "#7570b3", "#e7298a", "#66a61e", 
+               "#e6ab02", "#a6761d", "#666666", "#a6cee3")
+
+plot_venn <- function(npred,nmunro,noverlap) {
+  
+  venn.plot <- draw.pairwise.venn(
+    area1 = npred,          # Size of Group A
+    area2 = nmunro,          # Size of Group B
+    cross.area = noverlap,     # Overlap between Group A and Group B
+    category = c("Predictdb", "Munro"),  # Labels for the groups
+    fill = c("red", "blue"),             # Colors for the groups
+    lty = "blank",                       # Line type for the circles
+    cex = 2,                             # Font size for the numbers
+    cat.cex = 2                          # Font size for the labels
+  )
+  
+  return(venn.plot)
+  
+}
+
+plot_3venn <- function(es, esra, all8) {
+  
+  venn.plot <- draw.triple.venn(
+      area1 = length(es),
+      area2 = length(esra),
+      area3 = length(all8),
+      n12 = length(intersect(es, esra)),
+      n23 = length(intersect(esra, all8)),
+      n13 = length(intersect(es, all8)),
+      n123 = length(Reduce(intersect, list(es, esra, all8))),
+      category = c("e+s", "e+s+rs+apa", "8weights"),
+      fill = c("red", "green", "blue"),
+      lty = "dashed",
+      cex = 2,
+      cat.cex = 1.5,
+      cat.col = c("red", "green", "blue")
+      )
+  
+  return(venn.plot)
+  
+}
+
+plot_scatter <- function(overlap) {
+  
+  overlap$pip_diff <- abs(overlap$susie_pip_predictdb - overlap$susie_pip_munro)
+  
+  overlap$pip_diff_category <- cut(overlap$pip_diff, breaks = c(-Inf, 0.3, 0.5, Inf), 
+                                 labels = c("0~0.3", "0.3~0.5", "0.5+"))
+  
+  p1 <- ggplot(data = overlap, aes(x = susie_pip_predictdb, y = susie_pip_munro, 
+                                 color = pip_diff_category)) +
+        geom_point() +
+        scale_color_manual(values = c("0~0.3" = scales::alpha("blue", 0.3), 
+                                      "0.3~0.5" = "orange", 
+                                      "0.5+" = "red")) +
+        ggtitle("Comparing susie PIPs") + 
+        xlab("susie pip -- predictdb") +
+        ylab("susie pip -- munro") +
+        theme_minimal() +
+        labs(color = "PIP diff") +
+        guides(color = guide_legend(override.aes = list(size = 3)))
+
+# Modify p2 to color points based on pip_diff categories with alpha for blue
+  p2 <- ggplot(data = overlap, aes(x = z_predictdb, y = z_munro, 
+                                 color = pip_diff_category)) +
+        geom_point() +
+        scale_color_manual(values = c("0~0.3" = scales::alpha("blue", 0.3), 
+                                     "0.3~0.5" = "orange", 
+                                     "0.5+" = "red")) +
+        ggtitle("Comparing zscores") + 
+        xlab("zscores -- predictdb") +
+        ylab("zscores -- munro") +
+        theme_minimal() +
+        labs(color = "PIP diff") +
+        guides(color = guide_legend(override.aes = list(size = 3)))
+  
+        combined_plot <- grid.arrange(p1, p2, ncol = 2)
+  
+        return(combined_plot)
+}
+
+
+plot_heatmap <- function(heatmap_data, main) {
+  
+  rownames(heatmap_data) <- heatmap_data$gene_name
+  heatmap_data <- heatmap_data %>% dplyr::select(-gene_name, -combined_pip)
+  
+  heatmap_matrix <- as.matrix(heatmap_data)
+  p <- pheatmap(heatmap_matrix,
+         cluster_rows = F,   # Cluster the rows (genes)
+         cluster_cols = F,   # Cluster the columns (QTL types)
+         color = colorRampPalette(c("white", "red"))(50), # Color gradient
+         display_numbers = TRUE, # Display numbers in cells
+         main = main,labels_row = rownames(heatmap_data), silent = T)
+  
+  return(p)
+}
+
+rename_heatmap_columns <- function(heatmap_data, column_order) {
+  # Select columns that are in the column_order and exist in heatmap_data
+  selected_columns <- intersect(column_order, colnames(heatmap_data))
+  heatmap_data <- heatmap_data[, selected_columns]
+  
+  # Initialize new_column_names as a copy of selected_columns
+  new_column_names <- selected_columns
+  
+  # Rename the columns based on specific conditions
+  for (col in colnames(heatmap_data)[3:ncol(heatmap_data)]) {
+    if (grepl("rsQTL|apaQTL|isoQTL|eQTL|tssQTL|sQTL", col) && !grepl("eQTL_pred|sQTL_pred", col)) {
+      new_column_names[new_column_names == col] <- paste0(col, "_munro")
+    }
+  }
+  
+  # Assign the new column names to heatmap_data
+  colnames(heatmap_data) <- new_column_names
+  
+  return(heatmap_data)
+}
+
+```
+
+
+# Settings
+
+## 6 modalities from Munro 
+
+1. Weight processing: 
+
+PredictDB:
+
+all the PredictDB are converted from FUSION weights
+
+- drop_strand_ambig = TRUE,
+- scale_by_ld_variance = F (FUSION converted weights)
+- load_predictdb_LD = F,  
+
+2. Parameter estimation and fine-mapping
+
+- niter_prefit = 5,
+- niter = 30(default),
+- L: determined by uniform susie,
+- group_prior_var_structure = "shared_type",
+- maxSNP = 20000,
+- min_nonSNP_PIP = 0.5,
+
+## weights from predictdb 
+
+1. Weight processing: 
+
+PredictDB (eqtl, sqtl)
+
+- drop_strand_ambig = TRUE,
+- scale_by_ld_variance = T
+- load_predictdb_LD = F,  
+
+2. Parameter estimation and fine-mapping
+
+- group_prior_var_structure = "shared_type", 
+- filter_L = TRUE,
+- filter_nonSNP_PIP = FALSE,
+- min_nonSNP_PIP = 0.5,
+- min_abs_corr = 0.1, 
+
+mem: 100g 10cores
+
+
+
+# LDL-ukb-d-30780_irnt
+
+## Comparing predictdb eQTL VS munro eQTL
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+trait <- "LDL-ukb-d-30780_irnt"
+tissue <- "Liver"
+### predictdb
+results_dir_epred <- paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/results/",trait,"/epred/")
+
+ctwas_res_epred <- readRDS(paste0(results_dir_epred,trait,".ctwas.res.RDS"))
+snp_map_epred  <- readRDS(paste0(results_dir_epred,trait,".snp_map.RDS"))
+finemap_res_epred <- ctwas_res_epred$finemap_res
+finemap_res_epred$molecular_id <- get_molecular_ids(finemap_res_epred)
+
+finemap_res_epred <- anno_finemap_res(finemap_res_epred,
+                              snp_map = snp_map_epred,
+                              mapping_table = mapping_predictdb,
+                              add_gene_annot = TRUE,
+                              map_by = "molecular_id",
+                              drop_unmapped = TRUE,
+                              add_position = TRUE,
+                              use_gene_pos = "mid")
+finemap_res_gene_epred <- finemap_res_epred[finemap_res_epred$type !="SNP",] 
+
+### munro
+results_dir_emunro <- paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/results/",trait,"/emunro/")
+
+ctwas_res_emunro <- readRDS(paste0(results_dir_emunro,trait,".ctwas.res.RDS"))
+snp_map_emunro  <- readRDS(paste0(results_dir_emunro,trait,".snp_map.RDS"))
+finemap_res_emunro <- ctwas_res_emunro$finemap_res
+finemap_res_emunro$molecular_id <- get_molecular_ids(finemap_res_emunro)
+
+finemap_res_emunro <- anno_finemap_res(finemap_res_emunro,
+                              snp_map = snp_map_emunro,
+                              mapping_table = mapping_munro,
+                              add_gene_annot = TRUE,
+                              map_by = "molecular_id",
+                              drop_unmapped = TRUE,
+                              add_position = TRUE,
+                              use_gene_pos = "mid")
+finemap_res_gene_emunro <- finemap_res_emunro[finemap_res_emunro$type !="SNP",] 
+
+overlap <- merge(finemap_res_gene_epred, finemap_res_gene_emunro, by = "gene_name")
+overlap <- overlap[,c("gene_name","type.x","context.x","region_id.x","z.x","susie_pip.x","z.y","susie_pip.y")]
+colnames(overlap) <- c("gene_name","type","context","region_id","z_predictdb","susie_pip_predictdb","z_munro","susie_pip_munro")
+
+DT::datatable(overlap,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Overlapped genes'),options = list(pageLength = 10) )
+
+venn <- plot_venn(npred = nrow(finemap_res_gene_epred), nmunro = nrow(finemap_res_gene_emunro), noverlap = nrow(overlap))
+```
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=10, fig.height=5}
+print("For the overlapped genes")
+
+scatter_plot <- plot_scatter(overlap = overlap)
+```
+
+
+
+## Comparing predictdb epjoint VS predictdb e+p + Munro rs+apa VS all 8 weights
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+gwas_n <- samplesize[trait]
+
+results_dir_espred <- paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/results/",trait,"/espred/")
+
+snp_map_espred <- readRDS(paste0(results_dir_espred,trait,".snp_map.RDS"))
+ctwas_res_espred <- readRDS(paste0(results_dir_espred,trait,".ctwas.res.RDS"))
+
+param_espred <- ctwas_res_espred$param
+finemap_res_espred <- ctwas_res_espred$finemap_res
+
+
+p_conv_espred <- make_convergence_plots(param_espred, gwas_n, ncol = 1, colors = colors)
+ctwas_parameters_espred <- summarize_param(param_espred, gwas_n)
+
+finemap_res_espred$molecular_id <- get_molecular_ids(finemap_res_espred)
+finemap_res_espred <- anno_finemap_res(finemap_res_espred,
+                              snp_map = snp_map_espred,
+                              mapping_table = mapping_two,
+                              add_gene_annot = TRUE,
+                              map_by = "molecular_id",
+                              drop_unmapped = TRUE,
+                              add_position = TRUE,
+                              use_gene_pos = "mid")
+
+combined_pip_by_type_espred <- combine_gene_pips(finemap_res =finemap_res_espred,
+                                  group_by = "gene_name",
+                                  by = "type", 
+                                  method = "combine_cs",
+                                  filter_cs = T )
+
+```
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+results_dir_4W <- paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/results/",trait,"/4W/")
+
+snp_map_4W <- readRDS(paste0(results_dir_4W,trait,".snp_map.RDS"))
+ctwas_res_4W <- readRDS(paste0(results_dir_4W,trait,".ctwas.res.RDS"))
+
+param_4W <- ctwas_res_4W$param
+finemap_res_4W <- ctwas_res_4W$finemap_res
+
+p_conv_4W <- make_convergence_plots(param_4W, gwas_n, ncol = 1, colors = colors)
+ctwas_parameters_4W <- summarize_param(param_4W, gwas_n)
+
+finemap_res_4W$molecular_id <- get_molecular_ids(finemap_res_4W)
+finemap_res_4W <- anno_finemap_res(finemap_res_4W,
+                              snp_map = snp_map_4W,
+                              mapping_table = mapping_two,
+                              add_gene_annot = TRUE,
+                              map_by = "molecular_id",
+                              drop_unmapped = TRUE,
+                              add_position = TRUE,
+                              use_gene_pos = "mid")
+
+combined_pip_by_type_4W <- combine_gene_pips(finemap_res =finemap_res_4W,
+                                  group_by = "gene_name",
+                                  by = "type", 
+                                  method = "combine_cs",
+                                  filter_cs = T )
+
+```
+
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+results_dir_8W <- paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/results/",trait,"/8W/")
+
+snp_map_8W <- readRDS(paste0(results_dir_8W,trait,".snp_map.RDS"))
+ctwas_res_8W <- readRDS(paste0(results_dir_8W,trait,".ctwas.res.RDS"))
+
+param_8W <- ctwas_res_8W$param
+finemap_res_8W <- ctwas_res_8W$finemap_res
+
+p_conv_8W <- make_convergence_plots(param_8W, gwas_n, ncol = 1, colors = colors)
+
+ctwas_parameters_8W <- summarize_param(param_8W, gwas_n)
+
+
+finemap_res_8W$molecular_id <- get_molecular_ids(finemap_res_8W)
+finemap_res_8W <- anno_finemap_res(finemap_res_8W,
+                              snp_map = snp_map_8W,
+                              mapping_table = mapping_two,
+                              add_gene_annot = TRUE,
+                              map_by = "molecular_id",
+                              drop_unmapped = TRUE,
+                              add_position = TRUE,
+                              use_gene_pos = "mid")
+
+finemap_res_8W$type <- ifelse(grepl("_pred$", finemap_res_8W$context),
+                                         paste0(finemap_res_8W$type, "_pred"),
+                                         finemap_res_8W$type)
+
+combined_pip_by_type_8W <- combine_gene_pips(finemap_res =finemap_res_8W,
+                                  group_by = "gene_name",
+                                  by = "type", 
+                                  method = "combine_cs",
+                                  filter_cs = T )
+
+```
+
+### Parameters
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=12}
+
+grid.arrange(p_conv_espred,p_conv_4W,p_conv_8W, ncol = 3)
+
+
+######pve
+group_pve_espred <- ctwas_parameters_espred$group_pve
+group_pve_espred <- group_pve_espred[-length(group_pve_espred)]
+group_pve_espred <- c(group_pve_espred, rep(NA,6))
+group_pve_espred <- c(group_pve_espred, ctwas_parameters_espred$total_pve)
+names(group_pve_espred) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","isoQTL_munro","tssQTL_munro","eQTL_munro","sQTL_munro","TOTAL")
+
+group_pve_4W <- ctwas_parameters_4W$group_pve
+group_pve_4W <- group_pve_4W[-length(group_pve_4W)]
+group_pve_4W <- c(group_pve_4W, rep(NA,4))
+group_pve_4W <- c(group_pve_4W, ctwas_parameters_4W$total_pve)
+names(group_pve_4W) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","isoQTL_munro","tssQTL_munro","eQTL_munro","sQTL_munro","TOTAL")
+
+group_pve_8W <- ctwas_parameters_8W$group_pve
+group_pve_8W <- group_pve_8W[-length(group_pve_8W)]
+group_pve_8W <- group_pve_8W[c(paste0(tissue,"_pred|eQTL"),paste0(tissue,"_pred|sQTL"),paste0(tissue,"|apaQTL"),paste0(tissue,"|rsQTL"),paste0(tissue,"|isoQTL"),paste0(tissue,"|tssQTL"),paste0(tissue,"|eQTL"),paste0(tissue,"|sQTL"))]
+group_pve_8W <- c(group_pve_8W, ctwas_parameters_8W$total_pve)
+names(group_pve_8W) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","isoQTL_munro","tssQTL_munro","eQTL_munro","sQTL_munro","TOTAL")
+
+grouppve <- cbind(group_pve_espred,group_pve_4W,group_pve_8W)
+grouppve <- round(grouppve,digits = 4)
+
+######size
+group_size_espred <- ctwas_parameters_espred$group_size
+group_size_espred <- group_size_espred[-length(group_size_espred)]
+group_size_espred <- c(group_size_espred, rep(NA,6))
+names(group_size_espred) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","isoQTL_munro","tssQTL_munro","eQTL_munro","sQTL_munro")
+
+group_size_4W <- ctwas_parameters_4W$group_size
+group_size_4W <- group_size_4W[-length(group_size_4W)]
+group_size_4W <- c(group_size_4W, rep(NA,4))
+names(group_size_4W) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","isoQTL_munro","tssQTL_munro","eQTL_munro","sQTL_munro")
+
+group_size_8W <- ctwas_parameters_8W$group_size
+group_size_8W <- group_size_8W[-length(group_size_8W)]
+group_size_8W <- group_size_8W[c(paste0(tissue,"_pred|eQTL"),paste0(tissue,"_pred|sQTL"),paste0(tissue,"|apaQTL"),paste0(tissue,"|rsQTL"),paste0(tissue,"|isoQTL"),paste0(tissue,"|tssQTL"),paste0(tissue,"|eQTL"),paste0(tissue,"|sQTL"))]
+names(group_size_8W) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","isoQTL_munro","tssQTL_munro","eQTL_munro","sQTL_munro")
+
+groupsize <- cbind(group_size_espred,group_size_4W,group_size_8W)
+
+group_info <- cbind(grouppve,rbind(groupsize,c(rep(NA,3))))
+
+DT::datatable(group_info,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Group PVE and Group Size'),options = list(pageLength = 10) )
+
+```
+
+### Fine-mapping results
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+combined_sig_espred <- combined_pip_by_type_espred[combined_pip_by_type_espred$combined_pip > 0.8,]
+combined_sig_4W <- combined_pip_by_type_4W[combined_pip_by_type_4W$combined_pip > 0.8,]
+combined_sig_8W <- combined_pip_by_type_8W[combined_pip_by_type_8W$combined_pip > 0.8,]
+
+sprintf("# of genes with PIP > 0.8 = %s -- predictdb e +s", nrow(combined_sig_espred))
+sprintf("# of genes with PIP > 0.8 = %s -- predictdb e + s + Munro apa + rs", nrow(combined_sig_4W))
+sprintf("# of genes with PIP > 0.8 = %s -- all 8 weights", nrow(combined_sig_8W))
+
+# DT::datatable(combined_sig_espred,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','High PIP genes -- predictdb e+s'),options = list(pageLength = 10) )
+# DT::datatable(combined_sig_4W,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','High PIP genes -- predictdb e+s +  Munro apa + rs'),options = list(pageLength = 10) )
+# DT::datatable(combined_sig_8W,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','High PIP genes -- all 8 weights'),options = list(pageLength = 10) )
+
+venn.plot <- plot_3venn(es = combined_sig_espred$gene_name,esra = combined_sig_4W$gene_name,all8 = combined_sig_8W$gene_name)
+```
+
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=24, fig.height=14}
+###1
+heatmap_data <- combined_sig_8W[!combined_sig_8W$gene_name %in%combined_sig_espred$gene_name, ]
+column_order <- c("gene_name","combined_pip",
+                  "eQTL_pred_pip", "sQTL_pred_pip", "rsQTL_pip","apaQTL_pip",
+                  "isoQTL_pip", "eQTL_pip","tssQTL_pip","sQTL_pip")
+heatmap_data <- heatmap_data[,column_order]
+colnames(heatmap_data) <- c("gene_name","combined_pip",
+                  "eQTL_pred_pip", "sQTL_pred_pip", "rsQTL_munro_pip","apaQTL_munro_pip",
+                  "isoQTL_munro_pip", "eQTL_munro_pip","tssQTL_munro_pip","sQTL_munro_pip")
+p1 <- plot_heatmap(heatmap_data = heatmap_data,main = "PIP partition for the genes reported by 8weight setting but not by e+s setting")
+
+###2
+heatmap_data <- combined_sig_4W[!combined_sig_4W$gene_name %in%combined_sig_espred$gene_name, ]
+column_order <- c("gene_name","combined_pip",
+                  "eQTL_pip", "sQTL_pip", "rsQTL_pip","apaQTL_pip")
+heatmap_data <- heatmap_data[,column_order]
+colnames(heatmap_data) <- c("gene_name","combined_pip",
+                  "eQTL_pred_pip", "sQTL_pred_pip", "rsQTL_munro_pip","apaQTL_munro_pip")
+p2 <- plot_heatmap(heatmap_data = heatmap_data,main = "PIP partition for the genes reported by 4weight setting but not by e+s setting")
+
+###3
+heatmap_data <- combined_sig_8W[!combined_sig_8W$gene_name %in%combined_sig_4W$gene_name, ]
+column_order <- c("gene_name","combined_pip",
+                  "eQTL_pred_pip", "sQTL_pred_pip", "rsQTL_pip","apaQTL_pip",
+                  "isoQTL_pip", "eQTL_pip","tssQTL_pip","sQTL_pip")
+heatmap_data <- heatmap_data[,column_order]
+colnames(heatmap_data) <- c("gene_name","combined_pip",
+                  "eQTL_pred_pip", "sQTL_pred_pip", "rsQTL_munro_pip","apaQTL_munro_pip",
+                  "isoQTL_munro_pip", "eQTL_munro_pip","tssQTL_munro_pip","sQTL_munro_pip")
+p3 <- plot_heatmap(heatmap_data = heatmap_data,main = "PIP partition for the genes reported by 8weight setting but not by 4weight setting")
+
+g1 <- p1$gtable
+g2 <- p2$gtable
+g3 <- p3$gtable
+grid.arrange(g1, g2, g3, ncol=3)
+
+```
+
+
+
+
+
+
+# IBD-ebi-a-GCST004131
+
+## Comparing predictdb eQTL VS munro eQTL
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+trait <- "IBD-ebi-a-GCST004131"
+tissue <- "Colon_Transverse"
+### predictdb
+results_dir_epred <- paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/results/",trait,"/epred/")
+
+ctwas_res_epred <- readRDS(paste0(results_dir_epred,trait,".ctwas.res.RDS"))
+snp_map_epred  <- readRDS(paste0(results_dir_epred,trait,".snp_map.RDS"))
+finemap_res_epred <- ctwas_res_epred$finemap_res
+finemap_res_epred$molecular_id <- get_molecular_ids(finemap_res_epred)
+
+finemap_res_epred <- anno_finemap_res(finemap_res_epred,
+                              snp_map = snp_map_epred,
+                              mapping_table = mapping_predictdb,
+                              add_gene_annot = TRUE,
+                              map_by = "molecular_id",
+                              drop_unmapped = TRUE,
+                              add_position = TRUE,
+                              use_gene_pos = "mid")
+finemap_res_gene_epred <- finemap_res_epred[finemap_res_epred$type !="SNP",] 
+
+### munro
+results_dir_emunro <- paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/results/",trait,"/emunro/")
+
+ctwas_res_emunro <- readRDS(paste0(results_dir_emunro,trait,".ctwas.res.RDS"))
+snp_map_emunro  <- readRDS(paste0(results_dir_emunro,trait,".snp_map.RDS"))
+finemap_res_emunro <- ctwas_res_emunro$finemap_res
+finemap_res_emunro$molecular_id <- get_molecular_ids(finemap_res_emunro)
+
+finemap_res_emunro <- anno_finemap_res(finemap_res_emunro,
+                              snp_map = snp_map_emunro,
+                              mapping_table = mapping_munro,
+                              add_gene_annot = TRUE,
+                              map_by = "molecular_id",
+                              drop_unmapped = TRUE,
+                              add_position = TRUE,
+                              use_gene_pos = "mid")
+finemap_res_gene_emunro <- finemap_res_emunro[finemap_res_emunro$type !="SNP",] 
+
+overlap <- merge(finemap_res_gene_epred, finemap_res_gene_emunro, by = "gene_name")
+overlap <- overlap[,c("gene_name","type.x","context.x","region_id.x","z.x","susie_pip.x","z.y","susie_pip.y")]
+colnames(overlap) <- c("gene_name","type","context","region_id","z_predictdb","susie_pip_predictdb","z_munro","susie_pip_munro")
+
+DT::datatable(overlap,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Overlapped genes'),options = list(pageLength = 10) )
+
+venn <- plot_venn(npred = nrow(finemap_res_gene_epred), nmunro = nrow(finemap_res_gene_emunro), noverlap = nrow(overlap))
+```
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=10, fig.height=5}
+print("For the overlapped genes")
+
+scatter_plot <- plot_scatter(overlap = overlap)
+```
+
+
+
+## Comparing predictdb epjoint VS predictdb e+p + Munro rs+apa VS all 8 weights
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+gwas_n <- samplesize[trait]
+
+results_dir_espred <- paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/results/",trait,"/espred/")
+
+snp_map_espred <- readRDS(paste0(results_dir_espred,trait,".snp_map.RDS"))
+ctwas_res_espred <- readRDS(paste0(results_dir_espred,trait,".ctwas.res.RDS"))
+
+param_espred <- ctwas_res_espred$param
+finemap_res_espred <- ctwas_res_espred$finemap_res
+
+
+p_conv_espred <- make_convergence_plots(param_espred, gwas_n, ncol = 1, colors = colors)
+ctwas_parameters_espred <- summarize_param(param_espred, gwas_n)
+
+finemap_res_espred$molecular_id <- get_molecular_ids(finemap_res_espred)
+finemap_res_espred <- anno_finemap_res(finemap_res_espred,
+                              snp_map = snp_map_espred,
+                              mapping_table = mapping_two,
+                              add_gene_annot = TRUE,
+                              map_by = "molecular_id",
+                              drop_unmapped = TRUE,
+                              add_position = TRUE,
+                              use_gene_pos = "mid")
+
+combined_pip_by_type_espred <- combine_gene_pips(finemap_res =finemap_res_espred,
+                                  group_by = "gene_name",
+                                  by = "type", 
+                                  method = "combine_cs",
+                                  filter_cs = T )
+
+```
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+results_dir_4W <- paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/results/",trait,"/4W/")
+
+snp_map_4W <- readRDS(paste0(results_dir_4W,trait,".snp_map.RDS"))
+ctwas_res_4W <- readRDS(paste0(results_dir_4W,trait,".ctwas.res.RDS"))
+
+param_4W <- ctwas_res_4W$param
+finemap_res_4W <- ctwas_res_4W$finemap_res
+
+p_conv_4W <- make_convergence_plots(param_4W, gwas_n, ncol = 1, colors = colors)
+ctwas_parameters_4W <- summarize_param(param_4W, gwas_n)
+
+finemap_res_4W$molecular_id <- get_molecular_ids(finemap_res_4W)
+finemap_res_4W <- anno_finemap_res(finemap_res_4W,
+                              snp_map = snp_map_4W,
+                              mapping_table = mapping_two,
+                              add_gene_annot = TRUE,
+                              map_by = "molecular_id",
+                              drop_unmapped = TRUE,
+                              add_position = TRUE,
+                              use_gene_pos = "mid")
+
+combined_pip_by_type_4W <- combine_gene_pips(finemap_res =finemap_res_4W,
+                                  group_by = "gene_name",
+                                  by = "type", 
+                                  method = "combine_cs",
+                                  filter_cs = T )
+
+```
+
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+results_dir_8W <- paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/results/",trait,"/8W/")
+
+snp_map_8W <- readRDS(paste0(results_dir_8W,trait,".snp_map.RDS"))
+ctwas_res_8W <- readRDS(paste0(results_dir_8W,trait,".ctwas.res.RDS"))
+
+param_8W <- ctwas_res_8W$param
+finemap_res_8W <- ctwas_res_8W$finemap_res
+
+p_conv_8W <- make_convergence_plots(param_8W, gwas_n, ncol = 1, colors = colors)
+
+ctwas_parameters_8W <- summarize_param(param_8W, gwas_n)
+
+
+finemap_res_8W$molecular_id <- get_molecular_ids(finemap_res_8W)
+finemap_res_8W <- anno_finemap_res(finemap_res_8W,
+                              snp_map = snp_map_8W,
+                              mapping_table = mapping_two,
+                              add_gene_annot = TRUE,
+                              map_by = "molecular_id",
+                              drop_unmapped = TRUE,
+                              add_position = TRUE,
+                              use_gene_pos = "mid")
+
+finemap_res_8W$type <- ifelse(grepl("_pred$", finemap_res_8W$context),
+                                         paste0(finemap_res_8W$type, "_pred"),
+                                         finemap_res_8W$type)
+
+combined_pip_by_type_8W <- combine_gene_pips(finemap_res =finemap_res_8W,
+                                  group_by = "gene_name",
+                                  by = "type", 
+                                  method = "combine_cs",
+                                  filter_cs = T )
+
+```
+
+### Parameters
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=12}
+
+grid.arrange(p_conv_espred,p_conv_4W,p_conv_8W, ncol = 3)
+
+
+######pve
+group_pve_espred <- ctwas_parameters_espred$group_pve
+group_pve_espred <- group_pve_espred[-length(group_pve_espred)]
+group_pve_espred <- c(group_pve_espred, rep(NA,6))
+group_pve_espred <- c(group_pve_espred, ctwas_parameters_espred$total_pve)
+names(group_pve_espred) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","isoQTL_munro","tssQTL_munro","eQTL_munro","sQTL_munro","TOTAL")
+
+group_pve_4W <- ctwas_parameters_4W$group_pve
+group_pve_4W <- group_pve_4W[-length(group_pve_4W)]
+group_pve_4W <- c(group_pve_4W, rep(NA,4))
+group_pve_4W <- c(group_pve_4W, ctwas_parameters_4W$total_pve)
+names(group_pve_4W) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","isoQTL_munro","tssQTL_munro","eQTL_munro","sQTL_munro","TOTAL")
+
+group_pve_8W <- ctwas_parameters_8W$group_pve
+group_pve_8W <- group_pve_8W[-length(group_pve_8W)]
+group_pve_8W <- group_pve_8W[c(paste0(tissue,"_pred|eQTL"),paste0(tissue,"_pred|sQTL"),paste0(tissue,"|apaQTL"),paste0(tissue,"|rsQTL"),paste0(tissue,"|isoQTL"),paste0(tissue,"|tssQTL"),paste0(tissue,"|eQTL"),paste0(tissue,"|sQTL"))]
+
+
+group_pve_8W <- c(group_pve_8W, ctwas_parameters_8W$total_pve)
+names(group_pve_8W) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","isoQTL_munro","tssQTL_munro","eQTL_munro","sQTL_munro","TOTAL")
+
+grouppve <- cbind(group_pve_espred,group_pve_4W,group_pve_8W)
+grouppve <- round(grouppve,digits = 4)
+
+######size
+group_size_espred <- ctwas_parameters_espred$group_size
+group_size_espred <- group_size_espred[-length(group_size_espred)]
+group_size_espred <- c(group_size_espred, rep(NA,6))
+names(group_size_espred) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","isoQTL_munro","tssQTL_munro","eQTL_munro","sQTL_munro")
+
+group_size_4W <- ctwas_parameters_4W$group_size
+group_size_4W <- group_size_4W[-length(group_size_4W)]
+group_size_4W <- c(group_size_4W, rep(NA,4))
+names(group_size_4W) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","isoQTL_munro","tssQTL_munro","eQTL_munro","sQTL_munro")
+
+group_size_8W <- ctwas_parameters_8W$group_size
+group_size_8W <- group_size_8W[-length(group_size_8W)]
+group_size_8W <- group_size_8W[c(paste0(tissue,"_pred|eQTL"),paste0(tissue,"_pred|sQTL"),paste0(tissue,"|apaQTL"),paste0(tissue,"|rsQTL"),paste0(tissue,"|isoQTL"),paste0(tissue,"|tssQTL"),paste0(tissue,"|eQTL"),paste0(tissue,"|sQTL"))]
+names(group_size_8W) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","isoQTL_munro","tssQTL_munro","eQTL_munro","sQTL_munro")
+
+groupsize <- cbind(group_size_espred,group_size_4W,group_size_8W)
+
+group_info <- cbind(grouppve,rbind(groupsize,c(rep(NA,3))))
+
+DT::datatable(group_info,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Group PVE and Group Size'),options = list(pageLength = 10) )
+
+```
+
+### Fine-mapping results
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+combined_sig_espred <- combined_pip_by_type_espred[combined_pip_by_type_espred$combined_pip > 0.8,]
+combined_sig_4W <- combined_pip_by_type_4W[combined_pip_by_type_4W$combined_pip > 0.8,]
+combined_sig_8W <- combined_pip_by_type_8W[combined_pip_by_type_8W$combined_pip > 0.8,]
+
+sprintf("# of genes with PIP > 0.8 = %s -- predictdb e +s", nrow(combined_sig_espred))
+sprintf("# of genes with PIP > 0.8 = %s -- predictdb e + s + Munro apa + rs", nrow(combined_sig_4W))
+sprintf("# of genes with PIP > 0.8 = %s -- all 8 weights", nrow(combined_sig_8W))
+
+# DT::datatable(combined_sig_espred,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','High PIP genes -- predictdb e+s'),options = list(pageLength = 10) )
+# DT::datatable(combined_sig_4W,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','High PIP genes -- predictdb e+s +  Munro apa + rs'),options = list(pageLength = 10) )
+# DT::datatable(combined_sig_8W,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','High PIP genes -- all 8 weights'),options = list(pageLength = 10) )
+
+venn.plot <- plot_3venn(es = combined_sig_espred$gene_name,esra = combined_sig_4W$gene_name,all8 = combined_sig_8W$gene_name)
+```
+
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=24, fig.height=14}
+###1
+heatmap_data <- combined_sig_8W[!combined_sig_8W$gene_name %in%combined_sig_espred$gene_name, ]
+column_order <- c("gene_name","combined_pip",
+                  "eQTL_pred_pip", "sQTL_pred_pip", "rsQTL_pip","apaQTL_pip",
+                  "isoQTL_pip", "eQTL_pip","tssQTL_pip","sQTL_pip")
+heatmap_data <- rename_heatmap_columns(heatmap_data = heatmap_data, column_order = column_order)
+p1 <- plot_heatmap(heatmap_data = heatmap_data,main = "PIP partition for the genes reported by 8weight setting but not by e+s setting")
+
+###2
+heatmap_data <- combined_sig_4W[!combined_sig_4W$gene_name %in%combined_sig_espred$gene_name, ]
+column_order <- c("gene_name","combined_pip",
+                  "eQTL_pip", "sQTL_pip", "rsQTL_pip","apaQTL_pip")
+heatmap_data <- rename_heatmap_columns(heatmap_data = heatmap_data, column_order = column_order)
+p2 <- plot_heatmap(heatmap_data = heatmap_data,main = "PIP partition for the genes reported by 4weight setting but not by e+s setting")
+
+###3
+heatmap_data <- combined_sig_8W[!combined_sig_8W$gene_name %in%combined_sig_4W$gene_name, ]
+column_order <- c("gene_name","combined_pip",
+                  "eQTL_pred_pip", "sQTL_pred_pip", "rsQTL_pip","apaQTL_pip",
+                  "isoQTL_pip", "eQTL_pip","tssQTL_pip","sQTL_pip")
+heatmap_data <- rename_heatmap_columns(heatmap_data = heatmap_data, column_order = column_order)
+
+
+p3 <- plot_heatmap(heatmap_data = heatmap_data,main = "PIP partition for the genes reported by 8weight setting but not by 4weight setting")
+
+g1 <- p1$gtable
+g2 <- p2$gtable
+g3 <- p3$gtable
+grid.arrange(g1, g2, g3, ncol=3)
+
+```
+
+
+
+
+
+
+
+# SBP-ukb-a-360
+
+## Comparing predictdb eQTL VS munro eQTL
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+trait <- "SBP-ukb-a-360"
+tissue <- "Artery_Tibial"
+
+### predictdb
+results_dir_epred <- paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/results/",trait,"/epred/")
+
+ctwas_res_epred <- readRDS(paste0(results_dir_epred,trait,".ctwas.res.RDS"))
+snp_map_epred  <- readRDS(paste0(results_dir_epred,trait,".snp_map.RDS"))
+finemap_res_epred <- ctwas_res_epred$finemap_res
+finemap_res_epred$molecular_id <- get_molecular_ids(finemap_res_epred)
+
+finemap_res_epred <- anno_finemap_res(finemap_res_epred,
+                              snp_map = snp_map_epred,
+                              mapping_table = mapping_predictdb,
+                              add_gene_annot = TRUE,
+                              map_by = "molecular_id",
+                              drop_unmapped = TRUE,
+                              add_position = TRUE,
+                              use_gene_pos = "mid")
+finemap_res_gene_epred <- finemap_res_epred[finemap_res_epred$type !="SNP",] 
+
+### munro
+results_dir_emunro <- paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/results/",trait,"/emunro/")
+
+ctwas_res_emunro <- readRDS(paste0(results_dir_emunro,trait,".ctwas.res.RDS"))
+snp_map_emunro  <- readRDS(paste0(results_dir_emunro,trait,".snp_map.RDS"))
+finemap_res_emunro <- ctwas_res_emunro$finemap_res
+finemap_res_emunro$molecular_id <- get_molecular_ids(finemap_res_emunro)
+
+finemap_res_emunro <- anno_finemap_res(finemap_res_emunro,
+                              snp_map = snp_map_emunro,
+                              mapping_table = mapping_munro,
+                              add_gene_annot = TRUE,
+                              map_by = "molecular_id",
+                              drop_unmapped = TRUE,
+                              add_position = TRUE,
+                              use_gene_pos = "mid")
+finemap_res_gene_emunro <- finemap_res_emunro[finemap_res_emunro$type !="SNP",] 
+
+overlap <- merge(finemap_res_gene_epred, finemap_res_gene_emunro, by = "gene_name")
+overlap <- overlap[,c("gene_name","type.x","context.x","region_id.x","z.x","susie_pip.x","z.y","susie_pip.y")]
+colnames(overlap) <- c("gene_name","type","context","region_id","z_predictdb","susie_pip_predictdb","z_munro","susie_pip_munro")
+
+DT::datatable(overlap,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Overlapped genes'),options = list(pageLength = 10) )
+
+venn <- plot_venn(npred = nrow(finemap_res_gene_epred), nmunro = nrow(finemap_res_gene_emunro), noverlap = nrow(overlap))
+```
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=10, fig.height=5}
+print("For the overlapped genes")
+
+scatter_plot <- plot_scatter(overlap = overlap)
+```
+
+
+
+## Comparing predictdb epjoint VS predictdb e+p + Munro rs+apa VS all 8 weights
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+gwas_n <- samplesize[trait]
+
+results_dir_espred <- paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/results/",trait,"/espred/")
+
+snp_map_espred <- readRDS(paste0(results_dir_espred,trait,".snp_map.RDS"))
+ctwas_res_espred <- readRDS(paste0(results_dir_espred,trait,".ctwas.res.RDS"))
+
+param_espred <- ctwas_res_espred$param
+finemap_res_espred <- ctwas_res_espred$finemap_res
+
+
+p_conv_espred <- make_convergence_plots(param_espred, gwas_n, ncol = 1, colors = colors)
+ctwas_parameters_espred <- summarize_param(param_espred, gwas_n)
+
+finemap_res_espred$molecular_id <- get_molecular_ids(finemap_res_espred)
+finemap_res_espred <- anno_finemap_res(finemap_res_espred,
+                              snp_map = snp_map_espred,
+                              mapping_table = mapping_two,
+                              add_gene_annot = TRUE,
+                              map_by = "molecular_id",
+                              drop_unmapped = TRUE,
+                              add_position = TRUE,
+                              use_gene_pos = "mid")
+
+combined_pip_by_type_espred <- combine_gene_pips(finemap_res =finemap_res_espred,
+                                  group_by = "gene_name",
+                                  by = "type", 
+                                  method = "combine_cs",
+                                  filter_cs = T )
+
+```
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+results_dir_4W <- paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/results/",trait,"/4W/")
+
+snp_map_4W <- readRDS(paste0(results_dir_4W,trait,".snp_map.RDS"))
+ctwas_res_4W <- readRDS(paste0(results_dir_4W,trait,".ctwas.res.RDS"))
+
+param_4W <- ctwas_res_4W$param
+finemap_res_4W <- ctwas_res_4W$finemap_res
+
+p_conv_4W <- make_convergence_plots(param_4W, gwas_n, ncol = 1, colors = colors)
+ctwas_parameters_4W <- summarize_param(param_4W, gwas_n)
+
+finemap_res_4W$molecular_id <- get_molecular_ids(finemap_res_4W)
+finemap_res_4W <- anno_finemap_res(finemap_res_4W,
+                              snp_map = snp_map_4W,
+                              mapping_table = mapping_two,
+                              add_gene_annot = TRUE,
+                              map_by = "molecular_id",
+                              drop_unmapped = TRUE,
+                              add_position = TRUE,
+                              use_gene_pos = "mid")
+
+combined_pip_by_type_4W <- combine_gene_pips(finemap_res =finemap_res_4W,
+                                  group_by = "gene_name",
+                                  by = "type", 
+                                  method = "combine_cs",
+                                  filter_cs = T )
+
+```
+
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+results_dir_8W <- paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/results/",trait,"/8W/")
+
+snp_map_8W <- readRDS(paste0(results_dir_8W,trait,".snp_map.RDS"))
+ctwas_res_8W <- readRDS(paste0(results_dir_8W,trait,".ctwas.res.RDS"))
+
+param_8W <- ctwas_res_8W$param
+finemap_res_8W <- ctwas_res_8W$finemap_res
+
+p_conv_8W <- make_convergence_plots(param_8W, gwas_n, ncol = 1, colors = colors)
+
+ctwas_parameters_8W <- summarize_param(param_8W, gwas_n)
+
+
+finemap_res_8W$molecular_id <- get_molecular_ids(finemap_res_8W)
+finemap_res_8W <- anno_finemap_res(finemap_res_8W,
+                              snp_map = snp_map_8W,
+                              mapping_table = mapping_two,
+                              add_gene_annot = TRUE,
+                              map_by = "molecular_id",
+                              drop_unmapped = TRUE,
+                              add_position = TRUE,
+                              use_gene_pos = "mid")
+
+finemap_res_8W$type <- ifelse(grepl("_pred$", finemap_res_8W$context),
+                                         paste0(finemap_res_8W$type, "_pred"),
+                                         finemap_res_8W$type)
+
+combined_pip_by_type_8W <- combine_gene_pips(finemap_res =finemap_res_8W,
+                                  group_by = "gene_name",
+                                  by = "type", 
+                                  method = "combine_cs",
+                                  filter_cs = T )
+
+```
+
+### Parameters
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=12}
+
+grid.arrange(p_conv_espred,p_conv_4W,p_conv_8W, ncol = 3)
+
+
+######pve
+group_pve_espred <- ctwas_parameters_espred$group_pve
+group_pve_espred <- group_pve_espred[-length(group_pve_espred)]
+group_pve_espred <- c(group_pve_espred, rep(NA,6))
+group_pve_espred <- c(group_pve_espred, ctwas_parameters_espred$total_pve)
+names(group_pve_espred) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","isoQTL_munro","tssQTL_munro","eQTL_munro","sQTL_munro","TOTAL")
+
+group_pve_4W <- ctwas_parameters_4W$group_pve
+group_pve_4W <- group_pve_4W[-length(group_pve_4W)]
+group_pve_4W <- c(group_pve_4W, rep(NA,4))
+group_pve_4W <- c(group_pve_4W, ctwas_parameters_4W$total_pve)
+names(group_pve_4W) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","isoQTL_munro","tssQTL_munro","eQTL_munro","sQTL_munro","TOTAL")
+
+group_pve_8W <- ctwas_parameters_8W$group_pve
+group_pve_8W <- group_pve_8W[-length(group_pve_8W)]
+group_pve_8W <- group_pve_8W[c(paste0(tissue,"_pred|eQTL"),paste0(tissue,"_pred|sQTL"),paste0(tissue,"|apaQTL"),paste0(tissue,"|rsQTL"),paste0(tissue,"|isoQTL"),paste0(tissue,"|tssQTL"),paste0(tissue,"|eQTL"),paste0(tissue,"|sQTL"))]
+group_pve_8W <- c(group_pve_8W, ctwas_parameters_8W$total_pve)
+names(group_pve_8W) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","isoQTL_munro","tssQTL_munro","eQTL_munro","sQTL_munro","TOTAL")
+
+grouppve <- cbind(group_pve_espred,group_pve_4W,group_pve_8W)
+grouppve <- round(grouppve,digits = 4)
+
+######size
+group_size_espred <- ctwas_parameters_espred$group_size
+group_size_espred <- group_size_espred[-length(group_size_espred)]
+group_size_espred <- c(group_size_espred, rep(NA,6))
+names(group_size_espred) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","isoQTL_munro","tssQTL_munro","eQTL_munro","sQTL_munro")
+
+group_size_4W <- ctwas_parameters_4W$group_size
+group_size_4W <- group_size_4W[-length(group_size_4W)]
+group_size_4W <- c(group_size_4W, rep(NA,4))
+names(group_size_4W) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","isoQTL_munro","tssQTL_munro","eQTL_munro","sQTL_munro")
+
+group_size_8W <- ctwas_parameters_8W$group_size
+group_size_8W <- group_size_8W[-length(group_size_8W)]
+group_size_8W <- group_size_8W[c(paste0(tissue,"_pred|eQTL"),paste0(tissue,"_pred|sQTL"),paste0(tissue,"|apaQTL"),paste0(tissue,"|rsQTL"),paste0(tissue,"|isoQTL"),paste0(tissue,"|tssQTL"),paste0(tissue,"|eQTL"),paste0(tissue,"|sQTL"))]
+names(group_size_8W) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","isoQTL_munro","tssQTL_munro","eQTL_munro","sQTL_munro")
+
+groupsize <- cbind(group_size_espred,group_size_4W,group_size_8W)
+
+group_info <- cbind(grouppve,rbind(groupsize,c(rep(NA,3))))
+
+DT::datatable(group_info,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Group PVE and Group Size'),options = list(pageLength = 10) )
+
+```
+
+### Fine-mapping results
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+combined_sig_espred <- combined_pip_by_type_espred[combined_pip_by_type_espred$combined_pip > 0.8,]
+combined_sig_4W <- combined_pip_by_type_4W[combined_pip_by_type_4W$combined_pip > 0.8,]
+combined_sig_8W <- combined_pip_by_type_8W[combined_pip_by_type_8W$combined_pip > 0.8,]
+
+sprintf("# of genes with PIP > 0.8 = %s -- predictdb e +s", nrow(combined_sig_espred))
+sprintf("# of genes with PIP > 0.8 = %s -- predictdb e + s + Munro apa + rs", nrow(combined_sig_4W))
+sprintf("# of genes with PIP > 0.8 = %s -- all 8 weights", nrow(combined_sig_8W))
+
+# DT::datatable(combined_sig_espred,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','High PIP genes -- predictdb e+s'),options = list(pageLength = 10) )
+# DT::datatable(combined_sig_4W,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','High PIP genes -- predictdb e+s +  Munro apa + rs'),options = list(pageLength = 10) )
+# DT::datatable(combined_sig_8W,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','High PIP genes -- all 8 weights'),options = list(pageLength = 10) )
+
+venn.plot <- plot_3venn(es = combined_sig_espred$gene_name,esra = combined_sig_4W$gene_name,all8 = combined_sig_8W$gene_name)
+```
+
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=24, fig.height=14}
+###1
+heatmap_data <- combined_sig_8W[!combined_sig_8W$gene_name %in%combined_sig_espred$gene_name, ]
+column_order <- c("gene_name","combined_pip",
+                  "eQTL_pred_pip", "sQTL_pred_pip", "rsQTL_pip","apaQTL_pip",
+                  "isoQTL_pip", "eQTL_pip","tssQTL_pip","sQTL_pip")
+heatmap_data <- rename_heatmap_columns(heatmap_data = heatmap_data, column_order = column_order)
+p1 <- plot_heatmap(heatmap_data = heatmap_data,main = "PIP partition for the genes reported by 8weight setting but not by e+s setting")
+
+###2
+heatmap_data <- combined_sig_4W[!combined_sig_4W$gene_name %in%combined_sig_espred$gene_name, ]
+column_order <- c("gene_name","combined_pip",
+                  "eQTL_pip", "sQTL_pip", "rsQTL_pip","apaQTL_pip")
+heatmap_data <- rename_heatmap_columns(heatmap_data = heatmap_data, column_order = column_order)
+p2 <- plot_heatmap(heatmap_data = heatmap_data,main = "PIP partition for the genes reported by 4weight setting but not by e+s setting")
+
+###3
+heatmap_data <- combined_sig_8W[!combined_sig_8W$gene_name %in%combined_sig_4W$gene_name, ]
+column_order <- c("gene_name","combined_pip",
+                  "eQTL_pred_pip", "sQTL_pred_pip", "rsQTL_pip","apaQTL_pip",
+                  "isoQTL_pip", "eQTL_pip","tssQTL_pip","sQTL_pip")
+heatmap_data <- rename_heatmap_columns(heatmap_data = heatmap_data, column_order = column_order)
+
+
+p3 <- plot_heatmap(heatmap_data = heatmap_data,main = "PIP partition for the genes reported by 8weight setting but not by 4weight setting")
+
+g1 <- p1$gtable
+g2 <- p2$gtable
+g3 <- p3$gtable
+grid.arrange(g1, g2, g3, ncol=3)
+
+```
+
+
+# WBC-ieu-b-30
+
+## Comparing predictdb eQTL VS munro eQTL
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+trait <- "WBC-ieu-b-30"
+tissue <- "Whole_Blood"
+### predictdb
+results_dir_epred <- paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/results/",trait,"/epred/")
+
+ctwas_res_epred <- readRDS(paste0(results_dir_epred,trait,".ctwas.res.RDS"))
+snp_map_epred  <- readRDS(paste0(results_dir_epred,trait,".snp_map.RDS"))
+finemap_res_epred <- ctwas_res_epred$finemap_res
+finemap_res_epred$molecular_id <- get_molecular_ids(finemap_res_epred)
+
+finemap_res_epred <- anno_finemap_res(finemap_res_epred,
+                              snp_map = snp_map_epred,
+                              mapping_table = mapping_predictdb,
+                              add_gene_annot = TRUE,
+                              map_by = "molecular_id",
+                              drop_unmapped = TRUE,
+                              add_position = TRUE,
+                              use_gene_pos = "mid")
+finemap_res_gene_epred <- finemap_res_epred[finemap_res_epred$type !="SNP",] 
+
+### munro
+results_dir_emunro <- paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/results/",trait,"/emunro/")
+
+ctwas_res_emunro <- readRDS(paste0(results_dir_emunro,trait,".ctwas.res.RDS"))
+snp_map_emunro  <- readRDS(paste0(results_dir_emunro,trait,".snp_map.RDS"))
+finemap_res_emunro <- ctwas_res_emunro$finemap_res
+finemap_res_emunro$molecular_id <- get_molecular_ids(finemap_res_emunro)
+
+finemap_res_emunro <- anno_finemap_res(finemap_res_emunro,
+                              snp_map = snp_map_emunro,
+                              mapping_table = mapping_munro,
+                              add_gene_annot = TRUE,
+                              map_by = "molecular_id",
+                              drop_unmapped = TRUE,
+                              add_position = TRUE,
+                              use_gene_pos = "mid")
+finemap_res_gene_emunro <- finemap_res_emunro[finemap_res_emunro$type !="SNP",] 
+
+overlap <- merge(finemap_res_gene_epred, finemap_res_gene_emunro, by = "gene_name")
+overlap <- overlap[,c("gene_name","type.x","context.x","region_id.x","z.x","susie_pip.x","z.y","susie_pip.y")]
+colnames(overlap) <- c("gene_name","type","context","region_id","z_predictdb","susie_pip_predictdb","z_munro","susie_pip_munro")
+
+DT::datatable(overlap,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Overlapped genes'),options = list(pageLength = 10) )
+
+venn <- plot_venn(npred = nrow(finemap_res_gene_epred), nmunro = nrow(finemap_res_gene_emunro), noverlap = nrow(overlap))
+```
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=10, fig.height=5}
+print("For the overlapped genes")
+
+scatter_plot <- plot_scatter(overlap = overlap)
+```
+
+
+
+## Comparing predictdb epjoint VS predictdb e+p + Munro rs+apa VS all 8 weights
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+gwas_n <- samplesize[trait]
+
+results_dir_espred <- paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/results/",trait,"/espred/")
+
+snp_map_espred <- readRDS(paste0(results_dir_espred,trait,".snp_map.RDS"))
+ctwas_res_espred <- readRDS(paste0(results_dir_espred,trait,".ctwas.res.RDS"))
+
+param_espred <- ctwas_res_espred$param
+finemap_res_espred <- ctwas_res_espred$finemap_res
+
+
+p_conv_espred <- make_convergence_plots(param_espred, gwas_n, ncol = 1, colors = colors)
+ctwas_parameters_espred <- summarize_param(param_espred, gwas_n)
+
+finemap_res_espred$molecular_id <- get_molecular_ids(finemap_res_espred)
+finemap_res_espred <- anno_finemap_res(finemap_res_espred,
+                              snp_map = snp_map_espred,
+                              mapping_table = mapping_two,
+                              add_gene_annot = TRUE,
+                              map_by = "molecular_id",
+                              drop_unmapped = TRUE,
+                              add_position = TRUE,
+                              use_gene_pos = "mid")
+
+combined_pip_by_type_espred <- combine_gene_pips(finemap_res =finemap_res_espred,
+                                  group_by = "gene_name",
+                                  by = "type", 
+                                  method = "combine_cs",
+                                  filter_cs = T )
+
+```
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+results_dir_4W <- paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/results/",trait,"/4W/")
+
+snp_map_4W <- readRDS(paste0(results_dir_4W,trait,".snp_map.RDS"))
+ctwas_res_4W <- readRDS(paste0(results_dir_4W,trait,".ctwas.res.RDS"))
+
+param_4W <- ctwas_res_4W$param
+finemap_res_4W <- ctwas_res_4W$finemap_res
+
+p_conv_4W <- make_convergence_plots(param_4W, gwas_n, ncol = 1, colors = colors)
+ctwas_parameters_4W <- summarize_param(param_4W, gwas_n)
+
+finemap_res_4W$molecular_id <- get_molecular_ids(finemap_res_4W)
+finemap_res_4W <- anno_finemap_res(finemap_res_4W,
+                              snp_map = snp_map_4W,
+                              mapping_table = mapping_two,
+                              add_gene_annot = TRUE,
+                              map_by = "molecular_id",
+                              drop_unmapped = TRUE,
+                              add_position = TRUE,
+                              use_gene_pos = "mid")
+
+combined_pip_by_type_4W <- combine_gene_pips(finemap_res =finemap_res_4W,
+                                  group_by = "gene_name",
+                                  by = "type", 
+                                  method = "combine_cs",
+                                  filter_cs = T )
+
+```
+
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+results_dir_8W <- paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/results/",trait,"/8W/")
+
+snp_map_8W <- readRDS(paste0(results_dir_8W,trait,".snp_map.RDS"))
+ctwas_res_8W <- readRDS(paste0(results_dir_8W,trait,".ctwas.res.RDS"))
+
+param_8W <- ctwas_res_8W$param
+finemap_res_8W <- ctwas_res_8W$finemap_res
+
+p_conv_8W <- make_convergence_plots(param_8W, gwas_n, ncol = 1, colors = colors)
+
+ctwas_parameters_8W <- summarize_param(param_8W, gwas_n)
+
+
+finemap_res_8W$molecular_id <- get_molecular_ids(finemap_res_8W)
+finemap_res_8W <- anno_finemap_res(finemap_res_8W,
+                              snp_map = snp_map_8W,
+                              mapping_table = mapping_two,
+                              add_gene_annot = TRUE,
+                              map_by = "molecular_id",
+                              drop_unmapped = TRUE,
+                              add_position = TRUE,
+                              use_gene_pos = "mid")
+
+finemap_res_8W$type <- ifelse(grepl("_pred$", finemap_res_8W$context),
+                                         paste0(finemap_res_8W$type, "_pred"),
+                                         finemap_res_8W$type)
+
+combined_pip_by_type_8W <- combine_gene_pips(finemap_res =finemap_res_8W,
+                                  group_by = "gene_name",
+                                  by = "type", 
+                                  method = "combine_cs",
+                                  filter_cs = T )
+
+```
+
+### Parameters
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=12}
+
+grid.arrange(p_conv_espred,p_conv_4W,p_conv_8W, ncol = 3)
+
+
+######pve
+group_pve_espred <- ctwas_parameters_espred$group_pve
+group_pve_espred <- group_pve_espred[-length(group_pve_espred)]
+group_pve_espred <- c(group_pve_espred, rep(NA,6))
+group_pve_espred <- c(group_pve_espred, ctwas_parameters_espred$total_pve)
+names(group_pve_espred) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","isoQTL_munro","tssQTL_munro","eQTL_munro","sQTL_munro","TOTAL")
+
+group_pve_4W <- ctwas_parameters_4W$group_pve
+group_pve_4W <- group_pve_4W[-length(group_pve_4W)]
+group_pve_4W <- c(group_pve_4W, rep(NA,4))
+group_pve_4W <- c(group_pve_4W, ctwas_parameters_4W$total_pve)
+names(group_pve_4W) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","isoQTL_munro","tssQTL_munro","eQTL_munro","sQTL_munro","TOTAL")
+
+group_pve_8W <- ctwas_parameters_8W$group_pve
+group_pve_8W <- group_pve_8W[-length(group_pve_8W)]
+group_pve_8W <- group_pve_8W[c(paste0(tissue,"_pred|eQTL"),paste0(tissue,"_pred|sQTL"),paste0(tissue,"|apaQTL"),paste0(tissue,"|rsQTL"),paste0(tissue,"|isoQTL"),paste0(tissue,"|tssQTL"),paste0(tissue,"|eQTL"),paste0(tissue,"|sQTL"))]
+group_pve_8W <- c(group_pve_8W, ctwas_parameters_8W$total_pve)
+names(group_pve_8W) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","isoQTL_munro","tssQTL_munro","eQTL_munro","sQTL_munro","TOTAL")
+
+grouppve <- cbind(group_pve_espred,group_pve_4W,group_pve_8W)
+grouppve <- round(grouppve,digits = 4)
+
+######size
+group_size_espred <- ctwas_parameters_espred$group_size
+group_size_espred <- group_size_espred[-length(group_size_espred)]
+group_size_espred <- c(group_size_espred, rep(NA,6))
+names(group_size_espred) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","isoQTL_munro","tssQTL_munro","eQTL_munro","sQTL_munro")
+
+group_size_4W <- ctwas_parameters_4W$group_size
+group_size_4W <- group_size_4W[-length(group_size_4W)]
+group_size_4W <- c(group_size_4W, rep(NA,4))
+names(group_size_4W) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","isoQTL_munro","tssQTL_munro","eQTL_munro","sQTL_munro")
+
+group_size_8W <- ctwas_parameters_8W$group_size
+group_size_8W <- group_size_8W[-length(group_size_8W)]
+group_size_8W <- group_size_8W[c(paste0(tissue,"_pred|eQTL"),paste0(tissue,"_pred|sQTL"),paste0(tissue,"|apaQTL"),paste0(tissue,"|rsQTL"),paste0(tissue,"|isoQTL"),paste0(tissue,"|tssQTL"),paste0(tissue,"|eQTL"),paste0(tissue,"|sQTL"))]
+names(group_size_8W) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","isoQTL_munro","tssQTL_munro","eQTL_munro","sQTL_munro")
+
+groupsize <- cbind(group_size_espred,group_size_4W,group_size_8W)
+
+group_info <- cbind(grouppve,rbind(groupsize,c(rep(NA,3))))
+
+DT::datatable(group_info,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Group PVE and Group Size'),options = list(pageLength = 10) )
+
+```
+
+### Fine-mapping results
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+combined_sig_espred <- combined_pip_by_type_espred[combined_pip_by_type_espred$combined_pip > 0.8,]
+combined_sig_4W <- combined_pip_by_type_4W[combined_pip_by_type_4W$combined_pip > 0.8,]
+combined_sig_8W <- combined_pip_by_type_8W[combined_pip_by_type_8W$combined_pip > 0.8,]
+
+sprintf("# of genes with PIP > 0.8 = %s -- predictdb e +s", nrow(combined_sig_espred))
+sprintf("# of genes with PIP > 0.8 = %s -- predictdb e + s + Munro apa + rs", nrow(combined_sig_4W))
+sprintf("# of genes with PIP > 0.8 = %s -- all 8 weights", nrow(combined_sig_8W))
+
+# DT::datatable(combined_sig_espred,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','High PIP genes -- predictdb e+s'),options = list(pageLength = 10) )
+# DT::datatable(combined_sig_4W,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','High PIP genes -- predictdb e+s +  Munro apa + rs'),options = list(pageLength = 10) )
+# DT::datatable(combined_sig_8W,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','High PIP genes -- all 8 weights'),options = list(pageLength = 10) )
+
+venn.plot <- plot_3venn(es = combined_sig_espred$gene_name,esra = combined_sig_4W$gene_name,all8 = combined_sig_8W$gene_name)
+```
+
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=24, fig.height=14}
+###1
+heatmap_data <- combined_sig_8W[!combined_sig_8W$gene_name %in%combined_sig_espred$gene_name, ]
+column_order <- c("gene_name","combined_pip",
+                  "eQTL_pred_pip", "sQTL_pred_pip", "rsQTL_pip","apaQTL_pip",
+                  "isoQTL_pip", "eQTL_pip","tssQTL_pip","sQTL_pip")
+heatmap_data <- rename_heatmap_columns(heatmap_data = heatmap_data, column_order = column_order)
+p1 <- plot_heatmap(heatmap_data = heatmap_data,main = "PIP partition for the genes reported by 8weight setting but not by e+s setting")
+
+###2
+heatmap_data <- combined_sig_4W[!combined_sig_4W$gene_name %in%combined_sig_espred$gene_name, ]
+column_order <- c("gene_name","combined_pip",
+                  "eQTL_pip", "sQTL_pip", "rsQTL_pip","apaQTL_pip")
+heatmap_data <- rename_heatmap_columns(heatmap_data = heatmap_data, column_order = column_order)
+p2 <- plot_heatmap(heatmap_data = heatmap_data,main = "PIP partition for the genes reported by 4weight setting but not by e+s setting")
+
+###3
+heatmap_data <- combined_sig_8W[!combined_sig_8W$gene_name %in%combined_sig_4W$gene_name, ]
+column_order <- c("gene_name","combined_pip",
+                  "eQTL_pred_pip", "sQTL_pred_pip", "rsQTL_pip","apaQTL_pip",
+                  "isoQTL_pip", "eQTL_pip","tssQTL_pip","sQTL_pip")
+heatmap_data <- rename_heatmap_columns(heatmap_data = heatmap_data, column_order = column_order)
+
+
+p3 <- plot_heatmap(heatmap_data = heatmap_data,main = "PIP partition for the genes reported by 8weight setting but not by 4weight setting")
+
+g1 <- p1$gtable
+g2 <- p2$gtable
+g3 <- p3$gtable
+grid.arrange(g1, g2, g3, ncol=3)
+
+```
+
+
+
+
