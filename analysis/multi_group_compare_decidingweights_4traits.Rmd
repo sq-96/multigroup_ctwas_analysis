@@ -61,7 +61,8 @@ plot_3venn <- function(es, esra, all8) {
       lty = "dashed",
       cex = 2,
       cat.cex = 1.5,
-      cat.col = c("red", "green", "blue")
+      cat.col = c("red", "green", "blue"),
+      scaled = T
       )
   
   return(venn.plot)
@@ -107,7 +108,6 @@ plot_scatter <- function(overlap) {
         return(combined_plot)
 }
 
-
 plot_heatmap <- function(heatmap_data, main) {
   
   rownames(heatmap_data) <- heatmap_data$gene_name
@@ -123,6 +123,93 @@ plot_heatmap <- function(heatmap_data, main) {
   
   return(p)
 }
+
+plot_piechart <- function(ctwas_parameters, colors) {
+  data <- data.frame(
+    category = names(ctwas_parameters$attributable_pve),
+    percentage = ctwas_parameters$attributable_pve
+  )
+  
+  # Calculate percentage labels for the chart
+  data$percentage_label <- paste0(round(data$percentage * 100, 1), "%")
+  
+  pie <- ggplot(data, aes(x = "", y = percentage, fill = category)) +
+    geom_bar(stat = "identity", width = 1) +
+    coord_polar("y", start = 0) +
+    theme_void() +  # Remove background and axes
+    geom_text(aes(label = percentage_label), 
+              position = position_stack(vjust = 0.5), size = 2) +
+    scale_fill_manual(values = colors) +  # Custom colors
+    labs(fill = "Category") +  # Legend title
+    ggtitle("Percent of heritability")  # Title
+  
+  return(pie)
+}
+
+process_data_rsapa <- function(finemap_res) {
+  
+  finemap_res_gene <- finemap_res[finemap_res$type!="SNP",]
+  finemap_res_gene_apa <- finemap_res_gene[finemap_res_gene$type == "apaQTL",]
+  gene_apa <- unique(finemap_res_gene_apa$gene_name)
+  
+  finemap_res_gene_rs <- finemap_res_gene[finemap_res_gene$type == "rsQTL",]
+  gene_rs <- unique(finemap_res_gene_rs$gene_name)
+  
+  gene_overlap_rsapa <- intersect(gene_apa,gene_rs)
+  
+  finemap_res_gene_apa_overlap <- finemap_res_gene_apa %>%
+    dplyr::filter(gene_name %in% gene_overlap_rsapa) %>%
+    group_by(gene_name) %>%
+    dplyr::filter(abs(z) == max(abs(z))) %>%
+    ungroup() %>%
+    dplyr::select(gene_name, z)
+  
+  finemap_res_gene_rs_overlap <- finemap_res_gene_rs %>%
+    dplyr::filter(gene_name %in% gene_overlap_rsapa) %>%
+    group_by(gene_name) %>%
+    dplyr::filter(abs(z) == max(abs(z))) %>%
+    ungroup() %>%
+    dplyr::select(gene_name, z)
+  
+  rs_apa_overlap_merged <- merge(finemap_res_gene_apa_overlap,finemap_res_gene_rs_overlap, by="gene_name")
+  colnames(rs_apa_overlap_merged) <- c("gene_name","z_apa","z_rs")
+  
+  return(rs_apa_overlap_merged)
+  
+}
+
+plot_scatter_rsapa <- function(rs_apa_overlap_merged) {
+  
+  ggplot(data = rs_apa_overlap_merged, aes(x=abs(z_apa), y=abs(z_rs))) +
+    geom_point() + 
+    ggtitle("Scatter plot for largest abs(z) for the overlapping genes") +
+    xlab("largest abs(z) for apa genes") + 
+    ylab("largest abs(z) for rs genes") + 
+    theme_minimal()
+  
+}
+
+plot_venn_apars <- function(gene_apa, gene_rs, gene_overlap) {
+  
+  venn.plot <- draw.pairwise.venn(
+    area1 = length(gene_apa),          # Size of Group A
+    area2 = length(gene_rs),          # Size of Group B
+    cross.area = length(gene_overlap_rsapa),     # Overlap between Group A and Group B
+    category = c("#of apa genes", "#of rs genes"),  # Labels for the groups
+    fill = c("red", "blue"),             # Colors for the groups
+    lty = "blank",                       # Line type for the circles
+    cex = 2,                             # Font size for the numbers
+    cat.cex = 2,scaled = T,                       # Font size for the labels
+    cat.pos = c(0.5, 0.5),                 # Adjust the label position, set to 0 for central alignment
+    cat.dist = c(0, 0),                  
+  )
+
+  grid.text("number of genes of rsQTL and apaQTL", x = 0.5, y = 0.95, gp = gpar(fontsize = 20, fontface = "bold"))
+  
+
+}
+  
+
 
 rename_heatmap_columns <- function(heatmap_data, column_order) {
   # Select columns that are in the column_order and exist in heatmap_data
@@ -217,7 +304,7 @@ finemap_res_epred <- anno_finemap_res(finemap_res_epred,
                               drop_unmapped = TRUE,
                               add_position = TRUE,
                               use_gene_pos = "mid")
-finemap_res_gene_epred <- finemap_res_epred[finemap_res_epred$type !="SNP",] 
+finemap_res_gene_epred <- finemap_res_epred[finemap_res_epred$type !="SNP",]
 
 ### munro
 results_dir_emunro <- paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/results/",trait,"/emunro/")
@@ -235,26 +322,26 @@ finemap_res_emunro <- anno_finemap_res(finemap_res_emunro,
                               drop_unmapped = TRUE,
                               add_position = TRUE,
                               use_gene_pos = "mid")
-finemap_res_gene_emunro <- finemap_res_emunro[finemap_res_emunro$type !="SNP",] 
+finemap_res_gene_emunro <- finemap_res_emunro[finemap_res_emunro$type !="SNP",]
 
 overlap <- merge(finemap_res_gene_epred, finemap_res_gene_emunro, by = "gene_name")
 overlap <- overlap[,c("gene_name","type.x","context.x","region_id.x","z.x","susie_pip.x","z.y","susie_pip.y")]
 colnames(overlap) <- c("gene_name","type","context","region_id","z_predictdb","susie_pip_predictdb","z_munro","susie_pip_munro")
 
-DT::datatable(overlap,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Overlapped genes'),options = list(pageLength = 10) )
+DT::datatable(overlap,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','overlapping genes'),options = list(pageLength = 10) )
 
 venn <- plot_venn(npred = nrow(finemap_res_gene_epred), nmunro = nrow(finemap_res_gene_emunro), noverlap = nrow(overlap))
 ```
 
 ```{r, echo=T, message=FALSE, warning=FALSE, fig.width=10, fig.height=5}
-print("For the overlapped genes")
+print("For the overlapping genes")
 
 scatter_plot <- plot_scatter(overlap = overlap)
 ```
 
 
 
-## Comparing predictdb epjoint VS predictdb e+p + Munro rs+apa VS all 8 weights
+## Comparing predictdb e+s VS predictdb e+s + Munro rs+apa VS all 8 weights
 
 ```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
 
@@ -271,6 +358,8 @@ finemap_res_espred <- ctwas_res_espred$finemap_res
 
 p_conv_espred <- make_convergence_plots(param_espred, gwas_n, ncol = 1, colors = colors)
 ctwas_parameters_espred <- summarize_param(param_espred, gwas_n)
+pve_pie_espred <- plot_piechart(ctwas_parameters = ctwas_parameters_espred, colors = colors)
+
 
 finemap_res_espred$molecular_id <- get_molecular_ids(finemap_res_espred)
 finemap_res_espred <- anno_finemap_res(finemap_res_espred,
@@ -302,6 +391,7 @@ finemap_res_4W <- ctwas_res_4W$finemap_res
 
 p_conv_4W <- make_convergence_plots(param_4W, gwas_n, ncol = 1, colors = colors)
 ctwas_parameters_4W <- summarize_param(param_4W, gwas_n)
+pve_pie_4W <- plot_piechart(ctwas_parameters = ctwas_parameters_4W, colors = colors)
 
 finemap_res_4W$molecular_id <- get_molecular_ids(finemap_res_4W)
 finemap_res_4W <- anno_finemap_res(finemap_res_4W,
@@ -335,7 +425,7 @@ finemap_res_8W <- ctwas_res_8W$finemap_res
 p_conv_8W <- make_convergence_plots(param_8W, gwas_n, ncol = 1, colors = colors)
 
 ctwas_parameters_8W <- summarize_param(param_8W, gwas_n)
-
+pve_pie_8W <- plot_piechart(ctwas_parameters = ctwas_parameters_8W, colors = colors)
 
 finemap_res_8W$molecular_id <- get_molecular_ids(finemap_res_8W)
 finemap_res_8W <- anno_finemap_res(finemap_res_8W,
@@ -363,6 +453,7 @@ combined_pip_by_type_8W <- combine_gene_pips(finemap_res =finemap_res_8W,
 
 ```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=12}
 
+print("each row represents one setting: predictdb e+s, predictdb e+s + Munro apa+rs, all 8 weights accordingly")
 grid.arrange(p_conv_espred,p_conv_4W,p_conv_8W, ncol = 3)
 
 
@@ -410,7 +501,25 @@ group_info <- cbind(grouppve,rbind(groupsize,c(rep(NA,3))))
 
 DT::datatable(group_info,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Group PVE and Group Size'),options = list(pageLength = 10) )
 
+print("each pie chart represents one setting: predictdb e+s, predictdb e+s + Munro apa+rs, all 8 weights accordingly")
+grid.arrange(pve_pie_espred,pve_pie_4W,pve_pie_8W, ncol =3)
+
 ```
+
+### Comparing apaQTL and rsQTL
+
+```{r  fig.width=5, fig.height=5}
+
+gene_apa <- unique(finemap_res_4W[finemap_res_4W$type == "apaQTL",]$gene_name)
+gene_rs <- unique(finemap_res_4W[finemap_res_4W$type == "rsQTL",]$gene_name)
+gene_overlap_rsapa <- intersect(gene_apa,gene_rs)
+plot_venn_apars(gene_apa = gene_apa,gene_rs = gene_rs,gene_overlap = gene_overlap_rsapa)
+
+rs_apa_overlap_merged <- process_data_rsapa(finemap_res = finemap_res_4W)
+plot_scatter_rsapa(rs_apa_overlap_merged = rs_apa_overlap_merged)
+
+```
+
 
 ### Fine-mapping results
 
@@ -500,7 +609,7 @@ finemap_res_epred <- anno_finemap_res(finemap_res_epred,
                               drop_unmapped = TRUE,
                               add_position = TRUE,
                               use_gene_pos = "mid")
-finemap_res_gene_epred <- finemap_res_epred[finemap_res_epred$type !="SNP",] 
+finemap_res_gene_epred <- finemap_res_epred[finemap_res_epred$type !="SNP",]
 
 ### munro
 results_dir_emunro <- paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/results/",trait,"/emunro/")
@@ -518,26 +627,26 @@ finemap_res_emunro <- anno_finemap_res(finemap_res_emunro,
                               drop_unmapped = TRUE,
                               add_position = TRUE,
                               use_gene_pos = "mid")
-finemap_res_gene_emunro <- finemap_res_emunro[finemap_res_emunro$type !="SNP",] 
+finemap_res_gene_emunro <- finemap_res_emunro[finemap_res_emunro$type !="SNP",]
 
 overlap <- merge(finemap_res_gene_epred, finemap_res_gene_emunro, by = "gene_name")
 overlap <- overlap[,c("gene_name","type.x","context.x","region_id.x","z.x","susie_pip.x","z.y","susie_pip.y")]
 colnames(overlap) <- c("gene_name","type","context","region_id","z_predictdb","susie_pip_predictdb","z_munro","susie_pip_munro")
 
-DT::datatable(overlap,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Overlapped genes'),options = list(pageLength = 10) )
+DT::datatable(overlap,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','overlapping genes'),options = list(pageLength = 10) )
 
 venn <- plot_venn(npred = nrow(finemap_res_gene_epred), nmunro = nrow(finemap_res_gene_emunro), noverlap = nrow(overlap))
 ```
 
 ```{r, echo=T, message=FALSE, warning=FALSE, fig.width=10, fig.height=5}
-print("For the overlapped genes")
+print("For the overlapping genes")
 
 scatter_plot <- plot_scatter(overlap = overlap)
 ```
 
 
 
-## Comparing predictdb epjoint VS predictdb e+p + Munro rs+apa VS all 8 weights
+## Comparing predictdb e+s VS predictdb e+s + Munro rs+apa VS all 8 weights
 
 ```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
 
@@ -554,6 +663,7 @@ finemap_res_espred <- ctwas_res_espred$finemap_res
 
 p_conv_espred <- make_convergence_plots(param_espred, gwas_n, ncol = 1, colors = colors)
 ctwas_parameters_espred <- summarize_param(param_espred, gwas_n)
+pve_pie_espred <- plot_piechart(ctwas_parameters = ctwas_parameters_espred, colors = colors)
 
 finemap_res_espred$molecular_id <- get_molecular_ids(finemap_res_espred)
 finemap_res_espred <- anno_finemap_res(finemap_res_espred,
@@ -567,7 +677,7 @@ finemap_res_espred <- anno_finemap_res(finemap_res_espred,
 
 combined_pip_by_type_espred <- combine_gene_pips(finemap_res =finemap_res_espred,
                                   group_by = "gene_name",
-                                  by = "type", 
+                                  by = "type",
                                   method = "combine_cs",
                                   filter_cs = T )
 
@@ -585,6 +695,7 @@ finemap_res_4W <- ctwas_res_4W$finemap_res
 
 p_conv_4W <- make_convergence_plots(param_4W, gwas_n, ncol = 1, colors = colors)
 ctwas_parameters_4W <- summarize_param(param_4W, gwas_n)
+pve_pie_4W <- plot_piechart(ctwas_parameters = ctwas_parameters_4W, colors = colors)
 
 finemap_res_4W$molecular_id <- get_molecular_ids(finemap_res_4W)
 finemap_res_4W <- anno_finemap_res(finemap_res_4W,
@@ -598,7 +709,7 @@ finemap_res_4W <- anno_finemap_res(finemap_res_4W,
 
 combined_pip_by_type_4W <- combine_gene_pips(finemap_res =finemap_res_4W,
                                   group_by = "gene_name",
-                                  by = "type", 
+                                  by = "type",
                                   method = "combine_cs",
                                   filter_cs = T )
 
@@ -618,7 +729,7 @@ finemap_res_8W <- ctwas_res_8W$finemap_res
 p_conv_8W <- make_convergence_plots(param_8W, gwas_n, ncol = 1, colors = colors)
 
 ctwas_parameters_8W <- summarize_param(param_8W, gwas_n)
-
+pve_pie_8W <- plot_piechart(ctwas_parameters = ctwas_parameters_8W, colors = colors)
 
 finemap_res_8W$molecular_id <- get_molecular_ids(finemap_res_8W)
 finemap_res_8W <- anno_finemap_res(finemap_res_8W,
@@ -636,7 +747,7 @@ finemap_res_8W$type <- ifelse(grepl("_pred$", finemap_res_8W$context),
 
 combined_pip_by_type_8W <- combine_gene_pips(finemap_res =finemap_res_8W,
                                   group_by = "gene_name",
-                                  by = "type", 
+                                  by = "type",
                                   method = "combine_cs",
                                   filter_cs = T )
 
@@ -645,7 +756,7 @@ combined_pip_by_type_8W <- combine_gene_pips(finemap_res =finemap_res_8W,
 ### Parameters
 
 ```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=12}
-
+print("each row represents one setting: predictdb e+s, predictdb e+s + Munro apa+rs, all 8 weights accordingly")
 grid.arrange(p_conv_espred,p_conv_4W,p_conv_8W, ncol = 3)
 
 
@@ -694,9 +805,23 @@ groupsize <- cbind(group_size_espred,group_size_4W,group_size_8W)
 group_info <- cbind(grouppve,rbind(groupsize,c(rep(NA,3))))
 
 DT::datatable(group_info,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Group PVE and Group Size'),options = list(pageLength = 10) )
-
+print("each pie chart represents one setting: predictdb e+s, predictdb e+s + Munro apa+rs, all 8 weights accordingly")
+grid.arrange(pve_pie_espred,pve_pie_4W,pve_pie_8W, ncol =3)
 ```
 
+### Comparing apaQTL and rsQTL
+
+```{r  fig.width=5, fig.height=5}
+
+gene_apa <- unique(finemap_res_4W[finemap_res_4W$type == "apaQTL",]$gene_name)
+gene_rs <- unique(finemap_res_4W[finemap_res_4W$type == "rsQTL",]$gene_name)
+gene_overlap_rsapa <- intersect(gene_apa,gene_rs)
+plot_venn_apars(gene_apa = gene_apa,gene_rs = gene_rs,gene_overlap = gene_overlap_rsapa)
+
+rs_apa_overlap_merged <- process_data_rsapa(finemap_res = finemap_res_4W)
+plot_scatter_rsapa(rs_apa_overlap_merged = rs_apa_overlap_merged)
+
+```
 ### Fine-mapping results
 
 ```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
@@ -752,10 +877,6 @@ grid.arrange(g1, g2, g3, ncol=3)
 
 
 
-
-
-
-
 # SBP-ukb-a-360
 
 ## Comparing predictdb eQTL VS munro eQTL
@@ -781,7 +902,7 @@ finemap_res_epred <- anno_finemap_res(finemap_res_epred,
                               drop_unmapped = TRUE,
                               add_position = TRUE,
                               use_gene_pos = "mid")
-finemap_res_gene_epred <- finemap_res_epred[finemap_res_epred$type !="SNP",] 
+finemap_res_gene_epred <- finemap_res_epred[finemap_res_epred$type !="SNP",]
 
 ### munro
 results_dir_emunro <- paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/results/",trait,"/emunro/")
@@ -799,26 +920,26 @@ finemap_res_emunro <- anno_finemap_res(finemap_res_emunro,
                               drop_unmapped = TRUE,
                               add_position = TRUE,
                               use_gene_pos = "mid")
-finemap_res_gene_emunro <- finemap_res_emunro[finemap_res_emunro$type !="SNP",] 
+finemap_res_gene_emunro <- finemap_res_emunro[finemap_res_emunro$type !="SNP",]
 
 overlap <- merge(finemap_res_gene_epred, finemap_res_gene_emunro, by = "gene_name")
 overlap <- overlap[,c("gene_name","type.x","context.x","region_id.x","z.x","susie_pip.x","z.y","susie_pip.y")]
 colnames(overlap) <- c("gene_name","type","context","region_id","z_predictdb","susie_pip_predictdb","z_munro","susie_pip_munro")
 
-DT::datatable(overlap,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Overlapped genes'),options = list(pageLength = 10) )
+DT::datatable(overlap,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','overlapping genes'),options = list(pageLength = 10) )
 
 venn <- plot_venn(npred = nrow(finemap_res_gene_epred), nmunro = nrow(finemap_res_gene_emunro), noverlap = nrow(overlap))
 ```
 
 ```{r, echo=T, message=FALSE, warning=FALSE, fig.width=10, fig.height=5}
-print("For the overlapped genes")
+print("For the overlapping genes")
 
 scatter_plot <- plot_scatter(overlap = overlap)
 ```
 
 
 
-## Comparing predictdb epjoint VS predictdb e+p + Munro rs+apa VS all 8 weights
+## Comparing predictdb e+s VS predictdb e+s + Munro rs+apa VS all 8 weights
 
 ```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
 
@@ -835,6 +956,7 @@ finemap_res_espred <- ctwas_res_espred$finemap_res
 
 p_conv_espred <- make_convergence_plots(param_espred, gwas_n, ncol = 1, colors = colors)
 ctwas_parameters_espred <- summarize_param(param_espred, gwas_n)
+pve_pie_espred <- plot_piechart(ctwas_parameters = ctwas_parameters_espred, colors = colors)
 
 finemap_res_espred$molecular_id <- get_molecular_ids(finemap_res_espred)
 finemap_res_espred <- anno_finemap_res(finemap_res_espred,
@@ -848,7 +970,7 @@ finemap_res_espred <- anno_finemap_res(finemap_res_espred,
 
 combined_pip_by_type_espred <- combine_gene_pips(finemap_res =finemap_res_espred,
                                   group_by = "gene_name",
-                                  by = "type", 
+                                  by = "type",
                                   method = "combine_cs",
                                   filter_cs = T )
 
@@ -866,6 +988,7 @@ finemap_res_4W <- ctwas_res_4W$finemap_res
 
 p_conv_4W <- make_convergence_plots(param_4W, gwas_n, ncol = 1, colors = colors)
 ctwas_parameters_4W <- summarize_param(param_4W, gwas_n)
+pve_pie_4W <- plot_piechart(ctwas_parameters = ctwas_parameters_4W, colors = colors)
 
 finemap_res_4W$molecular_id <- get_molecular_ids(finemap_res_4W)
 finemap_res_4W <- anno_finemap_res(finemap_res_4W,
@@ -879,7 +1002,7 @@ finemap_res_4W <- anno_finemap_res(finemap_res_4W,
 
 combined_pip_by_type_4W <- combine_gene_pips(finemap_res =finemap_res_4W,
                                   group_by = "gene_name",
-                                  by = "type", 
+                                  by = "type",
                                   method = "combine_cs",
                                   filter_cs = T )
 
@@ -899,7 +1022,7 @@ finemap_res_8W <- ctwas_res_8W$finemap_res
 p_conv_8W <- make_convergence_plots(param_8W, gwas_n, ncol = 1, colors = colors)
 
 ctwas_parameters_8W <- summarize_param(param_8W, gwas_n)
-
+pve_pie_8W <- plot_piechart(ctwas_parameters = ctwas_parameters_8W, colors = colors)
 
 finemap_res_8W$molecular_id <- get_molecular_ids(finemap_res_8W)
 finemap_res_8W <- anno_finemap_res(finemap_res_8W,
@@ -917,7 +1040,7 @@ finemap_res_8W$type <- ifelse(grepl("_pred$", finemap_res_8W$context),
 
 combined_pip_by_type_8W <- combine_gene_pips(finemap_res =finemap_res_8W,
                                   group_by = "gene_name",
-                                  by = "type", 
+                                  by = "type",
                                   method = "combine_cs",
                                   filter_cs = T )
 
@@ -926,7 +1049,7 @@ combined_pip_by_type_8W <- combine_gene_pips(finemap_res =finemap_res_8W,
 ### Parameters
 
 ```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=12}
-
+print("each row represents one setting: predictdb e+s, predictdb e+s + Munro apa+rs, all 8 weights accordingly")
 grid.arrange(p_conv_espred,p_conv_4W,p_conv_8W, ncol = 3)
 
 
@@ -973,6 +1096,21 @@ groupsize <- cbind(group_size_espred,group_size_4W,group_size_8W)
 group_info <- cbind(grouppve,rbind(groupsize,c(rep(NA,3))))
 
 DT::datatable(group_info,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Group PVE and Group Size'),options = list(pageLength = 10) )
+print("each pie chart represents one setting: predictdb e+s, predictdb e+s + Munro apa+rs, all 8 weights accordingly")
+grid.arrange(pve_pie_espred,pve_pie_4W,pve_pie_8W, ncol =3)
+```
+
+### Comparing apaQTL and rsQTL
+
+```{r  fig.width=5, fig.height=5}
+
+gene_apa <- unique(finemap_res_4W[finemap_res_4W$type == "apaQTL",]$gene_name)
+gene_rs <- unique(finemap_res_4W[finemap_res_4W$type == "rsQTL",]$gene_name)
+gene_overlap_rsapa <- intersect(gene_apa,gene_rs)
+plot_venn_apars(gene_apa = gene_apa,gene_rs = gene_rs,gene_overlap = gene_overlap_rsapa)
+
+rs_apa_overlap_merged <- process_data_rsapa(finemap_res = finemap_res_4W)
+plot_scatter_rsapa(rs_apa_overlap_merged = rs_apa_overlap_merged)
 
 ```
 
@@ -1054,7 +1192,7 @@ finemap_res_epred <- anno_finemap_res(finemap_res_epred,
                               drop_unmapped = TRUE,
                               add_position = TRUE,
                               use_gene_pos = "mid")
-finemap_res_gene_epred <- finemap_res_epred[finemap_res_epred$type !="SNP",] 
+finemap_res_gene_epred <- finemap_res_epred[finemap_res_epred$type !="SNP",]
 
 ### munro
 results_dir_emunro <- paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/results/",trait,"/emunro/")
@@ -1072,26 +1210,26 @@ finemap_res_emunro <- anno_finemap_res(finemap_res_emunro,
                               drop_unmapped = TRUE,
                               add_position = TRUE,
                               use_gene_pos = "mid")
-finemap_res_gene_emunro <- finemap_res_emunro[finemap_res_emunro$type !="SNP",] 
+finemap_res_gene_emunro <- finemap_res_emunro[finemap_res_emunro$type !="SNP",]
 
 overlap <- merge(finemap_res_gene_epred, finemap_res_gene_emunro, by = "gene_name")
 overlap <- overlap[,c("gene_name","type.x","context.x","region_id.x","z.x","susie_pip.x","z.y","susie_pip.y")]
 colnames(overlap) <- c("gene_name","type","context","region_id","z_predictdb","susie_pip_predictdb","z_munro","susie_pip_munro")
 
-DT::datatable(overlap,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Overlapped genes'),options = list(pageLength = 10) )
+DT::datatable(overlap,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','overlapping genes'),options = list(pageLength = 10) )
 
 venn <- plot_venn(npred = nrow(finemap_res_gene_epred), nmunro = nrow(finemap_res_gene_emunro), noverlap = nrow(overlap))
 ```
 
 ```{r, echo=T, message=FALSE, warning=FALSE, fig.width=10, fig.height=5}
-print("For the overlapped genes")
+print("For the overlapping genes")
 
 scatter_plot <- plot_scatter(overlap = overlap)
 ```
 
 
 
-## Comparing predictdb epjoint VS predictdb e+p + Munro rs+apa VS all 8 weights
+## Comparing predictdb e+s VS predictdb e+s + Munro rs+apa VS all 8 weights
 
 ```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
 
@@ -1108,6 +1246,7 @@ finemap_res_espred <- ctwas_res_espred$finemap_res
 
 p_conv_espred <- make_convergence_plots(param_espred, gwas_n, ncol = 1, colors = colors)
 ctwas_parameters_espred <- summarize_param(param_espred, gwas_n)
+pve_pie_espred <- plot_piechart(ctwas_parameters = ctwas_parameters_espred, colors = colors)
 
 finemap_res_espred$molecular_id <- get_molecular_ids(finemap_res_espred)
 finemap_res_espred <- anno_finemap_res(finemap_res_espred,
@@ -1121,7 +1260,7 @@ finemap_res_espred <- anno_finemap_res(finemap_res_espred,
 
 combined_pip_by_type_espred <- combine_gene_pips(finemap_res =finemap_res_espred,
                                   group_by = "gene_name",
-                                  by = "type", 
+                                  by = "type",
                                   method = "combine_cs",
                                   filter_cs = T )
 
@@ -1139,6 +1278,7 @@ finemap_res_4W <- ctwas_res_4W$finemap_res
 
 p_conv_4W <- make_convergence_plots(param_4W, gwas_n, ncol = 1, colors = colors)
 ctwas_parameters_4W <- summarize_param(param_4W, gwas_n)
+pve_pie_4W <- plot_piechart(ctwas_parameters = ctwas_parameters_4W, colors = colors)
 
 finemap_res_4W$molecular_id <- get_molecular_ids(finemap_res_4W)
 finemap_res_4W <- anno_finemap_res(finemap_res_4W,
@@ -1152,7 +1292,7 @@ finemap_res_4W <- anno_finemap_res(finemap_res_4W,
 
 combined_pip_by_type_4W <- combine_gene_pips(finemap_res =finemap_res_4W,
                                   group_by = "gene_name",
-                                  by = "type", 
+                                  by = "type",
                                   method = "combine_cs",
                                   filter_cs = T )
 
@@ -1172,7 +1312,7 @@ finemap_res_8W <- ctwas_res_8W$finemap_res
 p_conv_8W <- make_convergence_plots(param_8W, gwas_n, ncol = 1, colors = colors)
 
 ctwas_parameters_8W <- summarize_param(param_8W, gwas_n)
-
+pve_pie_8W <- plot_piechart(ctwas_parameters = ctwas_parameters_8W, colors = colors)
 
 finemap_res_8W$molecular_id <- get_molecular_ids(finemap_res_8W)
 finemap_res_8W <- anno_finemap_res(finemap_res_8W,
@@ -1190,7 +1330,7 @@ finemap_res_8W$type <- ifelse(grepl("_pred$", finemap_res_8W$context),
 
 combined_pip_by_type_8W <- combine_gene_pips(finemap_res =finemap_res_8W,
                                   group_by = "gene_name",
-                                  by = "type", 
+                                  by = "type",
                                   method = "combine_cs",
                                   filter_cs = T )
 
@@ -1199,7 +1339,7 @@ combined_pip_by_type_8W <- combine_gene_pips(finemap_res =finemap_res_8W,
 ### Parameters
 
 ```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=12}
-
+print("each row represents one setting: predictdb e+s, predictdb e+s + Munro apa+rs, all 8 weights accordingly")
 grid.arrange(p_conv_espred,p_conv_4W,p_conv_8W, ncol = 3)
 
 
@@ -1246,6 +1386,21 @@ groupsize <- cbind(group_size_espred,group_size_4W,group_size_8W)
 group_info <- cbind(grouppve,rbind(groupsize,c(rep(NA,3))))
 
 DT::datatable(group_info,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Group PVE and Group Size'),options = list(pageLength = 10) )
+print("each pie chart represents one setting: predictdb e+s, predictdb e+s + Munro apa+rs, all 8 weights accordingly")
+grid.arrange(pve_pie_espred,pve_pie_4W,pve_pie_8W, ncol =3)
+```
+
+### Comparing apaQTL and rsQTL
+
+```{r  fig.width=5, fig.height=5}
+
+gene_apa <- unique(finemap_res_4W[finemap_res_4W$type == "apaQTL",]$gene_name)
+gene_rs <- unique(finemap_res_4W[finemap_res_4W$type == "rsQTL",]$gene_name)
+gene_overlap_rsapa <- intersect(gene_apa,gene_rs)
+plot_venn_apars(gene_apa = gene_apa,gene_rs = gene_rs,gene_overlap = gene_overlap_rsapa)
+
+rs_apa_overlap_merged <- process_data_rsapa(finemap_res = finemap_res_4W)
+plot_scatter_rsapa(rs_apa_overlap_merged = rs_apa_overlap_merged)
 
 ```
 
