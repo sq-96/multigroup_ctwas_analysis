@@ -1,0 +1,446 @@
+---
+title: "Deciding the matching tissue -- pre-estimate L"
+author: "XSun"
+date: "2024-10-08"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+    toc: true
+---
+
+```{r }
+
+library(lattice)
+library(gridExtra)
+library(ggplot2)
+
+num_top <- 10
+
+load("/project/xinhe/xsun/multi_group_ctwas/10.single_tissue_1007/summary/para_pip08.rdata")
+sum_all <- para_sum
+colnames(sum_all)[ncol(sum_all)] <-"PVE(%)"
+sum_all$`PVE(%)` <- as.numeric(sum_all$`PVE(%)`)*100
+
+
+get_correlation <- function(tissue1, tissue2, cor_matrix) {
+  # Check if tissues are in the matrix and find their positions
+  pos1 <- match(tissue1, colnames(cor_matrix))
+  pos2 <- match(tissue2, rownames(cor_matrix))
+  
+  return(cor_matrix[pos2, pos1]) 
+}
+
+r2cutoff <- 0.8
+filter_tissues <- function(tissue_list, cor_matrix) {
+  filtered_list <- c(tissue_list[1]) # Start with the first tissue
+  
+  for (i in 2:length(tissue_list)) {
+    high_correlation_found <- FALSE
+    for (j in 1:length(filtered_list)) {
+      if (!is.na(get_correlation(filtered_list[j], tissue_list[i], cor_matrix)) &&
+          get_correlation(filtered_list[j], tissue_list[i], cor_matrix) > r2cutoff) {
+        high_correlation_found <- TRUE
+        break # Break the inner loop as high correlation is found
+      }
+    }
+    
+    if (!high_correlation_found) {
+      filtered_list <- c(filtered_list, tissue_list[i])
+    }
+  }
+  return(filtered_list)
+}
+
+fill_upper_triangle <- function(cor_matrix) {
+    for (i in 1:nrow(cor_matrix)) {
+        for (j in 1:ncol(cor_matrix)) {
+            # Check if the upper triangle element is NA and the lower triangle element is not NA
+            if (is.na(cor_matrix[i, j]) && !is.na(cor_matrix[j, i])) {
+                # Copy the value from the lower triangle to the upper triangle
+                cor_matrix[i, j] <- cor_matrix[j, i]
+            }
+        }
+    }
+    cor_matrix[lower.tri(cor_matrix)] <- NA
+    return(cor_matrix)
+}
+
+combine_vectors <- function(vec1, vec_cor1, vec2, vec_cor2, pad_with_na = TRUE) {
+  # Check if padding with NAs is required
+  if (pad_with_na) {
+    # Pad the shorter primary vector and its corresponding vector with NAs
+    if (length(vec1) < length(vec2)) {
+      extra_length <- length(vec2) - length(vec1)
+      vec1 <- c(vec1, rep(NA, extra_length))
+      vec_cor1 <- c(vec_cor1, rep(NA, extra_length))
+    } else {
+      extra_length <- length(vec1) - length(vec2)
+      vec2 <- c(vec2, rep(NA, extra_length))
+      vec_cor2 <- c(vec_cor2, rep(NA, extra_length))
+    }
+    # Combine the vectors into a matrix/data frame
+    return(cbind(vec1, vec_cor1, vec2, vec_cor2))
+  } else {
+    # Combine the vectors into a list
+    return(list(vec1=vec1, vec_cor1=vec_cor1, vec2=vec2, vec_cor2=vec_cor2))
+  }
+}
+
+
+```
+
+# Analysis settings
+
+## parameters
+
+1. Weight processing:
+
+PredictDB eQTLs
+
+- drop_strand_ambig = TRUE,
+- scale_by_ld_variance = T
+- load_predictdb_LD = F,
+
+2. Parameter estimation and fine-mapping
+
+- group_prior_var_structure = “shared_type”,
+- filter_L = TRUE,
+- filter_nonSNP_PIP = FALSE,
+- min_nonSNP_PIP = 0.5,
+- min_abs_corr = 0.1,
+
+(min_gene = 0 in parameter estimation, min_gene = 1 in screening region)
+
+mem: 100g 10cores
+
+
+## Traits
+
+aFib, IBD, LDL, SBP, SCZ, WBC 
+
+[details](https://sq-96.github.io/multigroup_ctwas_analysis/data.html)
+
+## Weights 
+
+PredictDB, 32 tissues with sample size (RNASeq.and.Genotyped.samples below) >= 200
+
+```{r }
+
+weights <- read.csv("/project/xinhe/xsun/ctwas/1.matching_tissue/results_data/gtex_samplesize.csv")
+DT::datatable(weights,options = list(pageLength = 5))
+
+num_top <- 10
+```
+
+##  Tissue-tissue correlation data 
+
+From [MASH paper, PMID30478440](https://www.nature.com/articles/s41588-018-0268-8)
+
+The MASH paper provides a matrix indicating the shared magnitude of eQTLs among tissues [by computing the proportion of effects significant in either tissue that are within 2-fold magnitude of one another](https://stephenslab.github.io/gtexresults/SharingMag.html).
+
+[data download link (MASH matrix)](https://github.com/stephenslab/gtexresults)
+
+```{r}
+load("/project/xinhe/xsun/ctwas/1.matching_tissue/data/tissue_cor.rdata")
+clrs <- colorRampPalette(rev(c("#D73027","#FC8D59","#FEE090","#FFFFBF",
+                               "#E0F3F8","#91BFDB","#4575B4")))(64)
+```
+
+We filtered the correlation using 0.8 as cutoff.
+
+
+# aFib-ebi-a-GCST006414
+
+```{r }
+
+sum_cat <- sum_all[sum_all$trait =="aFib-ebi-a-GCST006414",]
+
+DT::datatable(sum_cat,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;  font-size:150% ;','summary for ctwas parameters and high pip genes (all tissues analyzed)'),options = list(pageLength = 5) )
+```
+
+## Filtering based on the number of high PIP genes
+
+```{r }
+sum_cat <- sum_cat[order(as.numeric(sum_cat$`#pip>0.8&incs`),decreasing = T),]
+
+tissue_select <- sum_cat$tissue[num_top:1]
+tissue_select <- tissue_select[tissue_select%in%rownames(lat)]
+
+##heatmap
+cor <- lat[tissue_select,tissue_select]
+cor <- fill_upper_triangle(cor)
+print(levelplot(cor,col.regions = clrs,xlab = "",ylab = "",
+                colorkey = TRUE,main = "heatmap showing the tissue-tissue correlation"))
+
+##cor matrix
+cor <- cor[rev(tissue_select),rev(tissue_select)]
+DT::datatable(cor,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;  font-size:150% ;','tissue-tissue correlation matrix '),options = list(pageLength = 10) )
+
+
+tissue_select_f1 <- sum_cat$tissue[1:num_top]
+filtered_tissues <- filter_tissues(tissue_select_f1, cor)
+
+tissue_select_f1_cor <- sum_cat$`#pip>0.8&incs`[sum_cat$tissue %in% tissue_select_f1 ]
+filtered_tissues_cor <- sum_cat$`#pip>0.8&incs`[sum_cat$tissue %in% filtered_tissues ]
+comb <- combine_vectors(tissue_select_f1, tissue_select_f1_cor, filtered_tissues, filtered_tissues_cor, pad_with_na = TRUE)
+colnames(comb) <- c("without_filtering","#highpip_gene","filtered","#highpip_gene")
+
+
+DT::datatable(comb,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Comparing the top tissue lists (with/without filtering by tissue correlation) '),options = list(pageLength = 10) )
+
+```
+
+
+
+
+
+# IBD-ebi-a-GCST004131
+
+```{r }
+
+sum_cat <- sum_all[sum_all$trait =="IBD-ebi-a-GCST004131",]
+
+DT::datatable(sum_cat,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;  font-size:150% ;','summary for ctwas parameters and high pip genes (all tissues analyzed)'),options = list(pageLength = 5) )
+```
+
+## Filtering based on the number of high PIP genes
+
+```{r }
+sum_cat <- sum_cat[order(as.numeric(sum_cat$`#pip>0.8&incs`),decreasing = T),]
+
+tissue_select <- sum_cat$tissue[num_top:1]
+tissue_select <- tissue_select[tissue_select%in%rownames(lat)]
+
+##heatmap
+cor <- lat[tissue_select,tissue_select]
+cor <- fill_upper_triangle(cor)
+print(levelplot(cor,col.regions = clrs,xlab = "",ylab = "",
+                colorkey = TRUE,main = "heatmap showing the tissue-tissue correlation"))
+
+##cor matrix
+cor <- cor[rev(tissue_select),rev(tissue_select)]
+DT::datatable(cor,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;  font-size:150% ;','tissue-tissue correlation matrix '),options = list(pageLength = 10) )
+
+
+tissue_select_f1 <- sum_cat$tissue[1:num_top]
+filtered_tissues <- filter_tissues(tissue_select_f1, cor)
+
+tissue_select_f1_cor <- sum_cat$`#pip>0.8&incs`[sum_cat$tissue %in% tissue_select_f1 ]
+filtered_tissues_cor <- sum_cat$`#pip>0.8&incs`[sum_cat$tissue %in% filtered_tissues ]
+comb <- combine_vectors(tissue_select_f1, tissue_select_f1_cor, filtered_tissues, filtered_tissues_cor, pad_with_na = TRUE)
+colnames(comb) <- c("without_filtering","#highpip_gene","filtered","#highpip_gene")
+
+
+DT::datatable(comb,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Comparing the top tissue lists (with/without filtering by tissue correlation) '),options = list(pageLength = 10) )
+
+```
+
+# LDL-ukb-d-30780_irnt
+
+```{r }
+
+sum_cat <- sum_all[sum_all$trait =="LDL-ukb-d-30780_irnt",]
+
+DT::datatable(sum_cat,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;  font-size:150% ;','summary for ctwas parameters and high pip genes (all tissues analyzed)'),options = list(pageLength = 5) )
+```
+
+## Filtering based on the number of high PIP genes
+
+```{r }
+sum_cat <- sum_cat[order(as.numeric(sum_cat$`#pip>0.8&incs`),decreasing = T),]
+
+tissue_select <- sum_cat$tissue[num_top:1]
+tissue_select <- tissue_select[tissue_select%in%rownames(lat)]
+
+##heatmap
+cor <- lat[tissue_select,tissue_select]
+cor <- fill_upper_triangle(cor)
+print(levelplot(cor,col.regions = clrs,xlab = "",ylab = "",
+                colorkey = TRUE,main = "heatmap showing the tissue-tissue correlation"))
+
+##cor matrix
+cor <- cor[rev(tissue_select),rev(tissue_select)]
+DT::datatable(cor,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;  font-size:150% ;','tissue-tissue correlation matrix '),options = list(pageLength = 10) )
+
+
+tissue_select_f1 <- sum_cat$tissue[1:num_top]
+filtered_tissues <- filter_tissues(tissue_select_f1, cor)
+
+tissue_select_f1_cor <- sum_cat$`#pip>0.8&incs`[sum_cat$tissue %in% tissue_select_f1 ]
+filtered_tissues_cor <- sum_cat$`#pip>0.8&incs`[sum_cat$tissue %in% filtered_tissues ]
+comb <- combine_vectors(tissue_select_f1, tissue_select_f1_cor, filtered_tissues, filtered_tissues_cor, pad_with_na = TRUE)
+colnames(comb) <- c("without_filtering","#highpip_gene","filtered","#highpip_gene")
+
+
+DT::datatable(comb,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Comparing the top tissue lists (with/without filtering by tissue correlation) '),options = list(pageLength = 10) )
+
+```
+
+
+# SBP-ukb-a-360
+
+```{r }
+
+sum_cat <- sum_all[sum_all$trait =="SBP-ukb-a-360",]
+
+DT::datatable(sum_cat,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;  font-size:150% ;','summary for ctwas parameters and high pip genes (all tissues analyzed)'),options = list(pageLength = 5) )
+```
+
+## Filtering based on the number of high PIP genes
+
+```{r }
+sum_cat <- sum_cat[order(as.numeric(sum_cat$`#pip>0.8&incs`),decreasing = T),]
+
+tissue_select <- sum_cat$tissue[num_top:1]
+tissue_select <- tissue_select[tissue_select%in%rownames(lat)]
+
+##heatmap
+cor <- lat[tissue_select,tissue_select]
+cor <- fill_upper_triangle(cor)
+print(levelplot(cor,col.regions = clrs,xlab = "",ylab = "",
+                colorkey = TRUE,main = "heatmap showing the tissue-tissue correlation"))
+
+##cor matrix
+cor <- cor[rev(tissue_select),rev(tissue_select)]
+DT::datatable(cor,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;  font-size:150% ;','tissue-tissue correlation matrix '),options = list(pageLength = 10) )
+
+
+tissue_select_f1 <- sum_cat$tissue[1:num_top]
+filtered_tissues <- filter_tissues(tissue_select_f1, cor)
+
+tissue_select_f1_cor <- sum_cat$`#pip>0.8&incs`[sum_cat$tissue %in% tissue_select_f1 ]
+filtered_tissues_cor <- sum_cat$`#pip>0.8&incs`[sum_cat$tissue %in% filtered_tissues ]
+comb <- combine_vectors(tissue_select_f1, tissue_select_f1_cor, filtered_tissues, filtered_tissues_cor, pad_with_na = TRUE)
+colnames(comb) <- c("without_filtering","#highpip_gene","filtered","#highpip_gene")
+
+
+DT::datatable(comb,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Comparing the top tissue lists (with/without filtering by tissue correlation) '),options = list(pageLength = 10) )
+
+```
+
+
+# SCZ-ieu-b-5102
+
+```{r }
+
+sum_cat <- sum_all[sum_all$trait =="SCZ-ieu-b-5102",]
+
+DT::datatable(sum_cat,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;  font-size:150% ;','summary for ctwas parameters and high pip genes (all tissues analyzed)'),options = list(pageLength = 5) )
+```
+
+## Filtering based on the number of high PIP genes
+
+```{r }
+sum_cat <- sum_cat[order(as.numeric(sum_cat$`#pip>0.8&incs`),decreasing = T),]
+
+tissue_select <- sum_cat$tissue[num_top:1]
+tissue_select <- tissue_select[tissue_select%in%rownames(lat)]
+
+##heatmap
+cor <- lat[tissue_select,tissue_select]
+cor <- fill_upper_triangle(cor)
+print(levelplot(cor,col.regions = clrs,xlab = "",ylab = "",
+                colorkey = TRUE,main = "heatmap showing the tissue-tissue correlation"))
+
+##cor matrix
+cor <- cor[rev(tissue_select),rev(tissue_select)]
+DT::datatable(cor,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;  font-size:150% ;','tissue-tissue correlation matrix '),options = list(pageLength = 10) )
+
+
+tissue_select_f1 <- sum_cat$tissue[1:num_top]
+filtered_tissues <- filter_tissues(tissue_select_f1, cor)
+
+tissue_select_f1_cor <- sum_cat$`#pip>0.8&incs`[sum_cat$tissue %in% tissue_select_f1 ]
+filtered_tissues_cor <- sum_cat$`#pip>0.8&incs`[sum_cat$tissue %in% filtered_tissues ]
+comb <- combine_vectors(tissue_select_f1, tissue_select_f1_cor, filtered_tissues, filtered_tissues_cor, pad_with_na = TRUE)
+colnames(comb) <- c("without_filtering","#highpip_gene","filtered","#highpip_gene")
+
+
+DT::datatable(comb,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Comparing the top tissue lists (with/without filtering by tissue correlation) '),options = list(pageLength = 10) )
+
+```
+
+
+# WBC-ieu-b-30
+
+```{r }
+
+sum_cat <- sum_all[sum_all$trait =="WBC-ieu-b-30",]
+
+DT::datatable(sum_cat,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;  font-size:150% ;','summary for ctwas parameters and high pip genes (all tissues analyzed)'),options = list(pageLength = 5) )
+```
+
+## Filtering based on the number of high PIP genes
+
+```{r }
+
+num_top <- 15
+
+sum_cat <- sum_cat[order(as.numeric(sum_cat$`#pip>0.8&incs`),decreasing = T),]
+
+tissue_select <- sum_cat$tissue[num_top:1]
+tissue_select <- tissue_select[tissue_select%in%rownames(lat)]
+
+##heatmap
+cor <- lat[tissue_select,tissue_select]
+cor <- fill_upper_triangle(cor)
+print(levelplot(cor,col.regions = clrs,xlab = "",ylab = "",
+                colorkey = TRUE,main = "heatmap showing the tissue-tissue correlation"))
+
+##cor matrix
+cor <- cor[rev(tissue_select),rev(tissue_select)]
+DT::datatable(cor,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;  font-size:150% ;','tissue-tissue correlation matrix '),options = list(pageLength = 10) )
+
+
+tissue_select_f1 <- sum_cat$tissue[1:num_top]
+filtered_tissues <- filter_tissues(tissue_select_f1, cor)
+
+tissue_select_f1_cor <- sum_cat$`#pip>0.8&incs`[sum_cat$tissue %in% tissue_select_f1 ]
+filtered_tissues_cor <- sum_cat$`#pip>0.8&incs`[sum_cat$tissue %in% filtered_tissues ]
+comb <- combine_vectors(tissue_select_f1, tissue_select_f1_cor, filtered_tissues, filtered_tissues_cor, pad_with_na = TRUE)
+colnames(comb) <- c("without_filtering","#highpip_gene","filtered","#highpip_gene")
+
+
+DT::datatable(comb,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Comparing the top tissue lists (with/without filtering by tissue correlation) '),options = list(pageLength = 10) )
+
+```
+
+
+# Selected Tissues 
+
+| Trait | Number of Tissues | Tissue                               | # of high pip genes (in cs) | PVE (if same in number of high pip genes) |
+|-------|-------------------|--------------------------------------|---------------------|-------------------------------------------|
+| aFib  | 5                 | Heart_Atrial_Appendage               | 24                  |                                           |
+|       |                   | Artery_Tibial                        | 16                  |                                           |
+|       |                   | Muscle_Skeletal                      | 12                  |                                           |
+|       |                   | Stomach                              | 9                   |                                           |
+|       |                   | Thyroid                              | 8                   |                                           |
+| IBD   | 6                 | Whole_Blood                          | 11                  |                                           |
+|       |                   | Adipose_Subcutaneous                 | 10                  |                                           |
+|       |                   | Cells_Cultured_fibroblasts           | 9                   |                                           |
+|       |                   | Spleen                               | 8                   | 0.0304                                    |
+|       |                   | Testis                               | 8                   | 0.0234                                    |
+|       |                   | Pituitary                            | 8                   | 0.0209                                    |
+| LDL   | 6                 | Liver                                | 31                  |                                           |
+|       |                   | Spleen                               | 22                  |                                           |
+|       |                   | Esophagus_Mucosa                     | 20                  |                                           |
+|       |                   | Esophagus_Gastroesophageal_Junction  | 19                  |                                           |
+|       |                   | Skin_Not_Sun_Exposed_Suprapubic      | 17                  | 0.0063                                    |
+|       |                   | Adipose_Subcutaneous                 | 17                  | 0.0054                                    |
+| SBP   | 5                 | Artery_Tibial                        | 29                  |                                           |
+|       |                   | Heart_Atrial_Appendage               | 17                  |                                           |
+|       |                   | Adipose_Subcutaneous                 | 16                  |                                           |
+|       |                   | Brain_Cortex                         | 16                  |                                           |
+|       |                   | Skin_Sun_Exposed_Lower_leg           | 16                  |                                           |
+| SCZ   | 6                 | Brain_Hippocampus                    | 14                  |                                           |
+|       |                   | Adrenal_Gland                        | 13                  |                                           |
+|       |                   | Brain_Spinal_cord_cervical_c-1       | 12                  |                                           |
+|       |                   | Spleen                               | 10                  | 0.0154                                    |
+|       |                   | Heart_Left_Ventricle                 | 10                  | 0.0145                                    |
+|       |                   | Brain_Substantia_nigra               | 10                  | 0.0132                                    |
+| WBC   | 6                 | Whole_Blood                          | 81                  |                                           |
+|       |                   | Adipose_Subcutaneous                 | 52                  |                                           |
+|       |                   | Esophagus_Muscularis                 | 45                  |                                           |
+|       |                   | Cells_Cultured_fibroblasts           | 44                  |                                           |
+|       |                   | Thyroid                              | 40                  | 0.0074                                    |
+|       |                   | Colon_Transverse                     | 40                  | 0.0067                                    |
