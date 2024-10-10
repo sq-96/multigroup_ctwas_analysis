@@ -1,26 +1,12 @@
 ---
-title: "An example for LDL ~ Predictdb eQTL&sQTL from Liver"
+title: " cTWAS results from analysis of LDL GWAS"
 author: "XSun"
-date: '2024-09-22'
+date: '2024-10-10'
 output:
-  html_document:
-    toc: yes
-    df_print: paged
   workflowr::wflow_html:
     code_folding: hide
-<<<<<<< HEAD
     toc: true
-    
-=======
-    toc: yes
->>>>>>> master
 ---
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(fig.path = "docs/figure/LDL_predictdb_esQTL.Rmd/")
-```
-
-
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 library(ctwas)
@@ -59,16 +45,16 @@ The prediction models used in this analysis are liver gene expression and splici
 ```{r echo=FALSE}
 
 sprintf("The number of eQTLs per gene = %s",round(weights_expression$mean_snp,digits = 4))
-sprintf("Total genes = %s",weights_expression$gene_count)
+sprintf("Total number of genes = %s",weights_expression$gene_count)
 
 sprintf("The number of sQTLs per intron = %s",round(weights_splicing$mean_snp,digits = 4))
-sprintf("Total introns = %s",weights_splicing$gene_count)
+sprintf("Total number of introns = %s",weights_splicing$gene_count)
 
 ```
 
 - Reference data
 
-The reference data include genomic region definitions and an LD reference. We use the genomic regions provided by the package and the LD reference in b38, located at `/project2/mstephens/wcrouse/UKB_LDR_0.1/`. Alternatively, the LD reference can be downloaded from this link:https://uchicago.app.box.com/s/jqocacd2fulskmhoqnasrknbt59x3xkn. 
+The reference data include genomic region definitions and an LD reference. We use the genomic regions provided by the package and the LD reference in b38, located in RCC cluster of UChicago:  `/project2/mstephens/wcrouse/UKB_LDR_0.1/`. Alternatively, the LD reference can be downloaded from this link:https://uchicago.app.box.com/s/jqocacd2fulskmhoqnasrknbt59x3xkn. 
 
 ## Data processing and harmonization
 
@@ -135,8 +121,8 @@ weights_expression1 <- preprocess_weights(weight_file = weight_files[1],
                                               context = tissue,
                                               weight_format = "PredictDB",
                                               drop_strand_ambig = TRUE,
-                                              scale_predictdb_weights = T,
-                                              load_predictdb_LD = F, #### F for fusion converted weights
+                                              scale_predictdb_weights = T, #### F for fusion converted weights
+                                              load_predictdb_LD = F, #### F for fusion converted weights or want to compute LD from LD reference
                                               filter_protein_coding_genes = TRUE,
                                               ncore = ncore)
     
@@ -150,7 +136,7 @@ weights_splicing1 <- preprocess_weights(weight_file = weight_files[2],
                                             weight_format = "PredictDB",
                                             drop_strand_ambig = TRUE,
                                             scale_predictdb_weights = T, #### F for fusion converted weights
-                                            load_predictdb_LD = F, 
+                                            load_predictdb_LD = F,  #### F for fusion converted weights or want to compute LD from LD reference
                                             filter_protein_coding_genes = TRUE,
                                             ncore = ncore)    
     
@@ -166,7 +152,7 @@ All arguments are set to their default values, with the following specific setti
 
 - `group_prior_var_structure = "shared_type"`: Allows all groups within a molecular QTL type to share the same variance parameter.
 - `filter_L = TRUE`: Estimates the number of causal signals (L) for each region.
-- `filter_nonSNP_PIP = TRUE`: Prevents the computation of non-SNP PIP values.
+- `filter_nonSNP_PIP = TRUE`: Remove regions if the total PIP from molecule traits (nonSNP-PIP) is below a cutoff.
 - `min_nonSNP_PIP = 0.5`: Selects regions where the non-SNP PIP is greater than 0.5.
 
 Users can expand the code snippets below to view the exact code used.
@@ -203,7 +189,7 @@ ctwas_res <- ctwas_sumstats(z_snp,
 
 ```{r echo=F, eval=T}
 
-results_dir <- paste0("/project/xinhe/xsun/multi_group_ctwas/examples/results_predictdb_main/",trait,"/")
+results_dir <- paste0("/project/xinhe/xsun/multi_group_ctwas/examples/results_predictdb_1010/",trait,"/")
 
 ctwas_res <- readRDS(paste0(results_dir,trait,".ctwas.res.RDS"))
 
@@ -218,7 +204,7 @@ param <- ctwas_res$param
 make_convergence_plots(param, gwas_n)
 ```
 
-These plots show the estimated prior inclusion probability, prior effect size variance, enrichment and proportion of variance explained (PVE) over the iterations of parameter estimation. The enrichment is defined as the ratio of the prior inclusion probability of molecular traits over the prior inclusion probability of variants. We generally expect molecular traits to have higher prior inclusion probability than variants. Enrichment values typically range from 20 - 100 for expression traits.
+These plots show the estimated prior inclusion probability, prior effect size variance, enrichment and proportion of variance explained (PVE) over the iterations of parameter estimation. 
 
 Then, we use `summarize_param(param, gwas_n)` to obtain estimated parameters (from the last iteration) and to compute the PVE by variants and molecular traits.
 
@@ -233,8 +219,8 @@ ctwas_parameters$group_size
 
 ```{r echo=T, eval=T}
 data <- data.frame(
-  category = names(ctwas_parameters$attributable_pve),
-  percentage = ctwas_parameters$attributable_pve
+  category = names(ctwas_parameters$prop_heritability),
+  percentage = ctwas_parameters$prop_heritability
 )
 
 # Calculate percentage labels for the chart
@@ -253,15 +239,12 @@ ggplot(data, aes(x = "", y = percentage, fill = category)) +
 
 # Diagnosis plots
 
-For all genes analyzed, we compare the z-scores and fine-mapping PIPs
+For all genes analyzed, we compare the z-scores and fine-mapping PIPs. We generally expect high PIP molecular traits to have high Z-scores as well. If this is not the case, it may suggest problems, often due to mismatch of reference LD with the LD in the GWAS cohort
 
 ```{r echo=T, eval=T}
 
-<<<<<<< HEAD
-=======
 finemap_res <- ctwas_res$finemap_res 
 
->>>>>>> master
 ggplot(data = finemap_res[finemap_res$type!="SNP",], aes(x = abs(z), y = susie_pip)) +
   geom_point() +
   labs(x = "abs(z-scores)", y = "PIPs") +
@@ -276,7 +259,7 @@ We process the fine-mapping results here.
 We first add gene annotations to cTWAS results
 
 ```{r echo=T, eval=T}
-E_S_A_mapping <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
+mapping_table <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
 
 finemap_res$molecular_id <- get_molecular_ids(finemap_res)
 
@@ -284,14 +267,14 @@ snp_map <- readRDS(paste0(results_dir,trait,".snp_map.RDS"))
 
 finemap_res <- anno_finemap_res(finemap_res,
                                          snp_map = snp_map,
-                                         mapping_table = E_S_A_mapping,
+                                         mapping_table = mapping_table,
                                          add_gene_annot = TRUE,
                                          map_by = "molecular_id",
                                          drop_unmapped = TRUE,
                                          add_position = TRUE,
                                          use_gene_pos = "mid")
 
-finemap_res_show <- finemap_res[finemap_res$cs_index!=0 &finemap_res$type !="SNP",]
+finemap_res_show <- finemap_res[!is.na(finemap_res$cs) &finemap_res$type !="SNP",]
 
 DT::datatable(finemap_res_show,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','The annotated fine-mapping results, ones within credible sets are shown'),options = list(pageLength = 5) )
 
@@ -302,17 +285,25 @@ Next, we compute gene PIPs across different types of molecular traits
 ```{r echo=T, eval=T, message=F, warning=F}
 library(dplyr)
 
-combined_pip_by_type <- combine_gene_pips(finemap_res,
-                                          group_by = "gene_name",
-                                          by = "type",
-                                          method = "combine_cs",
-                                          filter_cs = TRUE)
+susie_alpha_res <- ctwas_res$susie_alpha_res
+
+susie_alpha_res <- anno_susie_alpha_res(susie_alpha_res,
+                                        mapping_table = mapping_table,
+                                        map_by = "molecular_id",
+                                        drop_unmapped = TRUE)
+
+combined_pip_by_type <- combine_gene_pips(susie_alpha_res, 
+                                             group_by = "gene_name",
+                                             by = "type",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = TRUE)
 
 combined_pip_by_type$sQTL_pip_partition <- sapply(combined_pip_by_type$gene_name, function(gene) {
   
   # Find rows in finemap_res_show matching the gene_name
   matching_rows <- finemap_res_show %>%
-    filter(gene_name == gene, type == "sQTL")  # Match gene_name and filter by type == "sQTL"
+    dplyr::filter(gene_name == gene, type == "sQTL")  # Match gene_name and filter by type == "sQTL"
   
   # If no matching rows, return NA
   if (nrow(matching_rows) == 0) {
@@ -320,7 +311,7 @@ combined_pip_by_type$sQTL_pip_partition <- sapply(combined_pip_by_type$gene_name
   }
   
   # Create the desired string format: molecular_id-round(susie_pip, digits = 4)
-  paste(matching_rows$molecular_id, "-PIP=", round(matching_rows$susie_pip, digits = 4), sep = "", collapse = ", ")
+  paste(matching_rows$molecular_id, ":PIP=", round(matching_rows$susie_pip, digits = 4), sep = "", collapse = ", ")
 })
 
 
@@ -332,23 +323,69 @@ DT::datatable(combined_pip_by_type,caption = htmltools::tags$caption( style = 'c
 
 # Locus plots
 
-We make locuz plot for the region("16_71020125_72901251") containing the gene HPR. we limit PIP results to credible sets in the PIP track by setting `filter_cs = TRUE`.
+We make locus plot for the region("16_71020125_72901251") containing the gene HPR.
 
-<!-- ```{r} -->
-<!-- weights <- readRDS(paste0(results_dir,trait,".preprocessed.weights.RDS")) -->
+```{r}
+weights <- readRDS(paste0(results_dir,trait,".preprocessed.weights.RDS"))
 
-<!-- make_locusplot(finemap_res = finemap_res, -->
-<!--                region_id = "16_71020125_72901251", -->
-<!--                ens_db = ens_db, -->
-<!--                weights = weights, -->
-<!--                highlight_pip = 0.8, -->
-<!--                filter_protein_coding_genes = T, -->
-<!--                filter_cs = T, -->
-<!--                color_pval_by = "cs", -->
-<!--                color_pip_by = "cs") -->
-<!-- ``` -->
+make_locusplot(finemap_res = finemap_res,
+               region_id = "16_71020125_72901251",
+               ens_db = ens_db,
+               weights = weights,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = T,
+               filter_cs = T,
+               color_pval_by = "cs",
+               color_pip_by = "cs")
+```
 
 - The top one shows -log10(p-value) of the association of variants (from LDL GWAS) and molecular traits (from the package computed z-scores) with the phenotype
-- The next track shows the PIPs of variants and molecular traits. By default, we limit PIP results to credible sets in the PIP track (`filter_cs = TRUE`)
+- The next track shows the PIPs of variants and molecular traits. By default, we only show PIPs of molecular traits and variants in the credible set(s) (`filter_cs = TRUE`)
 - The next track shows the QTLs of the focal gene.
 - The bottom is the gene track.
+
+# Go enrichment analysis
+
+We do enrichment analysis using the genes with PIP > 0.8
+
+```{r echo=T, eval=T, message=F, warning=F}
+
+library(enrichR)
+
+dbs <- c("GO_Biological_Process_2021", "GO_Cellular_Component_2021", "GO_Molecular_Function_2021")
+genes <- combined_pip_by_type$gene_name[combined_pip_by_type$combined_pip >0.8]
+
+#number of genes for gene set enrichment
+sprintf("The number of genes used in enrichment analysis = %s", length(genes))
+
+GO_enrichment <- enrichr(genes, dbs)
+
+print("GO_Biological_Process_2021")
+db <- "GO_Biological_Process_2021"
+df <- GO_enrichment[[db]]
+print(plotEnrich(GO_enrichment[[db]]))
+df <- df[df$Adjusted.P.value<0.05,c("Term", "Overlap", "Adjusted.P.value", "Genes")]
+
+DT::datatable(df,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enriched pathways from GO_Biological_Process_2021'),options = list(pageLength = 5) )
+
+
+
+print("GO_Cellular_Component_2021")
+db <- "GO_Cellular_Component_2021"
+df <- GO_enrichment[[db]]
+print(plotEnrich(GO_enrichment[[db]]))
+df <- df[df$Adjusted.P.value<0.05,c("Term", "Overlap", "Adjusted.P.value", "Genes")]
+
+DT::datatable(df,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enriched pathways from GO_Cellular_Component_2021'),options = list(pageLength = 5) )
+
+
+print("GO_Molecular_Function_2021")
+db <- "GO_Molecular_Function_2021"
+df <- GO_enrichment[[db]]
+print(plotEnrich(GO_enrichment[[db]]))
+df <- df[df$Adjusted.P.value<0.05,c("Term", "Overlap", "Adjusted.P.value", "Genes")]
+
+DT::datatable(df,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enriched pathways from GO_Molecular_Function_2021'),options = list(pageLength = 5) )
+
+```
+
