@@ -449,10 +449,10 @@ changes </a>
 <div id="strongRMarkdownfilestronguncommittedchanges"
 class="panel-collapse collapse">
 <div class="panel-body">
-<p>The R Markdown is untracked by Git. To know which version of the R
-Markdown file created these results, you’ll want to first commit it to
-the Git repo. If you’re still working on the analysis, you can ignore
-this warning. When you’re finished, you can run
+<p>The R Markdown file has unstaged changes. To know which version of
+the R Markdown file created these results, you’ll want to first commit
+it to the Git repo. If you’re still working on the analysis, you can
+ignore this warning. When you’re finished, you can run
 <code>wflow_publish</code> to commit the R Markdown file and build the
 HTML.</p>
 </div>
@@ -545,15 +545,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree8dd14c9deea892e40b562061e77be7cd63c7aa76targetblank8dd14c9a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistreee5c381e41772885e1a17d330b50d9900f59c6f3btargetblanke5c381ea">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/8dd14c9deea892e40b562061e77be7cd63c7aa76" target="_blank">8dd14c9</a>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/e5c381e41772885e1a17d330b50d9900f59c6f3b" target="_blank">e5c381e</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree8dd14c9deea892e40b562061e77be7cd63c7aa76targetblank8dd14c9a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistreee5c381e41772885e1a17d330b50d9900f59c6f3btargetblanke5c381ea"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -563,7 +563,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/8dd14c9deea892e40b562061e77be7cd63c7aa76" target="_blank">8dd14c9</a>.
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/e5c381e41772885e1a17d330b50d9900f59c6f3b" target="_blank">e5c381e</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -580,12 +580,8 @@ were generated:
 Ignored files:
     Ignored:    .Rhistory
 
-Untracked files:
-    Untracked:  analysis/fractional_enrichment.Rmd
-
 Unstaged changes:
-    Deleted:    analysis/fractional_enrichment_LDL_es.Rmd
-    Modified:   analysis/index.Rmd
+    Modified:   analysis/fractional_enrichment.Rmd
 
 </code></pre>
 <p>
@@ -600,10 +596,74 @@ have uncommitted changes.
 <hr>
 </div>
 <div id="versions" class="tab-pane fade">
+
 <p>
-There are no past versions. Publish this analysis with
-<code>wflow_publish()</code> to start tracking its development.
+These are the previous versions of the repository in which changes were
+made to the R Markdown (<code>analysis/fractional_enrichment.Rmd</code>)
+and HTML (<code>docs/fractional_enrichment.html</code>) files. If you’ve
+configured a remote Git repository (see <code>?wflow_git_remote</code>),
+click on the hyperlinks in the table below to view the files as they
+were in that past version.
 </p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/e5c381e41772885e1a17d330b50d9900f59c6f3b/analysis/fractional_enrichment.Rmd" target="_blank">e5c381e</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2024-10-14
+</td>
+<td>
+update
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/sq-96/multigroup_ctwas_analysis/e5c381e41772885e1a17d330b50d9900f59c6f3b/docs/fractional_enrichment.html" target="_blank">e5c381e</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2024-10-14
+</td>
+<td>
+update
+</td>
+</tr>
+</tbody>
+</table>
+</div>
 <hr>
 </div>
 </div>
@@ -634,7 +694,9 @@ as <code>0.5*min(gene pip within credible set)</code></li>
 
 load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_ess_&quot;, trait, &quot;_gobp.rdata&quot;))
 
-summary &lt;- summary[order(summary$fdr, decreasing = F),]
+sprintf(&quot;the number of pathways included: %s&quot;, nrow(summary))</code></pre>
+<pre><code>[1] &quot;the number of pathways included: 16069&quot;</code></pre>
+<pre class="r"><code>summary &lt;- summary[order(summary$fdr, decreasing = F),]
 summary &lt;- summary[1:50,]
 
 DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-side: topleft; text-align = left; color:black;&#39;,&#39;Enrichment results for GO biological process, top 50 are shown&#39;),options = list(pageLength = 10) )</code></pre>
@@ -644,8 +706,9 @@ DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-si
 <div id="go-cellular-component" class="section level3">
 <h3>GO cellular component</h3>
 <pre class="r"><code>load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_ess_&quot;, trait, &quot;_gocc.rdata&quot;))
-
-summary &lt;- summary[order(summary$fdr, decreasing = F),]
+sprintf(&quot;the number of pathways included: %s&quot;, nrow(summary))</code></pre>
+<pre><code>[1] &quot;the number of pathways included: 2022&quot;</code></pre>
+<pre class="r"><code>summary &lt;- summary[order(summary$fdr, decreasing = F),]
 summary &lt;- summary[1:50,]
 
 DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-side: topleft; text-align = left; color:black;&#39;,&#39;Enrichment results for GO cellular component, top 50 are shown&#39;),options = list(pageLength = 10) )</code></pre>
@@ -655,8 +718,9 @@ DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-si
 <div id="go-molecular-function" class="section level3">
 <h3>GO molecular function</h3>
 <pre class="r"><code>load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_ess_&quot;, trait, &quot;_gomf.rdata&quot;))
-
-summary &lt;- summary[order(summary$fdr, decreasing = F),]
+sprintf(&quot;the number of pathways included: %s&quot;, nrow(summary))</code></pre>
+<pre><code>[1] &quot;the number of pathways included: 4674&quot;</code></pre>
+<pre class="r"><code>summary &lt;- summary[order(summary$fdr, decreasing = F),]
 summary &lt;- summary[1:50,]
 
 DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-side: topleft; text-align = left; color:black;&#39;,&#39;Enrichment results for GO molecular function , top 50 are shown&#39;),options = list(pageLength = 10) )</code></pre>
@@ -666,8 +730,9 @@ DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-si
 <div id="kegg" class="section level3">
 <h3>KEGG</h3>
 <pre class="r"><code>load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_ess_&quot;, trait, &quot;_kegg.rdata&quot;))
-
-summary &lt;- summary[order(summary$fdr, decreasing = F),]
+sprintf(&quot;the number of pathways included: %s&quot;, nrow(summary))</code></pre>
+<pre><code>[1] &quot;the number of pathways included: 330&quot;</code></pre>
+<pre class="r"><code>summary &lt;- summary[order(summary$fdr, decreasing = F),]
 summary &lt;- summary[1:50,]
 
 DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-side: topleft; text-align = left; color:black;&#39;,&#39;Enrichment results for KEGG, top 50 are shown&#39;),options = list(pageLength = 10) )</code></pre>
@@ -683,8 +748,9 @@ class="section level2">
 <pre class="r"><code>trait &lt;- &quot;IBD-ebi-a-GCST004131&quot;
 
 load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_ess_&quot;, trait, &quot;_gobp.rdata&quot;))
-
-summary &lt;- summary[order(summary$fdr, decreasing = F),]
+sprintf(&quot;the number of pathways included: %s&quot;, nrow(summary))</code></pre>
+<pre><code>[1] &quot;the number of pathways included: 16069&quot;</code></pre>
+<pre class="r"><code>summary &lt;- summary[order(summary$fdr, decreasing = F),]
 summary &lt;- summary[1:50,]
 
 DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-side: topleft; text-align = left; color:black;&#39;,&#39;Enrichment results for GO biological process, top 50 are shown&#39;),options = list(pageLength = 10) )</code></pre>
@@ -694,8 +760,9 @@ DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-si
 <div id="go-cellular-component-1" class="section level3">
 <h3>GO cellular component</h3>
 <pre class="r"><code>load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_ess_&quot;, trait, &quot;_gocc.rdata&quot;))
-
-summary &lt;- summary[order(summary$fdr, decreasing = F),]
+sprintf(&quot;the number of pathways included: %s&quot;, nrow(summary))</code></pre>
+<pre><code>[1] &quot;the number of pathways included: 2022&quot;</code></pre>
+<pre class="r"><code>summary &lt;- summary[order(summary$fdr, decreasing = F),]
 summary &lt;- summary[1:50,]
 
 DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-side: topleft; text-align = left; color:black;&#39;,&#39;Enrichment results for GO cellular component, top 50 are shown&#39;),options = list(pageLength = 10) )</code></pre>
@@ -705,8 +772,9 @@ DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-si
 <div id="go-molecular-function-1" class="section level3">
 <h3>GO molecular function</h3>
 <pre class="r"><code>load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_ess_&quot;, trait, &quot;_gomf.rdata&quot;))
-
-summary &lt;- summary[order(summary$fdr, decreasing = F),]
+sprintf(&quot;the number of pathways included: %s&quot;, nrow(summary))</code></pre>
+<pre><code>[1] &quot;the number of pathways included: 4674&quot;</code></pre>
+<pre class="r"><code>summary &lt;- summary[order(summary$fdr, decreasing = F),]
 summary &lt;- summary[1:50,]
 
 DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-side: topleft; text-align = left; color:black;&#39;,&#39;Enrichment results for GO molecular function , top 50 are shown&#39;),options = list(pageLength = 10) )</code></pre>
@@ -716,8 +784,9 @@ DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-si
 <div id="kegg-1" class="section level3">
 <h3>KEGG</h3>
 <pre class="r"><code>load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_ess_&quot;, trait, &quot;_kegg.rdata&quot;))
-
-summary &lt;- summary[order(summary$fdr, decreasing = F),]
+sprintf(&quot;the number of pathways included: %s&quot;, nrow(summary))</code></pre>
+<pre><code>[1] &quot;the number of pathways included: 330&quot;</code></pre>
+<pre class="r"><code>summary &lt;- summary[order(summary$fdr, decreasing = F),]
 summary &lt;- summary[1:50,]
 
 DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-side: topleft; text-align = left; color:black;&#39;,&#39;Enrichment results for KEGG, top 50 are shown&#39;),options = list(pageLength = 10) )</code></pre>
@@ -732,8 +801,9 @@ DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-si
 <pre class="r"><code>trait &lt;- &quot;SBP-ukb-a-360&quot;
 
 load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_ess_&quot;, trait, &quot;_gobp.rdata&quot;))
-
-summary &lt;- summary[order(summary$fdr, decreasing = F),]
+sprintf(&quot;the number of pathways included: %s&quot;, nrow(summary))</code></pre>
+<pre><code>[1] &quot;the number of pathways included: 16069&quot;</code></pre>
+<pre class="r"><code>summary &lt;- summary[order(summary$fdr, decreasing = F),]
 summary &lt;- summary[1:50,]
 
 DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-side: topleft; text-align = left; color:black;&#39;,&#39;Enrichment results for GO biological process, top 50 are shown&#39;),options = list(pageLength = 10) )</code></pre>
@@ -743,8 +813,9 @@ DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-si
 <div id="go-cellular-component-2" class="section level3">
 <h3>GO cellular component</h3>
 <pre class="r"><code>load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_ess_&quot;, trait, &quot;_gocc.rdata&quot;))
-
-summary &lt;- summary[order(summary$fdr, decreasing = F),]
+sprintf(&quot;the number of pathways included: %s&quot;, nrow(summary))</code></pre>
+<pre><code>[1] &quot;the number of pathways included: 2022&quot;</code></pre>
+<pre class="r"><code>summary &lt;- summary[order(summary$fdr, decreasing = F),]
 summary &lt;- summary[1:50,]
 
 DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-side: topleft; text-align = left; color:black;&#39;,&#39;Enrichment results for GO cellular component, top 50 are shown&#39;),options = list(pageLength = 10) )</code></pre>
@@ -754,8 +825,9 @@ DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-si
 <div id="go-molecular-function-2" class="section level3">
 <h3>GO molecular function</h3>
 <pre class="r"><code>load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_ess_&quot;, trait, &quot;_gomf.rdata&quot;))
-
-summary &lt;- summary[order(summary$fdr, decreasing = F),]
+sprintf(&quot;the number of pathways included: %s&quot;, nrow(summary))</code></pre>
+<pre><code>[1] &quot;the number of pathways included: 4674&quot;</code></pre>
+<pre class="r"><code>summary &lt;- summary[order(summary$fdr, decreasing = F),]
 summary &lt;- summary[1:50,]
 
 DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-side: topleft; text-align = left; color:black;&#39;,&#39;Enrichment results for GO molecular function , top 50 are shown&#39;),options = list(pageLength = 10) )</code></pre>
@@ -765,8 +837,9 @@ DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-si
 <div id="kegg-2" class="section level3">
 <h3>KEGG</h3>
 <pre class="r"><code>load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_ess_&quot;, trait, &quot;_kegg.rdata&quot;))
-
-summary &lt;- summary[order(summary$fdr, decreasing = F),]
+sprintf(&quot;the number of pathways included: %s&quot;, nrow(summary))</code></pre>
+<pre><code>[1] &quot;the number of pathways included: 330&quot;</code></pre>
+<pre class="r"><code>summary &lt;- summary[order(summary$fdr, decreasing = F),]
 summary &lt;- summary[1:50,]
 
 DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-side: topleft; text-align = left; color:black;&#39;,&#39;Enrichment results for KEGG, top 50 are shown&#39;),options = list(pageLength = 10) )</code></pre>
@@ -781,8 +854,9 @@ DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-si
 <pre class="r"><code>trait &lt;- &quot;WBC-ieu-b-30&quot;
 
 load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_ess_&quot;, trait, &quot;_gobp.rdata&quot;))
-
-summary &lt;- summary[order(summary$fdr, decreasing = F),]
+sprintf(&quot;the number of pathways included: %s&quot;, nrow(summary))</code></pre>
+<pre><code>[1] &quot;the number of pathways included: 16069&quot;</code></pre>
+<pre class="r"><code>summary &lt;- summary[order(summary$fdr, decreasing = F),]
 summary &lt;- summary[1:50,]
 
 DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-side: topleft; text-align = left; color:black;&#39;,&#39;Enrichment results for GO biological process, top 50 are shown&#39;),options = list(pageLength = 10) )</code></pre>
@@ -792,8 +866,9 @@ DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-si
 <div id="go-cellular-component-3" class="section level3">
 <h3>GO cellular component</h3>
 <pre class="r"><code>load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_ess_&quot;, trait, &quot;_gocc.rdata&quot;))
-
-summary &lt;- summary[order(summary$fdr, decreasing = F),]
+sprintf(&quot;the number of pathways included: %s&quot;, nrow(summary))</code></pre>
+<pre><code>[1] &quot;the number of pathways included: 2022&quot;</code></pre>
+<pre class="r"><code>summary &lt;- summary[order(summary$fdr, decreasing = F),]
 summary &lt;- summary[1:50,]
 
 DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-side: topleft; text-align = left; color:black;&#39;,&#39;Enrichment results for GO cellular component, top 50 are shown&#39;),options = list(pageLength = 10) )</code></pre>
@@ -803,8 +878,9 @@ DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-si
 <div id="go-molecular-function-3" class="section level3">
 <h3>GO molecular function</h3>
 <pre class="r"><code>load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_ess_&quot;, trait, &quot;_gomf.rdata&quot;))
-
-summary &lt;- summary[order(summary$fdr, decreasing = F),]
+sprintf(&quot;the number of pathways included: %s&quot;, nrow(summary))</code></pre>
+<pre><code>[1] &quot;the number of pathways included: 4674&quot;</code></pre>
+<pre class="r"><code>summary &lt;- summary[order(summary$fdr, decreasing = F),]
 summary &lt;- summary[1:50,]
 
 DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-side: topleft; text-align = left; color:black;&#39;,&#39;Enrichment results for GO molecular function , top 50 are shown&#39;),options = list(pageLength = 10) )</code></pre>
@@ -814,8 +890,9 @@ DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-si
 <div id="kegg-3" class="section level3">
 <h3>KEGG</h3>
 <pre class="r"><code>load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_ess_&quot;, trait, &quot;_kegg.rdata&quot;))
-
-summary &lt;- summary[order(summary$fdr, decreasing = F),]
+sprintf(&quot;the number of pathways included: %s&quot;, nrow(summary))</code></pre>
+<pre><code>[1] &quot;the number of pathways included: 330&quot;</code></pre>
+<pre class="r"><code>summary &lt;- summary[order(summary$fdr, decreasing = F),]
 summary &lt;- summary[1:50,]
 
 DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-side: topleft; text-align = left; color:black;&#39;,&#39;Enrichment results for KEGG, top 50 are shown&#39;),options = list(pageLength = 10) )</code></pre>
@@ -833,8 +910,9 @@ DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-si
 <pre class="r"><code>trait &lt;- &quot;LDL-ukb-d-30780_irnt&quot;
 
 load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_espred_&quot;, trait, &quot;_gobp.rdata&quot;))
-
-summary &lt;- summary[order(summary$fdr, decreasing = F),]
+sprintf(&quot;the number of pathways included: %s&quot;, nrow(summary))</code></pre>
+<pre><code>[1] &quot;the number of pathways included: 16069&quot;</code></pre>
+<pre class="r"><code>summary &lt;- summary[order(summary$fdr, decreasing = F),]
 summary &lt;- summary[1:50,]
 
 DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-side: topleft; text-align = left; color:black;&#39;,&#39;Enrichment results for GO biological process, top 50 are shown&#39;),options = list(pageLength = 10) )</code></pre>
@@ -844,8 +922,9 @@ DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-si
 <div id="go-cellular-component-4" class="section level3">
 <h3>GO cellular component</h3>
 <pre class="r"><code>load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_espred_&quot;, trait, &quot;_gocc.rdata&quot;))
-
-summary &lt;- summary[order(summary$fdr, decreasing = F),]
+sprintf(&quot;the number of pathways included: %s&quot;, nrow(summary))</code></pre>
+<pre><code>[1] &quot;the number of pathways included: 2022&quot;</code></pre>
+<pre class="r"><code>summary &lt;- summary[order(summary$fdr, decreasing = F),]
 summary &lt;- summary[1:50,]
 
 DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-side: topleft; text-align = left; color:black;&#39;,&#39;Enrichment results for GO cellular component, top 50 are shown&#39;),options = list(pageLength = 10) )</code></pre>
@@ -855,8 +934,9 @@ DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-si
 <div id="go-molecular-function-4" class="section level3">
 <h3>GO molecular function</h3>
 <pre class="r"><code>load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_espred_&quot;, trait, &quot;_gomf.rdata&quot;))
-
-summary &lt;- summary[order(summary$fdr, decreasing = F),]
+sprintf(&quot;the number of pathways included: %s&quot;, nrow(summary))</code></pre>
+<pre><code>[1] &quot;the number of pathways included: 4674&quot;</code></pre>
+<pre class="r"><code>summary &lt;- summary[order(summary$fdr, decreasing = F),]
 summary &lt;- summary[1:50,]
 
 DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-side: topleft; text-align = left; color:black;&#39;,&#39;Enrichment results for GO molecular function , top 50 are shown&#39;),options = list(pageLength = 10) )</code></pre>
@@ -866,8 +946,9 @@ DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-si
 <div id="kegg-4" class="section level3">
 <h3>KEGG</h3>
 <pre class="r"><code>load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_espred_&quot;, trait, &quot;_kegg.rdata&quot;))
-
-summary &lt;- summary[order(summary$fdr, decreasing = F),]
+sprintf(&quot;the number of pathways included: %s&quot;, nrow(summary))</code></pre>
+<pre><code>[1] &quot;the number of pathways included: 330&quot;</code></pre>
+<pre class="r"><code>summary &lt;- summary[order(summary$fdr, decreasing = F),]
 summary &lt;- summary[1:50,]
 
 DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-side: topleft; text-align = left; color:black;&#39;,&#39;Enrichment results for KEGG, top 50 are shown&#39;),options = list(pageLength = 10) )</code></pre>
@@ -883,8 +964,9 @@ class="section level2">
 <pre class="r"><code>trait &lt;- &quot;IBD-ebi-a-GCST004131&quot;
 
 load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_espred_&quot;, trait, &quot;_gobp.rdata&quot;))
-
-summary &lt;- summary[order(summary$fdr, decreasing = F),]
+sprintf(&quot;the number of pathways included: %s&quot;, nrow(summary))</code></pre>
+<pre><code>[1] &quot;the number of pathways included: 16069&quot;</code></pre>
+<pre class="r"><code>summary &lt;- summary[order(summary$fdr, decreasing = F),]
 summary &lt;- summary[1:50,]
 
 DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-side: topleft; text-align = left; color:black;&#39;,&#39;Enrichment results for GO biological process, top 50 are shown&#39;),options = list(pageLength = 10) )</code></pre>
@@ -894,8 +976,9 @@ DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-si
 <div id="go-cellular-component-5" class="section level3">
 <h3>GO cellular component</h3>
 <pre class="r"><code>load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_espred_&quot;, trait, &quot;_gocc.rdata&quot;))
-
-summary &lt;- summary[order(summary$fdr, decreasing = F),]
+sprintf(&quot;the number of pathways included: %s&quot;, nrow(summary))</code></pre>
+<pre><code>[1] &quot;the number of pathways included: 2022&quot;</code></pre>
+<pre class="r"><code>summary &lt;- summary[order(summary$fdr, decreasing = F),]
 summary &lt;- summary[1:50,]
 
 DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-side: topleft; text-align = left; color:black;&#39;,&#39;Enrichment results for GO cellular component, top 50 are shown&#39;),options = list(pageLength = 10) )</code></pre>
@@ -905,8 +988,9 @@ DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-si
 <div id="go-molecular-function-5" class="section level3">
 <h3>GO molecular function</h3>
 <pre class="r"><code>load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_espred_&quot;, trait, &quot;_gomf.rdata&quot;))
-
-summary &lt;- summary[order(summary$fdr, decreasing = F),]
+sprintf(&quot;the number of pathways included: %s&quot;, nrow(summary))</code></pre>
+<pre><code>[1] &quot;the number of pathways included: 4674&quot;</code></pre>
+<pre class="r"><code>summary &lt;- summary[order(summary$fdr, decreasing = F),]
 summary &lt;- summary[1:50,]
 
 DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-side: topleft; text-align = left; color:black;&#39;,&#39;Enrichment results for GO molecular function , top 50 are shown&#39;),options = list(pageLength = 10) )</code></pre>
@@ -916,8 +1000,9 @@ DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-si
 <div id="kegg-5" class="section level3">
 <h3>KEGG</h3>
 <pre class="r"><code>load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_espred_&quot;, trait, &quot;_kegg.rdata&quot;))
-
-summary &lt;- summary[order(summary$fdr, decreasing = F),]
+sprintf(&quot;the number of pathways included: %s&quot;, nrow(summary))</code></pre>
+<pre><code>[1] &quot;the number of pathways included: 330&quot;</code></pre>
+<pre class="r"><code>summary &lt;- summary[order(summary$fdr, decreasing = F),]
 summary &lt;- summary[1:50,]
 
 DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-side: topleft; text-align = left; color:black;&#39;,&#39;Enrichment results for KEGG, top 50 are shown&#39;),options = list(pageLength = 10) )</code></pre>
@@ -932,8 +1017,9 @@ DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-si
 <pre class="r"><code>trait &lt;- &quot;SBP-ukb-a-360&quot;
 
 load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_espred_&quot;, trait, &quot;_gobp.rdata&quot;))
-
-summary &lt;- summary[order(summary$fdr, decreasing = F),]
+sprintf(&quot;the number of pathways included: %s&quot;, nrow(summary))</code></pre>
+<pre><code>[1] &quot;the number of pathways included: 16069&quot;</code></pre>
+<pre class="r"><code>summary &lt;- summary[order(summary$fdr, decreasing = F),]
 summary &lt;- summary[1:50,]
 
 DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-side: topleft; text-align = left; color:black;&#39;,&#39;Enrichment results for GO biological process, top 50 are shown&#39;),options = list(pageLength = 10) )</code></pre>
@@ -943,8 +1029,9 @@ DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-si
 <div id="go-cellular-component-6" class="section level3">
 <h3>GO cellular component</h3>
 <pre class="r"><code>load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_espred_&quot;, trait, &quot;_gocc.rdata&quot;))
-
-summary &lt;- summary[order(summary$fdr, decreasing = F),]
+sprintf(&quot;the number of pathways included: %s&quot;, nrow(summary))</code></pre>
+<pre><code>[1] &quot;the number of pathways included: 2022&quot;</code></pre>
+<pre class="r"><code>summary &lt;- summary[order(summary$fdr, decreasing = F),]
 summary &lt;- summary[1:50,]
 
 DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-side: topleft; text-align = left; color:black;&#39;,&#39;Enrichment results for GO cellular component, top 50 are shown&#39;),options = list(pageLength = 10) )</code></pre>
@@ -954,8 +1041,9 @@ DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-si
 <div id="go-molecular-function-6" class="section level3">
 <h3>GO molecular function</h3>
 <pre class="r"><code>load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_espred_&quot;, trait, &quot;_gomf.rdata&quot;))
-
-summary &lt;- summary[order(summary$fdr, decreasing = F),]
+sprintf(&quot;the number of pathways included: %s&quot;, nrow(summary))</code></pre>
+<pre><code>[1] &quot;the number of pathways included: 4674&quot;</code></pre>
+<pre class="r"><code>summary &lt;- summary[order(summary$fdr, decreasing = F),]
 summary &lt;- summary[1:50,]
 
 DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-side: topleft; text-align = left; color:black;&#39;,&#39;Enrichment results for GO molecular function , top 50 are shown&#39;),options = list(pageLength = 10) )</code></pre>
@@ -965,8 +1053,9 @@ DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-si
 <div id="kegg-6" class="section level3">
 <h3>KEGG</h3>
 <pre class="r"><code>load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_espred_&quot;, trait, &quot;_kegg.rdata&quot;))
-
-summary &lt;- summary[order(summary$fdr, decreasing = F),]
+sprintf(&quot;the number of pathways included: %s&quot;, nrow(summary))</code></pre>
+<pre><code>[1] &quot;the number of pathways included: 330&quot;</code></pre>
+<pre class="r"><code>summary &lt;- summary[order(summary$fdr, decreasing = F),]
 summary &lt;- summary[1:50,]
 
 DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-side: topleft; text-align = left; color:black;&#39;,&#39;Enrichment results for KEGG, top 50 are shown&#39;),options = list(pageLength = 10) )</code></pre>
@@ -981,8 +1070,9 @@ DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-si
 <pre class="r"><code>trait &lt;- &quot;WBC-ieu-b-30&quot;
 
 load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_espred_&quot;, trait, &quot;_gobp.rdata&quot;))
-
-summary &lt;- summary[order(summary$fdr, decreasing = F),]
+sprintf(&quot;the number of pathways included: %s&quot;, nrow(summary))</code></pre>
+<pre><code>[1] &quot;the number of pathways included: 16069&quot;</code></pre>
+<pre class="r"><code>summary &lt;- summary[order(summary$fdr, decreasing = F),]
 summary &lt;- summary[1:50,]
 
 DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-side: topleft; text-align = left; color:black;&#39;,&#39;Enrichment results for GO biological process, top 50 are shown&#39;),options = list(pageLength = 10) )</code></pre>
@@ -992,8 +1082,9 @@ DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-si
 <div id="go-cellular-component-7" class="section level3">
 <h3>GO cellular component</h3>
 <pre class="r"><code>load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_espred_&quot;, trait, &quot;_gocc.rdata&quot;))
-
-summary &lt;- summary[order(summary$fdr, decreasing = F),]
+sprintf(&quot;the number of pathways included: %s&quot;, nrow(summary))</code></pre>
+<pre><code>[1] &quot;the number of pathways included: 2022&quot;</code></pre>
+<pre class="r"><code>summary &lt;- summary[order(summary$fdr, decreasing = F),]
 summary &lt;- summary[1:50,]
 
 DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-side: topleft; text-align = left; color:black;&#39;,&#39;Enrichment results for GO cellular component, top 50 are shown&#39;),options = list(pageLength = 10) )</code></pre>
@@ -1003,8 +1094,9 @@ DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-si
 <div id="go-molecular-function-7" class="section level3">
 <h3>GO molecular function</h3>
 <pre class="r"><code>load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_espred_&quot;, trait, &quot;_gomf.rdata&quot;))
-
-summary &lt;- summary[order(summary$fdr, decreasing = F),]
+sprintf(&quot;the number of pathways included: %s&quot;, nrow(summary))</code></pre>
+<pre><code>[1] &quot;the number of pathways included: 4674&quot;</code></pre>
+<pre class="r"><code>summary &lt;- summary[order(summary$fdr, decreasing = F),]
 summary &lt;- summary[1:50,]
 
 DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-side: topleft; text-align = left; color:black;&#39;,&#39;Enrichment results for GO molecular function , top 50 are shown&#39;),options = list(pageLength = 10) )</code></pre>
@@ -1014,8 +1106,9 @@ DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-si
 <div id="kegg-7" class="section level3">
 <h3>KEGG</h3>
 <pre class="r"><code>load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_espred_&quot;, trait, &quot;_kegg.rdata&quot;))
-
-summary &lt;- summary[order(summary$fdr, decreasing = F),]
+sprintf(&quot;the number of pathways included: %s&quot;, nrow(summary))</code></pre>
+<pre><code>[1] &quot;the number of pathways included: 330&quot;</code></pre>
+<pre class="r"><code>summary &lt;- summary[order(summary$fdr, decreasing = F),]
 summary &lt;- summary[1:50,]
 
 DT::datatable(summary,caption = htmltools::tags$caption( style = &#39;caption-side: topleft; text-align = left; color:black;&#39;,&#39;Enrichment results for KEGG, top 50 are shown&#39;),options = list(pageLength = 10) )</code></pre>
@@ -1044,16 +1137,17 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 loaded via a namespace (and not attached):
- [1] Rcpp_1.0.12       rstudioapi_0.13   knitr_1.39        magrittr_2.0.3   
- [5] workflowr_1.7.0   R6_2.5.1          rlang_1.1.2       fastmap_1.1.0    
- [9] fansi_1.0.3       stringr_1.5.1     tools_4.2.0       DT_0.22          
-[13] xfun_0.41         utf8_1.2.2        cli_3.6.1         git2r_0.30.1     
-[17] jquerylib_0.1.4   crosstalk_1.2.0   htmltools_0.5.2   rprojroot_2.0.3  
-[21] yaml_2.3.5        digest_0.6.29     tibble_3.2.1      lifecycle_1.0.4  
-[25] later_1.3.0       htmlwidgets_1.5.4 sass_0.4.1        vctrs_0.6.5      
-[29] promises_1.2.0.1  fs_1.5.2          glue_1.6.2        evaluate_0.15    
-[33] rmarkdown_2.25    stringi_1.7.6     bslib_0.3.1       compiler_4.2.0   
-[37] pillar_1.9.0      jsonlite_1.8.0    httpuv_1.6.5      pkgconfig_2.0.3  </code></pre>
+ [1] Rcpp_1.0.12       pillar_1.9.0      compiler_4.2.0    bslib_0.3.1      
+ [5] later_1.3.0       jquerylib_0.1.4   git2r_0.30.1      workflowr_1.7.0  
+ [9] tools_4.2.0       digest_0.6.29     jsonlite_1.8.0    evaluate_0.15    
+[13] lifecycle_1.0.4   tibble_3.2.1      pkgconfig_2.0.3   rlang_1.1.2      
+[17] cli_3.6.1         rstudioapi_0.13   crosstalk_1.2.0   yaml_2.3.5       
+[21] xfun_0.41         fastmap_1.1.0     stringr_1.5.1     knitr_1.39       
+[25] fs_1.5.2          vctrs_0.6.5       sass_0.4.1        htmlwidgets_1.5.4
+[29] rprojroot_2.0.3   DT_0.22           glue_1.6.2        R6_2.5.1         
+[33] fansi_1.0.3       rmarkdown_2.25    magrittr_2.0.3    whisker_0.4      
+[37] promises_1.2.0.1  htmltools_0.5.2   httpuv_1.6.5      utf8_1.2.2       
+[41] stringi_1.7.6    </code></pre>
 </div>
 </div>
 </div>
