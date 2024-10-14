@@ -1,0 +1,493 @@
+---
+title: "Enrichment analysis using fractional model"
+author: "XSun"
+date: "2024-10-14"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+    toc: true
+---
+
+# Introduction
+
+We do the enrichment analysis using fractional logit model, for the results here: https://sq-96.github.io/multigroup_ctwas_analysis/multi_group_compare_decidingweights_4traits_ess.html
+
+
+The model is:  `glm(PIP ~ gene set membership, family = quasibinomial('logit'))`. We do this regression for one gene set at a time.
+
+The PIP vector contains: 
+
+-  all genes within the credible set: we use their actual PIPs
+-  genes without the credible set & PIP < 0.1:  we set the PIPs as `0.5*min(gene pip within credible set)`
+
+
+# e + s + st QTL
+
+## LDL-ukb-d-30780_irnt - Liver
+
+### GO biological process
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+trait <- "LDL-ukb-d-30780_irnt"
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_ess_", trait, "_gobp.rdata"))
+
+summary <- summary[order(summary$fdr, decreasing = F),]
+summary <- summary[1:50,]
+
+DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO biological process, top 50 are shown'),options = list(pageLength = 10) )
+
+```
+
+### GO cellular component 
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_ess_", trait, "_gocc.rdata"))
+
+summary <- summary[order(summary$fdr, decreasing = F),]
+summary <- summary[1:50,]
+
+DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO cellular component, top 50 are shown'),options = list(pageLength = 10) )
+
+```
+
+
+### GO molecular function 
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_ess_", trait, "_gomf.rdata"))
+
+summary <- summary[order(summary$fdr, decreasing = F),]
+summary <- summary[1:50,]
+
+DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , top 50 are shown'),options = list(pageLength = 10) )
+
+```
+
+
+### KEGG
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_ess_", trait, "_kegg.rdata"))
+
+summary <- summary[order(summary$fdr, decreasing = F),]
+summary <- summary[1:50,]
+
+DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for KEGG, top 50 are shown'),options = list(pageLength = 10) )
+
+```
+
+## IBD-ebi-a-GCST004131 - Colon_Transverse
+
+### GO biological process
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+trait <- "IBD-ebi-a-GCST004131"
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_ess_", trait, "_gobp.rdata"))
+
+summary <- summary[order(summary$fdr, decreasing = F),]
+summary <- summary[1:50,]
+
+DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO biological process, top 50 are shown'),options = list(pageLength = 10) )
+
+```
+
+### GO cellular component 
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_ess_", trait, "_gocc.rdata"))
+
+summary <- summary[order(summary$fdr, decreasing = F),]
+summary <- summary[1:50,]
+
+DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO cellular component, top 50 are shown'),options = list(pageLength = 10) )
+
+```
+
+
+### GO molecular function 
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_ess_", trait, "_gomf.rdata"))
+
+summary <- summary[order(summary$fdr, decreasing = F),]
+summary <- summary[1:50,]
+
+DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , top 50 are shown'),options = list(pageLength = 10) )
+
+```
+
+
+### KEGG
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_ess_", trait, "_kegg.rdata"))
+
+summary <- summary[order(summary$fdr, decreasing = F),]
+summary <- summary[1:50,]
+
+DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for KEGG, top 50 are shown'),options = list(pageLength = 10) )
+
+```
+
+
+## SBP-ukb-a-360 - Artery_Tibial
+
+### GO biological process
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+trait <- "SBP-ukb-a-360"
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_ess_", trait, "_gobp.rdata"))
+
+summary <- summary[order(summary$fdr, decreasing = F),]
+summary <- summary[1:50,]
+
+DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO biological process, top 50 are shown'),options = list(pageLength = 10) )
+
+```
+
+### GO cellular component 
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_ess_", trait, "_gocc.rdata"))
+
+summary <- summary[order(summary$fdr, decreasing = F),]
+summary <- summary[1:50,]
+
+DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO cellular component, top 50 are shown'),options = list(pageLength = 10) )
+
+```
+
+
+### GO molecular function 
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_ess_", trait, "_gomf.rdata"))
+
+summary <- summary[order(summary$fdr, decreasing = F),]
+summary <- summary[1:50,]
+
+DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , top 50 are shown'),options = list(pageLength = 10) )
+
+```
+
+
+### KEGG
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_ess_", trait, "_kegg.rdata"))
+
+summary <- summary[order(summary$fdr, decreasing = F),]
+summary <- summary[1:50,]
+
+DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for KEGG, top 50 are shown'),options = list(pageLength = 10) )
+
+```
+
+## WBC-ieu-b-30 - Whole_Blood
+
+### GO biological process
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+trait <- "WBC-ieu-b-30"
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_ess_", trait, "_gobp.rdata"))
+
+summary <- summary[order(summary$fdr, decreasing = F),]
+summary <- summary[1:50,]
+
+DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO biological process, top 50 are shown'),options = list(pageLength = 10) )
+
+```
+
+### GO cellular component 
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_ess_", trait, "_gocc.rdata"))
+
+summary <- summary[order(summary$fdr, decreasing = F),]
+summary <- summary[1:50,]
+
+DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO cellular component, top 50 are shown'),options = list(pageLength = 10) )
+
+```
+
+
+### GO molecular function 
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_ess_", trait, "_gomf.rdata"))
+
+summary <- summary[order(summary$fdr, decreasing = F),]
+summary <- summary[1:50,]
+
+DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , top 50 are shown'),options = list(pageLength = 10) )
+
+```
+
+
+### KEGG
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_ess_", trait, "_kegg.rdata"))
+
+summary <- summary[order(summary$fdr, decreasing = F),]
+summary <- summary[1:50,]
+
+DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for KEGG, top 50 are shown'),options = list(pageLength = 10) )
+
+```
+
+
+# e + s QTL
+
+## LDL-ukb-d-30780_irnt - Liver
+
+### GO biological process
+
+```{r, echo=T, mespredage=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+trait <- "LDL-ukb-d-30780_irnt"
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_espred_", trait, "_gobp.rdata"))
+
+summary <- summary[order(summary$fdr, decreasing = F),]
+summary <- summary[1:50,]
+
+DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO biological process, top 50 are shown'),options = list(pageLength = 10) )
+
+```
+
+### GO cellular component 
+
+```{r, echo=T, mespredage=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_espred_", trait, "_gocc.rdata"))
+
+summary <- summary[order(summary$fdr, decreasing = F),]
+summary <- summary[1:50,]
+
+DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO cellular component, top 50 are shown'),options = list(pageLength = 10) )
+
+```
+
+
+### GO molecular function 
+
+```{r, echo=T, mespredage=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_espred_", trait, "_gomf.rdata"))
+
+summary <- summary[order(summary$fdr, decreasing = F),]
+summary <- summary[1:50,]
+
+DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , top 50 are shown'),options = list(pageLength = 10) )
+
+```
+
+
+### KEGG
+
+```{r, echo=T, mespredage=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_espred_", trait, "_kegg.rdata"))
+
+summary <- summary[order(summary$fdr, decreasing = F),]
+summary <- summary[1:50,]
+
+DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for KEGG, top 50 are shown'),options = list(pageLength = 10) )
+
+```
+
+## IBD-ebi-a-GCST004131 - Colon_Transverse
+
+### GO biological process
+
+```{r, echo=T, mespredage=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+trait <- "IBD-ebi-a-GCST004131"
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_espred_", trait, "_gobp.rdata"))
+
+summary <- summary[order(summary$fdr, decreasing = F),]
+summary <- summary[1:50,]
+
+DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO biological process, top 50 are shown'),options = list(pageLength = 10) )
+
+```
+
+### GO cellular component 
+
+```{r, echo=T, mespredage=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_espred_", trait, "_gocc.rdata"))
+
+summary <- summary[order(summary$fdr, decreasing = F),]
+summary <- summary[1:50,]
+
+DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO cellular component, top 50 are shown'),options = list(pageLength = 10) )
+
+```
+
+
+### GO molecular function 
+
+```{r, echo=T, mespredage=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_espred_", trait, "_gomf.rdata"))
+
+summary <- summary[order(summary$fdr, decreasing = F),]
+summary <- summary[1:50,]
+
+DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , top 50 are shown'),options = list(pageLength = 10) )
+
+```
+
+
+### KEGG
+
+```{r, echo=T, mespredage=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_espred_", trait, "_kegg.rdata"))
+
+summary <- summary[order(summary$fdr, decreasing = F),]
+summary <- summary[1:50,]
+
+DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for KEGG, top 50 are shown'),options = list(pageLength = 10) )
+
+```
+
+
+## SBP-ukb-a-360 - Artery_Tibial
+
+### GO biological process
+
+```{r, echo=T, mespredage=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+trait <- "SBP-ukb-a-360"
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_espred_", trait, "_gobp.rdata"))
+
+summary <- summary[order(summary$fdr, decreasing = F),]
+summary <- summary[1:50,]
+
+DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO biological process, top 50 are shown'),options = list(pageLength = 10) )
+
+```
+
+### GO cellular component 
+
+```{r, echo=T, mespredage=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_espred_", trait, "_gocc.rdata"))
+
+summary <- summary[order(summary$fdr, decreasing = F),]
+summary <- summary[1:50,]
+
+DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO cellular component, top 50 are shown'),options = list(pageLength = 10) )
+
+```
+
+
+### GO molecular function 
+
+```{r, echo=T, mespredage=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_espred_", trait, "_gomf.rdata"))
+
+summary <- summary[order(summary$fdr, decreasing = F),]
+summary <- summary[1:50,]
+
+DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , top 50 are shown'),options = list(pageLength = 10) )
+
+```
+
+
+### KEGG
+
+```{r, echo=T, mespredage=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_espred_", trait, "_kegg.rdata"))
+
+summary <- summary[order(summary$fdr, decreasing = F),]
+summary <- summary[1:50,]
+
+DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for KEGG, top 50 are shown'),options = list(pageLength = 10) )
+
+```
+
+## WBC-ieu-b-30 - Whole_Blood
+
+### GO biological process
+
+```{r, echo=T, mespredage=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+trait <- "WBC-ieu-b-30"
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_espred_", trait, "_gobp.rdata"))
+
+summary <- summary[order(summary$fdr, decreasing = F),]
+summary <- summary[1:50,]
+
+DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO biological process, top 50 are shown'),options = list(pageLength = 10) )
+
+```
+
+### GO cellular component 
+
+```{r, echo=T, mespredage=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_espred_", trait, "_gocc.rdata"))
+
+summary <- summary[order(summary$fdr, decreasing = F),]
+summary <- summary[1:50,]
+
+DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO cellular component, top 50 are shown'),options = list(pageLength = 10) )
+
+```
+
+
+### GO molecular function 
+
+```{r, echo=T, mespredage=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_espred_", trait, "_gomf.rdata"))
+
+summary <- summary[order(summary$fdr, decreasing = F),]
+summary <- summary[1:50,]
+
+DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , top 50 are shown'),options = list(pageLength = 10) )
+
+```
+
+
+### KEGG
+
+```{r, echo=T, mespredage=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/postprocess/enrichment_espred_", trait, "_kegg.rdata"))
+
+summary <- summary[order(summary$fdr, decreasing = F),]
+summary <- summary[1:50,]
+
+DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for KEGG, top 50 are shown'),options = list(pageLength = 10) )
+
+```
