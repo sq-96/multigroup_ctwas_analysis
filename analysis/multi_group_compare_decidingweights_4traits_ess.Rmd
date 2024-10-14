@@ -1,0 +1,1009 @@
+---
+title: "Comparing results from predictdb eQTL + sQTL / predictdb eQTL + sQTL + Munro rsQTL + apaQTL / predictdb eQTL + sQTL + Munro stQTL for 4 traits"
+author: "XSun"
+date: "2024-10-13"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+    toc: true
+---
+
+# Settings
+
+## 6 modalities from Munro 
+
+The stQTL was a combination of Munro apa + rs QTL, if a gene has both rs-QTL and APA-QTL, we use rs-QTL. 
+
+1. Weight processing: 
+
+PredictDB:
+
+all the PredictDB are converted from FUSION weights
+
+- drop_strand_ambig = TRUE,
+- scale_by_ld_variance = F (FUSION converted weights)
+- load_predictdb_LD = F,  
+
+2. Parameter estimation and fine-mapping
+
+- niter_prefit = 5,
+- niter = 30(default),
+- L: determined by uniform susie,
+- group_prior_var_structure = "shared_type",
+- maxSNP = 20000,
+- min_nonSNP_PIP = 0.5,
+
+## weights from predictdb 
+
+1. Weight processing: 
+
+PredictDB (eqtl, sqtl)
+
+- drop_strand_ambig = TRUE,
+- scale_by_ld_variance = T
+- load_predictdb_LD = F,  
+
+2. Parameter estimation and fine-mapping
+
+- group_prior_var_structure = "shared_type", 
+- filter_L = TRUE,
+- filter_nonSNP_PIP = FALSE,
+- min_nonSNP_PIP = 0.5,
+- min_abs_corr = 0.1, 
+
+mem: 100g 10cores
+
+```{r, echo=T, message=FALSE, warning=FALSE}
+library(ctwas)
+library(EnsDb.Hsapiens.v86)
+library(VennDiagram)
+library(ggplot2)
+library(gridExtra)
+library(pheatmap)
+library(dplyr)
+
+ens_db <- EnsDb.Hsapiens.v86
+
+mapping_predictdb <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
+mapping_munro <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/Munro_mapping.RDS")
+mapping_two <- rbind(mapping_predictdb,mapping_munro)
+
+load("/project2/xinhe/shared_data/multigroup_ctwas/gwas/samplesize.rdata")
+
+
+colors <- c("#1b9e77", "#d95f02", "#7570b3", "#e7298a", "#66a61e", 
+               "#e6ab02", "#a6761d", "#666666", "#a6cee3")
+
+source("/project/xinhe/xsun/r_functions/ctwas_combine_pip_nocs.R")
+
+plot_piechart <- function(ctwas_parameters, colors) {
+  data <- data.frame(
+    category = names(ctwas_parameters$prop_heritability),
+    percentage = ctwas_parameters$prop_heritability
+  )
+  
+  # Calculate percentage labels for the chart
+  data$percentage_label <- paste0(round(data$percentage * 100, 1), "%")
+  
+  pie <- ggplot(data, aes(x = "", y = percentage, fill = category)) +
+    geom_bar(stat = "identity", width = 1) +
+    coord_polar("y", start = 0) +
+    theme_void() +  # Remove background and axes
+    geom_text(aes(label = percentage_label), 
+              position = position_stack(vjust = 0.5), size = 2) +
+    scale_fill_manual(values = colors) +  # Custom colors
+    labs(fill = "Category") +  # Legend title
+    ggtitle("Percent of heritability")  # Title
+  
+  return(pie)
+}
+
+rename_heatmap_columns <- function(heatmap_data, column_order) {
+  # Select columns that are in the column_order and exist in heatmap_data
+  selected_columns <- intersect(column_order, colnames(heatmap_data))
+  heatmap_data <- heatmap_data[, selected_columns]
+  
+  # Initialize new_column_names as a copy of selected_columns
+  new_column_names <- selected_columns
+
+  # Assign the new column names to heatmap_data
+  colnames(heatmap_data) <- new_column_names
+  
+  return(heatmap_data)
+}
+
+plot_heatmap <- function(heatmap_data, main) {
+  
+  rownames(heatmap_data) <- heatmap_data$gene_name
+  heatmap_data <- heatmap_data %>% dplyr::select(-gene_name, -combined_pip)
+  
+  if(nrow(heatmap_data) ==1){
+    
+    heatmap_data <- rbind(heatmap_data,rep(0,ncol(heatmap_data)))
+    rownames(heatmap_data)[2] <- "fake_gene_for_plotting"
+    
+  }
+  
+  heatmap_matrix <- as.matrix(heatmap_data)
+  
+  p <- pheatmap(heatmap_matrix,
+         cluster_rows = F,   # Cluster the rows (genes)
+         cluster_cols = F,   # Cluster the columns (QTL types)
+         color = colorRampPalette(c("white", "red"))(50), # Color gradient
+         display_numbers = TRUE, # Display numbers in cells
+         main = main,labels_row = rownames(heatmap_data), silent = T)
+  
+  return(p)
+}
+
+
+plot_3venn <- function(es, esra, ess) {
+  
+  venn.plot <- draw.triple.venn(
+      area1 = length(es),
+      area2 = length(esra),
+      area3 = length(ess),
+      n12 = length(intersect(es, esra)),
+      n23 = length(intersect(esra, ess)),
+      n13 = length(intersect(es, ess)),
+      n123 = length(Reduce(intersect, list(es, esra, ess))),
+      category = c("e+s", "e+s+rs+apa", "e+e+st"),
+      fill = c("red", "green", "blue"),
+      lty = "dashed",
+      cex = 2,
+      cat.cex = 1.5,
+      cat.col = c("red", "green", "blue"),
+      scaled = T
+      )
+  
+  return(venn.plot)
+  
+}
+
+```
+
+# LDL-ukb-d-30780_irnt
+
+```{r, echo=T, message=FALSE, warning=FALSE}
+
+trait <- "LDL-ukb-d-30780_irnt"
+tissue <- "Liver"
+
+gwas_n <- samplesize[trait]
+
+results_dir_ess <- paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/results/",trait,"/ess/")
+
+snp_map_ess <- readRDS(paste0(results_dir_ess,trait,".snp_map.RDS"))
+ctwas_res_ess <- readRDS(paste0(results_dir_ess,trait,".ctwas.res.RDS"))
+
+param_ess <- ctwas_res_ess$param
+finemap_res_ess <- ctwas_res_ess$finemap_res
+
+
+p_conv_ess <- make_convergence_plots(param_ess, gwas_n, ncol = 1, colors = colors)
+ctwas_parameters_ess <- summarize_param(param_ess, gwas_n)
+pve_pie_ess <- plot_piechart(ctwas_parameters = ctwas_parameters_ess, colors = colors)
+
+susie_alpha_res_ess <- ctwas_res_ess$susie_alpha_res
+
+susie_alpha_res_ess <- anno_susie_alpha_res(susie_alpha_res_ess,
+                                        mapping_table = mapping_two,
+                                        map_by = "molecular_id",
+                                        drop_unmapped = TRUE)
+
+combined_pip_by_type_ess <- combine_gene_pips(susie_alpha_res_ess, 
+                                             group_by = "gene_name",
+                                             by = "type",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = F)
+
+
+```
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+results_dir_espred <- paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/results/",trait,"/espred/")
+
+snp_map_espred <- readRDS(paste0(results_dir_espred,trait,".snp_map.RDS"))
+ctwas_res_espred <- readRDS(paste0(results_dir_espred,trait,".ctwas.res.RDS"))
+
+param_espred <- ctwas_res_espred$param
+finemap_res_espred <- ctwas_res_espred$finemap_res
+
+
+p_conv_espred <- make_convergence_plots(param_espred, gwas_n, ncol = 1, colors = colors)
+ctwas_parameters_espred <- summarize_param(param_espred, gwas_n)
+pve_pie_espred <- plot_piechart(ctwas_parameters = ctwas_parameters_espred, colors = colors)
+
+
+finemap_res_espred$molecular_id <- get_molecular_ids(finemap_res_espred)
+finemap_res_espred <- anno_finemap_res(finemap_res_espred,
+                              snp_map = snp_map_espred,
+                              mapping_table = mapping_two,
+                              add_gene_annot = TRUE,
+                              map_by = "molecular_id",
+                              drop_unmapped = TRUE,
+                              add_position = TRUE,
+                              use_gene_pos = "mid")
+
+combined_pip_by_type_espred <- combine_gene_pips_nocs(finemap_res =finemap_res_espred,
+                                  group_by = "gene_name",
+                                  by = "type", 
+                                  method = "combine_cs",
+                                  filter_cs = T )
+
+```
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+results_dir_4W <- paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/results/",trait,"/4W/")
+
+snp_map_4W <- readRDS(paste0(results_dir_4W,trait,".snp_map.RDS"))
+ctwas_res_4W <- readRDS(paste0(results_dir_4W,trait,".ctwas.res.RDS"))
+
+param_4W <- ctwas_res_4W$param
+finemap_res_4W <- ctwas_res_4W$finemap_res
+
+p_conv_4W <- make_convergence_plots(param_4W, gwas_n, ncol = 1, colors = colors)
+ctwas_parameters_4W <- summarize_param(param_4W, gwas_n)
+pve_pie_4W <- plot_piechart(ctwas_parameters = ctwas_parameters_4W, colors = colors)
+
+finemap_res_4W$molecular_id <- get_molecular_ids(finemap_res_4W)
+finemap_res_4W <- anno_finemap_res(finemap_res_4W,
+                              snp_map = snp_map_4W,
+                              mapping_table = mapping_two,
+                              add_gene_annot = TRUE,
+                              map_by = "molecular_id",
+                              drop_unmapped = TRUE,
+                              add_position = TRUE,
+                              use_gene_pos = "mid")
+
+combined_pip_by_type_4W <- combine_gene_pips_nocs(finemap_res =finemap_res_4W,
+                                  group_by = "gene_name",
+                                  by = "type", 
+                                  method = "combine_cs",
+                                  filter_cs = T )
+
+```
+
+## Parameters
+
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=12}
+
+print("each column represents one setting: predictdb e+s, predictdb e+s + Munro apa+rs, predictdb e+s + Munro st QTL")
+grid.arrange(p_conv_espred,p_conv_4W,p_conv_ess, ncol = 3)
+
+
+######pve
+group_pve_espred <- ctwas_parameters_espred$group_pve
+group_pve_espred <- group_pve_espred[-length(group_pve_espred)]
+group_pve_espred <- c(group_pve_espred, rep(NA,3))
+group_pve_espred <- c(group_pve_espred, ctwas_parameters_espred$total_pve)
+names(group_pve_espred) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","stQTL_munro","TOTAL")
+
+group_pve_4W <- ctwas_parameters_4W$group_pve
+group_pve_4W <- group_pve_4W[-length(group_pve_4W)]
+group_pve_4W <- c(group_pve_4W, rep(NA,1))
+group_pve_4W <- c(group_pve_4W, ctwas_parameters_4W$total_pve)
+names(group_pve_4W) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","stQTL_munro","TOTAL")
+
+group_pve_ess <- ctwas_parameters_ess$group_pve
+group_pve_ess <- group_pve_ess[-length(group_pve_ess)]
+group_pve_ess <- c(group_pve_ess[1:2], rep(NA,2),group_pve_ess[3])
+group_pve_ess <- c(group_pve_ess, ctwas_parameters_ess$total_pve)
+names(group_pve_ess) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","stQTL_munro","TOTAL")
+
+grouppve <- cbind(group_pve_espred,group_pve_4W,group_pve_ess)
+grouppve <- round(grouppve,digits = 4)
+
+######size
+group_size_espred <- ctwas_parameters_espred$group_size
+group_size_espred <- group_size_espred[-length(group_size_espred)]
+group_size_espred <- c(group_size_espred, rep(NA,3))
+names(group_size_espred) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","stQTL_munro")
+
+group_size_4W <- ctwas_parameters_4W$group_size
+group_size_4W <- group_size_4W[-length(group_size_4W)]
+group_size_4W <- c(group_size_4W, rep(NA,1))
+names(group_size_4W) <-  c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","stQTL_munro")
+
+group_size_ess <- ctwas_parameters_ess$group_size
+group_size_ess <- group_size_ess[-length(group_size_ess)]
+group_size_ess <- c(group_size_ess[1:2], rep(NA,2),group_size_ess[3])
+names(group_size_ess) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","stQTL_munro")
+
+groupsize <- cbind(group_size_espred,group_size_4W,group_size_ess)
+
+group_info <- cbind(grouppve,rbind(groupsize,c(rep(NA,3))))
+
+DT::datatable(group_info,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Group PVE and Group Size'),options = list(pageLength = 10) )
+
+print("each pie chart represents one setting: predictdb e+s, predictdb e+s + Munro apa+rs, predictdb e+s + Munro st QTL")
+grid.arrange(pve_pie_espred,pve_pie_4W,pve_pie_ess, ncol =3)
+
+```
+
+## Fine-mapping results
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+combined_sig_espred <- combined_pip_by_type_espred[combined_pip_by_type_espred$combined_pip > 0.8,]
+combined_sig_4W <- combined_pip_by_type_4W[combined_pip_by_type_4W$combined_pip > 0.8,]
+combined_sig_ess <- combined_pip_by_type_ess[combined_pip_by_type_ess$combined_pip > 0.8,]
+
+sprintf("# of genes with PIP > 0.8 = %s -- predictdb e +s", nrow(combined_sig_espred))
+sprintf("# of genes with PIP > 0.8 = %s -- predictdb e + s + Munro apa + rs", nrow(combined_sig_4W))
+sprintf("# of genes with PIP > 0.8 = %s -- predictdb e+s + Munro st QTL", nrow(combined_sig_ess))
+
+venn.plot <- plot_3venn(es = combined_sig_espred$gene_name,esra = combined_sig_4W$gene_name,ess = combined_sig_ess$gene_name)
+```
+
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=24, fig.height=14}
+###1
+heatmap_data <- combined_sig_ess[!combined_sig_ess$gene_name %in%combined_sig_espred$gene_name, ]
+column_order <- c("gene_name","combined_pip",
+                  "eQTL_pip", "sQTL_pip", "stQTL_pip")
+heatmap_data <- rename_heatmap_columns(heatmap_data = heatmap_data, column_order = column_order)
+p1 <- plot_heatmap(heatmap_data = heatmap_data,main = "PIP partition for the genes reported by e + s + st setting but not by e+s setting")
+
+###2
+heatmap_data <- combined_sig_4W[!combined_sig_4W$gene_name %in%combined_sig_espred$gene_name, ]
+column_order <- c("gene_name","combined_pip",
+                  "eQTL_pip", "sQTL_pip", "rsQTL_pip","apaQTL_pip")
+heatmap_data <- rename_heatmap_columns(heatmap_data = heatmap_data, column_order = column_order)
+p2 <- plot_heatmap(heatmap_data = heatmap_data,main = "PIP partition for the genes reported by e + s + apa + rs setting but not by e+s setting")
+
+###3
+heatmap_data <- combined_sig_ess[!combined_sig_ess$gene_name %in%combined_sig_4W$gene_name, ]
+column_order <- c("gene_name","combined_pip",
+                  "eQTL_pip", "sQTL_pip", "stQTL_pip")
+heatmap_data <- rename_heatmap_columns(heatmap_data = heatmap_data, column_order = column_order)
+
+
+p3 <- plot_heatmap(heatmap_data = heatmap_data,main = "PIP partition for the genes reported by e + s + st setting but not by e + s + apa + rs setting")
+
+g1 <- p1$gtable
+g2 <- p2$gtable
+g3 <- p3$gtable
+grid.arrange(g1, g2, g3, ncol=3)
+
+```
+
+
+
+# IBD-ebi-a-GCST004131
+
+```{r, echo=T, message=FALSE, warning=FALSE}
+
+
+trait <- "IBD-ebi-a-GCST004131"
+tissue <- "Colon_Transverse"
+
+gwas_n <- samplesize[trait]
+
+results_dir_ess <- paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/results/",trait,"/ess/")
+
+snp_map_ess <- readRDS(paste0(results_dir_ess,trait,".snp_map.RDS"))
+ctwas_res_ess <- readRDS(paste0(results_dir_ess,trait,".ctwas.res.RDS"))
+
+param_ess <- ctwas_res_ess$param
+finemap_res_ess <- ctwas_res_ess$finemap_res
+
+
+p_conv_ess <- make_convergence_plots(param_ess, gwas_n, ncol = 1, colors = colors)
+ctwas_parameters_ess <- summarize_param(param_ess, gwas_n)
+pve_pie_ess <- plot_piechart(ctwas_parameters = ctwas_parameters_ess, colors = colors)
+
+susie_alpha_res_ess <- ctwas_res_ess$susie_alpha_res
+
+susie_alpha_res_ess <- anno_susie_alpha_res(susie_alpha_res_ess,
+                                        mapping_table = mapping_two,
+                                        map_by = "molecular_id",
+                                        drop_unmapped = TRUE)
+
+combined_pip_by_type_ess <- combine_gene_pips(susie_alpha_res_ess, 
+                                             group_by = "gene_name",
+                                             by = "type",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = F)
+
+
+```
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+results_dir_espred <- paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/results/",trait,"/espred/")
+
+snp_map_espred <- readRDS(paste0(results_dir_espred,trait,".snp_map.RDS"))
+ctwas_res_espred <- readRDS(paste0(results_dir_espred,trait,".ctwas.res.RDS"))
+
+param_espred <- ctwas_res_espred$param
+finemap_res_espred <- ctwas_res_espred$finemap_res
+
+
+p_conv_espred <- make_convergence_plots(param_espred, gwas_n, ncol = 1, colors = colors)
+ctwas_parameters_espred <- summarize_param(param_espred, gwas_n)
+pve_pie_espred <- plot_piechart(ctwas_parameters = ctwas_parameters_espred, colors = colors)
+
+
+finemap_res_espred$molecular_id <- get_molecular_ids(finemap_res_espred)
+finemap_res_espred <- anno_finemap_res(finemap_res_espred,
+                              snp_map = snp_map_espred,
+                              mapping_table = mapping_two,
+                              add_gene_annot = TRUE,
+                              map_by = "molecular_id",
+                              drop_unmapped = TRUE,
+                              add_position = TRUE,
+                              use_gene_pos = "mid")
+
+combined_pip_by_type_espred <- combine_gene_pips_nocs(finemap_res =finemap_res_espred,
+                                  group_by = "gene_name",
+                                  by = "type", 
+                                  method = "combine_cs",
+                                  filter_cs = T )
+
+```
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+results_dir_4W <- paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/results/",trait,"/4W/")
+
+snp_map_4W <- readRDS(paste0(results_dir_4W,trait,".snp_map.RDS"))
+ctwas_res_4W <- readRDS(paste0(results_dir_4W,trait,".ctwas.res.RDS"))
+
+param_4W <- ctwas_res_4W$param
+finemap_res_4W <- ctwas_res_4W$finemap_res
+
+p_conv_4W <- make_convergence_plots(param_4W, gwas_n, ncol = 1, colors = colors)
+ctwas_parameters_4W <- summarize_param(param_4W, gwas_n)
+pve_pie_4W <- plot_piechart(ctwas_parameters = ctwas_parameters_4W, colors = colors)
+
+finemap_res_4W$molecular_id <- get_molecular_ids(finemap_res_4W)
+finemap_res_4W <- anno_finemap_res(finemap_res_4W,
+                              snp_map = snp_map_4W,
+                              mapping_table = mapping_two,
+                              add_gene_annot = TRUE,
+                              map_by = "molecular_id",
+                              drop_unmapped = TRUE,
+                              add_position = TRUE,
+                              use_gene_pos = "mid")
+
+combined_pip_by_type_4W <- combine_gene_pips_nocs(finemap_res =finemap_res_4W,
+                                  group_by = "gene_name",
+                                  by = "type", 
+                                  method = "combine_cs",
+                                  filter_cs = T )
+
+```
+
+## Parameters
+
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=12}
+
+print("each column represents one setting: predictdb e+s, predictdb e+s + Munro apa+rs, predictdb e+s + Munro st QTL")
+grid.arrange(p_conv_espred,p_conv_4W,p_conv_ess, ncol = 3)
+
+
+######pve
+group_pve_espred <- ctwas_parameters_espred$group_pve
+group_pve_espred <- group_pve_espred[-length(group_pve_espred)]
+group_pve_espred <- c(group_pve_espred, rep(NA,3))
+group_pve_espred <- c(group_pve_espred, ctwas_parameters_espred$total_pve)
+names(group_pve_espred) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","stQTL_munro","TOTAL")
+
+group_pve_4W <- ctwas_parameters_4W$group_pve
+group_pve_4W <- group_pve_4W[-length(group_pve_4W)]
+group_pve_4W <- c(group_pve_4W, rep(NA,1))
+group_pve_4W <- c(group_pve_4W, ctwas_parameters_4W$total_pve)
+names(group_pve_4W) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","stQTL_munro","TOTAL")
+
+group_pve_ess <- ctwas_parameters_ess$group_pve
+group_pve_ess <- group_pve_ess[-length(group_pve_ess)]
+group_pve_ess <- c(group_pve_ess[1:2], rep(NA,2),group_pve_ess[3])
+group_pve_ess <- c(group_pve_ess, ctwas_parameters_ess$total_pve)
+names(group_pve_ess) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","stQTL_munro","TOTAL")
+
+grouppve <- cbind(group_pve_espred,group_pve_4W,group_pve_ess)
+grouppve <- round(grouppve,digits = 4)
+
+######size
+group_size_espred <- ctwas_parameters_espred$group_size
+group_size_espred <- group_size_espred[-length(group_size_espred)]
+group_size_espred <- c(group_size_espred, rep(NA,3))
+names(group_size_espred) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","stQTL_munro")
+
+group_size_4W <- ctwas_parameters_4W$group_size
+group_size_4W <- group_size_4W[-length(group_size_4W)]
+group_size_4W <- c(group_size_4W, rep(NA,1))
+names(group_size_4W) <-  c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","stQTL_munro")
+
+group_size_ess <- ctwas_parameters_ess$group_size
+group_size_ess <- group_size_ess[-length(group_size_ess)]
+group_size_ess <- c(group_size_ess[1:2], rep(NA,2),group_size_ess[3])
+names(group_size_ess) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","stQTL_munro")
+
+groupsize <- cbind(group_size_espred,group_size_4W,group_size_ess)
+
+group_info <- cbind(grouppve,rbind(groupsize,c(rep(NA,3))))
+
+DT::datatable(group_info,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Group PVE and Group Size'),options = list(pageLength = 10) )
+
+print("each pie chart represents one setting: predictdb e+s, predictdb e+s + Munro apa+rs, predictdb e+s + Munro st QTL")
+grid.arrange(pve_pie_espred,pve_pie_4W,pve_pie_ess, ncol =3)
+
+```
+
+## Fine-mapping results
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+combined_sig_espred <- combined_pip_by_type_espred[combined_pip_by_type_espred$combined_pip > 0.8,]
+combined_sig_4W <- combined_pip_by_type_4W[combined_pip_by_type_4W$combined_pip > 0.8,]
+combined_sig_ess <- combined_pip_by_type_ess[combined_pip_by_type_ess$combined_pip > 0.8,]
+
+sprintf("# of genes with PIP > 0.8 = %s -- predictdb e +s", nrow(combined_sig_espred))
+sprintf("# of genes with PIP > 0.8 = %s -- predictdb e + s + Munro apa + rs", nrow(combined_sig_4W))
+sprintf("# of genes with PIP > 0.8 = %s -- predictdb e+s + Munro st QTL", nrow(combined_sig_ess))
+
+venn.plot <- plot_3venn(es = combined_sig_espred$gene_name,esra = combined_sig_4W$gene_name,ess = combined_sig_ess$gene_name)
+```
+
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=24, fig.height=14}
+###1
+heatmap_data <- combined_sig_ess[!combined_sig_ess$gene_name %in%combined_sig_espred$gene_name, ]
+column_order <- c("gene_name","combined_pip",
+                  "eQTL_pip", "sQTL_pip", "stQTL_pip")
+heatmap_data <- rename_heatmap_columns(heatmap_data = heatmap_data, column_order = column_order)
+p1 <- plot_heatmap(heatmap_data = heatmap_data,main = "PIP partition for the genes reported by e + s + st setting but not by e+s setting")
+
+###2
+heatmap_data <- combined_sig_4W[!combined_sig_4W$gene_name %in%combined_sig_espred$gene_name, ]
+column_order <- c("gene_name","combined_pip",
+                  "eQTL_pip", "sQTL_pip", "rsQTL_pip","apaQTL_pip")
+heatmap_data <- rename_heatmap_columns(heatmap_data = heatmap_data, column_order = column_order)
+p2 <- plot_heatmap(heatmap_data = heatmap_data,main = "PIP partition for the genes reported by e + s + apa + rs setting but not by e+s setting")
+
+###3
+heatmap_data <- combined_sig_ess[!combined_sig_ess$gene_name %in%combined_sig_4W$gene_name, ]
+column_order <- c("gene_name","combined_pip",
+                  "eQTL_pip", "sQTL_pip", "stQTL_pip")
+heatmap_data <- rename_heatmap_columns(heatmap_data = heatmap_data, column_order = column_order)
+
+
+p3 <- plot_heatmap(heatmap_data = heatmap_data,main = "PIP partition for the genes reported by e + s + st setting but not by e + s + apa + rs setting")
+
+g1 <- p1$gtable
+g2 <- p2$gtable
+g3 <- p3$gtable
+grid.arrange(g1, g2, g3, ncol=3)
+
+```
+
+
+
+
+# SBP-ukb-a-360
+
+```{r, echo=T, message=FALSE, warning=FALSE}
+trait <- "SBP-ukb-a-360"
+tissue <- "Artery_Tibial"
+
+gwas_n <- samplesize[trait]
+
+results_dir_ess <- paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/results/",trait,"/ess/")
+
+snp_map_ess <- readRDS(paste0(results_dir_ess,trait,".snp_map.RDS"))
+ctwas_res_ess <- readRDS(paste0(results_dir_ess,trait,".ctwas.res.RDS"))
+
+param_ess <- ctwas_res_ess$param
+finemap_res_ess <- ctwas_res_ess$finemap_res
+
+
+p_conv_ess <- make_convergence_plots(param_ess, gwas_n, ncol = 1, colors = colors)
+ctwas_parameters_ess <- summarize_param(param_ess, gwas_n)
+pve_pie_ess <- plot_piechart(ctwas_parameters = ctwas_parameters_ess, colors = colors)
+
+susie_alpha_res_ess <- ctwas_res_ess$susie_alpha_res
+
+susie_alpha_res_ess <- anno_susie_alpha_res(susie_alpha_res_ess,
+                                        mapping_table = mapping_two,
+                                        map_by = "molecular_id",
+                                        drop_unmapped = TRUE)
+
+combined_pip_by_type_ess <- combine_gene_pips(susie_alpha_res_ess, 
+                                             group_by = "gene_name",
+                                             by = "type",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = F)
+
+
+```
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+results_dir_espred <- paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/results/",trait,"/espred/")
+
+snp_map_espred <- readRDS(paste0(results_dir_espred,trait,".snp_map.RDS"))
+ctwas_res_espred <- readRDS(paste0(results_dir_espred,trait,".ctwas.res.RDS"))
+
+param_espred <- ctwas_res_espred$param
+finemap_res_espred <- ctwas_res_espred$finemap_res
+
+
+p_conv_espred <- make_convergence_plots(param_espred, gwas_n, ncol = 1, colors = colors)
+ctwas_parameters_espred <- summarize_param(param_espred, gwas_n)
+pve_pie_espred <- plot_piechart(ctwas_parameters = ctwas_parameters_espred, colors = colors)
+
+
+finemap_res_espred$molecular_id <- get_molecular_ids(finemap_res_espred)
+finemap_res_espred <- anno_finemap_res(finemap_res_espred,
+                              snp_map = snp_map_espred,
+                              mapping_table = mapping_two,
+                              add_gene_annot = TRUE,
+                              map_by = "molecular_id",
+                              drop_unmapped = TRUE,
+                              add_position = TRUE,
+                              use_gene_pos = "mid")
+
+combined_pip_by_type_espred <- combine_gene_pips_nocs(finemap_res =finemap_res_espred,
+                                  group_by = "gene_name",
+                                  by = "type", 
+                                  method = "combine_cs",
+                                  filter_cs = T )
+
+```
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+results_dir_4W <- paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/results/",trait,"/4W/")
+
+snp_map_4W <- readRDS(paste0(results_dir_4W,trait,".snp_map.RDS"))
+ctwas_res_4W <- readRDS(paste0(results_dir_4W,trait,".ctwas.res.RDS"))
+
+param_4W <- ctwas_res_4W$param
+finemap_res_4W <- ctwas_res_4W$finemap_res
+
+p_conv_4W <- make_convergence_plots(param_4W, gwas_n, ncol = 1, colors = colors)
+ctwas_parameters_4W <- summarize_param(param_4W, gwas_n)
+pve_pie_4W <- plot_piechart(ctwas_parameters = ctwas_parameters_4W, colors = colors)
+
+finemap_res_4W$molecular_id <- get_molecular_ids(finemap_res_4W)
+finemap_res_4W <- anno_finemap_res(finemap_res_4W,
+                              snp_map = snp_map_4W,
+                              mapping_table = mapping_two,
+                              add_gene_annot = TRUE,
+                              map_by = "molecular_id",
+                              drop_unmapped = TRUE,
+                              add_position = TRUE,
+                              use_gene_pos = "mid")
+
+combined_pip_by_type_4W <- combine_gene_pips_nocs(finemap_res =finemap_res_4W,
+                                  group_by = "gene_name",
+                                  by = "type", 
+                                  method = "combine_cs",
+                                  filter_cs = T )
+
+```
+
+## Parameters
+
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=12}
+
+print("each column represents one setting: predictdb e+s, predictdb e+s + Munro apa+rs, predictdb e+s + Munro st QTL")
+grid.arrange(p_conv_espred,p_conv_4W,p_conv_ess, ncol = 3)
+
+
+######pve
+group_pve_espred <- ctwas_parameters_espred$group_pve
+group_pve_espred <- group_pve_espred[-length(group_pve_espred)]
+group_pve_espred <- c(group_pve_espred, rep(NA,3))
+group_pve_espred <- c(group_pve_espred, ctwas_parameters_espred$total_pve)
+names(group_pve_espred) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","stQTL_munro","TOTAL")
+
+group_pve_4W <- ctwas_parameters_4W$group_pve
+group_pve_4W <- group_pve_4W[-length(group_pve_4W)]
+group_pve_4W <- c(group_pve_4W, rep(NA,1))
+group_pve_4W <- c(group_pve_4W, ctwas_parameters_4W$total_pve)
+names(group_pve_4W) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","stQTL_munro","TOTAL")
+
+group_pve_ess <- ctwas_parameters_ess$group_pve
+group_pve_ess <- group_pve_ess[-length(group_pve_ess)]
+group_pve_ess <- c(group_pve_ess[1:2], rep(NA,2),group_pve_ess[3])
+group_pve_ess <- c(group_pve_ess, ctwas_parameters_ess$total_pve)
+names(group_pve_ess) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","stQTL_munro","TOTAL")
+
+grouppve <- cbind(group_pve_espred,group_pve_4W,group_pve_ess)
+grouppve <- round(grouppve,digits = 4)
+
+######size
+group_size_espred <- ctwas_parameters_espred$group_size
+group_size_espred <- group_size_espred[-length(group_size_espred)]
+group_size_espred <- c(group_size_espred, rep(NA,3))
+names(group_size_espred) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","stQTL_munro")
+
+group_size_4W <- ctwas_parameters_4W$group_size
+group_size_4W <- group_size_4W[-length(group_size_4W)]
+group_size_4W <- c(group_size_4W, rep(NA,1))
+names(group_size_4W) <-  c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","stQTL_munro")
+
+group_size_ess <- ctwas_parameters_ess$group_size
+group_size_ess <- group_size_ess[-length(group_size_ess)]
+group_size_ess <- c(group_size_ess[1:2], rep(NA,2),group_size_ess[3])
+names(group_size_ess) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","stQTL_munro")
+
+groupsize <- cbind(group_size_espred,group_size_4W,group_size_ess)
+
+group_info <- cbind(grouppve,rbind(groupsize,c(rep(NA,3))))
+
+DT::datatable(group_info,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Group PVE and Group Size'),options = list(pageLength = 10) )
+
+print("each pie chart represents one setting: predictdb e+s, predictdb e+s + Munro apa+rs, predictdb e+s + Munro st QTL")
+grid.arrange(pve_pie_espred,pve_pie_4W,pve_pie_ess, ncol =3)
+
+```
+
+## Fine-mapping results
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+combined_sig_espred <- combined_pip_by_type_espred[combined_pip_by_type_espred$combined_pip > 0.8,]
+combined_sig_4W <- combined_pip_by_type_4W[combined_pip_by_type_4W$combined_pip > 0.8,]
+combined_sig_ess <- combined_pip_by_type_ess[combined_pip_by_type_ess$combined_pip > 0.8,]
+
+sprintf("# of genes with PIP > 0.8 = %s -- predictdb e +s", nrow(combined_sig_espred))
+sprintf("# of genes with PIP > 0.8 = %s -- predictdb e + s + Munro apa + rs", nrow(combined_sig_4W))
+sprintf("# of genes with PIP > 0.8 = %s -- predictdb e+s + Munro st QTL", nrow(combined_sig_ess))
+
+venn.plot <- plot_3venn(es = combined_sig_espred$gene_name,esra = combined_sig_4W$gene_name,ess = combined_sig_ess$gene_name)
+```
+
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=24, fig.height=14}
+###1
+heatmap_data <- combined_sig_ess[!combined_sig_ess$gene_name %in%combined_sig_espred$gene_name, ]
+column_order <- c("gene_name","combined_pip",
+                  "eQTL_pip", "sQTL_pip", "stQTL_pip")
+heatmap_data <- rename_heatmap_columns(heatmap_data = heatmap_data, column_order = column_order)
+p1 <- plot_heatmap(heatmap_data = heatmap_data,main = "PIP partition for the genes reported by e + s + st setting but not by e+s setting")
+
+###2
+heatmap_data <- combined_sig_4W[!combined_sig_4W$gene_name %in%combined_sig_espred$gene_name, ]
+column_order <- c("gene_name","combined_pip",
+                  "eQTL_pip", "sQTL_pip", "rsQTL_pip","apaQTL_pip")
+heatmap_data <- rename_heatmap_columns(heatmap_data = heatmap_data, column_order = column_order)
+p2 <- plot_heatmap(heatmap_data = heatmap_data,main = "PIP partition for the genes reported by e + s + apa + rs setting but not by e+s setting")
+
+###3
+heatmap_data <- combined_sig_ess[!combined_sig_ess$gene_name %in%combined_sig_4W$gene_name, ]
+column_order <- c("gene_name","combined_pip",
+                  "eQTL_pip", "sQTL_pip", "stQTL_pip")
+heatmap_data <- rename_heatmap_columns(heatmap_data = heatmap_data, column_order = column_order)
+
+
+p3 <- plot_heatmap(heatmap_data = heatmap_data,main = "PIP partition for the genes reported by e + s + st setting but not by e + s + apa + rs setting")
+
+g1 <- p1$gtable
+g2 <- p2$gtable
+g3 <- p3$gtable
+grid.arrange(g1, g2, g3, ncol=3)
+
+```
+
+# WBC-ieu-b-30
+
+```{r, echo=T, message=FALSE, warning=FALSE}
+
+trait <- "WBC-ieu-b-30"
+tissue <- "Whole_Blood"
+
+gwas_n <- samplesize[trait]
+
+results_dir_ess <- paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/results/",trait,"/ess/")
+
+snp_map_ess <- readRDS(paste0(results_dir_ess,trait,".snp_map.RDS"))
+ctwas_res_ess <- readRDS(paste0(results_dir_ess,trait,".ctwas.res.RDS"))
+
+param_ess <- ctwas_res_ess$param
+finemap_res_ess <- ctwas_res_ess$finemap_res
+
+
+p_conv_ess <- make_convergence_plots(param_ess, gwas_n, ncol = 1, colors = colors)
+ctwas_parameters_ess <- summarize_param(param_ess, gwas_n)
+pve_pie_ess <- plot_piechart(ctwas_parameters = ctwas_parameters_ess, colors = colors)
+
+susie_alpha_res_ess <- ctwas_res_ess$susie_alpha_res
+
+susie_alpha_res_ess <- anno_susie_alpha_res(susie_alpha_res_ess,
+                                        mapping_table = mapping_two,
+                                        map_by = "molecular_id",
+                                        drop_unmapped = TRUE)
+
+combined_pip_by_type_ess <- combine_gene_pips(susie_alpha_res_ess, 
+                                             group_by = "gene_name",
+                                             by = "type",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = F)
+
+
+```
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+results_dir_espred <- paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/results/",trait,"/espred/")
+
+snp_map_espred <- readRDS(paste0(results_dir_espred,trait,".snp_map.RDS"))
+ctwas_res_espred <- readRDS(paste0(results_dir_espred,trait,".ctwas.res.RDS"))
+
+param_espred <- ctwas_res_espred$param
+finemap_res_espred <- ctwas_res_espred$finemap_res
+
+
+p_conv_espred <- make_convergence_plots(param_espred, gwas_n, ncol = 1, colors = colors)
+ctwas_parameters_espred <- summarize_param(param_espred, gwas_n)
+pve_pie_espred <- plot_piechart(ctwas_parameters = ctwas_parameters_espred, colors = colors)
+
+
+finemap_res_espred$molecular_id <- get_molecular_ids(finemap_res_espred)
+finemap_res_espred <- anno_finemap_res(finemap_res_espred,
+                              snp_map = snp_map_espred,
+                              mapping_table = mapping_two,
+                              add_gene_annot = TRUE,
+                              map_by = "molecular_id",
+                              drop_unmapped = TRUE,
+                              add_position = TRUE,
+                              use_gene_pos = "mid")
+
+combined_pip_by_type_espred <- combine_gene_pips_nocs(finemap_res =finemap_res_espred,
+                                  group_by = "gene_name",
+                                  by = "type", 
+                                  method = "combine_cs",
+                                  filter_cs = T )
+
+```
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+results_dir_4W <- paste0("/project/xinhe/xsun/multi_group_ctwas/9.deciding_weights_4traits/results/",trait,"/4W/")
+
+snp_map_4W <- readRDS(paste0(results_dir_4W,trait,".snp_map.RDS"))
+ctwas_res_4W <- readRDS(paste0(results_dir_4W,trait,".ctwas.res.RDS"))
+
+param_4W <- ctwas_res_4W$param
+finemap_res_4W <- ctwas_res_4W$finemap_res
+
+p_conv_4W <- make_convergence_plots(param_4W, gwas_n, ncol = 1, colors = colors)
+ctwas_parameters_4W <- summarize_param(param_4W, gwas_n)
+pve_pie_4W <- plot_piechart(ctwas_parameters = ctwas_parameters_4W, colors = colors)
+
+finemap_res_4W$molecular_id <- get_molecular_ids(finemap_res_4W)
+finemap_res_4W <- anno_finemap_res(finemap_res_4W,
+                              snp_map = snp_map_4W,
+                              mapping_table = mapping_two,
+                              add_gene_annot = TRUE,
+                              map_by = "molecular_id",
+                              drop_unmapped = TRUE,
+                              add_position = TRUE,
+                              use_gene_pos = "mid")
+
+combined_pip_by_type_4W <- combine_gene_pips_nocs(finemap_res =finemap_res_4W,
+                                  group_by = "gene_name",
+                                  by = "type", 
+                                  method = "combine_cs",
+                                  filter_cs = T )
+
+```
+
+## Parameters
+
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=12}
+
+print("each column represents one setting: predictdb e+s, predictdb e+s + Munro apa+rs, predictdb e+s + Munro st QTL")
+grid.arrange(p_conv_espred,p_conv_4W,p_conv_ess, ncol = 3)
+
+
+######pve
+group_pve_espred <- ctwas_parameters_espred$group_pve
+group_pve_espred <- group_pve_espred[-length(group_pve_espred)]
+group_pve_espred <- c(group_pve_espred, rep(NA,3))
+group_pve_espred <- c(group_pve_espred, ctwas_parameters_espred$total_pve)
+names(group_pve_espred) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","stQTL_munro","TOTAL")
+
+group_pve_4W <- ctwas_parameters_4W$group_pve
+group_pve_4W <- group_pve_4W[-length(group_pve_4W)]
+group_pve_4W <- c(group_pve_4W, rep(NA,1))
+group_pve_4W <- c(group_pve_4W, ctwas_parameters_4W$total_pve)
+names(group_pve_4W) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","stQTL_munro","TOTAL")
+
+group_pve_ess <- ctwas_parameters_ess$group_pve
+group_pve_ess <- group_pve_ess[-length(group_pve_ess)]
+group_pve_ess <- c(group_pve_ess[1:2], rep(NA,2),group_pve_ess[3])
+group_pve_ess <- c(group_pve_ess, ctwas_parameters_ess$total_pve)
+names(group_pve_ess) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","stQTL_munro","TOTAL")
+
+grouppve <- cbind(group_pve_espred,group_pve_4W,group_pve_ess)
+grouppve <- round(grouppve,digits = 4)
+
+######size
+group_size_espred <- ctwas_parameters_espred$group_size
+group_size_espred <- group_size_espred[-length(group_size_espred)]
+group_size_espred <- c(group_size_espred, rep(NA,3))
+names(group_size_espred) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","stQTL_munro")
+
+group_size_4W <- ctwas_parameters_4W$group_size
+group_size_4W <- group_size_4W[-length(group_size_4W)]
+group_size_4W <- c(group_size_4W, rep(NA,1))
+names(group_size_4W) <-  c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","stQTL_munro")
+
+group_size_ess <- ctwas_parameters_ess$group_size
+group_size_ess <- group_size_ess[-length(group_size_ess)]
+group_size_ess <- c(group_size_ess[1:2], rep(NA,2),group_size_ess[3])
+names(group_size_ess) <- c("eQTL_pred","sQTL_pred","apaQTL_munro","rsQTL_munro","stQTL_munro")
+
+groupsize <- cbind(group_size_espred,group_size_4W,group_size_ess)
+
+group_info <- cbind(grouppve,rbind(groupsize,c(rep(NA,3))))
+
+DT::datatable(group_info,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Group PVE and Group Size'),options = list(pageLength = 10) )
+
+print("each pie chart represents one setting: predictdb e+s, predictdb e+s + Munro apa+rs, predictdb e+s + Munro st QTL")
+grid.arrange(pve_pie_espred,pve_pie_4W,pve_pie_ess, ncol =3)
+
+```
+
+## Fine-mapping results
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+combined_sig_espred <- combined_pip_by_type_espred[combined_pip_by_type_espred$combined_pip > 0.8,]
+combined_sig_4W <- combined_pip_by_type_4W[combined_pip_by_type_4W$combined_pip > 0.8,]
+combined_sig_ess <- combined_pip_by_type_ess[combined_pip_by_type_ess$combined_pip > 0.8,]
+
+sprintf("# of genes with PIP > 0.8 = %s -- predictdb e +s", nrow(combined_sig_espred))
+sprintf("# of genes with PIP > 0.8 = %s -- predictdb e + s + Munro apa + rs", nrow(combined_sig_4W))
+sprintf("# of genes with PIP > 0.8 = %s -- predictdb e+s + Munro st QTL", nrow(combined_sig_ess))
+
+venn.plot <- plot_3venn(es = combined_sig_espred$gene_name,esra = combined_sig_4W$gene_name,ess = combined_sig_ess$gene_name)
+```
+
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=24, fig.height=14}
+###1
+heatmap_data <- combined_sig_ess[!combined_sig_ess$gene_name %in%combined_sig_espred$gene_name, ]
+column_order <- c("gene_name","combined_pip",
+                  "eQTL_pip", "sQTL_pip", "stQTL_pip")
+heatmap_data <- rename_heatmap_columns(heatmap_data = heatmap_data, column_order = column_order)
+p1 <- plot_heatmap(heatmap_data = heatmap_data,main = "PIP partition for the genes reported by e + s + st setting but not by e+s setting")
+
+###2
+heatmap_data <- combined_sig_4W[!combined_sig_4W$gene_name %in%combined_sig_espred$gene_name, ]
+column_order <- c("gene_name","combined_pip",
+                  "eQTL_pip", "sQTL_pip", "rsQTL_pip","apaQTL_pip")
+heatmap_data <- rename_heatmap_columns(heatmap_data = heatmap_data, column_order = column_order)
+p2 <- plot_heatmap(heatmap_data = heatmap_data,main = "PIP partition for the genes reported by e + s + apa + rs setting but not by e+s setting")
+
+###3
+heatmap_data <- combined_sig_ess[!combined_sig_ess$gene_name %in%combined_sig_4W$gene_name, ]
+column_order <- c("gene_name","combined_pip",
+                  "eQTL_pip", "sQTL_pip", "stQTL_pip")
+heatmap_data <- rename_heatmap_columns(heatmap_data = heatmap_data, column_order = column_order)
+
+
+p3 <- plot_heatmap(heatmap_data = heatmap_data,main = "PIP partition for the genes reported by e + s + st setting but not by e + s + apa + rs setting")
+
+g1 <- p1$gtable
+g2 <- p2$gtable
+g3 <- p3$gtable
+grid.arrange(g1, g2, g3, ncol=3)
+
+```
+
