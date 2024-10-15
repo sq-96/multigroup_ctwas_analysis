@@ -1,0 +1,1007 @@
+---
+title: "6 Traits, 5 tissues, eQTL + sQTL + stQTL"
+author: "XSun"
+date: "2024-10-15"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+    toc: true
+---
+
+# Overview
+
+## Traits
+
+aFib, IBD, LDL, SBP, SCZ, WBC 
+
+[details](https://sq-96.github.io/multigroup_ctwas_analysis/data.html)
+
+## Tissues
+
+The independent tissues are selected by [single tissue analysis](https://sq-96.github.io/multigroup_ctwas_analysis/matching_tissue_v2_preL.html)
+
+## Omics
+
+eQTL, sQTL weights are from Predictdb
+
+stQTL was a combination of [Munro apa + rs QTL](https://sq-96.github.io/multigroup_ctwas_analysis/data_6modality_Munro.html), if a gene has both rs-QTL and APA-QTL, we use rs-QTL.
+
+
+## Settings
+
+## stQTL from Munro 
+
+1. Weight processing: 
+
+PredictDB:
+
+all the PredictDB are converted from FUSION weights
+
+- drop_strand_ambig = TRUE,
+- scale_by_ld_variance = F (FUSION converted weights)
+- load_predictdb_LD = F,  
+
+2. Parameter estimation and fine-mapping
+
+- niter_prefit = 5,
+- niter = 30(default),
+- filter_L = TRUE,
+- group_prior_var_structure = "shared_type",
+- maxSNP = 20000,
+- min_nonSNP_PIP = 0.5,
+
+## e + s QTL from predictdb 
+
+1. Weight processing: 
+
+PredictDB (eqtl, sqtl)
+
+- drop_strand_ambig = TRUE,
+- scale_by_ld_variance = T
+- load_predictdb_LD = F,  
+
+2. Parameter estimation and fine-mapping
+
+- group_prior_var_structure = "shared_type", 
+- filter_L = TRUE,
+- filter_nonSNP_PIP = FALSE,
+- min_abs_corr = 0.1, 
+
+mem: 150g 10cores
+
+
+```{r, echo=T, message=FALSE, warning=FALSE}
+library(ctwas)
+library(ggplot2)
+library(tidyverse)
+library(pheatmap)
+
+mapping_predictdb <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
+mapping_munro <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/Munro_mapping.RDS")
+mapping_two <- rbind(mapping_predictdb,mapping_munro)
+
+load("/project2/xinhe/shared_data/multigroup_ctwas/gwas/samplesize.rdata")
+
+
+colors <- c(  "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728",  "#9467bd", "#8c564b", "#e377c2", "#7f7f7f",  "#bcbd22",  "#17becf",  "#f7b6d2",  "#c5b0d5",  "#9edae5", "#ffbb78",  "#98df8a",  "#ff9896" )
+
+plot_piechart <- function(ctwas_parameters, colors, by) {
+  # Create the initial data frame
+  data <- data.frame(
+    category = names(ctwas_parameters$prop_heritability),
+    percentage = ctwas_parameters$prop_heritability
+  )
+  
+  # Split the category into context and type
+  data <- data %>%
+    mutate(
+      context = sub("\\|.*", "", category),
+      type = sub(".*\\|", "", category)
+    )
+  
+  # Aggregate the data based on the 'by' parameter
+  if (by == "type") {
+    data <- data %>%
+      group_by(type) %>%
+      summarize(percentage = sum(percentage)) %>%
+      mutate(category = type)  # Use type as the new category
+  } else if (by == "context") {
+    data <- data %>%
+      group_by(context) %>%
+      summarize(percentage = sum(percentage)) %>%
+      mutate(category = context)  # Use context as the new category
+  } else {
+    stop("Invalid 'by' parameter. Use 'type' or 'context'.")
+  }
+  
+  # Calculate percentage labels for the chart
+  data$percentage_label <- paste0(round(data$percentage * 100, 1), "%")
+  
+  # Create the pie chart
+  pie <- ggplot(data, aes(x = "", y = percentage, fill = category)) +
+    geom_bar(stat = "identity", width = 1) +
+    coord_polar("y", start = 0) +
+    theme_void() +  # Remove background and axes
+    geom_text(aes(label = percentage_label), 
+              position = position_stack(vjust = 0.5), size = 3) +  # Adjust size as needed
+    scale_fill_manual(values = colors) +  # Custom colors
+    labs(fill = "Category") +  # Legend title
+    ggtitle("Percent of Heritability")  # Title
+  
+  return(pie)
+}
+
+draw_gene_piechart_type <- function(data, colors) {
+  # Filter data based on combined_pip
+  data <- data[data$combined_pip > 0.8, ]
+  
+  # Count occurrences by eQTL, sQTL, and stQTL
+  byeQTL <- nrow(data[data$eQTL_pip / data$combined_pip > 0.8, ])
+  bysQTL <- nrow(data[data$sQTL_pip / data$combined_pip > 0.8, ])
+  bystQTL <- nrow(data[data$stQTL_pip / data$combined_pip > 0.8, ])
+  
+  # Count occurrences for combined sQTL and stQTL
+  bysQTLstQTL <- nrow(data[((data$stQTL_pip + data$sQTL_pip) / data$combined_pip) > 0.8 &
+                             data$stQTL_pip / data$combined_pip < 0.8 &
+                             data$sQTL_pip / data$combined_pip < 0.8, ])
+  
+  # Count unspecified
+  unspecified <- nrow(data) - byeQTL - bysQTL - bystQTL - bysQTLstQTL
+  
+  # Create vectors for plotting
+  n <- c(byeQTL, bysQTL, bystQTL, bysQTLstQTL, unspecified)
+  prop <- round(n / nrow(data), 3)
+  labels = c("by eQTL", "by sQTL", "by stQTL", "by sQTL+stQTL", "unspecified")
+  lab.ypos = cumsum(prop) - 0.5 * prop
+  
+  # Prepare the data frame for plotting
+  df <- data.frame("n" = n,
+                   "class" = labels,
+                   "prop" = prop,
+                   "lab.ypos" = lab.ypos)
+  
+  # Generate the pie chart
+  ggplot(df, aes(x = "", y = prop, fill = class)) +
+    geom_bar(width = 1, stat = "identity", color = "white") +
+    coord_polar("y", start = 0) +
+    geom_text(aes(label = n),
+              position = position_stack(vjust = 0.5)) +
+    scale_fill_manual(values = colors) +  # Ensure 'palette' is defined
+    theme_void()
+}
+
+draw_gene_piechart_tissue <- function(data, colors){
+  
+  data <- data[data$combined_pip>0.8,]
+  tissues <- colnames(data)[3:7]
+  tissues <- sub("_pip$", "", tissues)
+  colnames(data)[3:7] <- paste0("tissue",c(1:5))
+  
+  
+  bytissue1 <- nrow(data[data$tissue1/data$combined_pip>0.8,])
+  bytissue2 <- nrow(data[data$tissue2/data$combined_pip>0.8,])
+  bytissue3 <- nrow(data[data$tissue3/data$combined_pip>0.8,])
+  bytissue4 <- nrow(data[data$tissue4/data$combined_pip>0.8,])
+  bytissue5 <- nrow(data[data$tissue5/data$combined_pip>0.8,])
+  unspecified <- nrow(data)-bytissue1-bytissue2-bytissue3-bytissue4-bytissue5
+  
+  n <- c(bytissue1,bytissue2,bytissue3,bytissue4,bytissue5,unspecified)
+  
+  prop <- round(n/nrow(data),3)
+  labels = c(tissues,"unspecified")
+  lab.ypos = cumsum(prop) - 0.5*prop
+  df <- data.frame("n" = n,
+                   "class" = labels,
+                   "prop" = prop,
+                   "lab.ypos" = lab.ypos)
+  p <- ggplot(df, aes(x = "", y = prop, fill = class)) +
+    geom_bar(width = 1, stat = "identity", color = "white") +
+    coord_polar("y", start = 0)+
+    geom_text(aes(label = n),
+              position = position_stack(vjust = 0.5))+
+    scale_fill_manual(values = colors) +
+    theme_void()
+  
+  return(p)
+}
+
+plot_heatmap <- function(heatmap_data, main) {
+  
+  rownames(heatmap_data) <- heatmap_data$gene_name
+  heatmap_data <- heatmap_data %>% dplyr::select(-gene_name, -combined_pip)
+  
+  if(nrow(heatmap_data) ==1){
+    
+    heatmap_data <- rbind(heatmap_data,rep(0,ncol(heatmap_data)))
+    rownames(heatmap_data)[2] <- "fake_gene_for_plotting"
+    
+  }
+  
+  heatmap_matrix <- as.matrix(heatmap_data)
+  
+  p <- pheatmap(heatmap_matrix,
+                cluster_rows = F,   # Cluster the rows (genes)
+                cluster_cols = F,   # Cluster the columns (QTL types)
+                color = colorRampPalette(c("white", "red"))(50), # Color gradient
+                display_numbers = TRUE, # Display numbers in cells
+                main = main,labels_row = rownames(heatmap_data), silent = T)
+  
+  return(p)
+}
+
+```
+
+
+# aFib-ebi-a-GCST006414
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=12}
+
+trait <- "aFib-ebi-a-GCST006414"
+gwas_n <- samplesize[trait]
+tissue <- c("Heart_Atrial_Appendage","Artery_Tibial","Muscle_Skeletal","Stomach","Thyroid")
+
+results_dir_multi <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/results/",trait,"/")
+ctwas_res_multi <- readRDS(paste0(results_dir_multi,trait,".ctwas.res.RDS"))
+
+param_multi <- ctwas_res_multi$param
+make_convergence_plots(param_multi, gwas_n, colors = colors)
+```
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=6}
+ctwas_parameters_multi <- summarize_param(param_multi, gwas_n)
+pve_pie_by_type_multi <- plot_piechart(ctwas_parameters = ctwas_parameters_multi, colors = colors, by = "type")
+pve_pie_by_context_multi <- plot_piechart(ctwas_parameters = ctwas_parameters_multi, colors = colors, by = "context")
+
+gridExtra::grid.arrange(pve_pie_by_type_multi,pve_pie_by_context_multi, ncol = 2)
+```
+
+## Fine-mapping 
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=6}
+susie_alpha_res_multi <- ctwas_res_multi$susie_alpha_res
+
+susie_alpha_res_multi <- anno_susie_alpha_res(susie_alpha_res_multi,
+                                        mapping_table = mapping_two,
+                                        map_by = "molecular_id",
+                                        drop_unmapped = TRUE)
+
+combined_pip_by_type_multi <- combine_gene_pips(susie_alpha_res_multi, 
+                                             group_by = "gene_name",
+                                             by = "type",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = F)
+
+combined_pip_by_type_cs_multi <- combine_gene_pips(susie_alpha_res_multi, 
+                                             group_by = "gene_name",
+                                             by = "type",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = T)
+
+combined_pip_by_context_cs_multi <- combine_gene_pips(susie_alpha_res_multi, 
+                                             group_by = "gene_name",
+                                             by = "context",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = T)
+
+
+combined_pip_by_context_multi <- combine_gene_pips(susie_alpha_res_multi, 
+                                             group_by = "gene_name",
+                                             by = "context",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = F)
+
+DT::datatable(combined_pip_by_type_cs_multi[combined_pip_by_type_cs_multi$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by omics'),options = list(pageLength = 5) )
+
+DT::datatable(combined_pip_by_context_cs_multi[combined_pip_by_context_cs_multi$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by tissue'),options = list(pageLength = 5) )
+
+
+pie1 <- draw_gene_piechart_type(data = combined_pip_by_type_multi,colors = colors)
+pie2 <- draw_gene_piechart_tissue(data = combined_pip_by_context_multi,colors = colors)
+
+gridExtra::grid.arrange(pie1,pie2, ncol = 2)
+```
+
+## Comparing with single tissue + eQTL analysis
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=6}
+
+ctwas_res_single <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/10.single_tissue_1007/results/",trait,"/",tissue[1],"/",trait,"_",tissue[1], ".ctwas.res.RDS"))
+
+susie_alpha_res_single <- ctwas_res_single$susie_alpha_res
+
+susie_alpha_res_single <- anno_susie_alpha_res(susie_alpha_res_single,
+                                        mapping_table = mapping_predictdb,
+                                        map_by = "molecular_id",
+                                        drop_unmapped = TRUE)
+
+combined_pip_by_type_single <- combine_gene_pips(susie_alpha_res_single, 
+                                             group_by = "gene_name",
+                                             by = "type",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = F)
+
+combined_pip_by_type_sig_single <- combined_pip_by_type_single[combined_pip_by_type_single$combined_pip > 0.8,]
+combined_pip_by_type_sig_multi <- combined_pip_by_type_multi[combined_pip_by_type_multi$combined_pip > 0.8,]
+
+sprintf("Number of genes with PIP > 0.8  -- Multi-group = %s", nrow(combined_pip_by_type_sig_multi))
+sprintf("Number of genes with PIP > 0.8  -- single eQTL = %s", nrow(combined_pip_by_type_sig_single))
+sprintf("Number of overlapped genes = %s", sum(combined_pip_by_type_sig_single$gene_name %in% combined_pip_by_type_sig_multi$gene_name))
+
+genes_not_reported <- combined_pip_by_type_sig_single$gene_name[!combined_pip_by_type_sig_single$gene_name %in%combined_pip_by_type_sig_multi$gene_name]
+
+DT::datatable(combined_pip_by_type_sig_single[combined_pip_by_type_sig_single$gene_name %in% genes_not_reported,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Genes not reported by multi-group analysis'),options = list(pageLength = 5) )
+
+DT::datatable(combined_pip_by_type_multi[combined_pip_by_type_multi$gene_name %in% genes_not_reported,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Genes not reported by multi-group analysis'),options = list(pageLength = 5) )
+
+```
+
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=6}
+
+gene_multi_unique_type <- combined_pip_by_type_sig_multi[!combined_pip_by_type_sig_multi$gene_name %in%  combined_pip_by_type_sig_single$gene_name,]
+
+p1 <- plot_heatmap(heatmap_data = gene_multi_unique_type, main = "Unique genes found by multi-group analysis")
+
+combined_pip_by_context_sig_multi <- combined_pip_by_context_multi[combined_pip_by_context_multi$combined_pip > 0.8,]
+gene_multi_unique_context <- combined_pip_by_context_sig_multi[!combined_pip_by_context_sig_multi$gene_name %in%  combined_pip_by_type_sig_single$gene_name,]
+p2 <- plot_heatmap(heatmap_data = gene_multi_unique_context, main = "Unique genes found by multi-group analysis")
+
+
+g1 <- p1$gtable
+g2 <- p2$gtable
+gridExtra::grid.arrange(g1, g2, ncol=2)
+```
+
+
+
+
+
+# LDL-ukb-d-30780_irnt
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=12}
+
+trait <- "LDL-ukb-d-30780_irnt"
+gwas_n <- samplesize[trait]
+tissue <- c("Liver","Spleen","Esophagus_Mucosa","Esophagus_Gastroesophageal_Junction","Skin_Not_Sun_Exposed_Suprapubic")
+
+results_dir_multi <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/results/",trait,"/")
+ctwas_res_multi <- readRDS(paste0(results_dir_multi,trait,".ctwas.res.RDS"))
+
+param_multi <- ctwas_res_multi$param
+make_convergence_plots(param_multi, gwas_n, colors = colors)
+```
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=6}
+ctwas_parameters_multi <- summarize_param(param_multi, gwas_n)
+pve_pie_by_type_multi <- plot_piechart(ctwas_parameters = ctwas_parameters_multi, colors = colors, by = "type")
+pve_pie_by_context_multi <- plot_piechart(ctwas_parameters = ctwas_parameters_multi, colors = colors, by = "context")
+
+gridExtra::grid.arrange(pve_pie_by_type_multi,pve_pie_by_context_multi, ncol = 2)
+```
+
+## Fine-mapping 
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=6}
+susie_alpha_res_multi <- ctwas_res_multi$susie_alpha_res
+
+susie_alpha_res_multi <- anno_susie_alpha_res(susie_alpha_res_multi,
+                                        mapping_table = mapping_two,
+                                        map_by = "molecular_id",
+                                        drop_unmapped = TRUE)
+
+combined_pip_by_type_multi <- combine_gene_pips(susie_alpha_res_multi, 
+                                             group_by = "gene_name",
+                                             by = "type",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = F)
+
+combined_pip_by_type_cs_multi <- combine_gene_pips(susie_alpha_res_multi, 
+                                             group_by = "gene_name",
+                                             by = "type",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = T)
+
+combined_pip_by_context_cs_multi <- combine_gene_pips(susie_alpha_res_multi, 
+                                             group_by = "gene_name",
+                                             by = "context",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = T)
+
+
+combined_pip_by_context_multi <- combine_gene_pips(susie_alpha_res_multi, 
+                                             group_by = "gene_name",
+                                             by = "context",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = F)
+
+DT::datatable(combined_pip_by_type_cs_multi[combined_pip_by_type_cs_multi$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by omics'),options = list(pageLength = 5) )
+
+DT::datatable(combined_pip_by_context_cs_multi[combined_pip_by_context_cs_multi$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by tissue'),options = list(pageLength = 5) )
+
+
+pie1 <- draw_gene_piechart_type(data = combined_pip_by_type_multi,colors = colors)
+pie2 <- draw_gene_piechart_tissue(data = combined_pip_by_context_multi,colors = colors)
+
+gridExtra::grid.arrange(pie1,pie2, ncol = 2)
+```
+
+## Comparing with single tissue + eQTL analysis
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=6}
+
+ctwas_res_single <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/10.single_tissue_1007/results/",trait,"/",tissue[1],"/",trait,"_",tissue[1], ".ctwas.res.RDS"))
+
+susie_alpha_res_single <- ctwas_res_single$susie_alpha_res
+
+susie_alpha_res_single <- anno_susie_alpha_res(susie_alpha_res_single,
+                                        mapping_table = mapping_predictdb,
+                                        map_by = "molecular_id",
+                                        drop_unmapped = TRUE)
+
+combined_pip_by_type_single <- combine_gene_pips(susie_alpha_res_single, 
+                                             group_by = "gene_name",
+                                             by = "type",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = F)
+
+combined_pip_by_type_sig_single <- combined_pip_by_type_single[combined_pip_by_type_single$combined_pip > 0.8,]
+combined_pip_by_type_sig_multi <- combined_pip_by_type_multi[combined_pip_by_type_multi$combined_pip > 0.8,]
+
+sprintf("Number of genes with PIP > 0.8  -- Multi-group = %s", nrow(combined_pip_by_type_sig_multi))
+sprintf("Number of genes with PIP > 0.8  -- single eQTL = %s", nrow(combined_pip_by_type_sig_single))
+sprintf("Number of overlapped genes = %s", sum(combined_pip_by_type_sig_single$gene_name %in% combined_pip_by_type_sig_multi$gene_name))
+
+genes_not_reported <- combined_pip_by_type_sig_single$gene_name[!combined_pip_by_type_sig_single$gene_name %in%combined_pip_by_type_sig_multi$gene_name]
+
+DT::datatable(combined_pip_by_type_sig_single[combined_pip_by_type_sig_single$gene_name %in% genes_not_reported,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Genes not reported by multi-group analysis'),options = list(pageLength = 5) )
+
+DT::datatable(combined_pip_by_type_multi[combined_pip_by_type_multi$gene_name %in% genes_not_reported,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Genes not reported by multi-group analysis'),options = list(pageLength = 5) )
+
+```
+
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=6}
+
+gene_multi_unique_type <- combined_pip_by_type_sig_multi[!combined_pip_by_type_sig_multi$gene_name %in%  combined_pip_by_type_sig_single$gene_name,]
+
+p1 <- plot_heatmap(heatmap_data = gene_multi_unique_type, main = "Unique genes found by multi-group analysis")
+
+combined_pip_by_context_sig_multi <- combined_pip_by_context_multi[combined_pip_by_context_multi$combined_pip > 0.8,]
+gene_multi_unique_context <- combined_pip_by_context_sig_multi[!combined_pip_by_context_sig_multi$gene_name %in%  combined_pip_by_type_sig_single$gene_name,]
+p2 <- plot_heatmap(heatmap_data = gene_multi_unique_context, main = "Unique genes found by multi-group analysis")
+
+
+g1 <- p1$gtable
+g2 <- p2$gtable
+gridExtra::grid.arrange(g1, g2, ncol=2)
+```
+
+
+
+
+
+# IBD-ebi-a-GCST004131
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=12}
+
+trait <- "IBD-ebi-a-GCST004131"
+gwas_n <- samplesize[trait]
+tissue <- c("Whole_Blood","Adipose_Subcutaneous","Cells_Cultured_fibroblasts","Spleen","Testis")
+
+
+results_dir_multi <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/results/",trait,"/")
+ctwas_res_multi <- readRDS(paste0(results_dir_multi,trait,".ctwas.res.RDS"))
+
+param_multi <- ctwas_res_multi$param
+make_convergence_plots(param_multi, gwas_n, colors = colors)
+```
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=6}
+ctwas_parameters_multi <- summarize_param(param_multi, gwas_n)
+pve_pie_by_type_multi <- plot_piechart(ctwas_parameters = ctwas_parameters_multi, colors = colors, by = "type")
+pve_pie_by_context_multi <- plot_piechart(ctwas_parameters = ctwas_parameters_multi, colors = colors, by = "context")
+
+gridExtra::grid.arrange(pve_pie_by_type_multi,pve_pie_by_context_multi, ncol = 2)
+```
+
+## Fine-mapping 
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=6}
+susie_alpha_res_multi <- ctwas_res_multi$susie_alpha_res
+
+susie_alpha_res_multi <- anno_susie_alpha_res(susie_alpha_res_multi,
+                                        mapping_table = mapping_two,
+                                        map_by = "molecular_id",
+                                        drop_unmapped = TRUE)
+
+combined_pip_by_type_multi <- combine_gene_pips(susie_alpha_res_multi, 
+                                             group_by = "gene_name",
+                                             by = "type",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = F)
+
+combined_pip_by_type_cs_multi <- combine_gene_pips(susie_alpha_res_multi, 
+                                             group_by = "gene_name",
+                                             by = "type",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = T)
+
+combined_pip_by_context_cs_multi <- combine_gene_pips(susie_alpha_res_multi, 
+                                             group_by = "gene_name",
+                                             by = "context",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = T)
+
+
+combined_pip_by_context_multi <- combine_gene_pips(susie_alpha_res_multi, 
+                                             group_by = "gene_name",
+                                             by = "context",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = F)
+
+DT::datatable(combined_pip_by_type_cs_multi[combined_pip_by_type_cs_multi$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by omics'),options = list(pageLength = 5) )
+
+DT::datatable(combined_pip_by_context_cs_multi[combined_pip_by_context_cs_multi$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by tissue'),options = list(pageLength = 5) )
+
+
+pie1 <- draw_gene_piechart_type(data = combined_pip_by_type_multi,colors = colors)
+pie2 <- draw_gene_piechart_tissue(data = combined_pip_by_context_multi,colors = colors)
+
+gridExtra::grid.arrange(pie1,pie2, ncol = 2)
+```
+
+## Comparing with single tissue + eQTL analysis
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=6}
+
+ctwas_res_single <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/10.single_tissue_1007/results/",trait,"/",tissue[1],"/",trait,"_",tissue[1], ".ctwas.res.RDS"))
+
+susie_alpha_res_single <- ctwas_res_single$susie_alpha_res
+
+susie_alpha_res_single <- anno_susie_alpha_res(susie_alpha_res_single,
+                                        mapping_table = mapping_predictdb,
+                                        map_by = "molecular_id",
+                                        drop_unmapped = TRUE)
+
+combined_pip_by_type_single <- combine_gene_pips(susie_alpha_res_single, 
+                                             group_by = "gene_name",
+                                             by = "type",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = F)
+
+combined_pip_by_type_sig_single <- combined_pip_by_type_single[combined_pip_by_type_single$combined_pip > 0.8,]
+combined_pip_by_type_sig_multi <- combined_pip_by_type_multi[combined_pip_by_type_multi$combined_pip > 0.8,]
+
+sprintf("Number of genes with PIP > 0.8  -- Multi-group = %s", nrow(combined_pip_by_type_sig_multi))
+sprintf("Number of genes with PIP > 0.8  -- single eQTL = %s", nrow(combined_pip_by_type_sig_single))
+sprintf("Number of overlapped genes = %s", sum(combined_pip_by_type_sig_single$gene_name %in% combined_pip_by_type_sig_multi$gene_name))
+
+genes_not_reported <- combined_pip_by_type_sig_single$gene_name[!combined_pip_by_type_sig_single$gene_name %in%combined_pip_by_type_sig_multi$gene_name]
+
+DT::datatable(combined_pip_by_type_sig_single[combined_pip_by_type_sig_single$gene_name %in% genes_not_reported,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Genes not reported by multi-group analysis'),options = list(pageLength = 5) )
+
+DT::datatable(combined_pip_by_type_multi[combined_pip_by_type_multi$gene_name %in% genes_not_reported,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Genes not reported by multi-group analysis'),options = list(pageLength = 5) )
+
+```
+
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=6}
+
+gene_multi_unique_type <- combined_pip_by_type_sig_multi[!combined_pip_by_type_sig_multi$gene_name %in%  combined_pip_by_type_sig_single$gene_name,]
+
+p1 <- plot_heatmap(heatmap_data = gene_multi_unique_type, main = "Unique genes found by multi-group analysis")
+
+combined_pip_by_context_sig_multi <- combined_pip_by_context_multi[combined_pip_by_context_multi$combined_pip > 0.8,]
+gene_multi_unique_context <- combined_pip_by_context_sig_multi[!combined_pip_by_context_sig_multi$gene_name %in%  combined_pip_by_type_sig_single$gene_name,]
+p2 <- plot_heatmap(heatmap_data = gene_multi_unique_context, main = "Unique genes found by multi-group analysis")
+
+
+g1 <- p1$gtable
+g2 <- p2$gtable
+gridExtra::grid.arrange(g1, g2, ncol=2)
+```
+
+
+
+# SBP-ukb-a-360
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=12}
+
+trait <- "SBP-ukb-a-360"
+gwas_n <- samplesize[trait]
+tissue <- c("Artery_Tibial","Heart_Atrial_Appendage","Adipose_Subcutaneous","Brain_Cortex","Skin_Sun_Exposed_Lower_leg")
+
+
+results_dir_multi <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/results/",trait,"/")
+ctwas_res_multi <- readRDS(paste0(results_dir_multi,trait,".ctwas.res.RDS"))
+
+param_multi <- ctwas_res_multi$param
+make_convergence_plots(param_multi, gwas_n, colors = colors)
+```
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=6}
+ctwas_parameters_multi <- summarize_param(param_multi, gwas_n)
+pve_pie_by_type_multi <- plot_piechart(ctwas_parameters = ctwas_parameters_multi, colors = colors, by = "type")
+pve_pie_by_context_multi <- plot_piechart(ctwas_parameters = ctwas_parameters_multi, colors = colors, by = "context")
+
+gridExtra::grid.arrange(pve_pie_by_type_multi,pve_pie_by_context_multi, ncol = 2)
+```
+
+## Fine-mapping 
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=6}
+susie_alpha_res_multi <- ctwas_res_multi$susie_alpha_res
+
+susie_alpha_res_multi <- anno_susie_alpha_res(susie_alpha_res_multi,
+                                        mapping_table = mapping_two,
+                                        map_by = "molecular_id",
+                                        drop_unmapped = TRUE)
+
+combined_pip_by_type_multi <- combine_gene_pips(susie_alpha_res_multi, 
+                                             group_by = "gene_name",
+                                             by = "type",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = F)
+
+combined_pip_by_type_cs_multi <- combine_gene_pips(susie_alpha_res_multi, 
+                                             group_by = "gene_name",
+                                             by = "type",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = T)
+
+combined_pip_by_context_cs_multi <- combine_gene_pips(susie_alpha_res_multi, 
+                                             group_by = "gene_name",
+                                             by = "context",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = T)
+
+
+combined_pip_by_context_multi <- combine_gene_pips(susie_alpha_res_multi, 
+                                             group_by = "gene_name",
+                                             by = "context",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = F)
+
+DT::datatable(combined_pip_by_type_cs_multi[combined_pip_by_type_cs_multi$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by omics'),options = list(pageLength = 5) )
+
+DT::datatable(combined_pip_by_context_cs_multi[combined_pip_by_context_cs_multi$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by tissue'),options = list(pageLength = 5) )
+
+
+pie1 <- draw_gene_piechart_type(data = combined_pip_by_type_multi,colors = colors)
+pie2 <- draw_gene_piechart_tissue(data = combined_pip_by_context_multi,colors = colors)
+
+gridExtra::grid.arrange(pie1,pie2, ncol = 2)
+```
+
+## Comparing with single tissue + eQTL analysis
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=6}
+
+ctwas_res_single <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/10.single_tissue_1007/results/",trait,"/",tissue[1],"/",trait,"_",tissue[1], ".ctwas.res.RDS"))
+
+susie_alpha_res_single <- ctwas_res_single$susie_alpha_res
+
+susie_alpha_res_single <- anno_susie_alpha_res(susie_alpha_res_single,
+                                        mapping_table = mapping_predictdb,
+                                        map_by = "molecular_id",
+                                        drop_unmapped = TRUE)
+
+combined_pip_by_type_single <- combine_gene_pips(susie_alpha_res_single, 
+                                             group_by = "gene_name",
+                                             by = "type",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = F)
+
+combined_pip_by_type_sig_single <- combined_pip_by_type_single[combined_pip_by_type_single$combined_pip > 0.8,]
+combined_pip_by_type_sig_multi <- combined_pip_by_type_multi[combined_pip_by_type_multi$combined_pip > 0.8,]
+
+sprintf("Number of genes with PIP > 0.8  -- Multi-group = %s", nrow(combined_pip_by_type_sig_multi))
+sprintf("Number of genes with PIP > 0.8  -- single eQTL = %s", nrow(combined_pip_by_type_sig_single))
+sprintf("Number of overlapped genes = %s", sum(combined_pip_by_type_sig_single$gene_name %in% combined_pip_by_type_sig_multi$gene_name))
+
+genes_not_reported <- combined_pip_by_type_sig_single$gene_name[!combined_pip_by_type_sig_single$gene_name %in%combined_pip_by_type_sig_multi$gene_name]
+
+DT::datatable(combined_pip_by_type_sig_single[combined_pip_by_type_sig_single$gene_name %in% genes_not_reported,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Genes not reported by multi-group analysis'),options = list(pageLength = 5) )
+
+DT::datatable(combined_pip_by_type_multi[combined_pip_by_type_multi$gene_name %in% genes_not_reported,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Genes not reported by multi-group analysis'),options = list(pageLength = 5) )
+
+```
+
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=6}
+
+gene_multi_unique_type <- combined_pip_by_type_sig_multi[!combined_pip_by_type_sig_multi$gene_name %in%  combined_pip_by_type_sig_single$gene_name,]
+
+p1 <- plot_heatmap(heatmap_data = gene_multi_unique_type, main = "Unique genes found by multi-group analysis")
+
+combined_pip_by_context_sig_multi <- combined_pip_by_context_multi[combined_pip_by_context_multi$combined_pip > 0.8,]
+gene_multi_unique_context <- combined_pip_by_context_sig_multi[!combined_pip_by_context_sig_multi$gene_name %in%  combined_pip_by_type_sig_single$gene_name,]
+p2 <- plot_heatmap(heatmap_data = gene_multi_unique_context, main = "Unique genes found by multi-group analysis")
+
+
+g1 <- p1$gtable
+g2 <- p2$gtable
+gridExtra::grid.arrange(g1, g2, ncol=2)
+```
+
+
+
+# SCZ-ieu-b-5102
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=12}
+
+trait <- "SCZ-ieu-b-5102"
+gwas_n <- samplesize[trait]
+tissue <- c("Brain_Hippocampus","Adrenal_Gland","Brain_Spinal_cord_cervical_c-1","Spleen","Heart_Left_Ventricle")
+
+
+results_dir_multi <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/results/",trait,"/")
+ctwas_res_multi <- readRDS(paste0(results_dir_multi,trait,".ctwas.res.RDS"))
+
+param_multi <- ctwas_res_multi$param
+make_convergence_plots(param_multi, gwas_n, colors = colors)
+```
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=6}
+ctwas_parameters_multi <- summarize_param(param_multi, gwas_n)
+pve_pie_by_type_multi <- plot_piechart(ctwas_parameters = ctwas_parameters_multi, colors = colors, by = "type")
+pve_pie_by_context_multi <- plot_piechart(ctwas_parameters = ctwas_parameters_multi, colors = colors, by = "context")
+
+gridExtra::grid.arrange(pve_pie_by_type_multi,pve_pie_by_context_multi, ncol = 2)
+```
+
+## Fine-mapping 
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=6}
+susie_alpha_res_multi <- ctwas_res_multi$susie_alpha_res
+
+susie_alpha_res_multi <- anno_susie_alpha_res(susie_alpha_res_multi,
+                                        mapping_table = mapping_two,
+                                        map_by = "molecular_id",
+                                        drop_unmapped = TRUE)
+
+combined_pip_by_type_multi <- combine_gene_pips(susie_alpha_res_multi, 
+                                             group_by = "gene_name",
+                                             by = "type",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = F)
+
+combined_pip_by_type_cs_multi <- combine_gene_pips(susie_alpha_res_multi, 
+                                             group_by = "gene_name",
+                                             by = "type",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = T)
+
+combined_pip_by_context_cs_multi <- combine_gene_pips(susie_alpha_res_multi, 
+                                             group_by = "gene_name",
+                                             by = "context",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = T)
+
+
+combined_pip_by_context_multi <- combine_gene_pips(susie_alpha_res_multi, 
+                                             group_by = "gene_name",
+                                             by = "context",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = F)
+
+DT::datatable(combined_pip_by_type_cs_multi[combined_pip_by_type_cs_multi$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by omics'),options = list(pageLength = 5) )
+
+DT::datatable(combined_pip_by_context_cs_multi[combined_pip_by_context_cs_multi$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by tissue'),options = list(pageLength = 5) )
+
+
+pie1 <- draw_gene_piechart_type(data = combined_pip_by_type_multi,colors = colors)
+pie2 <- draw_gene_piechart_tissue(data = combined_pip_by_context_multi,colors = colors)
+
+gridExtra::grid.arrange(pie1,pie2, ncol = 2)
+```
+
+## Comparing with single tissue + eQTL analysis
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=6}
+
+ctwas_res_single <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/10.single_tissue_1007/results/",trait,"/",tissue[1],"/",trait,"_",tissue[1], ".ctwas.res.RDS"))
+
+susie_alpha_res_single <- ctwas_res_single$susie_alpha_res
+
+susie_alpha_res_single <- anno_susie_alpha_res(susie_alpha_res_single,
+                                        mapping_table = mapping_predictdb,
+                                        map_by = "molecular_id",
+                                        drop_unmapped = TRUE)
+
+combined_pip_by_type_single <- combine_gene_pips(susie_alpha_res_single, 
+                                             group_by = "gene_name",
+                                             by = "type",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = F)
+
+combined_pip_by_type_sig_single <- combined_pip_by_type_single[combined_pip_by_type_single$combined_pip > 0.8,]
+combined_pip_by_type_sig_multi <- combined_pip_by_type_multi[combined_pip_by_type_multi$combined_pip > 0.8,]
+
+sprintf("Number of genes with PIP > 0.8  -- Multi-group = %s", nrow(combined_pip_by_type_sig_multi))
+sprintf("Number of genes with PIP > 0.8  -- single eQTL = %s", nrow(combined_pip_by_type_sig_single))
+sprintf("Number of overlapped genes = %s", sum(combined_pip_by_type_sig_single$gene_name %in% combined_pip_by_type_sig_multi$gene_name))
+
+genes_not_reported <- combined_pip_by_type_sig_single$gene_name[!combined_pip_by_type_sig_single$gene_name %in%combined_pip_by_type_sig_multi$gene_name]
+
+DT::datatable(combined_pip_by_type_sig_single[combined_pip_by_type_sig_single$gene_name %in% genes_not_reported,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Genes not reported by multi-group analysis'),options = list(pageLength = 5) )
+
+DT::datatable(combined_pip_by_type_multi[combined_pip_by_type_multi$gene_name %in% genes_not_reported,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Genes not reported by multi-group analysis'),options = list(pageLength = 5) )
+
+```
+
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=6}
+
+gene_multi_unique_type <- combined_pip_by_type_sig_multi[!combined_pip_by_type_sig_multi$gene_name %in%  combined_pip_by_type_sig_single$gene_name,]
+
+p1 <- plot_heatmap(heatmap_data = gene_multi_unique_type, main = "Unique genes found by multi-group analysis")
+
+combined_pip_by_context_sig_multi <- combined_pip_by_context_multi[combined_pip_by_context_multi$combined_pip > 0.8,]
+gene_multi_unique_context <- combined_pip_by_context_sig_multi[!combined_pip_by_context_sig_multi$gene_name %in%  combined_pip_by_type_sig_single$gene_name,]
+p2 <- plot_heatmap(heatmap_data = gene_multi_unique_context, main = "Unique genes found by multi-group analysis")
+
+
+g1 <- p1$gtable
+g2 <- p2$gtable
+gridExtra::grid.arrange(g1, g2, ncol=2)
+```
+
+
+
+
+# WBC-ieu-b-30
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=12}
+
+trait <- "WBC-ieu-b-30"
+gwas_n <- samplesize[trait]
+tissue <- c("Whole_Blood","Adipose_Subcutaneous","Esophagus_Muscularis","Cells_Cultured_fibroblasts","Thyroid")
+
+
+results_dir_multi <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/results/",trait,"/")
+ctwas_res_multi <- readRDS(paste0(results_dir_multi,trait,".ctwas.res.RDS"))
+
+param_multi <- ctwas_res_multi$param
+make_convergence_plots(param_multi, gwas_n, colors = colors)
+```
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=6}
+ctwas_parameters_multi <- summarize_param(param_multi, gwas_n)
+pve_pie_by_type_multi <- plot_piechart(ctwas_parameters = ctwas_parameters_multi, colors = colors, by = "type")
+pve_pie_by_context_multi <- plot_piechart(ctwas_parameters = ctwas_parameters_multi, colors = colors, by = "context")
+
+gridExtra::grid.arrange(pve_pie_by_type_multi,pve_pie_by_context_multi, ncol = 2)
+```
+
+## Fine-mapping 
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=6}
+susie_alpha_res_multi <- ctwas_res_multi$susie_alpha_res
+
+susie_alpha_res_multi <- anno_susie_alpha_res(susie_alpha_res_multi,
+                                        mapping_table = mapping_two,
+                                        map_by = "molecular_id",
+                                        drop_unmapped = TRUE)
+
+combined_pip_by_type_multi <- combine_gene_pips(susie_alpha_res_multi, 
+                                             group_by = "gene_name",
+                                             by = "type",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = F)
+
+combined_pip_by_type_cs_multi <- combine_gene_pips(susie_alpha_res_multi, 
+                                             group_by = "gene_name",
+                                             by = "type",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = T)
+
+combined_pip_by_context_cs_multi <- combine_gene_pips(susie_alpha_res_multi, 
+                                             group_by = "gene_name",
+                                             by = "context",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = T)
+
+
+combined_pip_by_context_multi <- combine_gene_pips(susie_alpha_res_multi, 
+                                             group_by = "gene_name",
+                                             by = "context",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = F)
+
+DT::datatable(combined_pip_by_type_cs_multi[combined_pip_by_type_cs_multi$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by omics'),options = list(pageLength = 5) )
+
+DT::datatable(combined_pip_by_context_cs_multi[combined_pip_by_context_cs_multi$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by tissue'),options = list(pageLength = 5) )
+
+
+pie1 <- draw_gene_piechart_type(data = combined_pip_by_type_multi,colors = colors)
+pie2 <- draw_gene_piechart_tissue(data = combined_pip_by_context_multi,colors = colors)
+
+gridExtra::grid.arrange(pie1,pie2, ncol = 2)
+```
+
+## Comparing with single tissue + eQTL analysis
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=6}
+
+ctwas_res_single <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/10.single_tissue_1007/results/",trait,"/",tissue[1],"/",trait,"_",tissue[1], ".ctwas.res.RDS"))
+
+susie_alpha_res_single <- ctwas_res_single$susie_alpha_res
+
+susie_alpha_res_single <- anno_susie_alpha_res(susie_alpha_res_single,
+                                        mapping_table = mapping_predictdb,
+                                        map_by = "molecular_id",
+                                        drop_unmapped = TRUE)
+
+combined_pip_by_type_single <- combine_gene_pips(susie_alpha_res_single, 
+                                             group_by = "gene_name",
+                                             by = "type",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = F)
+
+combined_pip_by_type_sig_single <- combined_pip_by_type_single[combined_pip_by_type_single$combined_pip > 0.8,]
+combined_pip_by_type_sig_multi <- combined_pip_by_type_multi[combined_pip_by_type_multi$combined_pip > 0.8,]
+
+sprintf("Number of genes with PIP > 0.8  -- Multi-group = %s", nrow(combined_pip_by_type_sig_multi))
+sprintf("Number of genes with PIP > 0.8  -- single eQTL = %s", nrow(combined_pip_by_type_sig_single))
+sprintf("Number of overlapped genes = %s", sum(combined_pip_by_type_sig_single$gene_name %in% combined_pip_by_type_sig_multi$gene_name))
+
+genes_not_reported <- combined_pip_by_type_sig_single$gene_name[!combined_pip_by_type_sig_single$gene_name %in%combined_pip_by_type_sig_multi$gene_name]
+
+DT::datatable(combined_pip_by_type_sig_single[combined_pip_by_type_sig_single$gene_name %in% genes_not_reported,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Genes not reported by multi-group analysis'),options = list(pageLength = 5) )
+
+DT::datatable(combined_pip_by_type_multi[combined_pip_by_type_multi$gene_name %in% genes_not_reported,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Genes not reported by multi-group analysis'),options = list(pageLength = 5) )
+
+```
+
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=6}
+
+gene_multi_unique_type <- combined_pip_by_type_sig_multi[!combined_pip_by_type_sig_multi$gene_name %in%  combined_pip_by_type_sig_single$gene_name,]
+
+p1 <- plot_heatmap(heatmap_data = gene_multi_unique_type, main = "Unique genes found by multi-group analysis")
+
+combined_pip_by_context_sig_multi <- combined_pip_by_context_multi[combined_pip_by_context_multi$combined_pip > 0.8,]
+gene_multi_unique_context <- combined_pip_by_context_sig_multi[!combined_pip_by_context_sig_multi$gene_name %in%  combined_pip_by_type_sig_single$gene_name,]
+p2 <- plot_heatmap(heatmap_data = gene_multi_unique_context, main = "Unique genes found by multi-group analysis")
+
+
+g1 <- p1$gtable
+g2 <- p2$gtable
+gridExtra::grid.arrange(g1, g2, ncol=2)
+```
+
+
+
+
+
