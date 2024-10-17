@@ -161,3 +161,35 @@ ggplot(df, aes(x = Trait, y = value, fill = Group)) +
         legend.title = element_text(size = 18))
 ```
 
+Contribution of different modalities: Bar plot of %h2g: eQTL, sQTL, APA-QTL (apa, apa+s), per trait. 
+
+Message: genetics involves multiple modalities   
+
+```{r message=FALSE,warning=FALSE,fig.width=12,fig.height=6}
+sum_pve_modality_percentages <- lapply(sum_pve_modality_alltraits, function(x) x / sum(x) * 100)
+cluster_names <- names(sum_pve_modality_percentages)
+filtered_list <- lapply(sum_pve_modality_percentages, function(x) x[!names(x) %in% c("SNP")])
+
+# Calculate the sum of each vector in the filtered list
+sum_values <- sapply(filtered_list, sum)
+max_values <- sapply(filtered_list, max)
+# Calculate the names of maximum values for each vector in the filtered list
+max_names <- sapply(filtered_list, function(x) names(x)[which.max(x)])
+
+df <- do.call(rbind, lapply(filtered_list, function(x) data.frame(Group = names(x), h2g = x)))
+df$Trait <- rep(names(filtered_list), each = length(filtered_list[[1]]))
+
+# Reshape data frame if necessary
+df <- reshape2::melt(df, id.vars = c("Trait", "Group"))
+
+ggplot(df, aes(x = Trait, y = value, fill = Group)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Trait", y = "%h2g") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(size = 16, angle = 45, hjust = 1),
+        axis.text.y = element_text(size = 16),
+        axis.title.x = element_text(size = 16),
+        axis.title.y = element_text(size = 16),
+        legend.text = element_text(size = 16),  # Increase legend text size
+        legend.title = element_text(size = 18))
+```
