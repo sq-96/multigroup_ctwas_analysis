@@ -1,0 +1,288 @@
+---
+title: "methylation_analysis"
+output: html_document
+date: '2024-10-22'
+---
+
+```{r echo=FALSE}
+library(ggplot2)
+library(ggVennDiagram)
+library(gridExtra)
+library(data.table)
+library(ctwas)
+library(data.table)
+library(tidyverse)
+library(RSQLite)
+library(dplyr)
+library(magrittr)
+library(pheatmap)
+
+plot_piechart <- function(ctwas_parameters, colors, by) {
+  # Create the initial data frame
+  data <- data.frame(
+    category = names(ctwas_parameters$prop_heritability),
+    percentage = ctwas_parameters$prop_heritability
+  )
+  
+  # Split the category into context and type
+  data <- data %>%
+    mutate(
+      context = sub("\\|.*", "", category),
+      type = sub(".*\\|", "", category)
+    )
+  
+  # Aggregate the data based on the 'by' parameter
+  if (by == "type") {
+    data <- data %>%
+      group_by(type) %>%
+      summarize(percentage = sum(percentage)) %>%
+      mutate(category = type)  # Use type as the new category
+  } else if (by == "context") {
+    data <- data %>%
+      group_by(context) %>%
+      summarize(percentage = sum(percentage)) %>%
+      mutate(category = context)  # Use context as the new category
+  } else {
+    stop("Invalid 'by' parameter. Use 'type' or 'context'.")
+  }
+  
+  # Calculate percentage labels for the chart
+  data$percentage_label <- paste0(round(data$percentage * 100, 1), "%")
+  
+  # Create the pie chart
+  pie <- ggplot(data, aes(x = "", y = percentage, fill = category)) +
+    geom_bar(stat = "identity", width = 1) +
+    coord_polar("y", start = 0) +
+    theme_void() +  # Remove background and axes
+    geom_text(aes(label = percentage_label), 
+              position = position_stack(vjust = 0.5), size = 3) +  # Adjust size as needed
+    scale_fill_manual(values = colors) +  # Custom colors
+    labs(fill = "Category") +  # Legend title
+    ggtitle("Percent of Heritability")  # Title
+  
+  return(pie)
+}
+
+draw_gene_piechart_type <- function(data, colors) {
+  # Filter data based on combined_pip
+  data <- data[data$combined_pip > 0.8, ]
+  
+  # Count occurrences by eQTL, sQTL, and stQTL
+  byeQTL <- nrow(data[data$eQTL_pip / data$combined_pip > 0.8, ])
+  bysQTL <- nrow(data[data$sQTL_pip / data$combined_pip > 0.8, ])
+  bystQTL <- nrow(data[data$stQTL_pip / data$combined_pip > 0.8, ])
+  
+  # Count occurrences for combined sQTL and stQTL
+  bysQTLstQTL <- nrow(data[((data$stQTL_pip + data$sQTL_pip) / data$combined_pip) > 0.8 &
+                             data$stQTL_pip / data$combined_pip < 0.8 &
+                             data$sQTL_pip / data$combined_pip < 0.8, ])
+  
+  # Count unspecified
+  unspecified <- nrow(data) - byeQTL - bysQTL - bystQTL - bysQTLstQTL
+  
+  # Create vectors for plotting
+  n <- c(byeQTL, bysQTL, bystQTL, bysQTLstQTL, unspecified)
+  prop <- round(n / nrow(data), 3)
+  labels = c("by eQTL", "by sQTL", "by stQTL", "by sQTL+stQTL", "unspecified")
+  lab.ypos = cumsum(prop) - 0.5 * prop
+  
+  # Prepare the data frame for plotting
+  df <- data.frame("n" = n,
+                   "class" = labels,
+                   "prop" = prop,
+                   "lab.ypos" = lab.ypos)
+  
+  # Generate the pie chart
+  ggplot(df, aes(x = "", y = prop, fill = class)) +
+    geom_bar(width = 1, stat = "identity", color = "white") +
+    coord_polar("y", start = 0) +
+    geom_text(aes(label = n),
+              position = position_stack(vjust = 0.5)) +
+    scale_fill_manual(values = colors) +  # Ensure 'palette' is defined
+    theme_void()
+}
+
+draw_gene_piechart_tissue <- function(data, colors){
+  
+  data <- data[data$combined_pip>0.8,]
+  tissues <- colnames(data)[3:7]
+  tissues <- sub("_pip$", "", tissues)
+  colnames(data)[3:7] <- paste0("tissue",c(1:5))
+  
+  
+  bytissue1 <- nrow(data[data$tissue1/data$combined_pip>0.8,])
+  bytissue2 <- nrow(data[data$tissue2/data$combined_pip>0.8,])
+  bytissue3 <- nrow(data[data$tissue3/data$combined_pip>0.8,])
+  bytissue4 <- nrow(data[data$tissue4/data$combined_pip>0.8,])
+  bytissue5 <- nrow(data[data$tissue5/data$combined_pip>0.8,])
+  unspecified <- nrow(data)-bytissue1-bytissue2-bytissue3-bytissue4-bytissue5
+  
+  n <- c(bytissue1,bytissue2,bytissue3,bytissue4,bytissue5,unspecified)
+  
+  prop <- round(n/nrow(data),3)
+  labels = c(tissues,"unspecified")
+  lab.ypos = cumsum(prop) - 0.5*prop
+  df <- data.frame("n" = n,
+                   "class" = labels,
+                   "prop" = prop,
+                   "lab.ypos" = lab.ypos)
+  p <- ggplot(df, aes(x = "", y = prop, fill = class)) +
+    geom_bar(width = 1, stat = "identity", color = "white") +
+    coord_polar("y", start = 0)+
+    geom_text(aes(label = n),
+              position = position_stack(vjust = 0.5))+
+    scale_fill_manual(values = colors) +
+    theme_void()
+  
+  return(p)
+}
+
+plot_heatmap <- function(heatmap_data, main) {
+  
+  rownames(heatmap_data) <- heatmap_data$gene_name
+  heatmap_data <- heatmap_data %>% dplyr::select(-gene_name, -combined_pip)
+  
+  if(nrow(heatmap_data) ==1){
+    
+    heatmap_data <- rbind(heatmap_data,rep(0,ncol(heatmap_data)))
+    rownames(heatmap_data)[2] <- "fake_gene_for_plotting"
+    
+  }
+  
+  heatmap_matrix <- as.matrix(heatmap_data)
+  
+  p <- pheatmap(heatmap_matrix,
+                cluster_rows = F,   # Cluster the rows (genes)
+                cluster_cols = F,   # Cluster the columns (QTL types)
+                color = colorRampPalette(c("white", "red"))(50), # Color gradient
+                display_numbers = TRUE, # Display numbers in cells
+                main = main,labels_row = rownames(heatmap_data), silent = T)
+  
+  return(p)
+}
+```
+### Fusion Lasso model of DNA methylation
+
+I built lasso model of DNA methylation with FUSION for Whole Blood and Colon Transverse. Similar to meQTL mapping, for each CpG site, I extracted surrounding 500kb genptypes and train lasso models with cross validation. With heritability cutoff p<0.001, I have about 10,500 and 37,500 CpG sites in whole blood and colon transverse. Among which, 2452 and 28505 CpG sites are also in QTL mapping. Colon have more overlaps than whole blood. The average cross-validation R2 for lasso in whole blood and colon transverse are 0.260 and 0.231. In the single QTL approach (qval < 0.001), we have 7,720 and 91,466 CpG sites.
+
+```{r, echo=FALSE, warning=FALSE}
+# Arrange the two plots side by side
+library(ggplot2)
+library(ggVennDiagram)
+library(gridExtra)
+library(data.table)
+library(ctwas)
+fusion_model <- fread("/project2/xinhe/shengqian/fusion_twas-master/methylationwholeblood.profile",sep='\t')
+fusion_model <- fusion_model[!is.na(fusion_model$lasso.r2),]
+QTL_data <- fread("/project2/xinhe/shengqian/cTWAS/cTWAS_analysis/data/mqtl/WholeBlood.regular.perm.fdr.txt")
+QTL_data <- QTL_data[QTL_data$qval<0.001,]
+
+venn1 <- ggVennDiagram(list(QTL = QTL_data$cpg_id, FUSION = fusion_model$id),category.names=c("","")) +
+  ggtitle("Whole Blood") + theme(legend.position = "none") + scale_fill_gradient(low = NA, high = NA) + annotate("text", x = 0, y = - 2.5, label = "QTL", size = 5) +
+  annotate("text", x = 0, y = 6.5, label = "FUSION", size = 5)
+
+fusion_model <- fread("/project2/xinhe/shengqian/fusion_twas-master/methylation_colon.profile",sep='\t')
+fusion_model <- fusion_model[!is.na(fusion_model$lasso.r2),]
+QTL_data <- fread("/project2/xinhe/shengqian/cTWAS/cTWAS_analysis/data/mqtl/ColonTransverse.regular.perm.fdr.txt")
+QTL_data <- QTL_data[QTL_data$qval<0.001,]
+
+venn2 <- ggVennDiagram(list(QTL = QTL_data$cpg_id, FUSION = fusion_model$id),category.names=c("","")) +
+  ggtitle("Colon Transverse") + theme(legend.position = "none") + scale_fill_gradient(low = NA, high = NA) + annotate("text", x = 0, y = - 2.5, label = "QTL", size = 5) +
+  annotate("text", x = 0, y = 6.5, label = "FUSION", size = 5)
+
+grid.arrange(
+  grobs = list(venn1, venn2),
+  ncol = 2
+)
+```
+
+### cTWAS parameters with methylation lasso models
+```{r, echo=FALSE, fig.width=6, fig.height=4}
+param <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_multi/ibd_multi.param.RDS")
+gwas_n <- 59957
+colors <- c(  "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728",  "#9467bd", "#8c564b", "#e377c2", "#7f7f7f",  "#bcbd22",  "#17becf",  "#f7b6d2",  "#c5b0d5",  "#9edae5", "#ffbb78",  "#98df8a",  "#ff9896" )
+make_convergence_plots(param, gwas_n,colors = colors)
+```
+### Percent of heritability with methylation lasso models
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=10, fig.height=5}
+ctwas_parameters <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_multi_top/ibd_multi_top.ctwas_parameters.RDS")
+pve_pie_by_type_multi <- plot_piechart(ctwas_parameters = ctwas_parameters, colors = colors, by = "type")
+pve_pie_by_context_multi <- plot_piechart(ctwas_parameters = ctwas_parameters, colors = colors, by = "context")
+gridExtra::grid.arrange(pve_pie_by_type_multi,pve_pie_by_context_multi, ncol = 2)
+```
+
+### Top cTWAS genes with methylation lasso models
+```{r}
+gwas_n <- 59957
+finemap_res <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_multi/ibd_multi.finemap_regions_res.RDS")
+gene_annot <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_E_S_M_mapping.RDS")
+susie_alpha_res <- anno_susie_alpha_res(finemap_res$susie_alpha_res,
+                                        mapping_table = gene_annot,
+                                        map_by = "molecular_id",
+                                        drop_unmapped = TRUE)
+
+
+combined_pip_by_type <- combine_gene_pips(susie_alpha_res, 
+                                             group_by = "gene_name",
+                                             by = "type",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = FALSE)
+
+combined_pip_by_context <- combine_gene_pips(susie_alpha_res, 
+                                             group_by = "gene_name",
+                                             by = "context",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = FALSE)
+
+DT::datatable(combined_pip_by_type[combined_pip_by_type$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by omics'),options = list(pageLength = 10) )
+
+DT::datatable(combined_pip_by_context[combined_pip_by_context$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by tissue'),options = list(pageLength = 10) )
+```
+
+### cTWAS parameters with methylation single QTL models
+```{r, echo=FALSE, fig.width=6, fig.height=4}
+param <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_multi_top/ibd_multi_top.param.RDS")
+gwas_n <- 59957
+colors <- c(  "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728",  "#9467bd", "#8c564b", "#e377c2", "#7f7f7f",  "#bcbd22",  "#17becf",  "#f7b6d2",  "#c5b0d5",  "#9edae5", "#ffbb78",  "#98df8a",  "#ff9896" )
+make_convergence_plots(param, gwas_n,colors = colors)
+```
+### Percent of heritability with methylation single QTL models
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=10, fig.height=5}
+ctwas_parameters <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_multi/ibd_multi.ctwas_parameters.RDS")
+pve_pie_by_type_multi <- plot_piechart(ctwas_parameters = ctwas_parameters, colors = colors, by = "type")
+pve_pie_by_context_multi <- plot_piechart(ctwas_parameters = ctwas_parameters, colors = colors, by = "context")
+gridExtra::grid.arrange(pve_pie_by_type_multi,pve_pie_by_context_multi, ncol = 2)
+```
+
+### Top cTWAS genes with methylation single QTL models
+```{r}
+gwas_n <- 59957
+finemap_res <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_multi_top/ibd_multi_top.finemap_regions_res.RDS")
+gene_annot <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_E_S_M_mapping.RDS")
+
+susie_alpha_res <- anno_susie_alpha_res(finemap_res$susie_alpha_res,
+                                        mapping_table = gene_annot,
+                                        map_by = "molecular_id",
+                                        drop_unmapped = TRUE)
+
+
+combined_pip_by_type <- combine_gene_pips(susie_alpha_res, 
+                                          group_by = "gene_name",
+                                          by = "type",
+                                          method = "combine_cs",
+                                          filter_cs = TRUE,
+                                          include_cs_id = FALSE)
+
+combined_pip_by_context <- combine_gene_pips(susie_alpha_res, 
+                                             group_by = "gene_name",
+                                             by = "context",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = FALSE)
+
+DT::datatable(combined_pip_by_type[combined_pip_by_type$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by omics'),options = list(pageLength = 10) )
+
+DT::datatable(combined_pip_by_context[combined_pip_by_context$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by tissue'),options = list(pageLength = 10) )
+```
