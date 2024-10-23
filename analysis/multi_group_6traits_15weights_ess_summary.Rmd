@@ -1,14 +1,14 @@
 ---
-title: "Summary for 6 Traits, 5 tissues, eQTL + sQTL + apaQTL -- compute ukbb LD, weights are from Munro et al"
+title: "Summary for 6 Traits, 5 tissues, eQTL + sQTL + stQTL"
 author: "XSun"
-date: "2024-06-13"
+date: "2024-10-17"
 output:
   workflowr::wflow_html:
     code_folding: hide
     toc: true
 ---
 
-We summarize the results here: https://sq-96.github.io/multigroup_ctwas_analysis/multi_group_6traits_15weights_ukbb_munro.html
+We summarize the results here: https://sq-96.github.io/multigroup_ctwas_analysis/multi_group_6traits_15weights_ess.html
 
 ```{r message=FALSE,warning=FALSE}
 library(ggplot2)
@@ -16,13 +16,41 @@ library(ctwas)
 library(dplyr)
 library(tidyr)
 
-source("/project/xinhe/xsun/multi_group_ctwas/5.multi_group_testing/0.functions.R")
-
-traits <- c("IBD-ebi-a-GCST004131", "LDL-ukb-d-30780_irnt", "SBP-ukb-a-360", "SCZ-ieu-b-5102", "WBC-ieu-b-30")
+traits <- c("aFib-ebi-a-GCST006414","LDL-ukb-d-30780_irnt","IBD-ebi-a-GCST004131", "SBP-ukb-a-360", "SCZ-ieu-b-5102", "WBC-ieu-b-30")
 load("/project2/xinhe/shared_data/multigroup_ctwas/gwas/samplesize.rdata")
+
+sum_pve_across <- function(ctwas_parameters, by = c("type", "context")){
+  pve <- round(ctwas_parameters$group_pve, 4)
+  pve <- as.data.frame(pve)
+  SNP_pve <- pve["SNP",]
+  pve$context <- sapply(rownames(pve), function(x) { unlist(strsplit(x, "[|]"))[1] })
+  pve$type <- sapply(rownames(pve), function(x) { unlist(strsplit(x, "[|]"))[2] })
+  pve <- na.omit(pve)
+  pve <- pve[order(rownames(pve)),]
+  
+  # Aggregate based on the `by` argument
+  df_pve <- aggregate(pve$pve, by=list(pve[[by]]), FUN=sum)
+  colnames(df_pve) <- c(by, "total_pve")
+  df_pve$total_pve <- round(df_pve$total_pve, 4)
+  
+  # Add context/type-specific columns
+  other_var <- setdiff(c("type", "context"), by)
+  for(j in unique(pve[[other_var]])){
+    df_pve[,j] <- pve[pve[[other_var]] == j,]$pve
+  }
+  
+  # Handle SNP row
+  df_pve["SNP", ] <- 0
+  df_pve["SNP", "total_pve"] <- SNP_pve
+  df_pve["SNP", by] <- "SNP"
+  
+  row.names(df_pve) <- NULL
+  return(df_pve)
+}
+
 ```
 
-## Genetic Architecture
+# Genetic Architecture
 
 ```{r message=FALSE,warning=FALSE}
 sum_pve_tissue_alltraits <- list()
@@ -32,15 +60,16 @@ for (i in 1:length(traits)) {
   trait <- traits[i]
   gwas_n <- samplesize[trait]
   
-  param <-readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/6.multi_group_munro/results/",trait,"/",trait,".param.RDS"))
+  ctwas_res <-readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/results/",trait,"/",trait,".ctwas.res.RDS"))
+  param <- ctwas_res$param
   ctwas_parameters <- summarize_param(param, gwas_n)
 
-  sum_pve_tissue <- sum_pve_across_contexts(ctwas_parameters)
+  sum_pve_tissue <- sum_pve_across(ctwas_parameters, by="context")
   sum_pve_tissue_total <- sum_pve_tissue$total_pve
-  names(sum_pve_tissue_total) <- sum_pve_tissue$type
+  names(sum_pve_tissue_total) <- sum_pve_tissue$context
   sum_pve_tissue_alltraits[[i]] <- sum_pve_tissue_total
   
-  sum_pve_modality <- sum_pve_across_types(ctwas_parameters)
+  sum_pve_modality <- sum_pve_across(ctwas_parameters, by="type")
   sum_pve_modality_total <- sum_pve_modality$total_pve
   names(sum_pve_modality_total) <- sum_pve_modality$type
   sum_pve_modality_alltraits[[i]] <- sum_pve_modality_total
@@ -49,7 +78,6 @@ for (i in 1:length(traits)) {
 names(sum_pve_tissue_alltraits) <- traits
 names(sum_pve_modality_alltraits) <- traits
 ```
-
 
 Bubble plot: show %h2g explained by molecular QTLs of each tissue on each trait. Use union of five tissues across all traits. 
 
@@ -68,6 +96,7 @@ max_values <- sapply(filtered_list, max)
 max_names <- sapply(filtered_list, function(x) names(x)[which.max(x)])
 
 ```
+
 
 ```{r message=FALSE,warning=FALSE,fig.width=12,fig.height=6}
 df <- bind_rows(
@@ -95,7 +124,6 @@ ggplot(df_long, aes(x = Trait, y = Tissue, size = Expression)) +
         legend.title = element_text(size = 18))
 
 ```
-
 
 Contributions of top tissue vs. all tissues together. 
 
@@ -128,7 +156,7 @@ ggplot(data[data$type != "max_name", ], aes(x = cluster, y = value, fill = type)
         legend.title = element_text(size = 18))
 ```
 
-Contribution of different modalities: Bar plot of %h2g: eQTL, sQTL, APA-QTL (apa, apa+s), per trait. 
+Contribution of different modalities: Bar plot of %h2g: eQTL, sQTL, stQTL, per trait. 
 
 Message: genetics involves multiple modalities   
 
@@ -160,5 +188,78 @@ ggplot(df, aes(x = Trait, y = value, fill = Group)) +
         legend.text = element_text(size = 16),  # Increase legend text size
         legend.title = element_text(size = 18))
 ```
+
+
+# Gene Discovery 
+
+Number of high PIP genes: all tissues vs. best tissue eQTL (from single tissue analysis).
+
+Bar plot.
+
+Message: increased power from multi-omics multi-tissue analysis.
+
+
+```{r message=FALSE,warning=FALSE,fig.width=12,fig.height=6}
+
+load("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/compare_multi_single_genenum.rdata")
+
+sum$num_multi <- as.numeric(sum$num_multi)
+sum$num_single <- as.numeric(sum$num_single)
+sum$overlap <- as.numeric(sum$overlap)
+sum$overlap_adj <- as.numeric(sum$overlap) * 1.00   # Adjust the value to slightly offset behind the main bars
+
+data_long <- pivot_longer(sum, cols = c(num_single, num_multi), names_to = "category", values_to = "count")
+
+# Facet by trait, with tissues as the bars
+# ggplot(data_long, aes(x = tissue_single, y = count, fill = category)) +
+#   geom_bar(stat = "identity", position = position_dodge(width = 0.8), width = 0.8) +
+#   geom_bar(data = sum, aes(x = tissue_single, y = overlap_adj), stat = "identity", position = position_dodge(width = 0.8), fill = "grey", alpha = 0.7, width = 0.8) +
+#   facet_wrap(~ trait, nrow = 1, scales = "free_x") +  # Display all facets in one row with free scales on x
+#   labs(x = "Tissue", y = "Number of Genes with PIP>0.8") +
+#   scale_fill_manual(values = c("num_single" = "skyblue", "num_multi" = "orange")) +
+#   theme_minimal() +
+#   theme(axis.text.x = element_text(size = 12, angle = 45, vjust = 0.7, hjust = 0.6),  # Adjusted hjust here
+#         axis.text.y = element_text(size = 12),
+#         axis.title.x = element_text(size = 14),
+#         axis.title.y = element_text(size = 14),
+#         strip.background = element_blank(),
+#         strip.text.x = element_text(size = 12, face = "bold"))
+
+# ggplot(data_long, aes(x = trait, y = count, fill = category)) +
+#   geom_bar(stat = "identity", position = position_dodge(width = 0.8), width = 0.8) +
+#   geom_bar(data = data_long, aes(x = trait, y = overlap_adj), stat = "identity", position = position_dodge(width = 0.8), fill = "grey", alpha = 0.7, width = 0.8) +
+#   facet_wrap(~ tissue_single, nrow = 1, scales = "free_x") +  # Swap to display facets by tissue_single
+#   labs(x = "Trait", y = "Number of Genes with PIP>0.8") +
+#   scale_fill_manual(values = c("num_single" = "skyblue", "num_multi" = "orange")) +
+#   theme_minimal() +
+#   theme(axis.text.x = element_text(size = 12, angle = 45, vjust = 0.7, hjust = 0.6),  # Adjusted hjust here
+#         axis.text.y = element_text(size = 12),
+#         axis.title.x = element_text(size = 14),
+#         axis.title.y = element_text(size = 14),
+#         strip.background = element_blank(),
+#         strip.text.x = element_text(size = 12, face = "bold"))
+
+ggplot(data_long, aes(x = trait, y = count, fill = category)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.8), width = 0.8) +
+  geom_bar(aes(x = trait, y = overlap_adj), stat = "identity", position = position_dodge(width = 0.8), fill = "grey", alpha = 0.7, width = 0.8) +
+  # Add tissue labels only once above the blue bars (num_single)
+  geom_text(data = subset(data_long, category == "num_single"), 
+            aes(label = tissue_single), 
+            position = position_dodge(width = 0.8), 
+            vjust = -0.5, 
+            hjust = 0.3,
+            color = "black", 
+            size = 4) +
+  labs(x = "Trait", y = "Number of Genes with PIP>0.8") +
+  scale_fill_manual(values = c("num_single" = "skyblue", "num_multi" = "orange")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(size = 12, angle = 45, vjust = 0.7, hjust = 0.6),  
+        axis.text.y = element_text(size = 12),
+        axis.title.x = element_text(size = 14),
+        axis.title.y = element_text(size = 14),
+        strip.background = element_blank(),
+        strip.text.x = element_text(size = 12, face = "bold"))
+```
+
 
 
