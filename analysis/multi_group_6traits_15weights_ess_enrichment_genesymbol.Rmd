@@ -1,0 +1,288 @@
+---
+title: "Enrichment analysis for 6 Traits, 5 tissues, eQTL + sQTL + stQTL -- compute ukbb LD, eqtl, sqtl from predictdb; stQTL from Munro et al"
+author: "XSun"
+date: "2024-10-23"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+    toc: true
+---
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+ library(tidyr)
+ library(dplyr)
+ library(VennDiagram)
+ library(ggplot2)
+
+ traits <- c("LDL-ukb-d-30780_irnt","SBP-ukb-a-360","WBC-ieu-b-30","aFib-ebi-a-GCST006414","SCZ-ieu-b-5102","IBD-ebi-a-GCST004131")
+ dbs <- c("GO_Biological_Process_2023","GO_Cellular_Component_2023","GO_Molecular_Function_2023")
+
+ trait<- "LDL-ukb-d-30780_irnt"
+ db <- "GO_Biological_Process_2023"
+
+```
+
+
+# Methods 
+
+ We do enrichment analysis for the genes with PIP > 0.8 here: https://sq-96.github.io/multigroup_ctwas_analysis/multi_group_6traits_15weights_ess.html
+
+ The gene set membership was downloaded here: https://maayanlab.cloud/Enrichr/#libraries
+
+
+## Background genes 
+
+ For Fractional model and Fisher exact test, we selected 2 kind of backgroud genes
+
+ - All genes used in ctwas
+ - All genes in the selected geneset database.
+
+ For enrichR, the background genes are not modifiable. The background genes are all genes in the selected geneset database
+
+
+## Remove the redundant 
+
+## Using EnrichR package.
+
+ This package was used in our earlier ctwas paper. 
+
+ - It takes a list of genes(genes with PIP > 0.8) as input and returns the enriched GO terms with adjusted p-values.
+
+## Fractional model 
+
+ The model is:  `glm(PIP ~ gene set membership, family = quasibinomial('logit'))`. We do this regression for one gene set at a time.
+
+ The PIP vector contains: 
+
+ -  all genes within the credible set: we use their actual PIPs
+ -  genes without the credible set & PIP < 0.1:  we set the PIPs as `0.5*min(gene pip within credible set)`
+
+ The 2 different baselines: 
+
+ 1. All genes from ctwas. Here, `genes without the credible set & PIP < 0.1` includes only the genes used in ctwas.
+ 2. All genes from the geneset database. Here, `genes without the credible set & PIP < 0.1` includes the union of all genes from the GO terms in the geneset database.
+
+
+## Fisher exact test
+
+ We assign 1 to the genes with PIP > 0.5/0.8 & in cs and 0 for others. We name this vector as binarized_PIP. We test the association between the binarized_PIP and geneset_membership. 
+
+ The testing matrix is: 
+
+ | geneset_membership | 0   | 1   |
+ |--------------------|-----|-----|
+ | **binarized_pip 0**|  a  |  b  |
+ | **binarized_pip 1**|  c  |  d  |
+
+ Where:
+
+ - `a` is the count where `binarized_pip = 0` and `geneset_membership = 0`.
+ - `b` is the count where `binarized_pip = 0` and `geneset_membership = 1`.
+ - `c` is the count where `binarized_pip = 1` and `geneset_membership = 0`.
+ - `d` is the count where `binarized_pip = 1` and `geneset_membership = 1`.
+
+ The 2 different baselines: 
+
+ 1. All genes from ctwas. Here, `geneset_membership` matrix includes only the genes used in ctwas.
+ 2. All genes from the geneset database. Here, `geneset_membership` matrix includes the union of all genes from the GO terms in the geneset database.
+
+
+
+# Summary for the number of Go terms with p-values < 0.001
+
+```{r echo=T, fig.height=5, fig.width=5, message=FALSE, warning=FALSE}
+ load("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_summary_for_all_redundant_p.rdata")
+ DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Number of enriched GO terms under different settings'),options = list(pageLength = 20) )
+```
+
+ <!-- # Summary of non-redundant GO terms (by Enrichr) related to trait (summaried by chatgpt) -->
+
+ <!-- ```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5} -->
+ <!-- load("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrich_nonredundant_annotated_2023_enrichr.rdata") -->
+ <!-- sum_all$relatedornot_bychatgpt[sum$relatedornot_bychatgpt != T] <- F -->
+ <!-- sprintf("total GO terms at FDR < 0.05 = %s ",nrow(sum_all)) -->
+ <!-- sprintf("number of trait-related GO terms(by chatgpt) = %s ",sum(sum_all$relatedornot_bychatgpt)) -->
+
+ <!-- DT::datatable(sum_all[sum_all$relatedornot_bychatgpt == T,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Summary of non-redundant GO terms (by Enrichr) related to trait (summaried by chatgpt)'),options = list(pageLength = 10) ) -->
+
+ <!-- sum_enrichr_nonredundant <- sum_all -->
+ <!-- ``` -->
+
+ <!-- # Summary of GO terms (by fractional model) related to trait (summaried by chatgpt) -->
+
+ <!-- ```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5} -->
+ <!-- load("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrich_fractional_annotated_2023.rdata") -->
+ <!-- sum_all$relatedornot_bychatgpt[sum$relatedornot_bychatgpt != T] <- F -->
+ <!-- sprintf("total GO terms at FDR < 0.05 = %s ",nrow(sum_all)) -->
+ <!-- sprintf("number of trait-related GO terms(by chatgpt) = %s ",sum(sum_all$relatedornot_bychatgpt)) -->
+
+ <!-- DT::datatable(sum_all[sum_all$relatedornot_bychatgpt == T,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Summary of GO terms (by fractional model) related to trait (summaried by chatgpt)'),options = list(pageLength = 10) ) -->
+
+ <!-- sum_fractional <- sum_all -->
+
+ <!-- sum_fractional <- sum_fractional %>% -->
+ <!--   separate(GO, into = c("GO_term"), sep = " \\((GO:[0-9]+)\\)", remove = T) -->
+
+ <!-- ``` -->
+
+
+# Comparing the p-values from Enrichr and Fisher exact test -- baseline genes are all genes from gene sets
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+ p_enrichr <- c()
+ p_fet <- c()
+
+ #compare_diff <- c()
+ for (trait in traits) {
+   for (db in dbs) {
+
+     file_enrichr <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_redundant_",trait,"_",db,".rdata")
+     if(file.exists(file_enrichr)) {
+       load(file_enrichr)
+       load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_blgeneset_pip08_",trait,"_",db,".rdata"))
+
+       merged <- merge(db_enrichment, summary, by.x = "Term", by.y = "GO")
+       p_enrichr <- c(p_enrichr, merged$P.value)
+       p_fet <- c(p_fet, merged$pvalue)
+
+       #compare_diff <- rbind(compare_diff, merged)
+     }
+
+   }
+ }
+
+
+ p_enrichr <- as.numeric(p_enrichr)
+ p_fet <- as.numeric(p_fet)
+
+ df <- data.frame(p_enrichr = p_enrichr, p_fet = p_fet)
+
+ # Fit a linear model to calculate the slope
+ fit <- lm(p_fet ~ p_enrichr)
+ slope <- coef(fit)[2]
+ intercept <- coef(fit)[1]
+
+ ggplot(df, aes(x = p_enrichr, y = p_fet)) +
+   geom_point() +  # Add points
+   geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed") +  # y = x line
+   geom_smooth(method = "lm", se = FALSE, color = "blue") +  # Best-fit line
+   annotate("text", x = max(p_enrichr) * 0.8, y = max(p_fet) * 0.9, 
+            label = paste0("Slope: ", round(slope, 3)),
+            color = "blue") +  # Slope text
+   annotate("text", x = max(p_enrichr) * 0.8, y = max(p_enrichr) * 0.8, 
+            label = "y = x", color = "red", size = 5, hjust = -0.1, vjust = -0.5) +  # y = x text near the line
+   ggtitle("Comparison of p-values between enrichr and FET, baseline -- all genes from gene sets") +  # Add title
+   xlab("Enrichr p-values") +  # x-axis label
+   ylab("FET p-values") +  # y-axis label
+   theme_minimal()
+
+```
+
+
+# Comparing the GO terms reported by FET and Fractional model -- p-values < 0.001, baseline genes are genes used in ctwas, redundant terms NOT removed
+
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+ pval <- 0.001
+
+ all_fractional <- c()
+ all_fet <- c()
+ for (trait in traits) {
+   for (db in dbs) {
+
+     file_fet <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_blctwas_pip08_",trait,"_",db,".rdata")
+     load(file_fet)
+     all_fet <- rbind(all_fet,summary[as.numeric(summary$pvalue) < pval,])
+
+
+     file_fractional <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fractional_",trait,"_",db,".rdata")
+     load(file_fractional)
+     summary$trait <- trait
+     summary$db <- db
+     all_fractional <- rbind(all_fractional,summary[as.numeric(summary$pvalue) < pval,])
+
+   }
+ }
+
+ all_fractional <- all_fractional[complete.cases(all_fractional),]
+ all_fractional$id <- paste0(all_fractional$trait,"-",all_fractional$db,"-",all_fractional$GO)
+ all_fet$id <- paste0(all_fet$trait,"-",all_fet$db,"-",all_fet$GO)
+
+
+ venn.plot <- draw.pairwise.venn(
+     area1 = nrow(all_fractional),          # Size of Group A
+     area2 = nrow(all_fet),          # Size of Group B
+     cross.area = sum(all_fractional$id %in% all_fet$id),     # Overlap between Group A and Group B
+     category = c("Fractional", "FET"),  # Labels for the groups
+     fill = c("red", "blue"),             # Colors for the groups
+     lty = "blank",                       # Line type for the circles
+     cex = 2,                             # Font size for the numbers
+     cat.cex = 2                          # Font size for the labels
+   )
+
+ all_fractional <- all_fractional[,c("trait","db","GO","pvalue","fdr","id")]
+ DT::datatable(all_fractional[!all_fractional$id %in% all_fet$id,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Unique GO terms for fractional model'),options = list(pageLength = 10) )
+
+ DT::datatable(all_fet[!all_fet$id %in% all_fractional$id,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Unique GO terms for FET'),options = list(pageLength = 10) )
+
+```
+
+
+
+
+
+
+
+
+
+
+# Comparing the GO terms reported by FET and Fractional model -- p-values < 0.001, baseline genes are all genes from gene sets, redundant terms NOT removed
+
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+
+ pval <- 0.001
+
+ all_fractional <- c()
+ all_fet <- c()
+ for (trait in traits) {
+   for (db in dbs) {
+
+     file_fet <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_blgeneset_pip08_",trait,"_",db,".rdata")
+     load(file_fet)
+     all_fet <- rbind(all_fet,summary[as.numeric(summary$pvalue) < pval,])
+
+
+     file_fractional <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fractional_blgeneset_",trait,"_",db,".rdata")
+     load(file_fractional)
+     summary$trait <- trait
+     summary$db <- db
+     all_fractional <- rbind(all_fractional,summary[as.numeric(summary$pvalue) < pval,])
+
+   }
+ }
+
+ all_fractional <- all_fractional[complete.cases(all_fractional),]
+ all_fractional$id <- paste0(all_fractional$trait,"-",all_fractional$db,"-",all_fractional$GO)
+ all_fet$id <- paste0(all_fet$trait,"-",all_fet$db,"-",all_fet$GO)
+
+
+ venn.plot <- draw.pairwise.venn(
+     area1 = nrow(all_fractional),          # Size of Group A
+     area2 = nrow(all_fet),          # Size of Group B
+     cross.area = sum(all_fractional$id %in% all_fet$id),     # Overlap between Group A and Group B
+     category = c("Fractional", "FET"),  # Labels for the groups
+     fill = c("red", "blue"),             # Colors for the groups
+     lty = "blank",                       # Line type for the circles
+     cex = 2,                             # Font size for the numbers
+     cat.cex = 2                          # Font size for the labels
+   )
+
+
+ all_fractional <- all_fractional[,c("trait","db","GO","pvalue","fdr","id")]
+ DT::datatable(all_fractional[!all_fractional$id %in% all_fet$id,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Unique GO terms for fractional model'),options = list(pageLength = 10) )
+
+ DT::datatable(all_fet[!all_fet$id %in% all_fractional$id,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Unique GO terms for FET'),options = list(pageLength = 10) )
+```
