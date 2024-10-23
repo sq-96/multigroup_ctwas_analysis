@@ -1,1876 +1,253 @@
 ---
 title: "Enrichment analysis for 6 Traits, 5 tissues, eQTL + sQTL + stQTL -- compute ukbb LD, eqtl, sqtl from predictdb; stQTL from Munro et al"
 author: "XSun"
-date: "2024-10-16"
+date: "2024-06-13"
 output:
   workflowr::wflow_html:
     code_folding: hide
     toc: true
 ---
 
-We do enrichment analysis for the results here: https://sq-96.github.io/multigroup_ctwas_analysis/multi_group_6traits_15weights_ess.html
+  
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+library(tidyr)
+library(dplyr)
+library(VennDiagram)
+library(ggplot2)
+
+traits <- c("LDL-ukb-d-30780_irnt","SBP-ukb-a-360","WBC-ieu-b-30","aFib-ebi-a-GCST006414","SCZ-ieu-b-5102","IBD-ebi-a-GCST004131")
+dbs <- c("GO_Biological_Process_2023","GO_Cellular_Component_2023","GO_Molecular_Function_2023")
+
+trait<- "LDL-ukb-d-30780_irnt"
+db <- "GO_Biological_Process_2023"
+
+```
+
 
 # Methods 
 
-## Non-redundant Go terms
+We do enrichment analysis for the genes with PIP > 0.8 here: https://sq-96.github.io/multigroup_ctwas_analysis/multi_group_6traits_15weights_ess.html
 
-- Rank all GO terms by their significance (p-values). 
-- A term was considered redundant if all the cTWAS genes in that term had already been included in a more significant GO term
+The gene set membership was downloaded here: https://maayanlab.cloud/Enrichr/#libraries
+  
+  
+  ## Background genes 
+  
+  For Fractional model and Fisher exact test, we selected 2 kind of backgroud genes
+
+- All genes used in ctwas
+- All genes in the selected geneset database.
+
+For enrichR, the background genes are not modifiable. The background genes are all genes in the selected geneset database
+
+
+## Remove the redundant 
+
+## Using EnrichR package.
+
+This package was used in our earlier ctwas paper. 
+
+- It takes a list of genes(genes with PIP > 0.8) as input and returns the enriched GO terms with adjusted p-values.
 
 ## Fractional model 
 
 The model is:  `glm(PIP ~ gene set membership, family = quasibinomial('logit'))`. We do this regression for one gene set at a time.
 
 The PIP vector contains: 
-
--  all genes within the credible set: we use their actual PIPs
+  
+  -  all genes within the credible set: we use their actual PIPs
 -  genes without the credible set & PIP < 0.1:  we set the PIPs as `0.5*min(gene pip within credible set)`
+
+The 2 different baselines: 
+  
+  1. All genes from ctwas. Here, `genes without the credible set & PIP < 0.1` includes only the genes used in ctwas.
+2. All genes from the geneset database. Here, `genes without the credible set & PIP < 0.1` includes the union of all genes from the GO terms in the geneset database.
+
 
 ## Fisher exact test
 
 We assign 1 to the genes with PIP > 0.5/0.8 & in cs and 0 for others. We name this vector as binarized_PIP. We test the association between the binarized_PIP and geneset_membership. 
 
 The testing matrix is: 
-
-| geneset_membership | 0   | 1   |
-|--------------------|-----|-----|
-| **binarized_pip 0**|  a  |  b  |
-| **binarized_pip 1**|  c  |  d  |
-
-Where:
-
-- `a` is the count where `binarized_pip = 0` and `geneset_membership = 0`.
+  
+  | geneset_membership | 0   | 1   |
+  |--------------------|-----|-----|
+  | **binarized_pip 0**|  a  |  b  |
+  | **binarized_pip 1**|  c  |  d  |
+  
+  Where:
+  
+  - `a` is the count where `binarized_pip = 0` and `geneset_membership = 0`.
 - `b` is the count where `binarized_pip = 0` and `geneset_membership = 1`.
 - `c` is the count where `binarized_pip = 1` and `geneset_membership = 0`.
 - `d` is the count where `binarized_pip = 1` and `geneset_membership = 1`.
 
-
-
-# Summary for the number of Go terms with FDR < 0.05 
-
-|                  |               | aFib | LDL  | IBD  | SBP  | SCZ  | WBC  |
-|------------------|---------------|------|------|------|------|------|------|
-| Non-redundant Go | gobp          | 18   | 10   | 18   | 1    | 2    | 11   |
-|                  | gocc          | 7    | 14   | 1    | 0    | 0    | 4    |
-|                  | gomf          | 2    | 3    | 3    | 0    | 0    | 0    |
-| Fractional model | gobp          | 5806 | 4497 | 5122 | 3757 | 4291 | 1701 |
-|                  | gocc          | 671  | 582  | 613  | 461  | 506  | 200  |
-|                  | gomf          | 2148 | 1174 | 2144 | 1578 | 1800 | 699  |
-| Fisher exact     | gobp - pip0.5 | 32   | 29   | 0    | 0    | 0    | 39   |
-|                  | gocc - pip0.5 | 16   | 17   | 0    | 0    | 0    | 0    |
-|                  | gomf - pip0.5 | 0    | 0    | 0    | 0    | 0    | 0    |
-|                  | gobp - pip0.8 | 3    | 22   | 1    | 0    | 0    | 3    |
-|                  | gocc - pip0.8 | 1    | 23   | 0    | 0    | 0    | 0    |
-|                  | gomf - pip0.8 | 0    | 2    | 0    | 0    | 0    | 0    |
-
-
-# Summary of non-redundant GO terms related to trait (summaried by chatgpt)
-
-|      |      | pathway                                                                                | FDR    |
-|------|------|----------------------------------------------------------------------------------------|--------|
-| aFib | gobp | Regulation of cell communication by electrical coupling involved in cardiac conduction | 0.0038 |
-|      |      | Regulation of membrane repolarization                                                  | 0.0038 |
-|      |      | Regulation of cardiac muscle cell action potential                                     | 0.0106 |
-|      |      | Regulation of heart contraction                                                        | 0.0161 |
-|      |      | Regulation of cardiac conduction                                                       | 0.0292 |
-|      | gocc | Sarcolemma                                                                             | 0.0029 |
-|      |      | Cytoskeleton                                                                           | 0.0029 |
-|      |      | Junctional sarcoplasmic reticulum membrane                                             | 0.0096 |
-|      |      | Focal adhesion                                                                         | 0.0096 |
-|      |      | Cell-cell contact zone                                                                 | 0.0104 |
-|      | gomf | Sodium channel regulator activity                                                      | 0.034  |
-|      |      | Adenylate cyclase binding                                                              | 0.034  |
-| LDL  | gobp | Cholesterol transport                                                                  | 0      |
-|      |      | Cholesterol metabolic process                                                          | 0      |
-|      |      | Cholesterol homeostasis                                                                | 0      |
-|      |      | Lipid transport                                                                        | 0.0122 |
-|      |      | negative regulation of receptor-mediated endocytosis                                   | 0.0154 |
-|      | gocc | COPII-coated ER to Golgi transport vesicle                                             | 0      |
-|      |      | Endocytic vesicle                                                                      | 0      |
-|      |      | Lysosome                                                                               | 0.0009 |
-|      |      | High-density lipoprotein particle                                                      | 0.0009 |
-|      |      | Chylomicron                                                                            | 0.0053 |
-|      | gomf | Low-density lipoprotein particle binding                                               | 0.0071 |
-|      |      | Low-density lipoprotein particle receptor binding                                      | 0.0103 |
-| IBD  | gobp | Cytokine-mediated signaling pathway                                                    | 0.0007 |
-|      |      | Positive regulation of cytokine production involved in inflammatory response           | 0.0023 |
-|      |      | Cellular response to cytokine stimulus                                                 | 0.0329 |
-|      |      | Inflammatory response                                                                  | 0.0423 |
-|      |      | Regulation of ERK1 and ERK2 cascade                                                    | 0.0449 |
-|      |      | Regulation of tumor necrosis factor production                                         | 0.0495 |
-|      | gocc | MHC class II protein complex                                                           | 0.0282 |
-|      | gomf | MHC class II receptor activity                                                         | 0.0166 |
-|      |      | CARD domain binding                                                                    | 0.0219 |
-|      |      | Transcription cis-regulatory region binding                                            | 0.0395 |
-| SBP  | gobp | Actomyosin structure organization                                                      | 0.0053 |
-|      | gocc | /                                                                                      | /      |
-|      | gomf | /                                                                                      | /      |
-| SCZ  | gobp | Antigen processing and presentation of peptide antigen via MHC class I                 | 0.02   |
-|      |      | Cellular response to type I interferon                                                 | 0.0195 |
-|      | gocc | /                                                                                      | /      |
-|      | gomf | /                                                                                      | /      |
-| WBC  | gobp | Regulation of mast cell activation involved in immune response                         | 0.0158 |
-|      |      | Antigen processing and presentation of endogenous peptide antigen                      | 0.0158 |
-|      |      | Neutrophil degranulation                                                               | 0.0158 |
-|      |      | Positive regulation of immune effector process                                         | 0.0173 |
-|      |      | Positive regulation of T cell mediated immunity                                        | 0.0263 |
-|      |      | Cytokine-mediated signaling pathway                                                    | 0.0263 |
-|      |      | Regulation of macrophage migration                                                     | 0.0443 |
-|      | gocc | MHC protein complex                                                                    | 0.0011 |
-|      |      | Lysosomal membrane                                                                     | 0.0299 |
-|      |      | Lysosome                                                                               | 0.0327 |
-|      | gomf | /                                                                                      | /      |
+The 2 different baselines: 
+  
+  1. All genes from ctwas. Here, `geneset_membership` matrix includes only the genes used in ctwas.
+2. All genes from the geneset database. Here, `geneset_membership` matrix includes the union of all genes from the GO terms in the geneset database.
 
 
 
-# Summary of GO terms selected by Fisher exact test (PIP > 0.5) (summaried by chatgpt)
+# Summary for the number of Go terms with p-values < 0.001
 
-|      |      | pathway                                            |
-|------|------|----------------------------------------------------|
-| aFib | gobp | cardiac conduction                                 |
-|      |      | cell communication involved in cardiac conduction  |
-|      |      | cardiac muscle contraction                         |
-|      |      | regulation of heart rate                           |
-|      |      | cardiac muscle cell action potential               |
-|      |      | regulation of cardiac muscle contraction           |
-|      |      | cell-cell signaling involved in cardiac conduction |
-|      |      | regulation of heart rate by cardiac conduction     |
-|      |      | heart contraction                                  |
-|      |      | heart process                                      |
-|      | gocc | sarcolemma                                         |
-|      |      | contractile fiber                                  |
-|      |      | myofibril                                          |
-|      |      | sarcoplasm                                         |
-|      |      | sarcomere                                          |
-|      |      | Z disc                                             |
-|      |      | I band                                             |
-|      |      | cell junction                                      |
-|      | gomf | /                                                  |
-| LDL  | gobp | Cholesterol Transport                              |
-|      |      | Lipoprotein Metabolic Process                      |
-|      |      | Lipid Metabolic Process                            |
-|      |      | Regulation of Plasma Lipoprotein Particle Levels   |
-|      |      | Triglyceride Metabolic Process                     |
-|      |      | Cholesterol Biosynthetic Process                   |
-|      | gocc | endoplasmic reticulum                              |
-|      |      | endocytic vesicle                                  |
-|      |      | clathrin-coated endocytic vesicle membrane         |
-|      |      | protein-lipid complex                              |
-|      |      | plasma lipoprotein particle                        |
-|      |      | lipoprotein particle                               |
-|      |      | high-density lipoprotein particle                  |
-|      |      | endosome membrane                                  |
-|      |      | COPII-coated ER to Golgi transport vesicle         |
-|      | gomf | /                                                  |
-| IBD  | gobp | /                                                  |
-|      | gocc | /                                                  |
-|      | gomf | /                                                  |
-| SBP  | gobp | /                                                  |
-|      | gocc | /                                                  |
-|      | gomf | /                                                  |
-| SCZ  | gobp | /                                                  |
-|      | gocc | /                                                  |
-|      | gomf | /                                                  |
-| WBC  | gobp | leukocyte activation                               |
-|      |      | immune system process                              |
-|      |      | myeloid leukocyte activation                       |
-|      |      | myeloid leukocyte migration                        |
-|      |      | leukocyte activation involved in immune response   |
-|      |      | leukocyte mediated immunity                        |
-|      |      | neutrophil mediated immunity                       |
-|      |      | neutrophil activation                              |
-|      |      | leukocyte degranulation                            |
-|      |      | granulocyte migration                              |
-|      |      | granulocyte activation                             |
-|      |      | immune effector process                            |
-|      |      | neutrophil activation involved in immune response  |
-|      |      | neutrophil degranulation                           |
-|      |      | leukocyte migration                                |
-|      | gocc | /                                                  |
-|      | gomf | /                                                  |
+```{r echo=T, fig.height=5, fig.width=5, message=FALSE, warning=FALSE}
+load("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_summary_for_all_redundant_p.rdata")
+DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Number of enriched GO terms under different settings'),options = list(pageLength = 20) )
+```
 
-# Summary of GO terms selected by Fisher exact test (PIP > 0.8) (summaried by chatgpt)
 
-|      |      | pathway                                          |
-|------|------|--------------------------------------------------|
-| aFib | gobp | sarcomere organization                           |
-|      | gocc | /                                                |
-|      | gomf | /                                                |
-| LDL  | gobp | triglyceride metabolic process                   |
-|      |      | cholesterol transport                            |
-|      |      | sterol transport                                 |
-|      |      | plasma lipoprotein particle clearance            |
-|      |      | regulation of plasma lipoprotein particle levels |
-|      |      | receptor-mediated endocytosis                    |
-|      |      | low-density lipoprotein particle remodeling      |
-|      |      | lipoprotein metabolic process                    |
-|      | gocc | LDL particle structure and composition           |
-|      |      | LDL receptor-mediated endocytosis                |
-|      |      | Intracellular processing of LDL                  |
-|      |      | Regulation of LDL receptor levels                |
-|      |      | Synthesis and secretion of lipoproteins          |
-|      | gomf | /                                                |
-| IBD  | gobp | cellular response to cytokine stimulus           |
-|      | gocc | /                                                |
-|      | gomf | /                                                |
-| SBP  | gobp | /                                                |
-|      | gocc | /                                                |
-|      | gomf | /                                                |
-| SCZ  | gobp | /                                                |
-|      | gocc | /                                                |
-|      | gomf | /                                                |
-| WBC  | gobp | /                                                |
-|      | gocc | /                                                |
-|      | gomf | /                                                |
-
-# aFib-ebi-a-GCST006414
-
-## Non-redundant Go terms
-
-### GO biological process
-
+  
+  
+# Comparing the p-values from Enrichr and Fisher exact test -- baseline genes are all genes from gene sets
+  
 ```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
 
-trait <- "aFib-ebi-a-GCST006414"
+p_enrichr <- c()
+p_fet <- c()
 
-file <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_nonredundant_",trait,"_GO_Biological_Process_2021.rdata")
-
-if(file.exists(file)) {
-  
-  load(file)
-  db_enrichment <- db_enrichment[db_enrichment$Adjusted.P.value < 0.05,]
-  
-  if(nrow(db_enrichment) > 0) {
-    db_enrichment <- db_enrichment[,c("Term","Overlap","Adjusted.P.value","Genes")]
-    DT::datatable(db_enrichment,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO biological process'),options = list(pageLength = 10) )
-  }else{
-    print("No enriched Go terms")
+#compare_diff <- c()
+for (trait in traits) {
+  for (db in dbs) {
+    
+    file_enrichr <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_redundant_",trait,"_",db,".rdata")
+    if(file.exists(file_enrichr)) {
+      load(file_enrichr)
+      load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_blgeneset_pip08_",trait,"_",db,".rdata"))
+      
+      merged <- merge(db_enrichment, summary, by.x = "Term", by.y = "GO")
+      p_enrichr <- c(p_enrichr, merged$P.value)
+      p_fet <- c(p_fet, merged$pvalue)
+      
+      #compare_diff <- rbind(compare_diff, merged)
+    }
+    
   }
-  
-}else{
-  print("No enriched Go terms")
 }
+
+
+p_enrichr <- as.numeric(p_enrichr)
+p_fet <- as.numeric(p_fet)
+
+df <- data.frame(p_enrichr = p_enrichr, p_fet = p_fet)
+
+# Fit a linear model to calculate the slope
+fit <- lm(p_fet ~ p_enrichr)
+slope <- coef(fit)[2]
+intercept <- coef(fit)[1]
+
+ggplot(df, aes(x = p_enrichr, y = p_fet)) +
+  geom_point() +  # Add points
+  geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed") +  # y = x line
+  geom_smooth(method = "lm", se = FALSE, color = "blue") +  # Best-fit line
+  annotate("text", x = max(p_enrichr) * 0.8, y = max(p_fet) * 0.9, 
+           label = paste0("Slope: ", round(slope, 3)),
+           color = "blue") +  # Slope text
+  annotate("text", x = max(p_enrichr) * 0.8, y = max(p_enrichr) * 0.8, 
+           label = "y = x", color = "red", size = 5, hjust = -0.1, vjust = -0.5) +  # y = x text near the line
+  ggtitle("Comparison of p-values between enrichr and FET, baseline -- all genes from gene sets") +  # Add title
+  xlab("Enrichr p-values") +  # x-axis label
+  ylab("FET p-values") +  # y-axis label
+  theme_minimal()
 
 ```
 
-### GO cellular component 
+
+# Comparing the GO terms reported by FET and Fractional model -- p-values < 0.001, baseline genes are genes used in ctwas, redundant terms NOT removed
+
 
 ```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
 
-file <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_nonredundant_",trait,"_GO_Cellular_Component_2021.rdata")
+pval <- 0.001
 
-if(file.exists(file)) {
-  
-  load(file)
-  db_enrichment <- db_enrichment[db_enrichment$Adjusted.P.value < 0.05,]
-  
-  if(nrow(db_enrichment) > 0) {
-    db_enrichment <- db_enrichment[,c("Term","Overlap","Adjusted.P.value","Genes")]
-    DT::datatable(db_enrichment,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO biological process'),options = list(pageLength = 10) )
-  }else{
-    print("No enriched Go terms")
+all_fractional <- c()
+all_fet <- c()
+for (trait in traits) {
+  for (db in dbs) {
+    
+    file_fet <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_blctwas_pip08_",trait,"_",db,".rdata")
+    load(file_fet)
+    all_fet <- rbind(all_fet,summary[as.numeric(summary$pvalue) < pval,])
+    
+    
+    file_fractional <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fractional_",trait,"_",db,".rdata")
+    load(file_fractional)
+    summary$trait <- trait
+    summary$db <- db
+    all_fractional <- rbind(all_fractional,summary[as.numeric(summary$pvalue) < pval,])
+    
   }
-  
-}else{
-  print("No enriched Go terms")
 }
+
+all_fractional <- all_fractional[complete.cases(all_fractional),]
+all_fractional$id <- paste0(all_fractional$trait,"-",all_fractional$db,"-",all_fractional$GO)
+all_fet$id <- paste0(all_fet$trait,"-",all_fet$db,"-",all_fet$GO)
+
+
+venn.plot <- draw.pairwise.venn(
+  area1 = nrow(all_fractional),          # Size of Group A
+  area2 = nrow(all_fet),          # Size of Group B
+  cross.area = sum(all_fractional$id %in% all_fet$id),     # Overlap between Group A and Group B
+  category = c("Fractional", "FET"),  # Labels for the groups
+  fill = c("red", "blue"),             # Colors for the groups
+  lty = "blank",                       # Line type for the circles
+  cex = 2,                             # Font size for the numbers
+  cat.cex = 2                          # Font size for the labels
+)
+
+all_fractional <- all_fractional[,c("trait","db","GO","pvalue","fdr","id")]
+DT::datatable(all_fractional[!all_fractional$id %in% all_fet$id,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Unique GO terms for fractional model'),options = list(pageLength = 10) )
+
+DT::datatable(all_fet[!all_fet$id %in% all_fractional$id,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Unique GO terms for FET'),options = list(pageLength = 10) )
 
 ```
 
 
-### GO molecular function 
+# Comparing the GO terms reported by FET and Fractional model -- p-values < 0.001, baseline genes are all genes from gene sets, redundant terms NOT removed
+
 
 ```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
 
-file <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_nonredundant_",trait,"_GO_Molecular_Function_2021.rdata")
+pval <- 0.001
 
-if(file.exists(file)) {
-  
-  load(file)
-  db_enrichment <- db_enrichment[db_enrichment$Adjusted.P.value < 0.05,]
-  
-  if(nrow(db_enrichment) > 0) {
-    db_enrichment <- db_enrichment[,c("Term","Overlap","Adjusted.P.value","Genes")]
-    DT::datatable(db_enrichment,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO biological process'),options = list(pageLength = 10) )
-  }else{
-    print("No enriched Go terms")
+all_fractional <- c()
+all_fet <- c()
+for (trait in traits) {
+  for (db in dbs) {
+    
+    file_fet <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_blgeneset_pip08_",trait,"_",db,".rdata")
+    load(file_fet)
+    all_fet <- rbind(all_fet,summary[as.numeric(summary$pvalue) < pval,])
+    
+    
+    file_fractional <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fractional_blgeneset_",trait,"_",db,".rdata")
+    load(file_fractional)
+    summary$trait <- trait
+    summary$db <- db
+    all_fractional <- rbind(all_fractional,summary[as.numeric(summary$pvalue) < pval,])
+    
   }
-  
-}else{
-  print("No enriched Go terms")
 }
 
-```
-
-
-## Fractional model
-
-### GO biological process
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_", trait, "_gobp.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-```
-
-### GO cellular component 
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_", trait, "_gocc.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-
-```
-
-
-### GO molecular function 
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_", trait, "_gomf.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-
-```
-
-
-## Fisher 
-
-### GO biological process -- cutoff pip>0.5
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_pip05_", trait, "_gobp.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-```
-
-### GO cellular component -- cutoff pip>0.5
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_pip05_", trait, "_gocc.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-
-```
-
-
-### GO molecular function -- cutoff pip>0.5
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_pip05_", trait, "_gomf.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-
-```
-
-
-
-
-
-
-
-
-
-
-
-### GO biological process -- cutoff pip>0.8
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_pip08_", trait, "_gobp.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-```
-
-### GO cellular component -- cutoff pip>0.8
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_pip08_", trait, "_gocc.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-
-```
-
-
-### GO molecular function -- cutoff pip>0.8
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_pip08_", trait, "_gomf.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-
-```
-
-
-
-
-
-
-
-
-
-
-# LDL-ukb-d-30780_irnt
-
-## Non-redundant Go terms
-
-### GO biological process
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-trait <- "LDL-ukb-d-30780_irnt"
-
-file <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_nonredundant_",trait,"_GO_Biological_Process_2021.rdata")
-
-if(file.exists(file)) {
-  
-  load(file)
-  db_enrichment <- db_enrichment[db_enrichment$Adjusted.P.value < 0.05,]
-  
-  if(nrow(db_enrichment) > 0) {
-    db_enrichment <- db_enrichment[,c("Term","Overlap","Adjusted.P.value","Genes")]
-    DT::datatable(db_enrichment,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO biological process'),options = list(pageLength = 10) )
-  }else{
-    print("No enriched Go terms")
-  }
-  
-}else{
-  print("No enriched Go terms")
-}
-
-```
-
-### GO cellular component 
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-file <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_nonredundant_",trait,"_GO_Cellular_Component_2021.rdata")
-
-if(file.exists(file)) {
-  
-  load(file)
-  db_enrichment <- db_enrichment[db_enrichment$Adjusted.P.value < 0.05,]
-  
-  if(nrow(db_enrichment) > 0) {
-    db_enrichment <- db_enrichment[,c("Term","Overlap","Adjusted.P.value","Genes")]
-    DT::datatable(db_enrichment,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO biological process'),options = list(pageLength = 10) )
-  }else{
-    print("No enriched Go terms")
-  }
-  
-}else{
-  print("No enriched Go terms")
-}
-
-```
-
-
-### GO molecular function 
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-file <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_nonredundant_",trait,"_GO_Molecular_Function_2021.rdata")
-
-if(file.exists(file)) {
-  
-  load(file)
-  db_enrichment <- db_enrichment[db_enrichment$Adjusted.P.value < 0.05,]
-  
-  if(nrow(db_enrichment) > 0) {
-    db_enrichment <- db_enrichment[,c("Term","Overlap","Adjusted.P.value","Genes")]
-    DT::datatable(db_enrichment,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO biological process'),options = list(pageLength = 10) )
-  }else{
-    print("No enriched Go terms")
-  }
-  
-}else{
-  print("No enriched Go terms")
-}
-
-```
-
-
-## Fractional model
-
-### GO biological process
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_", trait, "_gobp.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-```
-
-### GO cellular component 
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_", trait, "_gocc.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-
-```
-
-
-### GO molecular function 
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_", trait, "_gomf.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-
-```
-
-
-## Fisher 
-
-### GO biological process -- cutoff pip>0.5
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_pip05_", trait, "_gobp.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-```
-
-### GO cellular component -- cutoff pip>0.5
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_pip05_", trait, "_gocc.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-
-```
-
-
-### GO molecular function -- cutoff pip>0.5
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_pip05_", trait, "_gomf.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-
-```
-
-
-
-
-
-
-
-
-
-
-
-### GO biological process -- cutoff pip>0.8
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_pip08_", trait, "_gobp.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-```
-
-### GO cellular component -- cutoff pip>0.8
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_pip08_", trait, "_gocc.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-
-```
-
-
-### GO molecular function -- cutoff pip>0.8
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_pip08_", trait, "_gomf.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-
-```
-
-
-
-
-
-
-
-
-
-
-# IBD-ebi-a-GCST004131
-
-## Non-redundant Go terms
-
-### GO biological process
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-trait <- "IBD-ebi-a-GCST004131"
-
-file <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_nonredundant_",trait,"_GO_Biological_Process_2021.rdata")
-
-if(file.exists(file)) {
-  
-  load(file)
-  db_enrichment <- db_enrichment[db_enrichment$Adjusted.P.value < 0.05,]
-  
-  if(nrow(db_enrichment) > 0) {
-    db_enrichment <- db_enrichment[,c("Term","Overlap","Adjusted.P.value","Genes")]
-    DT::datatable(db_enrichment,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO biological process'),options = list(pageLength = 10) )
-  }else{
-    print("No enriched Go terms")
-  }
-  
-}else{
-  print("No enriched Go terms")
-}
-
-```
-
-### GO cellular component 
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-file <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_nonredundant_",trait,"_GO_Cellular_Component_2021.rdata")
-
-if(file.exists(file)) {
-  
-  load(file)
-  db_enrichment <- db_enrichment[db_enrichment$Adjusted.P.value < 0.05,]
-  
-  if(nrow(db_enrichment) > 0) {
-    db_enrichment <- db_enrichment[,c("Term","Overlap","Adjusted.P.value","Genes")]
-    DT::datatable(db_enrichment,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO biological process'),options = list(pageLength = 10) )
-  }else{
-    print("No enriched Go terms")
-  }
-  
-}else{
-  print("No enriched Go terms")
-}
-
-```
-
-
-### GO molecular function 
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-file <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_nonredundant_",trait,"_GO_Molecular_Function_2021.rdata")
-
-if(file.exists(file)) {
-  
-  load(file)
-  db_enrichment <- db_enrichment[db_enrichment$Adjusted.P.value < 0.05,]
-  
-  if(nrow(db_enrichment) > 0) {
-    db_enrichment <- db_enrichment[,c("Term","Overlap","Adjusted.P.value","Genes")]
-    DT::datatable(db_enrichment,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO biological process'),options = list(pageLength = 10) )
-  }else{
-    print("No enriched Go terms")
-  }
-  
-}else{
-  print("No enriched Go terms")
-}
-
-```
-
-
-## Fractional model
-
-### GO biological process
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_", trait, "_gobp.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-```
-
-### GO cellular component 
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_", trait, "_gocc.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-
-```
-
-
-### GO molecular function 
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_", trait, "_gomf.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-
-```
-
-
-## Fisher 
-
-### GO biological process -- cutoff pip>0.5
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_pip05_", trait, "_gobp.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-```
-
-### GO cellular component -- cutoff pip>0.5
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_pip05_", trait, "_gocc.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-
-```
-
-
-### GO molecular function -- cutoff pip>0.5
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_pip05_", trait, "_gomf.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-
-```
-
-
-
-
-
-
-
-
-
-
-
-### GO biological process -- cutoff pip>0.8
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_pip08_", trait, "_gobp.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-```
-
-### GO cellular component -- cutoff pip>0.8
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_pip08_", trait, "_gocc.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-
-```
-
-
-### GO molecular function -- cutoff pip>0.8
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_pip08_", trait, "_gomf.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-
-```
-
-
-
-
-
-# SBP-ukb-a-360
-
-## Non-redundant Go terms
-
-### GO biological process
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-trait <- "SBP-ukb-a-360"
-
-file <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_nonredundant_",trait,"_GO_Biological_Process_2021.rdata")
-
-if(file.exists(file)) {
-  
-  load(file)
-  db_enrichment <- db_enrichment[db_enrichment$Adjusted.P.value < 0.05,]
-  
-  if(nrow(db_enrichment) > 0) {
-    db_enrichment <- db_enrichment[,c("Term","Overlap","Adjusted.P.value","Genes")]
-    DT::datatable(db_enrichment,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO biological process'),options = list(pageLength = 10) )
-  }else{
-    print("No enriched Go terms")
-  }
-  
-}else{
-  print("No enriched Go terms")
-}
-
-```
-
-### GO cellular component 
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-file <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_nonredundant_",trait,"_GO_Cellular_Component_2021.rdata")
-
-if(file.exists(file)) {
-  
-  load(file)
-  db_enrichment <- db_enrichment[db_enrichment$Adjusted.P.value < 0.05,]
-  
-  if(nrow(db_enrichment) > 0) {
-    db_enrichment <- db_enrichment[,c("Term","Overlap","Adjusted.P.value","Genes")]
-    DT::datatable(db_enrichment,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO biological process'),options = list(pageLength = 10) )
-  }else{
-    print("No enriched Go terms")
-  }
-  
-}else{
-  print("No enriched Go terms")
-}
-
-```
-
-
-### GO molecular function 
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-file <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_nonredundant_",trait,"_GO_Molecular_Function_2021.rdata")
-
-if(file.exists(file)) {
-  
-  load(file)
-  db_enrichment <- db_enrichment[db_enrichment$Adjusted.P.value < 0.05,]
-  
-  if(nrow(db_enrichment) > 0) {
-    db_enrichment <- db_enrichment[,c("Term","Overlap","Adjusted.P.value","Genes")]
-    DT::datatable(db_enrichment,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO biological process'),options = list(pageLength = 10) )
-  }else{
-    print("No enriched Go terms")
-  }
-  
-}else{
-  print("No enriched Go terms")
-}
-
-```
-
-
-## Fractional model
-
-### GO biological process
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_", trait, "_gobp.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-```
-
-### GO cellular component 
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_", trait, "_gocc.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-
-```
-
-
-### GO molecular function 
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_", trait, "_gomf.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-
-```
-
-
-## Fisher 
-
-### GO biological process -- cutoff pip>0.5
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_pip05_", trait, "_gobp.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-```
-
-### GO cellular component -- cutoff pip>0.5
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_pip05_", trait, "_gocc.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-
-```
-
-
-### GO molecular function -- cutoff pip>0.5
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_pip05_", trait, "_gomf.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-
-```
-
-
-
-
-
-
-
-
-
-
-
-### GO biological process -- cutoff pip>0.8
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_pip08_", trait, "_gobp.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-```
-
-### GO cellular component -- cutoff pip>0.8
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_pip08_", trait, "_gocc.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-
-```
-
-
-### GO molecular function -- cutoff pip>0.8
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_pip08_", trait, "_gomf.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-
-```
-
-
-
-
-
-
-
-
-# SCZ-ieu-b-5102
-
-## Non-redundant Go terms
-
-### GO biological process
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-trait <- "SCZ-ieu-b-5102"
-
-file <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_nonredundant_",trait,"_GO_Biological_Process_2021.rdata")
-
-if(file.exists(file)) {
-  
-  load(file)
-  db_enrichment <- db_enrichment[db_enrichment$Adjusted.P.value < 0.05,]
-  
-  if(nrow(db_enrichment) > 0) {
-    db_enrichment <- db_enrichment[,c("Term","Overlap","Adjusted.P.value","Genes")]
-    DT::datatable(db_enrichment,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO biological process'),options = list(pageLength = 10) )
-  }else{
-    print("No enriched Go terms")
-  }
-  
-}else{
-  print("No enriched Go terms")
-}
-
-```
-
-### GO cellular component 
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-file <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_nonredundant_",trait,"_GO_Cellular_Component_2021.rdata")
-
-if(file.exists(file)) {
-  
-  load(file)
-  db_enrichment <- db_enrichment[db_enrichment$Adjusted.P.value < 0.05,]
-  
-  if(nrow(db_enrichment) > 0) {
-    db_enrichment <- db_enrichment[,c("Term","Overlap","Adjusted.P.value","Genes")]
-    DT::datatable(db_enrichment,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO biological process'),options = list(pageLength = 10) )
-  }else{
-    print("No enriched Go terms")
-  }
-  
-}else{
-  print("No enriched Go terms")
-}
-
-```
-
-
-### GO molecular function 
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-file <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_nonredundant_",trait,"_GO_Molecular_Function_2021.rdata")
-
-if(file.exists(file)) {
-  
-  load(file)
-  db_enrichment <- db_enrichment[db_enrichment$Adjusted.P.value < 0.05,]
-  
-  if(nrow(db_enrichment) > 0) {
-    db_enrichment <- db_enrichment[,c("Term","Overlap","Adjusted.P.value","Genes")]
-    DT::datatable(db_enrichment,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO biological process'),options = list(pageLength = 10) )
-  }else{
-    print("No enriched Go terms")
-  }
-  
-}else{
-  print("No enriched Go terms")
-}
-
-```
-
-
-## Fractional model
-
-### GO biological process
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_", trait, "_gobp.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-```
-
-### GO cellular component 
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_", trait, "_gocc.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-
-```
-
-
-### GO molecular function 
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_", trait, "_gomf.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-
-```
-
-
-## Fisher 
-
-### GO biological process -- cutoff pip>0.5
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_pip05_", trait, "_gobp.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-```
-
-### GO cellular component -- cutoff pip>0.5
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_pip05_", trait, "_gocc.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-
-```
-
-
-### GO molecular function -- cutoff pip>0.5
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_pip05_", trait, "_gomf.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-
-```
-
-
-
-
-
-
-
-
-
-
-
-### GO biological process -- cutoff pip>0.8
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_pip08_", trait, "_gobp.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-```
-
-### GO cellular component -- cutoff pip>0.8
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_pip08_", trait, "_gocc.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-
-```
-
-
-### GO molecular function -- cutoff pip>0.8
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_pip08_", trait, "_gomf.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# WBC-ieu-b-30
-
-## Non-redundant Go terms
-
-### GO biological process
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-trait <- "WBC-ieu-b-30"
-
-file <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_nonredundant_",trait,"_GO_Biological_Process_2021.rdata")
-
-if(file.exists(file)) {
-  
-  load(file)
-  db_enrichment <- db_enrichment[db_enrichment$Adjusted.P.value < 0.05,]
-  
-  if(nrow(db_enrichment) > 0) {
-    db_enrichment <- db_enrichment[,c("Term","Overlap","Adjusted.P.value","Genes")]
-    DT::datatable(db_enrichment,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO biological process'),options = list(pageLength = 10) )
-  }else{
-    print("No enriched Go terms")
-  }
-  
-}else{
-  print("No enriched Go terms")
-}
-
-```
-
-### GO cellular component 
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-file <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_nonredundant_",trait,"_GO_Cellular_Component_2021.rdata")
-
-if(file.exists(file)) {
-  
-  load(file)
-  db_enrichment <- db_enrichment[db_enrichment$Adjusted.P.value < 0.05,]
-  
-  if(nrow(db_enrichment) > 0) {
-    db_enrichment <- db_enrichment[,c("Term","Overlap","Adjusted.P.value","Genes")]
-    DT::datatable(db_enrichment,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO biological process'),options = list(pageLength = 10) )
-  }else{
-    print("No enriched Go terms")
-  }
-  
-}else{
-  print("No enriched Go terms")
-}
-
-```
-
-
-### GO molecular function 
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-file <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_nonredundant_",trait,"_GO_Molecular_Function_2021.rdata")
-
-if(file.exists(file)) {
-  
-  load(file)
-  db_enrichment <- db_enrichment[db_enrichment$Adjusted.P.value < 0.05,]
-  
-  if(nrow(db_enrichment) > 0) {
-    db_enrichment <- db_enrichment[,c("Term","Overlap","Adjusted.P.value","Genes")]
-    DT::datatable(db_enrichment,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO biological process'),options = list(pageLength = 10) )
-  }else{
-    print("No enriched Go terms")
-  }
-  
-}else{
-  print("No enriched Go terms")
-}
-
-```
-
-
-## Fractional model
-
-### GO biological process
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_", trait, "_gobp.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-```
-
-### GO cellular component 
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_", trait, "_gocc.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-
-```
-
-
-### GO molecular function 
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_", trait, "_gomf.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-
-```
-
-
-## Fisher 
-
-### GO biological process -- cutoff pip>0.5
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_pip05_", trait, "_gobp.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-```
-
-### GO cellular component -- cutoff pip>0.5
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_pip05_", trait, "_gocc.rdata"))
+all_fractional <- all_fractional[complete.cases(all_fractional),]
+all_fractional$id <- paste0(all_fractional$trait,"-",all_fractional$db,"-",all_fractional$GO)
+all_fet$id <- paste0(all_fet$trait,"-",all_fet$db,"-",all_fet$GO)
 
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
 
-summary <- summary[order(summary$fdr, decreasing = F),]
+venn.plot <- draw.pairwise.venn(
+  area1 = nrow(all_fractional),          # Size of Group A
+  area2 = nrow(all_fet),          # Size of Group B
+  cross.area = sum(all_fractional$id %in% all_fet$id),     # Overlap between Group A and Group B
+  category = c("Fractional", "FET"),  # Labels for the groups
+  fill = c("red", "blue"),             # Colors for the groups
+  lty = "blank",                       # Line type for the circles
+  cex = 2,                             # Font size for the numbers
+  cat.cex = 2                          # Font size for the labels
+)
 
 
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-
-```
-
-
-### GO molecular function -- cutoff pip>0.5
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_pip05_", trait, "_gomf.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-
-```
-
-
-
-
-
-
-
-
-
-
-
-### GO biological process -- cutoff pip>0.8
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_pip08_", trait, "_gobp.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-```
-
-### GO cellular component -- cutoff pip>0.8
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_pip08_", trait, "_gocc.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
-
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-
-```
-
-
-### GO molecular function -- cutoff pip>0.8
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_pip08_", trait, "_gomf.rdata"))
-
-sprintf("the number of pathways included: %s", nrow(summary))
-sprintf("the number of pathways with FDR <0.05 : %s", nrow(summary[summary$fdr < 0.05,]))
+all_fractional <- all_fractional[,c("trait","db","GO","pvalue","fdr","id")]
+DT::datatable(all_fractional[!all_fractional$id %in% all_fet$id,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Unique GO terms for fractional model'),options = list(pageLength = 10) )
 
-summary <- summary[order(summary$fdr, decreasing = F),]
-
-
-if(nrow(summary[summary$fdr < 0.05,]) >= 1) {
-  summary <- summary[1:nrow(summary[summary$fdr < 0.05,]),]
-  DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Enrichment results for GO molecular function , pathways with FDR < 0.05 are shown'),options = list(pageLength = 10) )
-}
-
+DT::datatable(all_fet[!all_fet$id %in% all_fractional$id,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Unique GO terms for FET'),options = list(pageLength = 10) )
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
