@@ -4,7 +4,7 @@ output: html_document
 date: '2024-10-22'
 ---
 
-```{r echo=FALSE}
+```{r echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 library(ggplot2)
 library(ggVennDiagram)
 library(gridExtra)
@@ -197,14 +197,14 @@ grid.arrange(
 ```
 
 ### cTWAS parameters with methylation lasso models
-```{r, echo=FALSE, fig.width=6, fig.height=4}
+```{r, echo=FALSE, fig.width=12, fig.height=8}
 param <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_multi/ibd_multi.param.RDS")
 gwas_n <- 59957
 colors <- c(  "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728",  "#9467bd", "#8c564b", "#e377c2", "#7f7f7f",  "#bcbd22",  "#17becf",  "#f7b6d2",  "#c5b0d5",  "#9edae5", "#ffbb78",  "#98df8a",  "#ff9896" )
 make_convergence_plots(param, gwas_n,colors = colors)
 ```
 ### Percent of heritability with methylation lasso models
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=10, fig.height=5}
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=10, fig.height=5}
 ctwas_parameters <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_multi_top/ibd_multi_top.ctwas_parameters.RDS")
 pve_pie_by_type_multi <- plot_piechart(ctwas_parameters = ctwas_parameters, colors = colors, by = "type")
 pve_pie_by_context_multi <- plot_piechart(ctwas_parameters = ctwas_parameters, colors = colors, by = "context")
@@ -212,7 +212,7 @@ gridExtra::grid.arrange(pve_pie_by_type_multi,pve_pie_by_context_multi, ncol = 2
 ```
 
 ### Top cTWAS genes with methylation lasso models
-```{r}
+```{r, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 gwas_n <- 59957
 finemap_res <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_multi/ibd_multi.finemap_regions_res.RDS")
 gene_annot <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_E_S_M_mapping.RDS")
@@ -242,14 +242,14 @@ DT::datatable(combined_pip_by_context[combined_pip_by_context$combined_pip>0.8,]
 ```
 
 ### cTWAS parameters with methylation single QTL models
-```{r, echo=FALSE, fig.width=6, fig.height=4}
+```{r, echo=FALSE, fig.width=12, fig.height=8}
 param <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_multi_top/ibd_multi_top.param.RDS")
 gwas_n <- 59957
 colors <- c(  "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728",  "#9467bd", "#8c564b", "#e377c2", "#7f7f7f",  "#bcbd22",  "#17becf",  "#f7b6d2",  "#c5b0d5",  "#9edae5", "#ffbb78",  "#98df8a",  "#ff9896" )
 make_convergence_plots(param, gwas_n,colors = colors)
 ```
 ### Percent of heritability with methylation single QTL models
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=10, fig.height=5}
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=10, fig.height=5}
 ctwas_parameters <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_multi/ibd_multi.ctwas_parameters.RDS")
 pve_pie_by_type_multi <- plot_piechart(ctwas_parameters = ctwas_parameters, colors = colors, by = "type")
 pve_pie_by_context_multi <- plot_piechart(ctwas_parameters = ctwas_parameters, colors = colors, by = "context")
@@ -257,7 +257,7 @@ gridExtra::grid.arrange(pve_pie_by_type_multi,pve_pie_by_context_multi, ncol = 2
 ```
 
 ### Top cTWAS genes with methylation single QTL models
-```{r}
+```{r, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 gwas_n <- 59957
 finemap_res <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_multi_top/ibd_multi_top.finemap_regions_res.RDS")
 gene_annot <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_E_S_M_mapping.RDS")
