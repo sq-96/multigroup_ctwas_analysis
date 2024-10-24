@@ -86,46 +86,6 @@ output:
  1. All genes from ctwas. Here, `geneset_membership` matrix includes only the genes used in ctwas.
  2. All genes from the geneset database. Here, `geneset_membership` matrix includes the union of all genes from the GO terms in the geneset database.
 
-
-
-# Summary for the number of Go terms with p-values < 0.001
-
-```{r echo=T, fig.height=5, fig.width=5, message=FALSE, warning=FALSE}
- load("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_summary_for_all_redundant_p.rdata")
- DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Number of enriched GO terms under different settings'),options = list(pageLength = 20) )
-```
-
- <!-- # Summary of non-redundant GO terms (by Enrichr) related to trait (summaried by chatgpt) -->
-
- <!-- ```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5} -->
- <!-- load("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrich_nonredundant_annotated_2023_enrichr.rdata") -->
- <!-- sum_all$relatedornot_bychatgpt[sum$relatedornot_bychatgpt != T] <- F -->
- <!-- sprintf("total GO terms at FDR < 0.05 = %s ",nrow(sum_all)) -->
- <!-- sprintf("number of trait-related GO terms(by chatgpt) = %s ",sum(sum_all$relatedornot_bychatgpt)) -->
-
- <!-- DT::datatable(sum_all[sum_all$relatedornot_bychatgpt == T,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Summary of non-redundant GO terms (by Enrichr) related to trait (summaried by chatgpt)'),options = list(pageLength = 10) ) -->
-
- <!-- sum_enrichr_nonredundant <- sum_all -->
- <!-- ``` -->
-
- <!-- # Summary of GO terms (by fractional model) related to trait (summaried by chatgpt) -->
-
- <!-- ```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5} -->
- <!-- load("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrich_fractional_annotated_2023.rdata") -->
- <!-- sum_all$relatedornot_bychatgpt[sum$relatedornot_bychatgpt != T] <- F -->
- <!-- sprintf("total GO terms at FDR < 0.05 = %s ",nrow(sum_all)) -->
- <!-- sprintf("number of trait-related GO terms(by chatgpt) = %s ",sum(sum_all$relatedornot_bychatgpt)) -->
-
- <!-- DT::datatable(sum_all[sum_all$relatedornot_bychatgpt == T,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Summary of GO terms (by fractional model) related to trait (summaried by chatgpt)'),options = list(pageLength = 10) ) -->
-
- <!-- sum_fractional <- sum_all -->
-
- <!-- sum_fractional <- sum_fractional %>% -->
- <!--   separate(GO, into = c("GO_term"), sep = " \\((GO:[0-9]+)\\)", remove = T) -->
-
- <!-- ``` -->
-
-
 # Comparing the p-values from Enrichr and Fisher exact test -- baseline genes are all genes from gene sets
 
 ```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
@@ -178,6 +138,46 @@ output:
    theme_minimal()
 
 ```
+
+
+
+# Summary for the number of Go terms with p-values < 0.001
+
+```{r echo=T, fig.height=5, fig.width=5, message=FALSE, warning=FALSE}
+ load("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_summary_for_all_redundant_p.rdata")
+ DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Number of enriched GO terms under different settings'),options = list(pageLength = 20) )
+```
+
+ <!-- # Summary of non-redundant GO terms (by Enrichr) related to trait (summaried by chatgpt) -->
+
+ <!-- ```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5} -->
+ <!-- load("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrich_nonredundant_annotated_2023_enrichr.rdata") -->
+ <!-- sum_all$relatedornot_bychatgpt[sum$relatedornot_bychatgpt != T] <- F -->
+ <!-- sprintf("total GO terms at FDR < 0.05 = %s ",nrow(sum_all)) -->
+ <!-- sprintf("number of trait-related GO terms(by chatgpt) = %s ",sum(sum_all$relatedornot_bychatgpt)) -->
+
+ <!-- DT::datatable(sum_all[sum_all$relatedornot_bychatgpt == T,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Summary of non-redundant GO terms (by Enrichr) related to trait (summaried by chatgpt)'),options = list(pageLength = 10) ) -->
+
+ <!-- sum_enrichr_nonredundant <- sum_all -->
+ <!-- ``` -->
+
+ <!-- # Summary of GO terms (by fractional model) related to trait (summaried by chatgpt) -->
+
+ <!-- ```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5} -->
+ <!-- load("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrich_fractional_annotated_2023.rdata") -->
+ <!-- sum_all$relatedornot_bychatgpt[sum$relatedornot_bychatgpt != T] <- F -->
+ <!-- sprintf("total GO terms at FDR < 0.05 = %s ",nrow(sum_all)) -->
+ <!-- sprintf("number of trait-related GO terms(by chatgpt) = %s ",sum(sum_all$relatedornot_bychatgpt)) -->
+
+ <!-- DT::datatable(sum_all[sum_all$relatedornot_bychatgpt == T,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Summary of GO terms (by fractional model) related to trait (summaried by chatgpt)'),options = list(pageLength = 10) ) -->
+
+ <!-- sum_fractional <- sum_all -->
+
+ <!-- sum_fractional <- sum_fractional %>% -->
+ <!--   separate(GO, into = c("GO_term"), sep = " \\((GO:[0-9]+)\\)", remove = T) -->
+
+ <!-- ``` -->
+
 
 
 # Comparing the GO terms reported by FET and Fractional model -- p-values < 0.001, baseline genes are genes used in ctwas, redundant terms NOT removed
