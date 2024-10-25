@@ -163,7 +163,7 @@ plot_heatmap <- function(heatmap_data, main) {
 ```
 ### Fusion Lasso model of DNA methylation
 
-I built lasso model of DNA methylation with FUSION for Whole Blood and Colon Transverse. Similar to meQTL mapping, for each CpG site, I extracted surrounding 500kb genptypes and train lasso models with cross validation. With heritability cutoff p<0.001, I have about 10,500 and 37,500 CpG sites in whole blood and colon transverse. Among which, 2452 and 28505 CpG sites are also in QTL mapping. Colon have more overlaps than whole blood. The average cross-validation R2 for lasso in whole blood and colon transverse are 0.260 and 0.231. In the single QTL approach (qval < 0.001), we have 7,720 and 91,466 CpG sites.
+I built lasso model of DNA methylation with FUSION for Whole Blood and Colon Transverse. Similar to meQTL mapping, for each CpG site, I extracted surrounding 50kb genptypes and train lasso models with cross validation. With heritability cutoff p<0.0001, I have about 16,000 and 48,000 CpG sites in whole blood and colon transverse. Among which, 5,000 and 40,000 CpG sites are also in QTL mapping. Colon have more overlaps than whole blood. The average cross-validation R2 for lasso in whole blood and colon transverse are 0.393 and 0.248 In the single QTL approach (qval < 0.001), we have 7,720 and 91,466 CpG sites.
 
 ```{r, echo=FALSE, warning=FALSE}
 # Arrange the two plots side by side
@@ -172,7 +172,7 @@ library(ggVennDiagram)
 library(gridExtra)
 library(data.table)
 library(ctwas)
-fusion_model <- fread("/project2/xinhe/shengqian/fusion_twas-master/methylationwholeblood.profile",sep='\t')
+fusion_model <- fread("/project2/xinhe/shengqian/fusion_twas-master/methylation_wholeblood_50kb_h00001.profile",sep='\t')
 fusion_model <- fusion_model[!is.na(fusion_model$lasso.r2),]
 QTL_data <- fread("/project2/xinhe/shengqian/cTWAS/cTWAS_analysis/data/mqtl/WholeBlood.regular.perm.fdr.txt")
 QTL_data <- QTL_data[QTL_data$qval<0.001,]
@@ -181,7 +181,7 @@ venn1 <- ggVennDiagram(list(QTL = QTL_data$cpg_id, FUSION = fusion_model$id),cat
   ggtitle("Whole Blood") + theme(legend.position = "none") + scale_fill_gradient(low = NA, high = NA) + annotate("text", x = 0, y = - 2.5, label = "QTL", size = 5) +
   annotate("text", x = 0, y = 6.5, label = "FUSION", size = 5)
 
-fusion_model <- fread("/project2/xinhe/shengqian/fusion_twas-master/methylation_colon.profile",sep='\t')
+fusion_model <- fread("/project2/xinhe/shengqian/fusion_twas-master/methylation_colon_50kb_h00001.profile",sep='\t')
 fusion_model <- fusion_model[!is.na(fusion_model$lasso.r2),]
 QTL_data <- fread("/project2/xinhe/shengqian/cTWAS/cTWAS_analysis/data/mqtl/ColonTransverse.regular.perm.fdr.txt")
 QTL_data <- QTL_data[QTL_data$qval<0.001,]
@@ -196,7 +196,7 @@ grid.arrange(
 )
 ```
 
-### cTWAS parameters with methylation lasso models
+### cTWAS parameters with methylation lasso models (50kb, h2 pvalue<0.00001)
 ```{r, echo=FALSE, fig.width=15, fig.height=13}
 param <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_multi/ibd_multi.param.RDS")
 gwas_n <- 59957
@@ -215,6 +215,51 @@ gridExtra::grid.arrange(pve_pie_by_type_multi,pve_pie_by_context_multi, ncol = 2
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 gwas_n <- 59957
 finemap_res <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_multi/ibd_multi.finemap_regions_res.RDS")
+gene_annot <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_E_S_M_mapping.RDS")
+susie_alpha_res <- anno_susie_alpha_res(finemap_res$susie_alpha_res,
+                                        mapping_table = gene_annot,
+                                        map_by = "molecular_id",
+                                        drop_unmapped = TRUE)
+
+
+combined_pip_by_type <- combine_gene_pips(susie_alpha_res, 
+                                             group_by = "gene_name",
+                                             by = "type",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = FALSE)
+
+combined_pip_by_context <- combine_gene_pips(susie_alpha_res, 
+                                             group_by = "gene_name",
+                                             by = "context",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = FALSE)
+
+DT::datatable(combined_pip_by_type[combined_pip_by_type$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by omics'),options = list(pageLength = 10) )
+
+DT::datatable(combined_pip_by_context[combined_pip_by_context$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by tissue'),options = list(pageLength = 10) )
+```
+
+### cTWAS parameters with methylation lasso models (500kb, h2 pvalue<0.0001)
+```{r, echo=FALSE, fig.width=15, fig.height=13}
+param <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_multi_old/ibd_multi.param.RDS")
+gwas_n <- 59957
+colors <- c(  "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728",  "#9467bd", "#8c564b", "#e377c2", "#7f7f7f",  "#bcbd22",  "#17becf",  "#f7b6d2",  "#c5b0d5",  "#9edae5", "#ffbb78",  "#98df8a",  "#ff9896" )
+make_convergence_plots(param, gwas_n,colors = colors)
+```
+
+### Percent of heritability with methylation lasso models
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=10, fig.height=5}
+ctwas_parameters <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_multi_old/ibd_multi.ctwas_parameters.RDS")
+pve_pie_by_type_multi <- plot_piechart(ctwas_parameters = ctwas_parameters, colors = colors, by = "type")
+pve_pie_by_context_multi <- plot_piechart(ctwas_parameters = ctwas_parameters, colors = colors, by = "context")
+gridExtra::grid.arrange(pve_pie_by_type_multi,pve_pie_by_context_multi, ncol = 2)
+```
+### Top cTWAS genes with methylation lasso models
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+gwas_n <- 59957
+finemap_res <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_multi_old/ibd_multi.finemap_regions_res.RDS")
 gene_annot <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_E_S_M_mapping.RDS")
 susie_alpha_res <- anno_susie_alpha_res(finemap_res$susie_alpha_res,
                                         mapping_table = gene_annot,
