@@ -196,6 +196,8 @@ grid.arrange(
 )
 ```
 
+## IBD results
+
 ### cTWAS parameters with methylation lasso models (50kb, h2 pvalue<0.00001)
 ```{r, echo=FALSE, fig.width=15, fig.height=13}
 param <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_multi/ibd_multi.param.RDS")
@@ -305,6 +307,53 @@ gridExtra::grid.arrange(pve_pie_by_type_multi,pve_pie_by_context_multi, ncol = 2
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 gwas_n <- 59957
 finemap_res <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_multi_top/ibd_multi_top.finemap_regions_res.RDS")
+gene_annot <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_E_S_M_mapping.RDS")
+
+susie_alpha_res <- anno_susie_alpha_res(finemap_res$susie_alpha_res,
+                                        mapping_table = gene_annot,
+                                        map_by = "molecular_id",
+                                        drop_unmapped = TRUE)
+
+
+combined_pip_by_type <- combine_gene_pips(susie_alpha_res, 
+                                          group_by = "gene_name",
+                                          by = "type",
+                                          method = "combine_cs",
+                                          filter_cs = TRUE,
+                                          include_cs_id = FALSE)
+
+combined_pip_by_context <- combine_gene_pips(susie_alpha_res, 
+                                             group_by = "gene_name",
+                                             by = "context",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = FALSE)
+
+DT::datatable(combined_pip_by_type[combined_pip_by_type$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by omics'),options = list(pageLength = 10) )
+
+DT::datatable(combined_pip_by_context[combined_pip_by_context$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by tissue'),options = list(pageLength = 10) )
+```
+
+
+## WBC results
+
+### cTWAS parameters with methylation lasso models (50kb, h2 pvalue<0.00001)
+```{r, echo=FALSE, fig.width=15, fig.height=13}
+param <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/wbc_multi/wbc_multi.param.RDS")
+gwas_n <- 563946
+colors <- c(  "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728",  "#9467bd", "#8c564b", "#e377c2", "#7f7f7f",  "#bcbd22",  "#17becf",  "#f7b6d2",  "#c5b0d5",  "#9edae5", "#ffbb78",  "#98df8a",  "#ff9896" )
+make_convergence_plots(param, gwas_n,colors = colors)
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=10, fig.height=5}
+ctwas_parameters <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/wbc_multi/wbc_multi.ctwas_parameters.RDS")
+pve_pie_by_type_multi <- plot_piechart(ctwas_parameters = ctwas_parameters, colors = colors, by = "type")
+pve_pie_by_context_multi <- plot_piechart(ctwas_parameters = ctwas_parameters, colors = colors, by = "context")
+gridExtra::grid.arrange(pve_pie_by_type_multi,pve_pie_by_context_multi, ncol = 2)
+```
+### Top cTWAS genes with methylation single QTL models
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+finemap_res <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/wbc_multi/wbc_multi.finemap_regions_res.RDS")
 gene_annot <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_E_S_M_mapping.RDS")
 
 susie_alpha_res <- anno_susie_alpha_res(finemap_res$susie_alpha_res,
