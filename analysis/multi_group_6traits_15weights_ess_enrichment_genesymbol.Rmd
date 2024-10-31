@@ -211,6 +211,8 @@ DT::datatable(summary_show,caption = htmltools::tags$caption( style = 'caption-s
 
 ## aFib-ebi-a-GCST006414
 
+### Comparing Calibrated fractional model and FET
+
 ```{r echo=T, fig.height=5, fig.width=5, message=FALSE, warning=FALSE}
 
 all_fractional <- c()
@@ -287,6 +289,84 @@ df <- data.frame(lgp_fractional_calibrated = lgp_fractional_calibrated, lgp_fet 
    xlab("fractional_calibrated log10(p)") +  # x-axis label
    ylab("FET log10(p)") +  # y-axis label
    theme_minimal()
+```
+
+
+### Examining ctwas PIP values for genes within GO terms associated with high FET p-values.
+
+#### GO_Cellular_Component_2023 - Cortical Endoplasmic Reticulum (GO:0032541)
+
+```{r echo=T, fig.height=5, fig.width=5, message=FALSE, warning=FALSE}
+
+db <- "GO_Cellular_Component_2023"
+go <- "Cortical Endoplasmic Reticulum (GO:0032541)"
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/", trait, "_combinedpip.rdata"))
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/", trait, "_finemap_annot.rdata"))
+
+genes_notincs <- subset(finemap_gene_res, !gene_name %in% combined_pip_by_type$gene_name)[, "gene_name"]
+genes_notincs <- data.frame(gene_name = unique(genes_notincs), combined_pip = 0.5 * min(combined_pip_by_type$combined_pip))
+genes_all <- rbind(combined_pip_by_type[, c("gene_name", "combined_pip")], genes_notincs)
+
+load(paste0("/project/xinhe/xsun/data/Go/membership_", db, ".rdata"))
+membership_ordered <- membership[match(genes_all$gene_name, rownames(membership)), ]
+
+x <- membership_ordered[,colnames(membership_ordered) == go]
+gene_ingo <- names(which(x == 1))
+
+print("ctwas PIP for the genes in GO term")
+combined_pip_by_type[combined_pip_by_type$gene_name %in% gene_ingo,]
+
+```
+
+#### GO_Biological_Process_2023 - Cytochrome Complex Assembly (GO:0017004)
+
+```{r echo=T, fig.height=5, fig.width=5, message=FALSE, warning=FALSE}
+
+db <- "GO_Biological_Process_2023"
+go <- "Cytochrome Complex Assembly (GO:0017004)"
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/", trait, "_combinedpip.rdata"))
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/", trait, "_finemap_annot.rdata"))
+
+genes_notincs <- subset(finemap_gene_res, !gene_name %in% combined_pip_by_type$gene_name)[, "gene_name"]
+genes_notincs <- data.frame(gene_name = unique(genes_notincs), combined_pip = 0.5 * min(combined_pip_by_type$combined_pip))
+genes_all <- rbind(combined_pip_by_type[, c("gene_name", "combined_pip")], genes_notincs)
+
+load(paste0("/project/xinhe/xsun/data/Go/membership_", db, ".rdata"))
+membership_ordered <- membership[match(genes_all$gene_name, rownames(membership)), ]
+
+x <- membership_ordered[,colnames(membership_ordered) == go]
+gene_ingo <- names(which(x == 1))
+
+print("ctwas PIP for the genes in GO term")
+combined_pip_by_type[combined_pip_by_type$gene_name %in% gene_ingo,]
+
+```
+
+#### GO_Molecular_Function_2023 - Calcium Channel Regulator Activity (GO:0005246)
+
+```{r echo=T, fig.height=5, fig.width=5, message=FALSE, warning=FALSE}
+
+db <- "GO_Molecular_Function_2023"
+go <- "Calcium Channel Regulator Activity (GO:0005246)"
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/", trait, "_combinedpip.rdata"))
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/", trait, "_finemap_annot.rdata"))
+
+genes_notincs <- subset(finemap_gene_res, !gene_name %in% combined_pip_by_type$gene_name)[, "gene_name"]
+genes_notincs <- data.frame(gene_name = unique(genes_notincs), combined_pip = 0.5 * min(combined_pip_by_type$combined_pip))
+genes_all <- rbind(combined_pip_by_type[, c("gene_name", "combined_pip")], genes_notincs)
+
+load(paste0("/project/xinhe/xsun/data/Go/membership_", db, ".rdata"))
+membership_ordered <- membership[match(genes_all$gene_name, rownames(membership)), ]
+
+x <- membership_ordered[,colnames(membership_ordered) == go]
+gene_ingo <- names(which(x == 1))
+
+print("ctwas PIP for the genes in GO term")
+combined_pip_by_type[combined_pip_by_type$gene_name %in% gene_ingo,]
+
 ```
 
 ## LDL-ukb-d-30780_irnt
@@ -369,40 +449,282 @@ df <- data.frame(lgp_fractional_calibrated = lgp_fractional_calibrated, lgp_fet 
    theme_minimal()
 ```
 
+## IBD-ebi-a-GCST004131
+
+```{r echo=T, fig.height=5, fig.width=5, message=FALSE, warning=FALSE}
+
+all_fractional <- c()
+all_fet <- c()
+
+trait <- "IBD-ebi-a-GCST004131" 
+ 
+for (db in dbs) {
+
+    file_fet <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_blctwas_pip08_",trait,"_",db,".rdata")
+    load(file_fet)
+    all_fet <- rbind(all_fet,summary)
 
 
-<!-- ```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5} -->
+    file_fractional <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fractional_calibrated_",trait,"_",db,".rdata")
+    load(file_fractional)
+    summary$trait <- trait
+    summary$db <- db
+    all_fractional <- rbind(all_fractional,summary)
 
-<!--  pval <- 0.001 -->
+}
 
-<!--  all_fractional <- c() -->
-<!--  all_fet <- c() -->
-<!--  for (trait in traits) { -->
-<!--    for (db in dbs) { -->
+all_fractional$id <- paste0(all_fractional$trait,"-",all_fractional$db,"-",all_fractional$GO)
+all_fet$id <- paste0(all_fet$trait,"-",all_fet$db,"-",all_fet$GO)
 
-<!--      file_fet <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_blctwas_pip08_",trait,"_",db,".rdata") -->
-<!--      load(file_fet) -->
-<!--      all_fet <- rbind(all_fet,summary[as.numeric(summary$pvalue) < pval,]) -->
+fractional_pass <- all_fractional[as.numeric(all_fractional$pvalue_calibrated) < pval_threshold, ]
+fractional_pass <-  fractional_pass[complete.cases( fractional_pass$fdr_origin),]
+fet_pass <- all_fet[as.numeric(all_fet$pvalue) < pval_threshold, ]
+
+venn.plot <- draw.pairwise.venn(
+     area1 = nrow(fractional_pass),          # Size of Group A
+     area2 = nrow(fet_pass),          # Size of Group B
+     cross.area = sum(fractional_pass$id %in%  fet_pass$id),     # Overlap between Group A and Group B
+     category = c("Fractional", "FET"),  # Labels for the groups
+     fill = c("red", "blue"),             # Colors for the groups
+     lty = "blank",                       # Line type for the circles
+     cex = 2,                             # Font size for the numbers
+     cat.cex = 2                          # Font size for the labels
+   )
+
+all_fractional <- all_fractional[,c("trait","db","GO","pvalue_origin","fdr_origin","pvalue_calibrated","fdr_calibrated","id")]
+
+merged_two <- merge(all_fractional,all_fet, by = "id")
+merged_two <- merged_two[,c("trait.x","db.x","GO.x","pvalue_origin","fdr_origin","pvalue_calibrated","fdr_calibrated","pvalue","fdr","Overlap","Genes")]
+colnames(merged_two) <- c("trait","db","GO","pvalue_origin_fractional","fdr_origin_fractional","pvalue_calibrated_fractional","fdr_calibrated_fractional","pvalue_fet","fdr_fet","Overlap_fet","Overlapped_Genes_fet")
+unique_fractional <- merged_two[as.numeric(merged_two$pvalue_calibrated_fractional) < pval_threshold & as.numeric(merged_two$pvalue_fet) > pval_threshold,]
+unique_fractional <- unique_fractional[complete.cases(unique_fractional),]
+unique_fractional <- unique_fractional[order(as.numeric(unique_fractional$pvalue_calibrated_fractional)),]
+DT::datatable(unique_fractional,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Unique GO terms for fractional model'),options = list(pageLength = 10) )
+
+unique_fet<- merged_two[as.numeric(merged_two$pvalue_calibrated_fractional) > pval_threshold & as.numeric(merged_two$pvalue_fet) < pval_threshold,]
+unique_fet <- unique_fet[complete.cases(unique_fet),]
+DT::datatable(unique_fet,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Unique GO terms for FET'),options = list(pageLength = 10) )
 
 
-<!--      file_fractional <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fractional_",trait,"_",db,".rdata") -->
-<!--      load(file_fractional) -->
-<!--      summary$trait <- trait -->
-<!--      summary$db <- db -->
-<!--      all_fractional <- rbind(all_fractional,summary[as.numeric(summary$pvalue) < pval,]) -->
+p_fractional_calibrated <- as.numeric(unique_fractional$pvalue_calibrated_fractional)
+p_fet <- as.numeric(unique_fractional$pvalue_fet)
 
-<!--    } -->
-<!--  } -->
+lgp_fractional_calibrated <- log10(p_fractional_calibrated)
+lgp_fet <- log10(p_fet)
+ 
+df <- data.frame(lgp_fractional_calibrated = lgp_fractional_calibrated, lgp_fet = lgp_fet)
 
-<!--  all_fractional <- all_fractional[complete.cases(all_fractional),] -->
-<!--  all_fractional$id <- paste0(all_fractional$trait,"-",all_fractional$db,"-",all_fractional$GO) -->
-<!--  all_fet$id <- paste0(all_fet$trait,"-",all_fet$db,"-",all_fet$GO) -->
+ ggplot(df, aes(x = lgp_fractional_calibrated, y = lgp_fet)) +
+   geom_point() +  # Add points
+   geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed") +  # y = x line
+   #geom_smooth(method = "lm", se = FALSE, color = "blue") +  # Best-fit line
+   # annotate("text", x = max(lgp_fractional_calibrated) * 0.8, y = max(lgp_fet) * 0.9, 
+   #          label = paste0("Slope: ", round(slope, 3)),
+   #          color = "blue") +  # Slope text
+   annotate("text", x = max(lgp_fractional_calibrated) * 0.8, y = max(lgp_fractional_calibrated) * 0.8, 
+            label = "y = x", color = "red", size = 5, hjust = 1, vjust = -0.5) +  # y = x text near the line
+   ggtitle("Comparison of p-values between \n fractional_calibrated and FET \n for unique fractional GO terms") +  # Add title
+   xlab("fractional_calibrated log10(p)") +  # x-axis label
+   ylab("FET log10(p)") +  # y-axis label
+   theme_minimal()
+```
+
+## SBP-ukb-a-360
+
+```{r echo=T, fig.height=5, fig.width=5, message=FALSE, warning=FALSE}
+
+all_fractional <- c()
+all_fet <- c()
+
+trait <- "SBP-ukb-a-360" 
+ 
+for (db in dbs) {
+
+    file_fet <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_blctwas_pip08_",trait,"_",db,".rdata")
+    load(file_fet)
+    all_fet <- rbind(all_fet,summary)
 
 
-<!--  venn.plot <- draw.pairwise.venn( -->
-<!--      area1 = nrow(all_fractional),          # Size of Group A -->
-<!--      area2 = nrow(all_fet),          # Size of Group B -->
-<!--      cross.area = sum(all_fractional$id %in% all_fet$id),     # Overlap between Group A and Group B -->
+    file_fractional <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fractional_calibrated_",trait,"_",db,".rdata")
+    load(file_fractional)
+    summary$trait <- trait
+    summary$db <- db
+    all_fractional <- rbind(all_fractional,summary)
+
+}
+
+all_fractional$id <- paste0(all_fractional$trait,"-",all_fractional$db,"-",all_fractional$GO)
+all_fet$id <- paste0(all_fet$trait,"-",all_fet$db,"-",all_fet$GO)
+
+fractional_pass <- all_fractional[as.numeric(all_fractional$pvalue_calibrated) < pval_threshold, ]
+fractional_pass <-  fractional_pass[complete.cases( fractional_pass$fdr_origin),]
+fet_pass <- all_fet[as.numeric(all_fet$pvalue) < pval_threshold, ]
+
+venn.plot <- draw.pairwise.venn(
+     area1 = nrow(fractional_pass),          # Size of Group A
+     area2 = nrow(fet_pass),          # Size of Group B
+     cross.area = sum(fractional_pass$id %in%  fet_pass$id),     # Overlap between Group A and Group B
+     category = c("Fractional", "FET"),  # Labels for the groups
+     fill = c("red", "blue"),             # Colors for the groups
+     lty = "blank",                       # Line type for the circles
+     cex = 2,                             # Font size for the numbers
+     cat.cex = 2                          # Font size for the labels
+   )
+
+all_fractional <- all_fractional[,c("trait","db","GO","pvalue_origin","fdr_origin","pvalue_calibrated","fdr_calibrated","id")]
+
+merged_two <- merge(all_fractional,all_fet, by = "id")
+merged_two <- merged_two[,c("trait.x","db.x","GO.x","pvalue_origin","fdr_origin","pvalue_calibrated","fdr_calibrated","pvalue","fdr","Overlap","Genes")]
+colnames(merged_two) <- c("trait","db","GO","pvalue_origin_fractional","fdr_origin_fractional","pvalue_calibrated_fractional","fdr_calibrated_fractional","pvalue_fet","fdr_fet","Overlap_fet","Overlapped_Genes_fet")
+unique_fractional <- merged_two[as.numeric(merged_two$pvalue_calibrated_fractional) < pval_threshold & as.numeric(merged_two$pvalue_fet) > pval_threshold,]
+unique_fractional <- unique_fractional[complete.cases(unique_fractional),]
+unique_fractional <- unique_fractional[order(as.numeric(unique_fractional$pvalue_calibrated_fractional)),]
+DT::datatable(unique_fractional,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Unique GO terms for fractional model'),options = list(pageLength = 10) )
+
+unique_fet<- merged_two[as.numeric(merged_two$pvalue_calibrated_fractional) > pval_threshold & as.numeric(merged_two$pvalue_fet) < pval_threshold,]
+unique_fet <- unique_fet[complete.cases(unique_fet),]
+DT::datatable(unique_fet,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Unique GO terms for FET'),options = list(pageLength = 10) )
+
+
+p_fractional_calibrated <- as.numeric(unique_fractional$pvalue_calibrated_fractional)
+p_fet <- as.numeric(unique_fractional$pvalue_fet)
+
+lgp_fractional_calibrated <- log10(p_fractional_calibrated)
+lgp_fet <- log10(p_fet)
+ 
+df <- data.frame(lgp_fractional_calibrated = lgp_fractional_calibrated, lgp_fet = lgp_fet)
+
+ ggplot(df, aes(x = lgp_fractional_calibrated, y = lgp_fet)) +
+   geom_point() +  # Add points
+   geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed") +  # y = x line
+   #geom_smooth(method = "lm", se = FALSE, color = "blue") +  # Best-fit line
+   # annotate("text", x = max(lgp_fractional_calibrated) * 0.8, y = max(lgp_fet) * 0.9, 
+   #          label = paste0("Slope: ", round(slope, 3)),
+   #          color = "blue") +  # Slope text
+   annotate("text", x = max(lgp_fractional_calibrated) * 0.8, y = max(lgp_fractional_calibrated) * 0.8, 
+            label = "y = x", color = "red", size = 5, hjust = 1, vjust = -0.5) +  # y = x text near the line
+   ggtitle("Comparison of p-values between \n fractional_calibrated and FET \n for unique fractional GO terms") +  # Add title
+   xlab("fractional_calibrated log10(p)") +  # x-axis label
+   ylab("FET log10(p)") +  # y-axis label
+   theme_minimal()
+```
+
+## SCZ-ieu-b-5102
+
+```{r echo=T, fig.height=5, fig.width=5, message=FALSE, warning=FALSE}
+
+all_fractional <- c()
+all_fet <- c()
+
+trait <- "SCZ-ieu-b-5102" 
+ 
+for (db in dbs) {
+
+    file_fet <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_blctwas_pip08_",trait,"_",db,".rdata")
+    load(file_fet)
+    all_fet <- rbind(all_fet,summary)
+
+
+    file_fractional <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fractional_calibrated_",trait,"_",db,".rdata")
+    load(file_fractional)
+    summary$trait <- trait
+    summary$db <- db
+    all_fractional <- rbind(all_fractional,summary)
+
+}
+
+all_fractional$id <- paste0(all_fractional$trait,"-",all_fractional$db,"-",all_fractional$GO)
+all_fet$id <- paste0(all_fet$trait,"-",all_fet$db,"-",all_fet$GO)
+
+fractional_pass <- all_fractional[as.numeric(all_fractional$pvalue_calibrated) < pval_threshold, ]
+fractional_pass <-  fractional_pass[complete.cases( fractional_pass$fdr_origin),]
+fet_pass <- all_fet[as.numeric(all_fet$pvalue) < pval_threshold, ]
+
+venn.plot <- draw.pairwise.venn(
+     area1 = nrow(fractional_pass),          # Size of Group A
+     area2 = nrow(fet_pass),          # Size of Group B
+     cross.area = sum(fractional_pass$id %in%  fet_pass$id),     # Overlap between Group A and Group B
+     category = c("Fractional", "FET"),  # Labels for the groups
+     fill = c("red", "blue"),             # Colors for the groups
+     lty = "blank",                       # Line type for the circles
+     cex = 2,                             # Font size for the numbers
+     cat.cex = 2                          # Font size for the labels
+   )
+
+all_fractional <- all_fractional[,c("trait","db","GO","pvalue_origin","fdr_origin","pvalue_calibrated","fdr_calibrated","id")]
+
+merged_two <- merge(all_fractional,all_fet, by = "id")
+merged_two <- merged_two[,c("trait.x","db.x","GO.x","pvalue_origin","fdr_origin","pvalue_calibrated","fdr_calibrated","pvalue","fdr","Overlap","Genes")]
+colnames(merged_two) <- c("trait","db","GO","pvalue_origin_fractional","fdr_origin_fractional","pvalue_calibrated_fractional","fdr_calibrated_fractional","pvalue_fet","fdr_fet","Overlap_fet","Overlapped_Genes_fet")
+unique_fractional <- merged_two[as.numeric(merged_two$pvalue_calibrated_fractional) < pval_threshold & as.numeric(merged_two$pvalue_fet) > pval_threshold,]
+unique_fractional <- unique_fractional[complete.cases(unique_fractional),]
+unique_fractional <- unique_fractional[order(as.numeric(unique_fractional$pvalue_calibrated_fractional)),]
+DT::datatable(unique_fractional,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Unique GO terms for fractional model'),options = list(pageLength = 10) )
+
+unique_fet<- merged_two[as.numeric(merged_two$pvalue_calibrated_fractional) > pval_threshold & as.numeric(merged_two$pvalue_fet) < pval_threshold,]
+unique_fet <- unique_fet[complete.cases(unique_fet),]
+DT::datatable(unique_fet,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Unique GO terms for FET'),options = list(pageLength = 10) )
+
+
+p_fractional_calibrated <- as.numeric(unique_fractional$pvalue_calibrated_fractional)
+p_fet <- as.numeric(unique_fractional$pvalue_fet)
+
+lgp_fractional_calibrated <- log10(p_fractional_calibrated)
+lgp_fet <- log10(p_fet)
+ 
+df <- data.frame(lgp_fractional_calibrated = lgp_fractional_calibrated, lgp_fet = lgp_fet)
+
+ ggplot(df, aes(x = lgp_fractional_calibrated, y = lgp_fet)) +
+   geom_point() +  # Add points
+   geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed") +  # y = x line
+   #geom_smooth(method = "lm", se = FALSE, color = "blue") +  # Best-fit line
+   # annotate("text", x = max(lgp_fractional_calibrated) * 0.8, y = max(lgp_fet) * 0.9, 
+   #          label = paste0("Slope: ", round(slope, 3)),
+   #          color = "blue") +  # Slope text
+   annotate("text", x = max(lgp_fractional_calibrated) * 0.8, y = max(lgp_fractional_calibrated) * 0.8, 
+            label = "y = x", color = "red", size = 5, hjust = 1, vjust = -0.5) +  # y = x text near the line
+   ggtitle("Comparison of p-values between \n fractional_calibrated and FET \n for unique fractional GO terms") +  # Add title
+   xlab("fractional_calibrated log10(p)") +  # x-axis label
+   ylab("FET log10(p)") +  # y-axis label
+   theme_minimal()
+```
+
+
+<!-- ## WBC-ieu-b-30 -->
+
+<!-- ```{r echo=T, fig.height=5, fig.width=5, message=FALSE, warning=FALSE} -->
+
+<!-- all_fractional <- c() -->
+<!-- all_fet <- c() -->
+
+<!-- trait <- "WBC-ieu-b-30" -->
+
+<!-- for (db in dbs) { -->
+
+<!--     file_fet <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_blctwas_pip08_",trait,"_",db,".rdata") -->
+<!--     load(file_fet) -->
+<!--     all_fet <- rbind(all_fet,summary) -->
+
+
+<!--     file_fractional <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fractional_calibrated_",trait,"_",db,".rdata") -->
+<!--     load(file_fractional) -->
+<!--     summary$trait <- trait -->
+<!--     summary$db <- db -->
+<!--     all_fractional <- rbind(all_fractional,summary) -->
+
+<!-- } -->
+
+<!-- all_fractional$id <- paste0(all_fractional$trait,"-",all_fractional$db,"-",all_fractional$GO) -->
+<!-- all_fet$id <- paste0(all_fet$trait,"-",all_fet$db,"-",all_fet$GO) -->
+
+<!-- fractional_pass <- all_fractional[as.numeric(all_fractional$pvalue_calibrated) < pval_threshold, ] -->
+<!-- fractional_pass <-  fractional_pass[complete.cases( fractional_pass$fdr_origin),] -->
+<!-- fet_pass <- all_fet[as.numeric(all_fet$pvalue) < pval_threshold, ] -->
+
+<!-- venn.plot <- draw.pairwise.venn( -->
+<!--      area1 = nrow(fractional_pass),          # Size of Group A -->
+<!--      area2 = nrow(fet_pass),          # Size of Group B -->
+<!--      cross.area = sum(fractional_pass$id %in%  fet_pass$id),     # Overlap between Group A and Group B -->
 <!--      category = c("Fractional", "FET"),  # Labels for the groups -->
 <!--      fill = c("red", "blue"),             # Colors for the groups -->
 <!--      lty = "blank",                       # Line type for the circles -->
@@ -410,11 +732,42 @@ df <- data.frame(lgp_fractional_calibrated = lgp_fractional_calibrated, lgp_fet 
 <!--      cat.cex = 2                          # Font size for the labels -->
 <!--    ) -->
 
-<!--  all_fractional <- all_fractional[,c("trait","db","GO","pvalue","fdr","id")] -->
-<!--  DT::datatable(all_fractional[!all_fractional$id %in% all_fet$id,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Unique GO terms for fractional model'),options = list(pageLength = 10) ) -->
+<!-- all_fractional <- all_fractional[,c("trait","db","GO","pvalue_origin","fdr_origin","pvalue_calibrated","fdr_calibrated","id")] -->
 
-<!--  DT::datatable(all_fet[!all_fet$id %in% all_fractional$id,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Unique GO terms for FET'),options = list(pageLength = 10) ) -->
+<!-- merged_two <- merge(all_fractional,all_fet, by = "id") -->
+<!-- merged_two <- merged_two[,c("trait.x","db.x","GO.x","pvalue_origin","fdr_origin","pvalue_calibrated","fdr_calibrated","pvalue","fdr","Overlap","Genes")] -->
+<!-- colnames(merged_two) <- c("trait","db","GO","pvalue_origin_fractional","fdr_origin_fractional","pvalue_calibrated_fractional","fdr_calibrated_fractional","pvalue_fet","fdr_fet","Overlap_fet","Overlapped_Genes_fet") -->
+<!-- unique_fractional <- merged_two[as.numeric(merged_two$pvalue_calibrated_fractional) < pval_threshold & as.numeric(merged_two$pvalue_fet) > pval_threshold,] -->
+<!-- unique_fractional <- unique_fractional[complete.cases(unique_fractional),] -->
+<!-- unique_fractional <- unique_fractional[order(as.numeric(unique_fractional$pvalue_calibrated_fractional)),] -->
+<!-- DT::datatable(unique_fractional,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Unique GO terms for fractional model'),options = list(pageLength = 10) ) -->
 
+<!-- unique_fet<- merged_two[as.numeric(merged_two$pvalue_calibrated_fractional) > pval_threshold & as.numeric(merged_two$pvalue_fet) < pval_threshold,] -->
+<!-- unique_fet <- unique_fet[complete.cases(unique_fet),] -->
+<!-- DT::datatable(unique_fet,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Unique GO terms for FET'),options = list(pageLength = 10) ) -->
+
+
+<!-- p_fractional_calibrated <- as.numeric(unique_fractional$pvalue_calibrated_fractional) -->
+<!-- p_fet <- as.numeric(unique_fractional$pvalue_fet) -->
+
+<!-- lgp_fractional_calibrated <- log10(p_fractional_calibrated) -->
+<!-- lgp_fet <- log10(p_fet) -->
+
+<!-- df <- data.frame(lgp_fractional_calibrated = lgp_fractional_calibrated, lgp_fet = lgp_fet) -->
+
+<!--  ggplot(df, aes(x = lgp_fractional_calibrated, y = lgp_fet)) + -->
+<!--    geom_point() +  # Add points -->
+<!--    geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed") +  # y = x line -->
+<!--    #geom_smooth(method = "lm", se = FALSE, color = "blue") +  # Best-fit line -->
+<!--    # annotate("text", x = max(lgp_fractional_calibrated) * 0.8, y = max(lgp_fet) * 0.9, -->
+<!--    #          label = paste0("Slope: ", round(slope, 3)), -->
+<!--    #          color = "blue") +  # Slope text -->
+<!--    annotate("text", x = max(lgp_fractional_calibrated) * 0.8, y = max(lgp_fractional_calibrated) * 0.8, -->
+<!--             label = "y = x", color = "red", size = 5, hjust = 1, vjust = -0.5) +  # y = x text near the line -->
+<!--    ggtitle("Comparison of p-values between \n fractional_calibrated and FET \n for unique fractional GO terms") +  # Add title -->
+<!--    xlab("fractional_calibrated log10(p)") +  # x-axis label -->
+<!--    ylab("FET log10(p)") +  # y-axis label -->
+<!--    theme_minimal() -->
 <!-- ``` -->
 
 
@@ -423,54 +776,106 @@ df <- data.frame(lgp_fractional_calibrated = lgp_fractional_calibrated, lgp_fet 
 
 
 
+<!-- <!-- ```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5} --> -->
+
+<!-- <!--  pval <- 0.001 --> -->
+
+<!-- <!--  all_fractional <- c() --> -->
+<!-- <!--  all_fet <- c() --> -->
+<!-- <!--  for (trait in traits) { --> -->
+<!-- <!--    for (db in dbs) { --> -->
+
+<!-- <!--      file_fet <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_blctwas_pip08_",trait,"_",db,".rdata") --> -->
+<!-- <!--      load(file_fet) --> -->
+<!-- <!--      all_fet <- rbind(all_fet,summary[as.numeric(summary$pvalue) < pval,]) --> -->
+
+
+<!-- <!--      file_fractional <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fractional_",trait,"_",db,".rdata") --> -->
+<!-- <!--      load(file_fractional) --> -->
+<!-- <!--      summary$trait <- trait --> -->
+<!-- <!--      summary$db <- db --> -->
+<!-- <!--      all_fractional <- rbind(all_fractional,summary[as.numeric(summary$pvalue) < pval,]) --> -->
+
+<!-- <!--    } --> -->
+<!-- <!--  } --> -->
+
+<!-- <!--  all_fractional <- all_fractional[complete.cases(all_fractional),] --> -->
+<!-- <!--  all_fractional$id <- paste0(all_fractional$trait,"-",all_fractional$db,"-",all_fractional$GO) --> -->
+<!-- <!--  all_fet$id <- paste0(all_fet$trait,"-",all_fet$db,"-",all_fet$GO) --> -->
+
+
+<!-- <!--  venn.plot <- draw.pairwise.venn( --> -->
+<!-- <!--      area1 = nrow(all_fractional),          # Size of Group A --> -->
+<!-- <!--      area2 = nrow(all_fet),          # Size of Group B --> -->
+<!-- <!--      cross.area = sum(all_fractional$id %in% all_fet$id),     # Overlap between Group A and Group B --> -->
+<!-- <!--      category = c("Fractional", "FET"),  # Labels for the groups --> -->
+<!-- <!--      fill = c("red", "blue"),             # Colors for the groups --> -->
+<!-- <!--      lty = "blank",                       # Line type for the circles --> -->
+<!-- <!--      cex = 2,                             # Font size for the numbers --> -->
+<!-- <!--      cat.cex = 2                          # Font size for the labels --> -->
+<!-- <!--    ) --> -->
+
+<!-- <!--  all_fractional <- all_fractional[,c("trait","db","GO","pvalue","fdr","id")] --> -->
+<!-- <!--  DT::datatable(all_fractional[!all_fractional$id %in% all_fet$id,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Unique GO terms for fractional model'),options = list(pageLength = 10) ) --> -->
+
+<!-- <!--  DT::datatable(all_fet[!all_fet$id %in% all_fractional$id,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Unique GO terms for FET'),options = list(pageLength = 10) ) --> -->
+
+<!-- <!-- ``` --> -->
 
 
 
-<!-- # Comparing the GO terms reported by FET and Fractional model -- p-values < 0.001, baseline genes are all genes from gene sets, redundant terms NOT removed -->
 
 
-<!-- ```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5} -->
-
-<!--  pval <- 0.001 -->
-
-<!--  all_fractional <- c() -->
-<!--  all_fet <- c() -->
-<!--  for (trait in traits) { -->
-<!--    for (db in dbs) { -->
-
-<!--      file_fet <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_blgeneset_pip08_",trait,"_",db,".rdata") -->
-<!--      load(file_fet) -->
-<!--      all_fet <- rbind(all_fet,summary[as.numeric(summary$pvalue) < pval,]) -->
 
 
-<!--      file_fractional <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fractional_blgeneset_",trait,"_",db,".rdata") -->
-<!--      load(file_fractional) -->
-<!--      summary$trait <- trait -->
-<!--      summary$db <- db -->
-<!--      all_fractional <- rbind(all_fractional,summary[as.numeric(summary$pvalue) < pval,]) -->
-
-<!--    } -->
-<!--  } -->
-
-<!--  all_fractional <- all_fractional[complete.cases(all_fractional),] -->
-<!--  all_fractional$id <- paste0(all_fractional$trait,"-",all_fractional$db,"-",all_fractional$GO) -->
-<!--  all_fet$id <- paste0(all_fet$trait,"-",all_fet$db,"-",all_fet$GO) -->
 
 
-<!--  venn.plot <- draw.pairwise.venn( -->
-<!--      area1 = nrow(all_fractional),          # Size of Group A -->
-<!--      area2 = nrow(all_fet),          # Size of Group B -->
-<!--      cross.area = sum(all_fractional$id %in% all_fet$id),     # Overlap between Group A and Group B -->
-<!--      category = c("Fractional", "FET"),  # Labels for the groups -->
-<!--      fill = c("red", "blue"),             # Colors for the groups -->
-<!--      lty = "blank",                       # Line type for the circles -->
-<!--      cex = 2,                             # Font size for the numbers -->
-<!--      cat.cex = 2                          # Font size for the labels -->
-<!--    ) -->
+
+<!-- <!-- # Comparing the GO terms reported by FET and Fractional model -- p-values < 0.001, baseline genes are all genes from gene sets, redundant terms NOT removed --> -->
 
 
-<!--  all_fractional <- all_fractional[,c("trait","db","GO","pvalue","fdr","id")] -->
-<!--  DT::datatable(all_fractional[!all_fractional$id %in% all_fet$id,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Unique GO terms for fractional model'),options = list(pageLength = 10) ) -->
+<!-- <!-- ```{r, echo=T, message=FALSE, warning=FALSE, fig.width=5, fig.height=5} --> -->
 
-<!--  DT::datatable(all_fet[!all_fet$id %in% all_fractional$id,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Unique GO terms for FET'),options = list(pageLength = 10) ) -->
-<!-- ``` -->
+<!-- <!--  pval <- 0.001 --> -->
+
+<!-- <!--  all_fractional <- c() --> -->
+<!-- <!--  all_fet <- c() --> -->
+<!-- <!--  for (trait in traits) { --> -->
+<!-- <!--    for (db in dbs) { --> -->
+
+<!-- <!--      file_fet <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fisher_blgeneset_pip08_",trait,"_",db,".rdata") --> -->
+<!-- <!--      load(file_fet) --> -->
+<!-- <!--      all_fet <- rbind(all_fet,summary[as.numeric(summary$pvalue) < pval,]) --> -->
+
+
+<!-- <!--      file_fractional <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/postprocess/enrichment_fractional_blgeneset_",trait,"_",db,".rdata") --> -->
+<!-- <!--      load(file_fractional) --> -->
+<!-- <!--      summary$trait <- trait --> -->
+<!-- <!--      summary$db <- db --> -->
+<!-- <!--      all_fractional <- rbind(all_fractional,summary[as.numeric(summary$pvalue) < pval,]) --> -->
+
+<!-- <!--    } --> -->
+<!-- <!--  } --> -->
+
+<!-- <!--  all_fractional <- all_fractional[complete.cases(all_fractional),] --> -->
+<!-- <!--  all_fractional$id <- paste0(all_fractional$trait,"-",all_fractional$db,"-",all_fractional$GO) --> -->
+<!-- <!--  all_fet$id <- paste0(all_fet$trait,"-",all_fet$db,"-",all_fet$GO) --> -->
+
+
+<!-- <!--  venn.plot <- draw.pairwise.venn( --> -->
+<!-- <!--      area1 = nrow(all_fractional),          # Size of Group A --> -->
+<!-- <!--      area2 = nrow(all_fet),          # Size of Group B --> -->
+<!-- <!--      cross.area = sum(all_fractional$id %in% all_fet$id),     # Overlap between Group A and Group B --> -->
+<!-- <!--      category = c("Fractional", "FET"),  # Labels for the groups --> -->
+<!-- <!--      fill = c("red", "blue"),             # Colors for the groups --> -->
+<!-- <!--      lty = "blank",                       # Line type for the circles --> -->
+<!-- <!--      cex = 2,                             # Font size for the numbers --> -->
+<!-- <!--      cat.cex = 2                          # Font size for the labels --> -->
+<!-- <!--    ) --> -->
+
+
+<!-- <!--  all_fractional <- all_fractional[,c("trait","db","GO","pvalue","fdr","id")] --> -->
+<!-- <!--  DT::datatable(all_fractional[!all_fractional$id %in% all_fet$id,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Unique GO terms for fractional model'),options = list(pageLength = 10) ) --> -->
+
+<!-- <!--  DT::datatable(all_fet[!all_fet$id %in% all_fractional$id,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Unique GO terms for FET'),options = list(pageLength = 10) ) --> -->
+<!-- <!-- ``` --> -->
