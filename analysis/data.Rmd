@@ -2,12 +2,15 @@
 title: "Data"
 author: "XSun"
 date: "2023-11-13"
-output: workflowr::wflow_html
-editor_options:
-  chunk_output_type: console
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+    toc: true
 ---
 
 # GWAS
+
+## Round 1
 
 |                        | Sample size | Ancestry | ID               | Year | ref                                                                           | link                                                 |
 |------------------------|-------------|----------|------------------|------|-------------------------------------------------------------------------------|------------------------------------------------------|
@@ -18,6 +21,54 @@ editor_options:
 | AFib                   | 1,030,836   | European | ebi-a-GCST006414 | 2018 | PMID: 30061737                                                                | https://gwas.mrcieu.ac.uk/datasets/ebi-a-GCST006414/ |
 | Asthma                 | 361,194     | European | ukb-d-J10_ASTHMA | 2018 | http://www.nealelab.is/uk-biobank/ (cite this website)                        | https://gwas.mrcieu.ac.uk/datasets/ukb-d-J10_ASTHMA/ |
 | WBC                    | 563,946     | European | ieu-b-30         | 2020 | PMID: 32888494                                                                | https://gwas.mrcieu.ac.uk/datasets/ieu-b-30/         |
+
+## Extended 1
+
+### Pan-UKB
+
+https://www.medrxiv.org/content/10.1101/2024.03.13.24303864v2.full.pdf
+
+https://pan.ukbb.broadinstitute.org/downloads/index.html
+
+https://docs.google.com/spreadsheets/d/1AeeADtT0U1AukliiNyiVzVRdLYPkTbruQSk38DeutU8/edit?gid=1450719288#gid=1450719288
+
+```{r}
+
+load("/project/xinhe/xsun/multi_group_ctwas/data/gwas/panukb.rdata")
+
+gwas_selected_panukb <- readxl::read_excel("/project/xinhe/xsun/multi_group_ctwas/data/gwas/gwas_selected.xlsx",sheet = 3)
+
+gwas_detail <- merge(gwas_selected_panukb, panukb_cut, by.x = "ID", by.y = "filename", all.x = TRUE)
+gwas_detail <- gwas_detail[match(gwas_selected_panukb$traits,gwas_detail$traits),]
+gwas_detail <- gwas_detail[c(setdiff(names(gwas_detail), "ID"), "ID")]
+DT::datatable(gwas_detail,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','GWAS selected from pan-ukb'),options = list(pageLength = 10) )
+```
+
+### UKB+Finn
+
+https://www.nature.com/articles/s41588-021-00931-x#Sec9
+
+```{r}
+
+load("/project/xinhe/xsun/multi_group_ctwas/data/gwas/traits_ukb.rdata")
+
+gwas_selected_ukbfin <- readxl::read_excel("/project/xinhe/xsun/multi_group_ctwas/data/gwas/gwas_selected.xlsx",sheet = 2)
+
+gwas_detail <- merge(gwas_selected_ukbfin, gwas_catalog, by.x = "ID", by.y = "id", all.x = TRUE)
+gwas_detail <- gwas_detail[match(gwas_selected_ukbfin$traits,gwas_detail$traits),]
+gwas_detail <- gwas_detail[c(setdiff(names(gwas_detail), "ID"), "ID")]
+DT::datatable(gwas_detail,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','GWAS selected from ukb+finn meta'),options = list(pageLength = 10) )
+```
+
+### TGFM
+
+```{r}
+
+gwas <- read.table("/project/xinhe/xsun/multi_group_ctwas/data/gwas/TGFM.txt",header = T,fill = T, sep = "\t")
+DT::datatable(gwas_detail,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','GWAS used in TGFM paper'),options = list(pageLength = 10) )
+```
+
+
 
 
 # Weights

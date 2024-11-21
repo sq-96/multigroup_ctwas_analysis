@@ -15,7 +15,7 @@
 
 <title>Data</title>
 
-<script src="site_libs/header-attrs-2.14/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
@@ -31,14 +31,23 @@
        h6 {font-size: 12px;}
        code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
        pre:not([class]) { background-color: white }</style>
-<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
 <link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
-<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
-<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+<script src="site_libs/htmlwidgets-1.5.4/htmlwidgets.js"></script>
+<link href="site_libs/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet" />
+<script src="site_libs/datatables-binding-0.22/datatables.js"></script>
+<link href="site_libs/dt-core-1.11.3/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="site_libs/dt-core-1.11.3/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="site_libs/dt-core-1.11.3/js/jquery.dataTables.min.js"></script>
+<link href="site_libs/crosstalk-1.2.0/css/crosstalk.min.css" rel="stylesheet" />
+<script src="site_libs/crosstalk-1.2.0/js/crosstalk.min.js"></script>
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
 
 <link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
 <!-- Add a small amount of space between sections. -->
@@ -158,11 +167,15 @@ $(document).ready(function () {
     href = "index.html";
   var menuAnchor = $('a[href="' + href + '"]');
 
-  // mark it active
-  menuAnchor.tab('show');
-
-  // if it's got a parent navbar menu mark it active as well
-  menuAnchor.closest('li.dropdown').addClass('active');
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
 
   // Navbar adjustments
   var navHeight = $(".navbar").first().height() + 15;
@@ -191,8 +204,8 @@ $(document).ready(function () {
   border-radius: 4px;
 }
 
-.tabset-dropdown > .nav-tabs > li.active:before {
-  content: "";
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
   font-family: 'Glyphicons Halflings';
   display: inline-block;
   padding: 10px;
@@ -200,16 +213,9 @@ $(document).ready(function () {
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
-  content: "&#xe258;";
-  border: none;
-}
-
-.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
-  content: "";
+  content: "\e258";
   font-family: 'Glyphicons Halflings';
-  display: inline-block;
-  padding: 10px;
-  border-right: 1px solid #ddd;
+  border: none;
 }
 
 .tabset-dropdown > .nav-tabs > li.active {
@@ -236,6 +242,9 @@ $(document).ready(function () {
 </style>
 
 <!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
 
 
 
@@ -360,6 +369,14 @@ div.tocify {
 
 <div id="header">
 
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
 
 
 <h1 class="title toc-ignore">Data</h1>
@@ -393,11 +410,11 @@ aria-hidden="true"></span> </a>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2023-12-05
+<strong>Last updated:</strong> 2024-11-21
 </p>
 <p>
 <strong>Checks:</strong> <span
-class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 1
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6
 <span class="glyphicon glyphicon-exclamation-sign text-danger"
 aria-hidden="true"></span> 1
 </p>
@@ -443,15 +460,99 @@ HTML.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree7327c5c436d4e133857863aa56c668cc85a9e621targetblank7327c5ca">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the
+global environment can affect the analysis in your R Markdown file in
+unknown ways. For reproduciblity it’s best to always run the code in an
+empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20231112code">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Seed:</strong>
+<code>set.seed(20231112)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20231112code"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20231112)</code> was run prior to running
+the code in the R Markdown file. Setting a seed ensures that any results
+that rely on randomness, e.g. subsampling or permutations, are
+reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Session information:</strong>
+recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package
+versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be
+confident that you successfully produced the results during this
+run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr
+project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree870aee2c78bea75fa92c60142455a8e4992ef0bctargetblank870aee2a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/7327c5c436d4e133857863aa56c668cc85a9e621" target="_blank">7327c5c</a>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/870aee2c78bea75fa92c60142455a8e4992ef0bc" target="_blank">870aee2</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree7327c5c436d4e133857863aa56c668cc85a9e621targetblank7327c5ca"
+id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree870aee2c78bea75fa92c60142455a8e4992ef0bctargetblank870aee2a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -461,7 +562,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/7327c5c436d4e133857863aa56c668cc85a9e621" target="_blank">7327c5c</a>.
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/870aee2c78bea75fa92c60142455a8e4992ef0bc" target="_blank">870aee2</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -475,13 +576,8 @@ depends on. Below is the status of the Git repository when the results
 were generated:
 </p>
 <pre><code>
-Untracked files:
-    Untracked:  output/IBD-ebi-a-GCST004131.jpg
-    Untracked:  output/LDL-ukb-d-30780_irnt.jpg
-    Untracked:  output/SBP-ukb-a-360.jpg
-    Untracked:  output/SCZ-ieu-b-510.jpg
-    Untracked:  output/WBC-ieu-b-30.jpg
-    Untracked:  output/aFib-ebi-a-GCST006414.jpg
+Ignored files:
+    Ignored:    .Rhistory
 
 Unstaged changes:
     Modified:   analysis/data.Rmd
@@ -534,6 +630,40 @@ Message
 Rmd
 </td>
 <td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/bb59ace10f7bb5f34e1ed1ee36ce83cab102eb26/analysis/data.Rmd" target="_blank">bb59ace</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2023-12-05
+</td>
+<td>
+updadate
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/sq-96/multigroup_ctwas_analysis/bb59ace10f7bb5f34e1ed1ee36ce83cab102eb26/docs/data.html" target="_blank">bb59ace</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2023-12-05
+</td>
+<td>
+updadate
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
 <a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/ddf474ac324d4234f87b53546361d6028873757a/analysis/data.Rmd" target="_blank">ddf474a</a>
 </td>
 <td>
@@ -572,6 +702,8 @@ update
 </div>
 <div id="gwas" class="section level1">
 <h1>GWAS</h1>
+<div id="round-1" class="section level2">
+<h2>Round 1</h2>
 <table>
 <colgroup>
 <col width="11%" />
@@ -671,6 +803,53 @@ class="uri">https://gwas.mrcieu.ac.uk/datasets/ieu-b-30/</a></td>
 </tbody>
 </table>
 </div>
+<div id="extended-1" class="section level2">
+<h2>Extended 1</h2>
+<div id="pan-ukb" class="section level3">
+<h3>Pan-UKB</h3>
+<p><a
+href="https://www.medrxiv.org/content/10.1101/2024.03.13.24303864v2.full.pdf"
+class="uri">https://www.medrxiv.org/content/10.1101/2024.03.13.24303864v2.full.pdf</a></p>
+<p><a href="https://pan.ukbb.broadinstitute.org/downloads/index.html"
+class="uri">https://pan.ukbb.broadinstitute.org/downloads/index.html</a></p>
+<p><a
+href="https://docs.google.com/spreadsheets/d/1AeeADtT0U1AukliiNyiVzVRdLYPkTbruQSk38DeutU8/edit?gid=1450719288#gid=1450719288"
+class="uri">https://docs.google.com/spreadsheets/d/1AeeADtT0U1AukliiNyiVzVRdLYPkTbruQSk38DeutU8/edit?gid=1450719288#gid=1450719288</a></p>
+<pre class="r"><code>load(&quot;/project/xinhe/xsun/multi_group_ctwas/data/gwas/panukb.rdata&quot;)
+
+gwas_selected_panukb &lt;- readxl::read_excel(&quot;/project/xinhe/xsun/multi_group_ctwas/data/gwas/gwas_selected.xlsx&quot;,sheet = 3)
+
+gwas_detail &lt;- merge(gwas_selected_panukb, panukb_cut, by.x = &quot;ID&quot;, by.y = &quot;filename&quot;, all.x = TRUE)
+gwas_detail &lt;- gwas_detail[match(gwas_selected_panukb$traits,gwas_detail$traits),]
+gwas_detail &lt;- gwas_detail[c(setdiff(names(gwas_detail), &quot;ID&quot;), &quot;ID&quot;)]
+DT::datatable(gwas_detail,caption = htmltools::tags$caption( style = &#39;caption-side: left; text-align: left; color:black;  font-size:150% ;&#39;,&#39;GWAS selected from pan-ukb&#39;),options = list(pageLength = 10) )</code></pre>
+<div id="htmlwidget-4de263013227ca78a293" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-4de263013227ca78a293">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">GWAS selected from pan-ukb<\/caption>","data":[["15","8","10","12","14","13","26","27","11","7","9","6","25","24","1","17","21","4","5","20","23","18","2","19","16","22","3"],["Diseases",null,null,null,null,null,null,null,null,null,null,null,null,null,null,"Biomarkers",null,null,null,null,null,null,null,null,null,null,null],["Autoimmune",null,null,null,null,null,null,null,null,"Respiratory","Endocrine/metabolic disorders","Cardiovascular diseases","Cancer",null,null,"Hematological/Blood-related markers",null,null,null,null,null,null,null,null,"Body-related measures",null,"Liver and enzyme markers"],["Rheumatoid arthritis","Type 1 diabetes","Multiple Sclerosis","Systemic Lupus Erythematosus","Celiac Disease","Psoriasis","Graves’ Disease","Hashimoto thyroiditis","Ankylosing Spondylitis","Asthma","Type 2 diabetes","Myocardial infarction","Thyroid cancer","Pancreatic cancer","Hepatic cancer","Red blood cell count","Platelet count","Glucose levels","Triglycerides","Mean corpuscular hemoglobin concentration","Diastolic blood pressure","Hemoglobin","Hematocrit","Mean corpuscular volume","Body mass index","Height","Aspartate aminotransferase levels"],["RA","T1D","MS","SLE","CD","Psoriasis","GD","HT","AS","Asthma","T2D","MI","TC","PC","HC","RBC","PLT","GL","TG","MCHC","DBP","HB","HCT","MCV","BMI","Height","AST"],["categorical","categorical","categorical","categorical","categorical","categorical","phecode","phecode","categorical","categorical","categorical","categorical","phecode","phecode",null,"continuous","continuous","biomarkers","biomarkers","continuous","continuous","continuous",null,"continuous","continuous","continuous","biomarkers"],["rheumatoid arthritis","type 1 diabetes mellitus","multiple sclerosis","systemic lupus erythematosus","NA,celiac disease","psoriasis","Graves disease","Hashimoto's thyroiditis","ankylosing spondylitis","asthma","type 2 diabetes mellitus","myocardial infarction","thyroid cancer","pancreatic carcinoma",null,"erythrocyte count","platelet count","glucose measurement","triglyceride measurement","mean corpuscular hemoglobin concentration","diastolic blood pressure","mean corpuscular hemoglobin concentration",null,"mean corpuscular volume","body mass index","body height","aspartate aminotransferase measurement"],["Non-cancer illness code, self-reported","Non-cancer illness code, self-reported","Non-cancer illness code, self-reported","Non-cancer illness code, self-reported","Non-cancer illness code, self-reported","Non-cancer illness code, self-reported","Graves' disease","Chronic thyroiditis","Non-cancer illness code, self-reported","Non-cancer illness code, self-reported","Non-cancer illness code, self-reported","Non-cancer illness code, self-reported","Thyroid cancer","Pancreatic cancer",null,"Red blood cell (erythrocyte) count","Platelet count","Glucose","Triglycerides","Mean corpuscular haemoglobin concentration","Diastolic blood pressure, combined automated + manual reading, adjusted by medication","Haemoglobin concentration",null,"Mean corpuscular volume","Body mass index (BMI)","Standing height","Aspartate aminotransferase"],["UK Biobank Assessment Centre &gt; Verbal interview &gt; Medical conditions","UK Biobank Assessment Centre &gt; Verbal interview &gt; Medical conditions","UK Biobank Assessment Centre &gt; Verbal interview &gt; Medical conditions","UK Biobank Assessment Centre &gt; Verbal interview &gt; Medical conditions","UK Biobank Assessment Centre &gt; Verbal interview &gt; Medical conditions","UK Biobank Assessment Centre &gt; Verbal interview &gt; Medical conditions","endocrine/metabolic","endocrine/metabolic","UK Biobank Assessment Centre &gt; Verbal interview &gt; Medical conditions","UK Biobank Assessment Centre &gt; Verbal interview &gt; Medical conditions","UK Biobank Assessment Centre &gt; Verbal interview &gt; Medical conditions","UK Biobank Assessment Centre &gt; Verbal interview &gt; Medical conditions","neoplasms","neoplasms",null,"Biological samples &gt; Assay results &gt; Blood assays &gt; Blood count","Biological samples &gt; Assay results &gt; Blood assays &gt; Blood count","Biological samples &gt; Assay results &gt; Blood assays &gt; Blood biochemistry","Biological samples &gt; Assay results &gt; Blood assays &gt; Blood biochemistry","Biological samples &gt; Assay results &gt; Blood assays &gt; Blood count","NA","Biological samples &gt; Assay results &gt; Blood assays &gt; Blood count",null,"Biological samples &gt; Assay results &gt; Blood assays &gt; Blood count","UK Biobank Assessment Centre &gt; Physical measures &gt; Anthropometry &gt; Body size measures","UK Biobank Assessment Centre &gt; Physical measures &gt; Anthropometry &gt; Body size measures","Biological samples &gt; Assay results &gt; Blood assays &gt; Blood biochemistry"],["AFR,CSA,EUR","EUR","EUR","EUR","EUR","CSA,EUR","EUR","EUR","EUR","AFR,AMR,CSA,EAS,EUR,MID","AFR,CSA,EUR","AFR,CSA,EUR","EUR","EUR",null,"AFR,AMR,CSA,EAS,EUR,MID","AFR,AMR,CSA,EAS,EUR,MID","AFR,AMR,CSA,EAS,EUR,MID","AFR,AMR,CSA,EAS,EUR,MID","AFR,AMR,CSA,EAS,EUR,MID","AFR,AMR,CSA,EAS,EUR,MID","AFR,AMR,CSA,EAS,EUR,MID",null,"AFR,AMR,CSA,EAS,EUR,MID","AFR,AMR,CSA,EAS,EUR,MID","AFR,AMR,CSA,EAS,EUR","AFR,AMR,CSA,EAS,EUR,MID"],[3,1,1,1,1,2,1,1,1,6,3,3,1,1,null,6,6,6,6,6,6,6,null,6,6,5,6],[null,null,null,null,null,null,null,null,null,"CSA,EUR",null,null,null,null,null,"CSA,EUR,MID","AFR,CSA,EAS,EUR",null,"AFR,CSA,EUR,MID","CSA,EUR","CSA,EUR","CSA,EUR",null,"CSA,EUR","AFR,CSA,EUR,MID","AFR,CSA,EUR",null],[0,0,0,0,0,0,0,0,0,2,0,0,0,0,null,3,4,0,4,2,2,2,null,2,4,3,0],["53.0","NA","NA","NA","NA","NA","NA","NA","NA","795.0","80.0","70.0","NA","NA",null,"6281.0","6281.0","5750.0","6211.0","6281.0","6408.0","6281.0",null,"6281.0","6545.0","6556.0","6180.0"],["NA","NA","NA","NA","NA","NA","NA","NA","NA","106.0","NA","NA","NA","NA",null,"950.0","950.0","854.0","937.0","950.0","950.0","950.0",null,"950.0","971.0","972.0","933.0"],["120.0","NA","NA","NA","NA","83.0","NA","NA","NA","1083.0","155.0","324.0","NA","NA",null,"8532.0","8532.0","7694.0","8415.0","8532.0","8398.0","8532.0",null,"8532.0","8646.0","8657.0","8395.0"],["NA","NA","NA","NA","NA","NA","NA","NA","NA","238.0","NA","NA","NA","NA",null,"2632.0","2632.0","2342.0","2570.0","2632.0","2564.0","2632.0",null,"2632.0","2693.0","2697.0","2551.0"],[4743,363,1535,471,1827,4815,554,265,1185,48865,2698,9743,427,936,null,407995,407992,366759,400639,408000,417003,407994,null,407993,419163,419596,399482],["NA","NA","NA","NA","NA","NA","NA","NA","NA","176.0","NA","NA","NA","NA",null,"1548.0","1548.0","1361.0","1499.0","1548.0","1522.0","1548.0",null,"1548.0","1572.0","NA","1493.0"],["6571.0","NA","NA","NA","NA","NA","NA","NA","NA","5829.0","6544.0","6554.0","NA","NA",null,"NA","NA","NA","NA","NA","NA","NA",null,"NA","NA","NA","NA"],["NA","NA","NA","NA","NA","NA","NA","NA","NA","874.0","NA","NA","NA","NA",null,"NA","NA","NA","NA","NA","NA","NA",null,"NA","NA","NA","NA"],["8729.0","NA","NA","NA","NA","8766.0","NA","NA","NA","7766.0","8694.0","8525.0","NA","NA",null,"NA","NA","NA","NA","NA","NA","NA",null,"NA","NA","NA","NA"],["NA","NA","NA","NA","NA","NA","NA","NA","NA","2469.0","NA","NA","NA","NA",null,"NA","NA","NA","NA","NA","NA","NA",null,"NA","NA","NA","NA"],["415730.0","420110.0","418938.0","420002.0","418634.0","415646.0","399034.0","399034.0","419276.0","371608.0","417775.0","410730.0","418625.0","400294.0",null,"NA","NA","NA","NA","NA","NA","NA",null,"NA","NA","NA","NA"],["NA","NA","NA","NA","NA","NA","NA","NA","NA","1419.0","NA","NA","NA","NA",null,"NA","NA","NA","NA","NA","NA","NA",null,"NA","NA","NA","NA"],["wget https://pan-ukb-us-east-1.s3.amazonaws.com/sumstats_flat_files/categorical-20002-both_sexes-1464.tsv.bgz","wget https://pan-ukb-us-east-1.s3.amazonaws.com/sumstats_flat_files/categorical-20002-both_sexes-1222.tsv.bgz","wget https://pan-ukb-us-east-1.s3.amazonaws.com/sumstats_flat_files/categorical-20002-both_sexes-1261.tsv.bgz","wget https://pan-ukb-us-east-1.s3.amazonaws.com/sumstats_flat_files/categorical-20002-both_sexes-1381.tsv.bgz","wget https://pan-ukb-us-east-1.s3.amazonaws.com/sumstats_flat_files/categorical-20002-both_sexes-1456.tsv.bgz","wget https://pan-ukb-us-east-1.s3.amazonaws.com/sumstats_flat_files/categorical-20002-both_sexes-1453.tsv.bgz","wget https://pan-ukb-us-east-1.s3.amazonaws.com/sumstats_flat_files/phecode-242.1-both_sexes.tsv.bgz","wget https://pan-ukb-us-east-1.s3.amazonaws.com/sumstats_flat_files/phecode-245.2-both_sexes.tsv.bgz","wget https://pan-ukb-us-east-1.s3.amazonaws.com/sumstats_flat_files/categorical-20002-both_sexes-1313.tsv.bgz","wget https://pan-ukb-us-east-1.s3.amazonaws.com/sumstats_flat_files/categorical-20002-both_sexes-1111.tsv.bgz","wget https://pan-ukb-us-east-1.s3.amazonaws.com/sumstats_flat_files/categorical-20002-both_sexes-1223.tsv.bgz","wget https://pan-ukb-us-east-1.s3.amazonaws.com/sumstats_flat_files/categorical-20002-both_sexes-1075.tsv.bgz","wget https://pan-ukb-us-east-1.s3.amazonaws.com/sumstats_flat_files/phecode-193-both_sexes.tsv.bgz","wget https://pan-ukb-us-east-1.s3.amazonaws.com/sumstats_flat_files/phecode-157-both_sexes.tsv.bgz",null,"wget https://pan-ukb-us-east-1.s3.amazonaws.com/sumstats_flat_files/continuous-30010-both_sexes-irnt.tsv.bgz","wget https://pan-ukb-us-east-1.s3.amazonaws.com/sumstats_flat_files/continuous-30080-both_sexes-irnt.tsv.bgz","wget https://pan-ukb-us-east-1.s3.amazonaws.com/sumstats_flat_files/biomarkers-30740-both_sexes-irnt.tsv.bgz","wget https://pan-ukb-us-east-1.s3.amazonaws.com/sumstats_flat_files/biomarkers-30870-both_sexes-irnt.tsv.bgz","wget https://pan-ukb-us-east-1.s3.amazonaws.com/sumstats_flat_files/continuous-30060-both_sexes-irnt.tsv.bgz","wget https://pan-ukb-us-east-1.s3.amazonaws.com/sumstats_flat_files/continuous-DBP-both_sexes-combined_medadj_irnt.tsv.bgz","wget https://pan-ukb-us-east-1.s3.amazonaws.com/sumstats_flat_files/continuous-30020-both_sexes-irnt.tsv.bgz",null,"wget https://pan-ukb-us-east-1.s3.amazonaws.com/sumstats_flat_files/continuous-30040-both_sexes-irnt.tsv.bgz","wget https://pan-ukb-us-east-1.s3.amazonaws.com/sumstats_flat_files/continuous-21001-both_sexes-irnt.tsv.bgz","wget https://pan-ukb-us-east-1.s3.amazonaws.com/sumstats_flat_files/continuous-50-both_sexes-irnt.tsv.bgz","wget https://pan-ukb-us-east-1.s3.amazonaws.com/sumstats_flat_files/biomarkers-30650-both_sexes-irnt.tsv.bgz"],["categorical-20002-both_sexes-1464.tsv.bgz","categorical-20002-both_sexes-1222.tsv.bgz","categorical-20002-both_sexes-1261.tsv.bgz","categorical-20002-both_sexes-1381.tsv.bgz","categorical-20002-both_sexes-1456.tsv.bgz","categorical-20002-both_sexes-1453.tsv.bgz","phecode-242.1-both_sexes.tsv.bgz","phecode-245.2-both_sexes.tsv.bgz","categorical-20002-both_sexes-1313.tsv.bgz","categorical-20002-both_sexes-1111.tsv.bgz","categorical-20002-both_sexes-1223.tsv.bgz","categorical-20002-both_sexes-1075.tsv.bgz","phecode-193-both_sexes.tsv.bgz","phecode-157-both_sexes.tsv.bgz","/","continuous-30010-both_sexes-irnt.tsv.bgz","continuous-30080-both_sexes-irnt.tsv.bgz","biomarkers-30740-both_sexes-irnt.tsv.bgz","biomarkers-30870-both_sexes-irnt.tsv.bgz","continuous-30060-both_sexes-irnt.tsv.bgz","continuous-DBP-both_sexes-combined_medadj_irnt.tsv.bgz","continuous-30020-both_sexes-irnt.tsv.bgz","/","continuous-30040-both_sexes-irnt.tsv.bgz","continuous-21001-both_sexes-irnt.tsv.bgz","continuous-50-both_sexes-irnt.tsv.bgz","biomarkers-30650-both_sexes-irnt.tsv.bgz"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>trait_category<\/th>\n      <th>sub_category<\/th>\n      <th>traits<\/th>\n      <th>abbreviation<\/th>\n      <th>trait_type<\/th>\n      <th>trait_efo_terms<\/th>\n      <th>description<\/th>\n      <th>category<\/th>\n      <th>pops<\/th>\n      <th>num_pops<\/th>\n      <th>pops_pass_qc<\/th>\n      <th>num_pops_pass_qc<\/th>\n      <th>n_cases_AFR<\/th>\n      <th>n_cases_AMR<\/th>\n      <th>n_cases_CSA<\/th>\n      <th>n_cases_EAS<\/th>\n      <th>n_cases_EUR<\/th>\n      <th>n_cases_MID<\/th>\n      <th>n_controls_AFR<\/th>\n      <th>n_controls_AMR<\/th>\n      <th>n_controls_CSA<\/th>\n      <th>n_controls_EAS<\/th>\n      <th>n_controls_EUR<\/th>\n      <th>n_controls_MID<\/th>\n      <th>wget<\/th>\n      <th>ID<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[10,12,17]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="ukbfinn" class="section level3">
+<h3>UKB+Finn</h3>
+<p><a href="https://www.nature.com/articles/s41588-021-00931-x#Sec9"
+class="uri">https://www.nature.com/articles/s41588-021-00931-x#Sec9</a></p>
+<pre class="r"><code>load(&quot;/project/xinhe/xsun/multi_group_ctwas/data/gwas/traits_ukb.rdata&quot;)
+
+gwas_selected_ukbfin &lt;- readxl::read_excel(&quot;/project/xinhe/xsun/multi_group_ctwas/data/gwas/gwas_selected.xlsx&quot;,sheet = 2)
+
+gwas_detail &lt;- merge(gwas_selected_ukbfin, gwas_catalog, by.x = &quot;ID&quot;, by.y = &quot;id&quot;, all.x = TRUE)
+gwas_detail &lt;- gwas_detail[match(gwas_selected_ukbfin$traits,gwas_detail$traits),]
+gwas_detail &lt;- gwas_detail[c(setdiff(names(gwas_detail), &quot;ID&quot;), &quot;ID&quot;)]
+DT::datatable(gwas_detail,caption = htmltools::tags$caption( style = &#39;caption-side: left; text-align: left; color:black;  font-size:150% ;&#39;,&#39;GWAS selected from ukb+finn meta&#39;),options = list(pageLength = 10) )</code></pre>
+<div id="htmlwidget-20575149739a71fc930f" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-20575149739a71fc930f">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">GWAS selected from ukb+finn meta<\/caption>","data":[["9","11","29","10","1","28","26","8","3","4","30","27","2","12","6","13","7","5","24","23","17","25","21","16","18","20","22","15","19","14"],["Diseases",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,"Biomarkers",null,null,null,null,null,null,null,null,null,null,null],["Autoimmune",null,null,null,null,null,null,null,null,null,null,"Respiratory",null,"Endocrine/metabolic disorders","Cardiovascular diseases","Cancer",null,null,"Hematological/Blood-related markers",null,null,null,null,null,null,null,null,"Body-related measures",null,"Liver and enzyme markers"],["Rheumatoid arthritis","Type 1 diabetes","Multiple Sclerosis","Systemic Lupus Erythematosus1","Systemic Lupus Erythematosus2","Celiac Disease","Psoriasis1","Psoriasis2","Graves’ Disease","Hashimoto thyroiditis","Ankylosing Spondylitis","Asthma1","Asthma2","Type 2 diabetes","Myocardial infarction","Thyroid cancer","Pancreatic cancer","Hepatic cancer","Red blood cell count","Platelet count","Glucose levels","Triglycerides","Mean corpuscular hemoglobin concentration","Diastolic blood pressure","Hemoglobin","Hematocrit","Mean corpuscular volume","Body mass index","Height","Aspartate aminotransferase levels"],["RA","T1D","MS","SLE","SLE","CD","Psoriasis","Psoriasis","GD","HT","AS","Asthma","Asthma","T2D","MI","TC","PC","HC","RBC","PLT","GL","TG","MCHC","DBP","HB","HCT","MCV","BMI","Height","AST"],["Rheumatoid arthritis","Type 1 diabetes","multiple sclerosis","Systemic lupus erythematosus","Systemic lupus erythematosus","Celiac disease","Psoriasis","Psoriasis vulgaris","Graves' disease","Hashimoto thyroiditis","Non-cancer illness code  self-reported: ankylosing spondylitis","Asthma","Asthma","Type 2 diabetes","Myocardial infarction","Thyroid cancer","Pancreatic cancer","Hepatic cancer","Red blood cell count","Platelet count","Glucose levels","Triglycerides","Mean corpuscular hemoglobin concentration","Diastolic blood pressure","Hemoglobin","Hematocrit","Mean corpuscular volume","Body mass index","Height","Aspartate aminotransferase levels"],[8255,6447,47429,647,5201,12041,15967,5072,1678,15654,968,9209,38369,38841,20917,1054,1196,379,null,null,null,null,null,null,null,null,null,null,null,null],["public","public","public","public","public","public","public","public","public","public","public","public","public","public","public","public","public","public","public","public","public","public","public","public","public","public","public","public","public","public"],[2021,2021,2019,2021,2015,2011,2021,2021,2021,2021,2017,2021,2021,2021,2021,2021,2021,2021,2021,2021,2021,2021,2021,2021,2021,2021,2021,2021,2021,2021],["Sakaue S","Sakaue S","Patsopoulos NA","Sakaue S","Bentham J","Trynka","Stuart PE","Sakaue S","Sakaue S","Sakaue S","Neale","Guindo-Mart&lt;U+00ED&gt;nez M","Sakaue S","Sakaue S","Sakaue S","Sakaue S","Sakaue S","Sakaue S","Sakaue S","Sakaue S","Sakaue S","Sakaue S","Sakaue S","Sakaue S","Sakaue S","Sakaue S","Sakaue S","Sakaue S","Sakaue S","Sakaue S"],["NA","NA","International Multiple Sclerosis Genetics Consortium","NA","NA","NA","NA","NA","NA","NA","Neale Lab","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA"],["NA","NA","Males and Females","NA","NA","Males and Females","NA","NA","NA","NA","Males and Females","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA"],[34594039,34594039,31604244,34594039,26502338,22057235,34927100,34594039,34594039,34594039,null,33893285,34594039,34594039,34594039,34594039,34594039,34594039,34594039,34594039,34594039,34594039,34594039,34594039,34594039,34594039,34594039,34594039,34594039,34594039],["European","European","European","European","European","European","European","European","European","European","European","European","European","European","European","European","European","European","European","European","European","European","European","European","European","European","European","European","European","European"],[null,null,"NA",null,"logOR","log odds",null,null,null,null,"SD",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[417256,457695,115803,482911,14267,24269,44161,483174,458620,395640,337159,56637,449500,490089,461823,491974,476245,475638,350475,350474,314916,343992,350468,340162,350474,350475,350473,359983,360388,342990],["HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37"],[409001,451248,68374,482264,9066,12228,28194,478102,456942,379986,336191,47428,411131,451248,440906,490920,475049,475259,null,null,null,null,null,null,null,null,null,null,null,null],["NA","NA","Binary","NA","NA","Disease","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA"],["NA","NA","Psychiatric / neurological","NA","NA","Autoimmune / inflammatory","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA"],[null,null,"NA",null,"NA","NA",null,null,null,null,"NA",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],["","","NA","","beta+se converted from OR+CI; ","Immuno-chip; effect allele frequencies are missing","","","","","NA","","","","","","","","","","","","","","","","","","",""],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[24175266,24182422,6304359,24198877,7071163,38037,8470172,24191364,24189816,24146037,10894596,14479971,24162338,24167560,24172914,24198226,24195229,24194938,19042503,19056453,19046716,19052580,19044090,19055470,19032275,19033940,19054470,19066885,19028518,19046591],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,0,null,0,1,null,null,null,null,1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],["ebi-a-GCST90018910","ebi-a-GCST90018925","ieu-b-18","ebi-a-GCST90018917","ebi-a-GCST003156","ieu-a-1058","ebi-a-GCST90019017","ebi-a-GCST90018907","ebi-a-GCST90018847","ebi-a-GCST90018855","ukb-a-88","ebi-a-GCST90086047","ebi-a-GCST90018795","ebi-a-GCST90018926","ebi-a-GCST90018877","ebi-a-GCST90018929","ebi-a-GCST90018893","ebi-a-GCST90018858","ebi-a-GCST90018971","ebi-a-GCST90018969","ebi-a-GCST90018955","ebi-a-GCST90018975","ebi-a-GCST90018965","ebi-a-GCST90018952","ebi-a-GCST90018957","ebi-a-GCST90018960","ebi-a-GCST90018966","ebi-a-GCST90018947","ebi-a-GCST90018959","ebi-a-GCST90018944"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>trait_category<\/th>\n      <th>sub_category<\/th>\n      <th>traits<\/th>\n      <th>abbreviation<\/th>\n      <th>trait<\/th>\n      <th>ncase<\/th>\n      <th>group_name<\/th>\n      <th>year<\/th>\n      <th>author<\/th>\n      <th>consortium<\/th>\n      <th>sex<\/th>\n      <th>pmid<\/th>\n      <th>population<\/th>\n      <th>unit<\/th>\n      <th>sample_size<\/th>\n      <th>build<\/th>\n      <th>ncontrol<\/th>\n      <th>category<\/th>\n      <th>subcategory<\/th>\n      <th>ontology<\/th>\n      <th>note<\/th>\n      <th>mr<\/th>\n      <th>nsnp<\/th>\n      <th>doi<\/th>\n      <th>coverage<\/th>\n      <th>study_design<\/th>\n      <th>priority<\/th>\n      <th>sd<\/th>\n      <th>ID<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[6,8,12,15,17,22,23,27,28]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="tgfm" class="section level3">
+<h3>TGFM</h3>
+<pre class="r"><code>gwas &lt;- read.table(&quot;/project/xinhe/xsun/multi_group_ctwas/data/gwas/TGFM.txt&quot;,header = T,fill = T, sep = &quot;\t&quot;)
+DT::datatable(gwas_detail,caption = htmltools::tags$caption( style = &#39;caption-side: left; text-align: left; color:black;  font-size:150% ;&#39;,&#39;GWAS used in TGFM paper&#39;),options = list(pageLength = 10) )</code></pre>
+<div id="htmlwidget-a23c348805048a1f64c7" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-a23c348805048a1f64c7">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">GWAS used in TGFM paper<\/caption>","data":[["9","11","29","10","1","28","26","8","3","4","30","27","2","12","6","13","7","5","24","23","17","25","21","16","18","20","22","15","19","14"],["Diseases",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,"Biomarkers",null,null,null,null,null,null,null,null,null,null,null],["Autoimmune",null,null,null,null,null,null,null,null,null,null,"Respiratory",null,"Endocrine/metabolic disorders","Cardiovascular diseases","Cancer",null,null,"Hematological/Blood-related markers",null,null,null,null,null,null,null,null,"Body-related measures",null,"Liver and enzyme markers"],["Rheumatoid arthritis","Type 1 diabetes","Multiple Sclerosis","Systemic Lupus Erythematosus1","Systemic Lupus Erythematosus2","Celiac Disease","Psoriasis1","Psoriasis2","Graves’ Disease","Hashimoto thyroiditis","Ankylosing Spondylitis","Asthma1","Asthma2","Type 2 diabetes","Myocardial infarction","Thyroid cancer","Pancreatic cancer","Hepatic cancer","Red blood cell count","Platelet count","Glucose levels","Triglycerides","Mean corpuscular hemoglobin concentration","Diastolic blood pressure","Hemoglobin","Hematocrit","Mean corpuscular volume","Body mass index","Height","Aspartate aminotransferase levels"],["RA","T1D","MS","SLE","SLE","CD","Psoriasis","Psoriasis","GD","HT","AS","Asthma","Asthma","T2D","MI","TC","PC","HC","RBC","PLT","GL","TG","MCHC","DBP","HB","HCT","MCV","BMI","Height","AST"],["Rheumatoid arthritis","Type 1 diabetes","multiple sclerosis","Systemic lupus erythematosus","Systemic lupus erythematosus","Celiac disease","Psoriasis","Psoriasis vulgaris","Graves' disease","Hashimoto thyroiditis","Non-cancer illness code  self-reported: ankylosing spondylitis","Asthma","Asthma","Type 2 diabetes","Myocardial infarction","Thyroid cancer","Pancreatic cancer","Hepatic cancer","Red blood cell count","Platelet count","Glucose levels","Triglycerides","Mean corpuscular hemoglobin concentration","Diastolic blood pressure","Hemoglobin","Hematocrit","Mean corpuscular volume","Body mass index","Height","Aspartate aminotransferase levels"],[8255,6447,47429,647,5201,12041,15967,5072,1678,15654,968,9209,38369,38841,20917,1054,1196,379,null,null,null,null,null,null,null,null,null,null,null,null],["public","public","public","public","public","public","public","public","public","public","public","public","public","public","public","public","public","public","public","public","public","public","public","public","public","public","public","public","public","public"],[2021,2021,2019,2021,2015,2011,2021,2021,2021,2021,2017,2021,2021,2021,2021,2021,2021,2021,2021,2021,2021,2021,2021,2021,2021,2021,2021,2021,2021,2021],["Sakaue S","Sakaue S","Patsopoulos NA","Sakaue S","Bentham J","Trynka","Stuart PE","Sakaue S","Sakaue S","Sakaue S","Neale","Guindo-Mart&lt;U+00ED&gt;nez M","Sakaue S","Sakaue S","Sakaue S","Sakaue S","Sakaue S","Sakaue S","Sakaue S","Sakaue S","Sakaue S","Sakaue S","Sakaue S","Sakaue S","Sakaue S","Sakaue S","Sakaue S","Sakaue S","Sakaue S","Sakaue S"],["NA","NA","International Multiple Sclerosis Genetics Consortium","NA","NA","NA","NA","NA","NA","NA","Neale Lab","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA"],["NA","NA","Males and Females","NA","NA","Males and Females","NA","NA","NA","NA","Males and Females","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA"],[34594039,34594039,31604244,34594039,26502338,22057235,34927100,34594039,34594039,34594039,null,33893285,34594039,34594039,34594039,34594039,34594039,34594039,34594039,34594039,34594039,34594039,34594039,34594039,34594039,34594039,34594039,34594039,34594039,34594039],["European","European","European","European","European","European","European","European","European","European","European","European","European","European","European","European","European","European","European","European","European","European","European","European","European","European","European","European","European","European"],[null,null,"NA",null,"logOR","log odds",null,null,null,null,"SD",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[417256,457695,115803,482911,14267,24269,44161,483174,458620,395640,337159,56637,449500,490089,461823,491974,476245,475638,350475,350474,314916,343992,350468,340162,350474,350475,350473,359983,360388,342990],["HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37","HG19/GRCh37"],[409001,451248,68374,482264,9066,12228,28194,478102,456942,379986,336191,47428,411131,451248,440906,490920,475049,475259,null,null,null,null,null,null,null,null,null,null,null,null],["NA","NA","Binary","NA","NA","Disease","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA"],["NA","NA","Psychiatric / neurological","NA","NA","Autoimmune / inflammatory","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA"],[null,null,"NA",null,"NA","NA",null,null,null,null,"NA",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],["","","NA","","beta+se converted from OR+CI; ","Immuno-chip; effect allele frequencies are missing","","","","","NA","","","","","","","","","","","","","","","","","","",""],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[24175266,24182422,6304359,24198877,7071163,38037,8470172,24191364,24189816,24146037,10894596,14479971,24162338,24167560,24172914,24198226,24195229,24194938,19042503,19056453,19046716,19052580,19044090,19055470,19032275,19033940,19054470,19066885,19028518,19046591],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,0,null,0,1,null,null,null,null,1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],["ebi-a-GCST90018910","ebi-a-GCST90018925","ieu-b-18","ebi-a-GCST90018917","ebi-a-GCST003156","ieu-a-1058","ebi-a-GCST90019017","ebi-a-GCST90018907","ebi-a-GCST90018847","ebi-a-GCST90018855","ukb-a-88","ebi-a-GCST90086047","ebi-a-GCST90018795","ebi-a-GCST90018926","ebi-a-GCST90018877","ebi-a-GCST90018929","ebi-a-GCST90018893","ebi-a-GCST90018858","ebi-a-GCST90018971","ebi-a-GCST90018969","ebi-a-GCST90018955","ebi-a-GCST90018975","ebi-a-GCST90018965","ebi-a-GCST90018952","ebi-a-GCST90018957","ebi-a-GCST90018960","ebi-a-GCST90018966","ebi-a-GCST90018947","ebi-a-GCST90018959","ebi-a-GCST90018944"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>trait_category<\/th>\n      <th>sub_category<\/th>\n      <th>traits<\/th>\n      <th>abbreviation<\/th>\n      <th>trait<\/th>\n      <th>ncase<\/th>\n      <th>group_name<\/th>\n      <th>year<\/th>\n      <th>author<\/th>\n      <th>consortium<\/th>\n      <th>sex<\/th>\n      <th>pmid<\/th>\n      <th>population<\/th>\n      <th>unit<\/th>\n      <th>sample_size<\/th>\n      <th>build<\/th>\n      <th>ncontrol<\/th>\n      <th>category<\/th>\n      <th>subcategory<\/th>\n      <th>ontology<\/th>\n      <th>note<\/th>\n      <th>mr<\/th>\n      <th>nsnp<\/th>\n      <th>doi<\/th>\n      <th>coverage<\/th>\n      <th>study_design<\/th>\n      <th>priority<\/th>\n      <th>sd<\/th>\n      <th>ID<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[6,8,12,15,17,22,23,27,28]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+</div>
 <div id="weights" class="section level1">
 <h1>Weights</h1>
 <p>PredictDB weights</p>
@@ -707,6 +886,41 @@ class="uri">https://uchicago.box.com/s/jqocacd2fulskmhoqnasrknbt59x3xkn</a></p>
 <figure class="half">
 <img src="https://github.com/sq-96/multigroup_ctwas_analysis/raw/master/output/WBC-ieu-b-30.jpg" width="150%">
 </figure>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.2.0 (2022-04-22)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: CentOS Linux 7 (Core)
+
+Matrix products: default
+BLAS/LAPACK: /software/openblas-0.3.13-el7-x86_64/lib/libopenblas_haswellp-r0.3.13.so
+
+locale:
+[1] C
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+loaded via a namespace (and not attached):
+ [1] Rcpp_1.0.12       pillar_1.9.0      compiler_4.2.0    bslib_0.3.1      
+ [5] cellranger_1.1.0  later_1.3.0       jquerylib_0.1.4   git2r_0.30.1     
+ [9] workflowr_1.7.0   tools_4.2.0       digest_0.6.29     jsonlite_1.8.0   
+[13] evaluate_0.15     lifecycle_1.0.4   tibble_3.2.1      pkgconfig_2.0.3  
+[17] rlang_1.1.2       cli_3.6.1         rstudioapi_0.13   crosstalk_1.2.0  
+[21] yaml_2.3.5        xfun_0.41         fastmap_1.1.0     stringr_1.5.1    
+[25] knitr_1.39        htmlwidgets_1.5.4 fs_1.5.2          vctrs_0.6.5      
+[29] sass_0.4.1        rprojroot_2.0.3   DT_0.22           glue_1.6.2       
+[33] R6_2.5.1          fansi_1.0.3       readxl_1.4.0      rmarkdown_2.25   
+[37] magrittr_2.0.3    whisker_0.4       promises_1.2.0.1  htmltools_0.5.2  
+[41] httpuv_1.6.5      utf8_1.2.2        stringi_1.7.6    </code></pre>
+</div>
 </div>
 
 
@@ -758,6 +972,11 @@ $(document).ready(function () {
 </script>
 
 <!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
 
 <script>
 $(document).ready(function ()  {
