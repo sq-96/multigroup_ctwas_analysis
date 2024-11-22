@@ -41,7 +41,15 @@ gwas_selected_panukb <- readxl::read_excel("/project/xinhe/xsun/multi_group_ctwa
 gwas_detail <- merge(gwas_selected_panukb, panukb_cut, by.x = "ID", by.y = "filename", all.x = TRUE)
 gwas_detail <- gwas_detail[match(gwas_selected_panukb$traits,gwas_detail$traits),]
 gwas_detail <- gwas_detail[c(setdiff(names(gwas_detail), "ID"), "ID")]
+
+gwas_detail <- gwas_detail[,c("trait_category","sub_category","traits","abbreviation","trait_type","trait_efo_terms","description","category","pops","n_cases_EUR","n_controls_EUR","wget","ID")]
+gwas_detail <- gwas_detail[complete.cases(gwas_detail$wget),]
+
 DT::datatable(gwas_detail,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','GWAS selected from pan-ukb'),options = list(pageLength = 10) )
+
+panukb_cut <- panukb_cut[,c("trait_type","trait_efo_terms","description","category","pops","n_cases_EUR","n_controls_EUR","wget")]
+DT::datatable(panukb_cut,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','All GWAS from pan-ukb'),options = list(pageLength = 5) )
+
 ```
 
 ### UKB+Finn
@@ -86,7 +94,7 @@ DT::datatable(gwas_detail,caption = htmltools::tags$caption( style = 'caption-si
 ```{r}
 
 gwas <- read.table("/project/xinhe/xsun/multi_group_ctwas/data/gwas/TGFM.txt",header = T,fill = T, sep = "\t")
-DT::datatable(gwas_detail,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','GWAS used in TGFM paper'),options = list(pageLength = 10) )
+DT::datatable(gwas,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','GWAS used in TGFM paper'),options = list(pageLength = 10) )
 ```
 
 
