@@ -2,6 +2,8 @@
 title: "methylation_analysis"
 output: html_document
 date: '2024-10-22'
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r echo=FALSE, message=FALSE, results='hide', warning=FALSE}
@@ -16,7 +18,6 @@ library(RSQLite)
 library(dplyr)
 library(magrittr)
 library(pheatmap)
-
 plot_piechart <- function(ctwas_parameters, colors, by) {
   # Create the initial data frame
   data <- data.frame(
@@ -207,7 +208,7 @@ make_convergence_plots(param, gwas_n,colors = colors)
 ```
 ### Percent of heritability with methylation lasso models
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=10, fig.height=5}
-ctwas_parameters <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_multi/ibd_multi.ctwas_parameters.RDS")
+ctwas_parameters <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_multi_E_M/ibd_multi_E_M.ctwas_parameters.RDS")
 pve_pie_by_type_multi <- plot_piechart(ctwas_parameters = ctwas_parameters, colors = colors, by = "type")
 pve_pie_by_context_multi <- plot_piechart(ctwas_parameters = ctwas_parameters, colors = colors, by = "context")
 gridExtra::grid.arrange(pve_pie_by_type_multi,pve_pie_by_context_multi, ncol = 2)
@@ -242,6 +243,180 @@ DT::datatable(combined_pip_by_type[combined_pip_by_type$combined_pip>0.8,],capti
 
 DT::datatable(combined_pip_by_context[combined_pip_by_context$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by tissue'),options = list(pageLength = 10) )
 ```
+
+### Top cTWAS genes from single tissue models
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+gene_annot <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_E_S_M_mapping.RDS")
+snp_map <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_wholeblood_E/ibd_wholeblood_E.snp_map.RDS")
+wholeblood_E_res <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_wholeblood_E/ibd_wholeblood_E.finemap_regions_res.RDS")
+wholeblood_E_res <- anno_finemap_res(wholeblood_E_res$finemap_res,
+                                snp_map = snp_map,
+                                mapping_table = gene_annot,
+                                add_gene_annot = TRUE,
+                                map_by = "molecular_id",
+                                drop_unmapped = TRUE,
+                                add_position = TRUE,
+                                use_gene_pos = "mid")
+wholeblood_E_res <- subset(wholeblood_E_res, type != "SNP" & susie_pip > 0.75 & !is.na(cs))
+wholeblood_E_res <- wholeblood_E_res[,c("gene_name","susie_pip","context")]
+DT::datatable(wholeblood_E_res,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Top eQTL genes in wholeblood'),options = list(pageLength = 10) )
+
+snp_map <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_wholeblood_M/ibd_wholeblood_M.snp_map.RDS")
+wholeblood_M_res <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_wholeblood_M/ibd_wholeblood_M.finemap_regions_res.RDS")
+wholeblood_M_res <- anno_finemap_res(wholeblood_M_res$finemap_res,
+                                snp_map = snp_map,
+                                mapping_table = gene_annot,
+                                add_gene_annot = TRUE,
+                                map_by = "molecular_id",
+                                drop_unmapped = TRUE,
+                                add_position = TRUE,
+                                use_gene_pos = "mid")
+wholeblood_M_res <- subset(wholeblood_M_res, type != "SNP" & susie_pip > 0.8 & !is.na(cs))
+wholeblood_M_res <- wholeblood_M_res[,c("gene_name","susie_pip","context")]
+DT::datatable(wholeblood_M_res,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Top meQTL genes in wholeblood'),options = list(pageLength = 10) )
+
+
+snp_map <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_colon_E/ibd_colon_E.snp_map.RDS")
+colon_E_res <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_colon_E/ibd_colon_E.finemap_regions_res.RDS")
+colon_E_res <- anno_finemap_res(colon_E_res$finemap_res,
+                                snp_map = snp_map,
+                                mapping_table = gene_annot,
+                                add_gene_annot = TRUE,
+                                map_by = "molecular_id",
+                                drop_unmapped = TRUE,
+                                add_position = TRUE,
+                                use_gene_pos = "mid")
+colon_E_res <- subset(colon_E_res, type != "SNP" & susie_pip > 0.75 & !is.na(cs))
+colon_E_res <- colon_E_res[,c("gene_name","susie_pip","context")]
+DT::datatable(colon_E_res,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Top eQTL genes in colon'),options = list(pageLength = 10) )
+
+snp_map <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_colon_M/ibd_colon_M.snp_map.RDS")
+colon_M_res <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_colon_M/ibd_colon_M.finemap_regions_res.RDS")
+colon_M_res <- anno_finemap_res(colon_M_res$finemap_res,
+                                snp_map = snp_map,
+                                mapping_table = gene_annot,
+                                add_gene_annot = TRUE,
+                                map_by = "molecular_id",
+                                drop_unmapped = TRUE,
+                                add_position = TRUE,
+                                use_gene_pos = "mid")
+colon_M_res <- subset(colon_M_res, type != "SNP" & susie_pip > 0.8 & !is.na(cs))
+colon_M_res <- colon_M_res[,c("gene_name","susie_pip","context")]
+DT::datatable(colon_M_res,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Top meQTL genes in colon'),options = list(pageLength = 10) )
+
+
+# Generate 3 sets of 200 words
+set1 <- wholeblood_E_res$gene_name
+set2 <- wholeblood_M_res$gene_name
+set3 <- colon_E_res$gene_name
+set4 <- colon_M_res$gene_name
+# Prepare a palette of 3 colors with R colorbrewer:
+library(RColorBrewer)
+library(VennDiagram)
+myCol <- brewer.pal(4, "Pastel2")
+# Chart
+aa <- venn.diagram(
+  x = list(set1, set2, set3, set4),
+  category.names = c("wholeblood E" , "wholeblood M " , "Colon E", "Colon M"),
+  filename = NULL,
+  lwd = 2,
+  lty = 'blank',
+  fill = myCol
+)
+
+grid.draw(aa)
+```
+
+```{r}
+set1 <- wholeblood_E_res$gene_name
+set2 <- colon_E_res$gene_name
+set3 <- combined_pip_by_type[combined_pip_by_type$combined_pip>0.8,]$gene_name
+# Prepare a palette of 3 colors with R colorbrewer:
+library(RColorBrewer)
+myCol <- brewer.pal(3, "Pastel2")
+# Chart
+aa <- venn.diagram(
+  x = list(set1, set2, set3),
+  category.names = c("wholeblood E" , "Colon E", "All"),
+  filename = NULL,
+  lwd = 2,
+  lty = 'blank',
+  fill = myCol
+)
+
+grid.draw(aa)
+```
+
+```{r}
+snp_map <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_multi/ibd_multi.snp_map.RDS")
+ibd_multi_res <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_multi/ibd_multi.finemap_regions_res.RDS")
+ibd_multi_res <- anno_finemap_res(ibd_multi_res$finemap_res,
+                                snp_map = snp_map,
+                                mapping_table = gene_annot,
+                                add_gene_annot = TRUE,
+                                map_by = "molecular_id",
+                                drop_unmapped = TRUE,
+                                add_position = TRUE,
+                                use_gene_pos = "mid")
+```
+
+```{r}
+gwas_n <- 59957
+finemap_res <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_multi_M/ibd_multi_M.finemap_regions_res.RDS")
+gene_annot <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_E_S_M_mapping.RDS")
+susie_alpha_res <- anno_susie_alpha_res(finemap_res$susie_alpha_res,
+                                        mapping_table = gene_annot,
+                                        map_by = "molecular_id",
+                                        drop_unmapped = TRUE)
+
+
+genes_M <- combine_gene_pips(susie_alpha_res, 
+                               group_by = "gene_name",
+                               by = "type",
+                               method = "combine_cs",
+                               filter_cs = TRUE,
+                               include_cs_id = FALSE)
+
+genes_M <- genes_M[genes_M$combined_pip>0.8,]
+```
+
+```{r}
+gwas_n <- 59957
+finemap_res <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_multi_E_M/ibd_multi_E_M.finemap_regions_res.RDS")
+gene_annot <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_E_S_M_mapping.RDS")
+susie_alpha_res <- anno_susie_alpha_res(finemap_res$susie_alpha_res,
+                                        mapping_table = gene_annot,
+                                        map_by = "molecular_id",
+                                        drop_unmapped = TRUE)
+
+
+genes_EM <- combine_gene_pips(susie_alpha_res, 
+                               group_by = "gene_name",
+                               by = "type",
+                               method = "combine_cs",
+                               filter_cs = TRUE,
+                               include_cs_id = FALSE)
+
+#genes_EM <- genes_EM[genes_EM$combined_pip>0.8,]
+```
+
+```{r}
+set1 <- genes_M$gene_name
+set2 <- genes_EM$gene_name
+aa <- venn.diagram(
+  x = list(set1, set2),
+  category.names = c("methylation","expression"),
+  filename = NULL,
+  lwd = 2,
+  lty = 'blank',
+  fill = c("red","blue")
+)
+
+grid.draw(aa)
+```
+
+
+
 
 ### cTWAS parameters with methylation lasso models (500kb, h2 pvalue<0.0001)
 ```{r, echo=FALSE, fig.width=15, fig.height=13}
@@ -351,6 +526,7 @@ pve_pie_by_type_multi <- plot_piechart(ctwas_parameters = ctwas_parameters, colo
 pve_pie_by_context_multi <- plot_piechart(ctwas_parameters = ctwas_parameters, colors = colors, by = "context")
 gridExtra::grid.arrange(pve_pie_by_type_multi,pve_pie_by_context_multi, ncol = 2)
 ```
+
 ### Top cTWAS genes with methylation single QTL models
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 finemap_res <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/wbc_multi/wbc_multi.finemap_regions_res.RDS")
