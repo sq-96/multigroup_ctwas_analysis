@@ -112,7 +112,7 @@ plot_gene_PIP_nonSNPpip <- function(configtag, runtag,  simutags, LD_type, ...){
 ```
 
 ### PIP Calibration Plot
-```{r, fig.width= 4, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 f1 <- plot_PIP_estimatedL(results_dir, runtag, simutags, "UKBBLD", main = "Molecular Trait Level")
 f2 <- plot_gene_PIP_estimatedL(results_dir, runtag, simutags, "UKBBLD", main = "Gene Level")
 gridExtra::grid.arrange(f1, f2, ncol = 2)
@@ -334,7 +334,7 @@ gridExtra::grid.arrange(f1, f2, ncol = 2)
 ```
 
 ### PIP partition across tissues
-```{r, fig.width= 4, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+```{r, fig.width= 4, fig.height= 5, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_four_tissues_expression/"
 runtag = "four_tissues"
 simutags <- paste(1, 1:5, sep = "-")
@@ -422,7 +422,7 @@ plot_gene_PIP_nonSNPpip <- function(configtag, runtag,  simutags, LD_type, mappi
 ```
 
 ### PIP Calibration Plot
-```{r, fig.width= 6, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 mapping_table <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
 f1 <- plot_PIP_estimatedL(results_dir, runtag, simutags, "UKBBLD", main = "Molecular Trait Level")
 f2 <- plot_gene_PIP_estimatedL(results_dir, runtag, simutags, "UKBBLD", mapping_table, main = "Gene Level")
@@ -499,7 +499,7 @@ plot_df$ifcausal <- plot_df$ifcausal + as.numeric(as.factor(plot_df$method))*10
 plot_df$ifcausal <- as.factor(plot_df$ifcausal)
 ```
 
-```{r, fig.width= 3, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+```{r, fig.width= 4, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 #pdf(file = "/project/xinhe/shengqian/poster_plot/compare.pdf", width = 4, height = 5)
 colset = c("#ebebeb", "#87CEFA", # FOCUS
            "#ebebeb", "#ffff99", # Fusion
@@ -856,12 +856,12 @@ f2 <- ggbarplot(plot_df,
 ```
 
 ### Compare to other methods
-```{r, fig.width= 8, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 gridExtra::grid.arrange(f1, f2, ncol = 2)
 ```
 
 ### PIP partition across tissues
-```{r, fig.width= 6, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+```{r, fig.width= 6, fig.height= 5, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_seven_correlated_tissues_expression/"
 runtag = "7corr"
 simutags <- paste(1, 1:5, sep = "-")
@@ -952,7 +952,7 @@ plot_gene_PIP_nonSNPpip <- function(configtag, runtag,  simutags, LD_type, ...){
 ```
 
 ### PIP Calibration Plot 
-```{r, fig.width= 6, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 f1 <- plot_PIP_estimatedL(results_dir, runtag, simutags, "UKBBLD", main = "Molecular Trait Level")
 f2 <- plot_gene_PIP_estimatedL(results_dir, runtag, simutags, "UKBBLD", main = "Gene Level")
 gridExtra::grid.arrange(f1, f2, ncol = 2)
@@ -1195,7 +1195,7 @@ gridExtra::grid.arrange(f1, f2, ncol = 2)
 ```
 
 ### PIP partition across tissues
-```{r, fig.width= 6, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+```{r, fig.width= 6, fig.height= 5, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_seven_correlated_brain_tissues_expression/"
 runtag = "brain_7corr"
 simutags <- paste(1, 1:5, sep = "-")
@@ -1529,7 +1529,7 @@ gridExtra::grid.arrange(f1, f2, ncol = 2)
 ```
 
 ### PIP partition across tissues
-```{r, fig.width= 6, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+```{r, fig.width= 6, fig.height= 5, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_seven_uncorrelated_tissues_expression/"
 runtag = "7uncorr"
 simutags <- paste(1, 1:5, sep = "-")
