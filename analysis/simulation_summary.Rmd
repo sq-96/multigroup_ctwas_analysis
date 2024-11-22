@@ -112,7 +112,7 @@ plot_gene_PIP_nonSNPpip <- function(configtag, runtag,  simutags, LD_type, ...){
 ```
 
 ### PIP Calibration Plot
-```{r, fig.width= 6, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+```{r, fig.width= 4, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 f1 <- plot_PIP_estimatedL(results_dir, runtag, simutags, "UKBBLD", main = "Molecular Trait Level")
 f2 <- plot_gene_PIP_estimatedL(results_dir, runtag, simutags, "UKBBLD", main = "Gene Level")
 gridExtra::grid.arrange(f1, f2, ncol = 2)
@@ -155,7 +155,6 @@ for(i in 1:5){
   
   multi_cTWAS_genes <- get_top_genes(susieIfs[i])
   
-  print(length(multi_cTWAS_genes))
   plot_df <- rbind(plot_df,
                    data.frame(simutag=i,
                               method="multi-cTWAS",
@@ -171,12 +170,12 @@ for(i in 1:5){
   
   plot_df <- rbind(plot_df,
                    data.frame(simutag=i,
-                              method="single-cTWAS",
+                              method="cTWAS",
                               count=length(intersect(single_cTWAS_genes,causal_genes)),
                               ifcausal=T))
   plot_df <- rbind(plot_df,
                    data.frame(simutag=i,
-                              method="single-cTWAS",
+                              method="cTWAS",
                               count=length(single_cTWAS_genes)-length(intersect(single_cTWAS_genes,causal_genes)),
                               ifcausal=F))
   
@@ -197,7 +196,7 @@ for(i in 1:5){
 ```
 
 ```{r, fig.width= 3, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
-plot_df$method <- factor(plot_df$method, levels=c("TWAS", "coloc", "single-cTWAS", "multi-cTWAS"))
+plot_df$method <- factor(plot_df$method, levels=c("TWAS", "coloc", "cTWAS", "multi-cTWAS"))
 plot_df$ifcausal <- plot_df$ifcausal + as.numeric(as.factor(plot_df$method))*10
 plot_df$ifcausal <- as.factor(plot_df$ifcausal)
 colset = c("#ebebeb", "#87CEFA", # FOCUS
@@ -218,7 +217,7 @@ f1 <- ggbarplot(plot_df,
           width = 0.5,
           ylab="Count", 
           xlab="",
-          palette = colset) + grids(linetype = "dashed") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + scale_y_break(c(100, 250),space=0.5,scales="free")
+          palette = colset) + grids(linetype = "dashed") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 ```
 
 ```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
@@ -277,12 +276,12 @@ for(i in 1:5){
   
   plot_df <- rbind(plot_df,
                    data.frame(simutag=i,
-                              method="single-cTWAS",
+                              method="cTWAS",
                               count=length(intersect(single_cTWAS_genes,causal_genes)),
                               ifcausal=T))
   plot_df <- rbind(plot_df,
                    data.frame(simutag=i,
-                              method="single-cTWAS",
+                              method="cTWAS",
                               count=length(single_cTWAS_genes)-length(intersect(single_cTWAS_genes,causal_genes)),
                               ifcausal=F))
   
@@ -305,7 +304,7 @@ for(i in 1:5){
 ```
 
 ```{r, fig.width= 3, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
-plot_df$method <- factor(plot_df$method, levels=c("TWAS", "coloc", "single-cTWAS", "multi-cTWAS"))
+plot_df$method <- factor(plot_df$method, levels=c("TWAS", "coloc", "cTWAS", "multi-cTWAS"))
 plot_df$ifcausal <- plot_df$ifcausal + as.numeric(as.factor(plot_df$method))*10
 plot_df$ifcausal <- as.factor(plot_df$ifcausal)
 colset = c("#ebebeb", "#87CEFA", # FOCUS
@@ -326,16 +325,16 @@ f2 <- ggbarplot(plot_df,
           width = 0.5,
           ylab="Count", 
           xlab="",
-          palette = colset) + grids(linetype = "dashed") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + scale_y_break(c(70, 130),space=0.5,scales="free")
+          palette = colset) + grids(linetype = "dashed") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 ```
 
 ### Compare to other methods
-```{r, fig.width= 6, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 gridExtra::grid.arrange(f1, f2, ncol = 2)
 ```
 
 ### PIP partition across tissues
-```{r, fig.width= 3, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+```{r, fig.width= 4, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_four_tissues_expression/"
 runtag = "four_tissues"
 simutags <- paste(1, 1:5, sep = "-")
@@ -483,19 +482,19 @@ for(i in 1:5){
   
   plot_df <- rbind(plot_df,
                    data.frame(simutag=i,
-                              method="single-cTWAS",
+                              method="cTWAS",
                               count=length(intersect(single_cTWAS_genes,causal_genes)),
                               ifcausal=T))
   plot_df <- rbind(plot_df,
                    data.frame(simutag=i,
-                              method="single-cTWAS",
+                              method="cTWAS",
                               count=length(single_cTWAS_genes)-length(intersect(single_cTWAS_genes,causal_genes)),
                               ifcausal=F))
 }
 ```
 
 ```{r echo=FALSE}
-plot_df$method <- factor(plot_df$method, levels=c("TWAS", "single-cTWAS", "multi-cTWAS"))
+plot_df$method <- factor(plot_df$method, levels=c("TWAS", "cTWAS", "multi-cTWAS"))
 plot_df$ifcausal <- plot_df$ifcausal + as.numeric(as.factor(plot_df$method))*10
 plot_df$ifcausal <- as.factor(plot_df$ifcausal)
 ```
@@ -621,7 +620,7 @@ plot_gene_PIP_nonSNPpip <- function(configtag, runtag,  simutags, LD_type, ...){
 ```
 
 ### PIP Calibration Plot
-```{r, fig.width= 6, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 f1 <- plot_PIP_estimatedL(results_dir, runtag, simutags, "UKBBLD", main = "Molecular Trait Level")
 f2 <- plot_gene_PIP_estimatedL(results_dir, runtag, simutags, "UKBBLD", main = "Gene Level")
 gridExtra::grid.arrange(f1, f2, ncol = 2)
@@ -670,7 +669,6 @@ for(i in 1:5){
   
   multi_cTWAS_genes <- get_top_genes(susieIfs[i])
   
-  print(length(multi_cTWAS_genes))
   plot_df <- rbind(plot_df,
                    data.frame(simutag=i,
                               method="multi-cTWAS",
@@ -687,12 +685,12 @@ for(i in 1:5){
   
   plot_df <- rbind(plot_df,
                    data.frame(simutag=i,
-                              method="single-cTWAS",
+                              method="cTWAS",
                               count=length(intersect(single_cTWAS_genes,causal_genes)),
                               ifcausal=T))
   plot_df <- rbind(plot_df,
                    data.frame(simutag=i,
-                              method="single-cTWAS",
+                              method="cTWAS",
                               count=length(single_cTWAS_genes)-length(intersect(single_cTWAS_genes,causal_genes)),
                               ifcausal=F))
   
@@ -715,14 +713,25 @@ for(i in 1:5){
 ```
 
 ```{r, fig.width= 3, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
-plot_df$method <- factor(plot_df$method, levels=c("TWAS", "coloc", "single-cTWAS", "multi-cTWAS"))
-colset = c("#ebebeb", "#fb8072")
+plot_df$method <- factor(plot_df$method, levels=c("TWAS", "coloc", "cTWAS", "multi-cTWAS"))
+plot_df$ifcausal <- plot_df$ifcausal + as.numeric(as.factor(plot_df$method))*10
+plot_df$ifcausal <- as.factor(plot_df$ifcausal)
+colset = c("#ebebeb", "#87CEFA", # FOCUS
+           "#ebebeb", "#ffff99", # Fusion
+           "#ebebeb", "#fb8072", # Fusion-permutation
+           "#ebebeb", "#b2df8a", # MR-JTI
+           "#ebebeb", "goldenrod", #PMR-Egger
+           "#ebebeb", "#87CEFA", # SMR
+           "#ebebeb", "#fb8072", # cTWAS
+           "#ebebeb", "#bebada") # coloc
+
 f1 <- ggbarplot(plot_df, 
           x = "method", 
           y = "count", 
           add = "mean_se", 
           fill = "ifcausal", 
           legend = "none", 
+          width = 0.5,
           ylab="Count", 
           xlab="",
           palette = colset) + grids(linetype = "dashed") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
@@ -774,7 +783,6 @@ for(i in 1:5){
   multi_cTWAS_genes <- get_top_genes_combined(susieIfs[i])
   multi_cTWAS_genes <- unique(sapply(multi_cTWAS_genes, function(x){unlist(strsplit(x, "[|]"))[1]}))
   
-  print(length(multi_cTWAS_genes))
   plot_df <- rbind(plot_df,
                    data.frame(simutag=i,
                               method="multi-cTWAS",
@@ -793,12 +801,12 @@ for(i in 1:5){
   
   plot_df <- rbind(plot_df,
                    data.frame(simutag=i,
-                              method="single-cTWAS",
+                              method="cTWAS",
                               count=length(intersect(single_cTWAS_genes,causal_genes)),
                               ifcausal=T))
   plot_df <- rbind(plot_df,
                    data.frame(simutag=i,
-                              method="single-cTWAS",
+                              method="cTWAS",
                               count=length(single_cTWAS_genes)-length(intersect(single_cTWAS_genes,causal_genes)),
                               ifcausal=F))
   
@@ -823,21 +831,32 @@ for(i in 1:5){
 ```
 
 ```{r, fig.width= 3, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
-plot_df$method <- factor(plot_df$method, levels=c("TWAS", "coloc", "single-cTWAS", "multi-cTWAS"))
-colset = c("#ebebeb", "#fb8072")
+plot_df$method <- factor(plot_df$method, levels=c("TWAS", "coloc", "cTWAS", "multi-cTWAS"))
+plot_df$ifcausal <- plot_df$ifcausal + as.numeric(as.factor(plot_df$method))*10
+plot_df$ifcausal <- as.factor(plot_df$ifcausal)
+colset = c("#ebebeb", "#87CEFA", # FOCUS
+           "#ebebeb", "#ffff99", # Fusion
+           "#ebebeb", "#fb8072", # Fusion-permutation
+           "#ebebeb", "#b2df8a", # MR-JTI
+           "#ebebeb", "goldenrod", #PMR-Egger
+           "#ebebeb", "#87CEFA", # SMR
+           "#ebebeb", "#fb8072", # cTWAS
+           "#ebebeb", "#bebada") # coloc
+
 f2 <- ggbarplot(plot_df, 
           x = "method", 
           y = "count", 
           add = "mean_se", 
           fill = "ifcausal", 
           legend = "none", 
+          width = 0.5,
           ylab="Count", 
           xlab="",
-          palette = colset) + grids(linetype = "dashed") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+          palette = colset) + grids(linetype = "dashed") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + scale_y_break(c(60, 150),space=0.5,scales="free")
 ```
 
 ### Compare to other methods
-```{r, fig.width= 6, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+```{r, fig.width= 8, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 gridExtra::grid.arrange(f1, f2, ncol = 2)
 ```
 
@@ -999,12 +1018,12 @@ for(i in 1:5){
   
   plot_df <- rbind(plot_df,
                    data.frame(simutag=i,
-                              method="single-cTWAS",
+                              method="cTWAS",
                               count=length(intersect(single_cTWAS_genes,causal_genes)),
                               ifcausal=T))
   plot_df <- rbind(plot_df,
                    data.frame(simutag=i,
-                              method="single-cTWAS",
+                              method="cTWAS",
                               count=length(single_cTWAS_genes)-length(intersect(single_cTWAS_genes,causal_genes)),
                               ifcausal=F))
   
@@ -1027,14 +1046,25 @@ for(i in 1:5){
 ```
 
 ```{r, fig.width= 3, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
-plot_df$method <- factor(plot_df$method, levels=c("TWAS", "coloc", "single-cTWAS", "multi-cTWAS"))
-colset = c("#ebebeb", "#fb8072")
+plot_df$method <- factor(plot_df$method, levels=c("TWAS", "coloc", "cTWAS", "multi-cTWAS"))
+plot_df$ifcausal <- plot_df$ifcausal + as.numeric(as.factor(plot_df$method))*10
+plot_df$ifcausal <- as.factor(plot_df$ifcausal)
+colset = c("#ebebeb", "#87CEFA", # FOCUS
+           "#ebebeb", "#ffff99", # Fusion
+           "#ebebeb", "#fb8072", # Fusion-permutation
+           "#ebebeb", "#b2df8a", # MR-JTI
+           "#ebebeb", "goldenrod", #PMR-Egger
+           "#ebebeb", "#87CEFA", # SMR
+           "#ebebeb", "#fb8072", # cTWAS
+           "#ebebeb", "#bebada") # coloc
+
 f1 <- ggbarplot(plot_df, 
           x = "method", 
           y = "count", 
           add = "mean_se", 
           fill = "ifcausal", 
           legend = "none", 
+          width = 0.5,
           ylab="Count", 
           xlab="",
           palette = colset) + grids(linetype = "dashed") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
@@ -1105,12 +1135,12 @@ for(i in 1:5){
   
   plot_df <- rbind(plot_df,
                    data.frame(simutag=i,
-                              method="single-cTWAS",
+                              method="cTWAS",
                               count=length(intersect(single_cTWAS_genes,causal_genes)),
                               ifcausal=T))
   plot_df <- rbind(plot_df,
                    data.frame(simutag=i,
-                              method="single-cTWAS",
+                              method="cTWAS",
                               count=length(single_cTWAS_genes)-length(intersect(single_cTWAS_genes,causal_genes)),
                               ifcausal=F))
   
@@ -1135,21 +1165,32 @@ for(i in 1:5){
 ```
 
 ```{r, fig.width= 3, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
-plot_df$method <- factor(plot_df$method, levels=c("TWAS", "coloc", "single-cTWAS", "multi-cTWAS"))
-colset = c("#ebebeb", "#fb8072")
+plot_df$method <- factor(plot_df$method, levels=c("TWAS", "coloc", "cTWAS", "multi-cTWAS"))
+plot_df$ifcausal <- plot_df$ifcausal + as.numeric(as.factor(plot_df$method))*10
+plot_df$ifcausal <- as.factor(plot_df$ifcausal)
+colset = c("#ebebeb", "#87CEFA", # FOCUS
+           "#ebebeb", "#ffff99", # Fusion
+           "#ebebeb", "#fb8072", # Fusion-permutation
+           "#ebebeb", "#b2df8a", # MR-JTI
+           "#ebebeb", "goldenrod", #PMR-Egger
+           "#ebebeb", "#87CEFA", # SMR
+           "#ebebeb", "#fb8072", # cTWAS
+           "#ebebeb", "#bebada") # coloc
+
 f2 <- ggbarplot(plot_df, 
           x = "method", 
           y = "count", 
           add = "mean_se", 
           fill = "ifcausal", 
           legend = "none", 
+          width = 0.5,
           ylab="Count", 
           xlab="",
           palette = colset) + grids(linetype = "dashed") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 ```
 
 ### Compare to other methods
-```{r, fig.width= 6, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 gridExtra::grid.arrange(f1, f2, ncol = 2)
 ```
 
@@ -1245,7 +1286,7 @@ plot_gene_PIP_nonSNPpip <- function(configtag, runtag,  simutags, LD_type, ...){
 ```
 
 ### PIP Calibration Plot of molecular traits
-```{r, fig.width= 5, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 f1 <- plot_PIP_estimatedL(results_dir, runtag, simutags, "UKBBLD", main = "Molecular Trait Level")
 f2 <- plot_gene_PIP_estimatedL(results_dir, runtag, simutags, "UKBBLD", main = "Gene Level")
 gridExtra::grid.arrange(f1, f2, ncol = 2)
@@ -1311,12 +1352,12 @@ for(i in 1:5){
   
   plot_df <- rbind(plot_df,
                    data.frame(simutag=i,
-                              method="single-cTWAS",
+                              method="cTWAS",
                               count=length(intersect(single_cTWAS_genes,causal_genes)),
                               ifcausal=T))
   plot_df <- rbind(plot_df,
                    data.frame(simutag=i,
-                              method="single-cTWAS",
+                              method="cTWAS",
                               count=length(single_cTWAS_genes)-length(intersect(single_cTWAS_genes,causal_genes)),
                               ifcausal=F))
   
@@ -1339,14 +1380,25 @@ for(i in 1:5){
 ```
 
 ```{r, fig.width= 3, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
-plot_df$method <- factor(plot_df$method, levels=c("TWAS", "coloc", "single-cTWAS", "multi-cTWAS"))
-colset = c("#ebebeb", "#fb8072")
+plot_df$method <- factor(plot_df$method, levels=c("TWAS", "coloc", "cTWAS", "multi-cTWAS"))
+plot_df$ifcausal <- plot_df$ifcausal + as.numeric(as.factor(plot_df$method))*10
+plot_df$ifcausal <- as.factor(plot_df$ifcausal)
+colset = c("#ebebeb", "#87CEFA", # FOCUS
+           "#ebebeb", "#ffff99", # Fusion
+           "#ebebeb", "#fb8072", # Fusion-permutation
+           "#ebebeb", "#b2df8a", # MR-JTI
+           "#ebebeb", "goldenrod", #PMR-Egger
+           "#ebebeb", "#87CEFA", # SMR
+           "#ebebeb", "#fb8072", # cTWAS
+           "#ebebeb", "#bebada") # coloc
+
 f1 <- ggbarplot(plot_df, 
           x = "method", 
           y = "count", 
           add = "mean_se", 
           fill = "ifcausal", 
           legend = "none", 
+          width = 0.5,
           ylab="Count", 
           xlab="",
           palette = colset) + grids(linetype = "dashed") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
@@ -1417,12 +1469,12 @@ for(i in 1:5){
   
   plot_df <- rbind(plot_df,
                    data.frame(simutag=i,
-                              method="single-cTWAS",
+                              method="cTWAS",
                               count=length(intersect(single_cTWAS_genes,causal_genes)),
                               ifcausal=T))
   plot_df <- rbind(plot_df,
                    data.frame(simutag=i,
-                              method="single-cTWAS",
+                              method="cTWAS",
                               count=length(single_cTWAS_genes)-length(intersect(single_cTWAS_genes,causal_genes)),
                               ifcausal=F))
   
@@ -1447,21 +1499,32 @@ for(i in 1:5){
 ```
 
 ```{r, fig.width= 3, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
-plot_df$method <- factor(plot_df$method, levels=c("TWAS", "coloc", "single-cTWAS", "multi-cTWAS"))
-colset = c("#ebebeb", "#fb8072")
+plot_df$method <- factor(plot_df$method, levels=c("TWAS", "coloc", "cTWAS", "multi-cTWAS"))
+plot_df$ifcausal <- plot_df$ifcausal + as.numeric(as.factor(plot_df$method))*10
+plot_df$ifcausal <- as.factor(plot_df$ifcausal)
+colset = c("#ebebeb", "#87CEFA", # FOCUS
+           "#ebebeb", "#ffff99", # Fusion
+           "#ebebeb", "#fb8072", # Fusion-permutation
+           "#ebebeb", "#b2df8a", # MR-JTI
+           "#ebebeb", "goldenrod", #PMR-Egger
+           "#ebebeb", "#87CEFA", # SMR
+           "#ebebeb", "#fb8072", # cTWAS
+           "#ebebeb", "#bebada") # coloc
+
 f2 <- ggbarplot(plot_df, 
           x = "method", 
           y = "count", 
           add = "mean_se", 
           fill = "ifcausal", 
           legend = "none", 
+          width = 0.5,
           ylab="Count", 
           xlab="",
           palette = colset) + grids(linetype = "dashed") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 ```
 
 ### Compare to other methods
-```{r, fig.width= 6, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 gridExtra::grid.arrange(f1, f2, ncol = 2)
 ```
 
