@@ -10,6 +10,7 @@ editor_options:
 library(ctwas)
 library(data.table)
 library(ggbreak) 
+library(ggpubr)
 source("/project/xinhe/shengqian/cTWAS_simulation/code/simulation_help_functions.R")
 source("/project/xinhe/shengqian/cTWAS_simulation/code/summarize_basic_plots.R")
 source("/project/xinhe/shengqian/cTWAS_simulation/code/summarize_ctwas_plots.R")
@@ -79,6 +80,7 @@ est <- rbind(cbind(1,y1),cbind(2,y2), cbind(3,y3), cbind(4,y4))
 plot_par_4(truth,est,xlabels = c("Liver", "Adipose", "Lung", "Stomach"),ylim=c(0,80),ylab="Enrichment", main="Enrichment")
 ```
 
+
 ```{r, message=FALSE, warning=FALSE, echo=FALSE}
 plot_PIP_estimatedL <- function(results_dir, runtag,  simutags, LD_type, ...){
    phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
@@ -110,14 +112,13 @@ plot_gene_PIP_nonSNPpip <- function(configtag, runtag,  simutags, LD_type, ...){
 ```
 
 ### PIP Calibration Plot
-```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+```{r, fig.width= 6, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 f1 <- plot_PIP_estimatedL(results_dir, runtag, simutags, "UKBBLD", main = "Molecular Trait Level")
 f2 <- plot_gene_PIP_estimatedL(results_dir, runtag, simutags, "UKBBLD", main = "Gene Level")
 gridExtra::grid.arrange(f1, f2, ncol = 2)
 ```
 
-### Compare to other methods (molecular-tissue pair)
-```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+```{r, fig.width= 6, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_four_tissues_expression/"
 runtag = "four_tissues"
 simutags <- paste(1, 1:5, sep = "-")
@@ -195,25 +196,31 @@ for(i in 1:5){
 }
 ```
 
-```{r, fig.width= 3, fig.height= 3, echo=FALSE}
-plot_df$method <- factor(plot_df$method, levels=c("TWAS","coloc","single-cTWAS","multi-cTWAS"))
+```{r, fig.width= 3, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+plot_df$method <- factor(plot_df$method, levels=c("TWAS", "coloc", "single-cTWAS", "multi-cTWAS"))
+plot_df$ifcausal <- plot_df$ifcausal + as.numeric(as.factor(plot_df$method))*10
+plot_df$ifcausal <- as.factor(plot_df$ifcausal)
+colset = c("#ebebeb", "#87CEFA", # FOCUS
+           "#ebebeb", "#ffff99", # Fusion
+           "#ebebeb", "#fb8072", # Fusion-permutation
+           "#ebebeb", "#b2df8a", # MR-JTI
+           "#ebebeb", "goldenrod", #PMR-Egger
+           "#ebebeb", "#87CEFA", # SMR
+           "#ebebeb", "#fb8072", # cTWAS
+           "#ebebeb", "#bebada") # coloc
 
-library(ggpubr)
-
-colset = c("#ebebeb", "#fb8072")
-
-ggbarplot(plot_df, 
+f1 <- ggbarplot(plot_df, 
           x = "method", 
           y = "count", 
           add = "mean_se", 
           fill = "ifcausal", 
           legend = "none", 
+          width = 0.5,
           ylab="Count", 
           xlab="",
-          palette = colset) + grids(linetype = "dashed") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+          palette = colset) + grids(linetype = "dashed") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + scale_y_break(c(100, 250),space=0.5,scales="free")
 ```
 
-### Compare to other methods (gene)
 ```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_four_tissues_expression/"
 runtag = "four_tissues"
@@ -254,7 +261,6 @@ for(i in 1:5){
   multi_cTWAS_genes <- get_top_genes_combined(susieIfs[i])
   multi_cTWAS_genes <- unique(sapply(multi_cTWAS_genes, function(x){unlist(strsplit(x, "[|]"))[1]}))
   
-  print(length(multi_cTWAS_genes))
   plot_df <- rbind(plot_df,
                    data.frame(simutag=i,
                               method="multi-cTWAS",
@@ -298,26 +304,38 @@ for(i in 1:5){
 }
 ```
 
-```{r echo=FALSE}
+```{r, fig.width= 3, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 plot_df$method <- factor(plot_df$method, levels=c("TWAS", "coloc", "single-cTWAS", "multi-cTWAS"))
+plot_df$ifcausal <- plot_df$ifcausal + as.numeric(as.factor(plot_df$method))*10
+plot_df$ifcausal <- as.factor(plot_df$ifcausal)
+colset = c("#ebebeb", "#87CEFA", # FOCUS
+           "#ebebeb", "#ffff99", # Fusion
+           "#ebebeb", "#fb8072", # Fusion-permutation
+           "#ebebeb", "#b2df8a", # MR-JTI
+           "#ebebeb", "goldenrod", #PMR-Egger
+           "#ebebeb", "#87CEFA", # SMR
+           "#ebebeb", "#fb8072", # cTWAS
+           "#ebebeb", "#bebada") # coloc
 
-library(ggpubr)
-
-colset = c("#ebebeb", "#fb8072")
-
-ggbarplot(plot_df, 
+f2 <- ggbarplot(plot_df, 
           x = "method", 
           y = "count", 
           add = "mean_se", 
           fill = "ifcausal", 
           legend = "none", 
+          width = 0.5,
           ylab="Count", 
           xlab="",
-          palette = colset) + grids(linetype = "dashed") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+          palette = colset) + grids(linetype = "dashed") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + scale_y_break(c(70, 130),space=0.5,scales="free")
+```
+
+### Compare to other methods
+```{r, fig.width= 6, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+gridExtra::grid.arrange(f1, f2, ncol = 2)
 ```
 
 ### PIP partition across tissues
-```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+```{r, fig.width= 3, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_four_tissues_expression/"
 runtag = "four_tissues"
 simutags <- paste(1, 1:5, sep = "-")
@@ -405,7 +423,7 @@ plot_gene_PIP_nonSNPpip <- function(configtag, runtag,  simutags, LD_type, mappi
 ```
 
 ### PIP Calibration Plot
-```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+```{r, fig.width= 6, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 mapping_table <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
 f1 <- plot_PIP_estimatedL(results_dir, runtag, simutags, "UKBBLD", main = "Molecular Trait Level")
 f2 <- plot_gene_PIP_estimatedL(results_dir, runtag, simutags, "UKBBLD", mapping_table, main = "Gene Level")
@@ -413,7 +431,7 @@ gridExtra::grid.arrange(f1, f2, ncol = 2)
 ```
 
 ### Compare to other methods
-```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+```{r, fig.width= 3, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_three_tissues_expression_splicing/"
 runtag = "E_S_three_tissues"
 simutags <- paste(1, 1:5, sep = "-")
@@ -476,19 +494,18 @@ for(i in 1:5){
 }
 ```
 
-```{r}
+```{r echo=FALSE}
 plot_df$method <- factor(plot_df$method, levels=c("TWAS", "single-cTWAS", "multi-cTWAS"))
 plot_df$ifcausal <- plot_df$ifcausal + as.numeric(as.factor(plot_df$method))*10
 plot_df$ifcausal <- as.factor(plot_df$ifcausal)
-library(ggpubr)
 ```
 
-```{r echo=FALSE}
+```{r, fig.width= 3, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 #pdf(file = "/project/xinhe/shengqian/poster_plot/compare.pdf", width = 4, height = 5)
 colset = c("#ebebeb", "#87CEFA", # FOCUS
            "#ebebeb", "#ffff99", # Fusion
            "#ebebeb", "#fb8072", # Fusion-permutation
-           "#ebebeb", "#CC79A7", # MR-JTI
+           "#ebebeb", "#b2df8a", # MR-JTI
            "#ebebeb", "goldenrod", #PMR-Egger
            "#ebebeb", "#87CEFA", # SMR
            "#ebebeb", "#fb8072", # cTWAS
@@ -505,26 +522,6 @@ ggbarplot(plot_df,
           xlab="",
           palette = colset) + grids(linetype = "dashed") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + scale_y_break(c(50, 600),space=0.5,scales="free")
 #dev.off()
-```
-
-```{r}
-library(ggpubr)
-
-colset = c("#ebebeb", "#7fc97f", "#beaed4", "#fdc086")
-
-ggbarplot(plot_df, 
-          x = "method", 
-          y = "count", 
-          add = "mean_se", 
-          fill = "method",     # Change here to fill by 'method' for different colors per bar
-          legend = "none", 
-          width = 0.5,
-          ylab = "Count", 
-          xlab = "",
-          palette = colset) + 
-  grids(linetype = "dashed") + 
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) + 
-  scale_y_break(c(50, 600), space = 0.5, scales = "free")
 ```
 
 ## Simulation 3: Seven tissues correlated tissues expression trait
@@ -624,14 +621,13 @@ plot_gene_PIP_nonSNPpip <- function(configtag, runtag,  simutags, LD_type, ...){
 ```
 
 ### PIP Calibration Plot
-```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+```{r, fig.width= 6, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 f1 <- plot_PIP_estimatedL(results_dir, runtag, simutags, "UKBBLD", main = "Molecular Trait Level")
 f2 <- plot_gene_PIP_estimatedL(results_dir, runtag, simutags, "UKBBLD", main = "Gene Level")
 gridExtra::grid.arrange(f1, f2, ncol = 2)
 ```
 
-### Compare to other methods (molecular-tissue pair)
-```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+```{r, fig.width= 3, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_seven_correlated_tissues_expression/"
 runtag = "7corr"
 simutags <- paste(1, 1:5, sep = "-")
@@ -718,14 +714,10 @@ for(i in 1:5){
 }
 ```
 
-```{r echo=FALSE}
+```{r, fig.width= 3, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 plot_df$method <- factor(plot_df$method, levels=c("TWAS", "coloc", "single-cTWAS", "multi-cTWAS"))
-
-library(ggpubr)
-
 colset = c("#ebebeb", "#fb8072")
-
-ggbarplot(plot_df, 
+f1 <- ggbarplot(plot_df, 
           x = "method", 
           y = "count", 
           add = "mean_se", 
@@ -736,8 +728,7 @@ ggbarplot(plot_df,
           palette = colset) + grids(linetype = "dashed") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 ```
 
-### Compare to other methods (gene)
-```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+```{r, fig.width= 3, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_seven_correlated_tissues_expression/"
 runtag = "7corr"
 simutags <- paste(1, 1:5, sep = "-")
@@ -831,14 +822,10 @@ for(i in 1:5){
 }
 ```
 
-```{r echo=FALSE}
+```{r, fig.width= 3, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 plot_df$method <- factor(plot_df$method, levels=c("TWAS", "coloc", "single-cTWAS", "multi-cTWAS"))
-
-library(ggpubr)
-
 colset = c("#ebebeb", "#fb8072")
-
-ggbarplot(plot_df, 
+f2 <- ggbarplot(plot_df, 
           x = "method", 
           y = "count", 
           add = "mean_se", 
@@ -849,8 +836,13 @@ ggbarplot(plot_df,
           palette = colset) + grids(linetype = "dashed") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 ```
 
+### Compare to other methods
+```{r, fig.width= 6, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+gridExtra::grid.arrange(f1, f2, ncol = 2)
+```
+
 ### PIP partition across tissues
-```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+```{r, fig.width= 6, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_seven_correlated_tissues_expression/"
 runtag = "7corr"
 simutags <- paste(1, 1:5, sep = "-")
@@ -910,7 +902,6 @@ est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4),cbind(5,y5),cbind(6
 plot_par_7(truth,est,xlabels = c("Cerebellum","Hippocampus","Caudate basal ganglia","Cerebellar Hemisphere","Cortex","Hypothalamus","Putamen basal ganglia"),ylim=c(0,250),ylab= "Enrichment")
 ```
 
-
 ```{r, message=FALSE, warning=FALSE, echo=FALSE}
 plot_PIP_estimatedL <- function(results_dir, runtag,  simutags, LD_type, ...){
    phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
@@ -942,13 +933,12 @@ plot_gene_PIP_nonSNPpip <- function(configtag, runtag,  simutags, LD_type, ...){
 ```
 
 ### PIP Calibration Plot 
-```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+```{r, fig.width= 6, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 f1 <- plot_PIP_estimatedL(results_dir, runtag, simutags, "UKBBLD", main = "Molecular Trait Level")
 f2 <- plot_gene_PIP_estimatedL(results_dir, runtag, simutags, "UKBBLD", main = "Gene Level")
 gridExtra::grid.arrange(f1, f2, ncol = 2)
 ```
 
-### Compare to other methods (molecular-tissue pair)
 ```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_seven_correlated_brain_tissues_expression/"
 runtag = "brain_7corr"
@@ -1036,14 +1026,10 @@ for(i in 1:5){
 }
 ```
 
-```{r echo=FALSE}
+```{r, fig.width= 3, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 plot_df$method <- factor(plot_df$method, levels=c("TWAS", "coloc", "single-cTWAS", "multi-cTWAS"))
-
-library(ggpubr)
-
 colset = c("#ebebeb", "#fb8072")
-
-ggbarplot(plot_df, 
+f1 <- ggbarplot(plot_df, 
           x = "method", 
           y = "count", 
           add = "mean_se", 
@@ -1054,7 +1040,6 @@ ggbarplot(plot_df,
           palette = colset) + grids(linetype = "dashed") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 ```
 
-### Compare to other methods (gene)
 ```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_seven_correlated_brain_tissues_expression/"
 runtag = "brain_7corr"
@@ -1149,14 +1134,10 @@ for(i in 1:5){
 }
 ```
 
-```{r echo=FALSE}
+```{r, fig.width= 3, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 plot_df$method <- factor(plot_df$method, levels=c("TWAS", "coloc", "single-cTWAS", "multi-cTWAS"))
-
-library(ggpubr)
-
 colset = c("#ebebeb", "#fb8072")
-
-ggbarplot(plot_df, 
+f2 <- ggbarplot(plot_df, 
           x = "method", 
           y = "count", 
           add = "mean_se", 
@@ -1167,8 +1148,13 @@ ggbarplot(plot_df,
           palette = colset) + grids(linetype = "dashed") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 ```
 
+### Compare to other methods
+```{r, fig.width= 6, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+gridExtra::grid.arrange(f1, f2, ncol = 2)
+```
+
 ### PIP partition across tissues
-```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+```{r, fig.width= 6, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_seven_correlated_brain_tissues_expression/"
 runtag = "brain_7corr"
 simutags <- paste(1, 1:5, sep = "-")
@@ -1259,13 +1245,12 @@ plot_gene_PIP_nonSNPpip <- function(configtag, runtag,  simutags, LD_type, ...){
 ```
 
 ### PIP Calibration Plot of molecular traits
-```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+```{r, fig.width= 5, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 f1 <- plot_PIP_estimatedL(results_dir, runtag, simutags, "UKBBLD", main = "Molecular Trait Level")
 f2 <- plot_gene_PIP_estimatedL(results_dir, runtag, simutags, "UKBBLD", main = "Gene Level")
 gridExtra::grid.arrange(f1, f2, ncol = 2)
 ```
 
-### Compare to other methods
 ```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_seven_uncorrelated_tissues_expression/"
 runtag = "7uncorr"
@@ -1353,14 +1338,10 @@ for(i in 1:5){
 }
 ```
 
-```{r echo=FALSE}
+```{r, fig.width= 3, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 plot_df$method <- factor(plot_df$method, levels=c("TWAS", "coloc", "single-cTWAS", "multi-cTWAS"))
-
-library(ggpubr)
-
 colset = c("#ebebeb", "#fb8072")
-
-ggbarplot(plot_df, 
+f1 <- ggbarplot(plot_df, 
           x = "method", 
           y = "count", 
           add = "mean_se", 
@@ -1371,7 +1352,6 @@ ggbarplot(plot_df,
           palette = colset) + grids(linetype = "dashed") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 ```
 
-### Compare to other methods (gene)
 ```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_seven_uncorrelated_tissues_expression/"
 runtag = "7uncorr"
@@ -1466,14 +1446,10 @@ for(i in 1:5){
 }
 ```
 
-```{r echo=FALSE}
+```{r, fig.width= 3, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 plot_df$method <- factor(plot_df$method, levels=c("TWAS", "coloc", "single-cTWAS", "multi-cTWAS"))
-
-library(ggpubr)
-
 colset = c("#ebebeb", "#fb8072")
-
-ggbarplot(plot_df, 
+f2 <- ggbarplot(plot_df, 
           x = "method", 
           y = "count", 
           add = "mean_se", 
@@ -1484,8 +1460,13 @@ ggbarplot(plot_df,
           palette = colset) + grids(linetype = "dashed") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 ```
 
+### Compare to other methods
+```{r, fig.width= 6, fig.height= 3, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+gridExtra::grid.arrange(f1, f2, ncol = 2)
+```
+
 ### PIP partition across tissues
-```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+```{r, fig.width= 6, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_seven_uncorrelated_tissues_expression/"
 runtag = "7uncorr"
 simutags <- paste(1, 1:5, sep = "-")
