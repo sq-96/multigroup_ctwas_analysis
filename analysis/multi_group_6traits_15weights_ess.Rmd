@@ -400,6 +400,26 @@ make_locusplot(finemap_res_multi,
 
 
 
+
+## Postprocessing -- LD mismatch
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=6}
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/ld_mismatch/LD_mismatch_", trait,".rdata"))
+
+finemap_res_multi <- ctwas_res_multi$finemap_res
+
+finemap_origin_res_problematic_region <- finemap_res_multi[finemap_res_multi$id %in% problematic_genes,]
+
+merge_origin_nold <- merge(finemap_origin_res_problematic_region,finemap_noLD_res_problematic_region, by = "id")
+merge_origin_nold <- merge_origin_nold[,c("id","susie_pip.x","susie_pip.y")]
+colnames(merge_origin_nold) <-  c("id","susie_pip_origin","susie_pip_ld-mismatch-fixed") 
+
+DT::datatable(merge_origin_nold,caption = htmltools::tags$caption(style = 'caption-side: topleft; text-align = left; color:black;','Original PIP and fixed PIP'),options = list(pageLength = 5) )
+
+```
+
+
 # LDL-ukb-d-30780_irnt
 
 ## Parameter
@@ -601,6 +621,26 @@ make_locusplot(finemap_res_multi,
 ```
 
 
+
+## Postprocessing -- LD mismatch
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=6}
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/ld_mismatch/LD_mismatch_", trait,".rdata"))
+
+finemap_res_multi <- ctwas_res_multi$finemap_res
+
+finemap_origin_res_problematic_region <- finemap_res_multi[finemap_res_multi$id %in% problematic_genes,]
+
+merge_origin_nold <- merge(finemap_origin_res_problematic_region,finemap_noLD_res_problematic_region, by = "id")
+merge_origin_nold <- merge_origin_nold[,c("id","susie_pip.x","susie_pip.y")]
+colnames(merge_origin_nold) <-  c("id","susie_pip_origin","susie_pip_ld-mismatch-fixed") 
+
+DT::datatable(merge_origin_nold,caption = htmltools::tags$caption(style = 'caption-side: topleft; text-align = left; color:black;','Original PIP and fixed PIP'),options = list(pageLength = 5) )
+
+```
+
+
 # IBD-ebi-a-GCST004131
 
 ## Parameter
@@ -707,6 +747,26 @@ gene_multi_unique_type <- combined_pip_by_group_sig_multi[!combined_pip_by_group
 
 plot_heatmap(heatmap_data = gene_multi_unique_type, main = "PIP partition for unique genes found by multi-group analysis")
 ```
+
+
+## Postprocessing -- LD mismatch
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=6}
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/ld_mismatch/LD_mismatch_", trait,".rdata"))
+
+finemap_res_multi <- ctwas_res_multi$finemap_res
+
+finemap_origin_res_problematic_region <- finemap_res_multi[finemap_res_multi$id %in% problematic_genes,]
+
+merge_origin_nold <- merge(finemap_origin_res_problematic_region,finemap_noLD_res_problematic_region, by = "id")
+merge_origin_nold <- merge_origin_nold[,c("id","susie_pip.x","susie_pip.y")]
+colnames(merge_origin_nold) <-  c("id","susie_pip_origin","susie_pip_ld-mismatch-fixed") 
+
+DT::datatable(merge_origin_nold,caption = htmltools::tags$caption(style = 'caption-side: topleft; text-align = left; color:black;','Original PIP and fixed PIP'),options = list(pageLength = 5) )
+
+```
+
 
 # SBP-ukb-a-360
 
@@ -815,6 +875,25 @@ gene_multi_unique_type <- combined_pip_by_group_sig_multi[!combined_pip_by_group
 plot_heatmap(heatmap_data = gene_multi_unique_type, main = "PIP partition for unique genes found by multi-group analysis")
 ```
 
+## Postprocessing -- LD mismatch
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=6}
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/ld_mismatch/LD_mismatch_", trait,".rdata"))
+
+finemap_res_multi <- ctwas_res_multi$finemap_res
+
+finemap_origin_res_problematic_region <- finemap_res_multi[finemap_res_multi$id %in% problematic_genes,]
+
+merge_origin_nold <- merge(finemap_origin_res_problematic_region,finemap_noLD_res_problematic_region, by = "id")
+merge_origin_nold <- merge_origin_nold[,c("id","susie_pip.x","susie_pip.y")]
+colnames(merge_origin_nold) <-  c("id","susie_pip_origin","susie_pip_ld-mismatch-fixed") 
+
+DT::datatable(merge_origin_nold,caption = htmltools::tags$caption(style = 'caption-side: topleft; text-align = left; color:black;','Original PIP and fixed PIP'),options = list(pageLength = 5) )
+
+```
+
+
 # SCZ-ieu-b-5102
 
 ## Parameter
@@ -922,6 +1001,26 @@ gene_multi_unique_type <- combined_pip_by_group_sig_multi[!combined_pip_by_group
 plot_heatmap(heatmap_data = gene_multi_unique_type, main = "PIP partition for unique genes found by multi-group analysis")
 ```
 
+
+## Postprocessing -- LD mismatch
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=6}
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/ld_mismatch/LD_mismatch_", trait,".rdata"))
+
+finemap_res_multi <- ctwas_res_multi$finemap_res
+
+finemap_origin_res_problematic_region <- finemap_res_multi[finemap_res_multi$id %in% problematic_genes,]
+
+merge_origin_nold <- merge(finemap_origin_res_problematic_region,finemap_noLD_res_problematic_region, by = "id")
+merge_origin_nold <- merge_origin_nold[,c("id","susie_pip.x","susie_pip.y")]
+colnames(merge_origin_nold) <-  c("id","susie_pip_origin","susie_pip_ld-mismatch-fixed") 
+
+DT::datatable(merge_origin_nold,caption = htmltools::tags$caption(style = 'caption-side: topleft; text-align = left; color:black;','Original PIP and fixed PIP'),options = list(pageLength = 5) )
+
+```
+
+
 # WBC-ieu-b-30
 
 ## Parameter
@@ -1028,3 +1127,23 @@ gene_multi_unique_type <- combined_pip_by_group_sig_multi[!combined_pip_by_group
 
 plot_heatmap(heatmap_data = gene_multi_unique_type, main = "PIP partition for unique genes found by multi-group analysis")
 ```
+
+
+## Postprocessing -- LD mismatch
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=6}
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/ld_mismatch/LD_mismatch_", trait,".rdata"))
+
+finemap_res_multi <- ctwas_res_multi$finemap_res
+
+finemap_origin_res_problematic_region <- finemap_res_multi[finemap_res_multi$id %in% problematic_genes,]
+
+merge_origin_nold <- merge(finemap_origin_res_problematic_region,finemap_noLD_res_problematic_region, by = "id")
+merge_origin_nold <- merge_origin_nold[,c("id","susie_pip.x","susie_pip.y")]
+colnames(merge_origin_nold) <-  c("id","susie_pip_origin","susie_pip_ld-mismatch-fixed") 
+
+DT::datatable(merge_origin_nold,caption = htmltools::tags$caption(style = 'caption-side: topleft; text-align = left; color:black;','Original PIP and fixed PIP'),options = list(pageLength = 5) )
+
+```
+
