@@ -442,6 +442,12 @@ susieIfs3 <- paste0(results_dir, runtag, "_simu",simutags, "_UKBBLD", ".weight3.
 susieIfs4 <- paste0(results_dir, runtag, "_simu",simutags, "_UKBBLD", ".weight4.estimatedL.finemap_regions_res.RDS")
 susieIfs5 <- paste0(results_dir, runtag, "_simu",simutags, "_UKBBLD", ".weight5.estimatedL.finemap_regions_res.RDS")
 susieIfs6 <- paste0(results_dir, runtag, "_simu",simutags, "_UKBBLD", ".weight6.estimatedL.finemap_regions_res.RDS")
+colocfs1 <- paste0(results_dir, runtag, "_simu",simutags, "_weight1.coloc_res.RDS")
+colocfs2 <- paste0(results_dir, runtag, "_simu",simutags, "_weight2.coloc_res.RDS")
+colocfs3 <- paste0(results_dir, runtag, "_simu",simutags, "_weight3.coloc_res.RDS")
+colocfs4 <- paste0(results_dir, runtag, "_simu",simutags, "_weight4.coloc_res.RDS")
+colocfs5 <- paste0(results_dir, runtag, "_simu",simutags, "_weight5.coloc_res.RDS")
+colocfs6 <- paste0(results_dir, runtag, "_simu",simutags, "_weight6.coloc_res.RDS")
 zgenefs <- paste0(results_dir, runtag, "_simu",simutags, "_UKBBLD", ".z_gene.RDS")
 plot_df <- data.frame()
 for(i in 1:5){
@@ -465,7 +471,6 @@ for(i in 1:5){
   
   multi_cTWAS_genes <- get_top_genes(susieIfs[i])
   
-  print(length(multi_cTWAS_genes))
   plot_df <- rbind(plot_df,
                    data.frame(simutag=i,
                               method="multi-cTWAS",
@@ -490,11 +495,28 @@ for(i in 1:5){
                               method="cTWAS",
                               count=length(single_cTWAS_genes)-length(intersect(single_cTWAS_genes,causal_genes)),
                               ifcausal=F))
+  
+  coloc_genes <- c(get_top_genes_coloc(colocfs1[i],"expression_Liver"),get_top_genes_coloc(colocfs2[i],"splicing_Liver"),
+                   get_top_genes_coloc(colocfs3[i],"expressionAdipose_Subcutaneous"),get_top_genes_coloc(colocfs4[i],"splicing_Adipose_Subcutaneous"),
+                   get_top_genes_coloc(colocfs5[i],"expression_Lung"),get_top_genes_coloc(colocfs6[i],"splicing_Lung"))
+  
+  coloc_genes <- unique(sapply(coloc_genes, function(x){unlist(strsplit(x, "[|]"))[1]}))
+  
+  plot_df <- rbind(plot_df,
+                   data.frame(simutag=i,
+                              method="coloc",
+                              count=length(intersect(coloc_genes,causal_genes)),
+                              ifcausal=T))
+  plot_df <- rbind(plot_df,
+                   data.frame(simutag=i,
+                              method="coloc",
+                              count=length(coloc_genes)-length(intersect(coloc_genes,causal_genes)),
+                              ifcausal=F))
 }
 ```
 
 ```{r echo=FALSE}
-plot_df$method <- factor(plot_df$method, levels=c("TWAS", "cTWAS", "multi-cTWAS"))
+plot_df$method <- factor(plot_df$method, levels=c("TWAS", "coloc", "cTWAS", "multi-cTWAS"))
 plot_df$ifcausal <- plot_df$ifcausal + as.numeric(as.factor(plot_df$method))*10
 plot_df$ifcausal <- as.factor(plot_df$ifcausal)
 ```
@@ -519,7 +541,7 @@ ggbarplot(plot_df,
           width = 0.5,
           ylab="Count", 
           xlab="",
-          palette = colset) + grids(linetype = "dashed") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + scale_y_break(c(50, 600),space=0.5,scales="free")
+          palette = colset) + grids(linetype = "dashed") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 #dev.off()
 ```
 
