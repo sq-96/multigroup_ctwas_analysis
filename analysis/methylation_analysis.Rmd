@@ -199,14 +199,15 @@ grid.arrange(
 
 ## IBD results
 
-### cTWAS parameters with methylation lasso models (50kb, h2 pvalue<0.00001)
-```{r, echo=FALSE, fig.width=15, fig.height=13}
+### cTWAS parameters (50kb, h2 pvalue<0.00001)
+```{r, echo=FALSE, fig.width=10, fig.height=10}
 param <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_multi_E_M/ibd_multi_E_M.param.RDS")
 gwas_n <- 59957
 colors <- c(  "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728",  "#9467bd", "#8c564b", "#e377c2", "#7f7f7f",  "#bcbd22",  "#17becf",  "#f7b6d2",  "#c5b0d5",  "#9edae5", "#ffbb78",  "#98df8a",  "#ff9896" )
 make_convergence_plots(param, gwas_n,colors = colors)
 ```
-### Percent of heritability with methylation lasso models
+
+### meQTLs explained 10% heritability
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=10, fig.height=5}
 ctwas_parameters <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_multi_E_M/ibd_multi_E_M.ctwas_parameters.RDS")
 pve_pie_by_type_multi <- plot_piechart(ctwas_parameters = ctwas_parameters, colors = colors, by = "type")
@@ -215,8 +216,8 @@ aplot::plot_list(pve_pie_by_type_multi,pve_pie_by_context_multi)
 #gridExtra::grid.arrange(pve_pie_by_type_multi,pve_pie_by_context_multi, ncol = 2)
 ```
 
-### Top cTWAS genes with methylation lasso models
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
+### cTWAS with eQTLs and meQTLs identifies 28 genes with PIP > 0.8
+```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
 gwas_n <- 59957
 finemap_res <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_multi_E_M/ibd_multi_E_M.finemap_regions_res.RDS")
 gene_annot <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_E_S_M_mapping.RDS")
@@ -225,19 +226,19 @@ susie_alpha_res <- anno_susie_alpha_res(finemap_res$susie_alpha_res,
                                         map_by = "molecular_id",
                                         drop_unmapped = TRUE)
 
-combined_pip_by_type <- combine_gene_pips(susie_alpha_res, 
-                                             group_by = "gene_name",
-                                             by = "type",
-                                             method = "combine_cs",
-                                             filter_cs = TRUE,
-                                             include_cs_id = FALSE)
+#combined_pip_by_type <- combine_gene_pips(susie_alpha_res, 
+#                                             group_by = "gene_name",
+#                                             by = "type",
+#                                             method = "combine_cs",
+#                                             filter_cs = TRUE,
+#                                             include_cs_id = FALSE)
 
-combined_pip_by_context <- combine_gene_pips(susie_alpha_res, 
-                                             group_by = "gene_name",
-                                             by = "context",
-                                             method = "combine_cs",
-                                             filter_cs = TRUE,
-                                             include_cs_id = FALSE)
+#combined_pip_by_context <- combine_gene_pips(susie_alpha_res, 
+#                                             group_by = "gene_name",
+#                                             by = "context",
+#                                             method = "combine_cs",
+#                                             filter_cs = TRUE,
+#                                             include_cs_id = FALSE)
 
 combined_pip_by_group <- combine_gene_pips(susie_alpha_res, 
                                              group_by = "gene_name",
@@ -246,15 +247,15 @@ combined_pip_by_group <- combine_gene_pips(susie_alpha_res,
                                              filter_cs = TRUE,
                                              include_cs_id = FALSE)
 
-DT::datatable(combined_pip_by_type[combined_pip_by_type$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by modalities'),options = list(pageLength = 10) )
+#DT::datatable(combined_pip_by_type[combined_pip_by_type$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by modalities'),options = list(pageLength = 10) )
 
-DT::datatable(combined_pip_by_context[combined_pip_by_context$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by contexts'),options = list(pageLength = 10) )
+#DT::datatable(combined_pip_by_context[combined_pip_by_context$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by contexts'),options = list(pageLength = 10) )
 
 DT::datatable(combined_pip_by_group,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by modalities and contexts'),options = list(pageLength = 10) )
 ```
 
-### Top cTWAS genes from single tissue models
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
+### Top cTWAS genes from single group models have very little overlap
+```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
 gene_annot <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_E_S_M_mapping.RDS")
 snp_map <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_wholeblood_E/ibd_wholeblood_E.snp_map.RDS")
 wholeblood_E_res <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_wholeblood_E/ibd_wholeblood_E.finemap_regions_res.RDS")
@@ -266,7 +267,7 @@ wholeblood_E_res <- anno_finemap_res(wholeblood_E_res$finemap_res,
                                 drop_unmapped = TRUE,
                                 add_position = TRUE,
                                 use_gene_pos = "mid")
-wholeblood_E_res <- subset(wholeblood_E_res, type != "SNP" & susie_pip > 0.75 & !is.na(cs))
+wholeblood_E_res <- subset(wholeblood_E_res, type != "SNP" & susie_pip > 0.8 & !is.na(cs))
 wholeblood_E_res <- wholeblood_E_res[,c("gene_name","susie_pip","context")]
 DT::datatable(wholeblood_E_res,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Top eQTL genes in wholeblood'),options = list(pageLength = 10) )
 
@@ -295,7 +296,7 @@ colon_E_res <- anno_finemap_res(colon_E_res$finemap_res,
                                 drop_unmapped = TRUE,
                                 add_position = TRUE,
                                 use_gene_pos = "mid")
-colon_E_res <- subset(colon_E_res, type != "SNP" & susie_pip > 0.75 & !is.na(cs))
+colon_E_res <- subset(colon_E_res, type != "SNP" & susie_pip > 0.8 & !is.na(cs))
 colon_E_res <- colon_E_res[,c("gene_name","susie_pip","context")]
 DT::datatable(colon_E_res,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Top eQTL genes in colon'),options = list(pageLength = 10) )
 
@@ -334,7 +335,7 @@ aa <- venn.diagram(
 grid.draw(aa)
 ```
 
-```{r echo=FALSE}
+```{r, echo=FALSE, results='hide'}
 gwas_n <- 59957
 finemap_res <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_multi_M/ibd_multi_M.finemap_regions_res.RDS")
 gene_annot <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_E_S_M_mapping.RDS")
@@ -346,7 +347,7 @@ susie_alpha_res <- anno_susie_alpha_res(finemap_res$susie_alpha_res,
 
 genes_M <- combine_gene_pips(susie_alpha_res, 
                                group_by = "gene_name",
-                               by = "type",
+                               by = "context",
                                method = "combine_cs",
                                filter_cs = TRUE,
                                include_cs_id = FALSE)
@@ -354,7 +355,7 @@ genes_M <- combine_gene_pips(susie_alpha_res,
 genes_M <- genes_M[genes_M$combined_pip>0.8,]
 ```
 
-```{r echo=FALSE}
+```{r, echo=FALSE, results='hide'}
 gwas_n <- 59957
 finemap_res <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_multi_E/ibd_multi_E.finemap_regions_res.RDS")
 gene_annot <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_E_S_M_mapping.RDS")
@@ -366,7 +367,7 @@ susie_alpha_res <- anno_susie_alpha_res(finemap_res$susie_alpha_res,
 
 genes_E <- combine_gene_pips(susie_alpha_res, 
                                group_by = "gene_name",
-                               by = "type",
+                               by = "context",
                                method = "combine_cs",
                                filter_cs = TRUE,
                                include_cs_id = FALSE)
@@ -374,7 +375,7 @@ genes_E <- combine_gene_pips(susie_alpha_res,
 genes_E <- genes_E[genes_E$combined_pip>0.8,]
 ```
 
-```{r echo=FALSE}
+```{r, echo=FALSE, results='hide'}
 gwas_n <- 59957
 finemap_res <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_multi_E_M/ibd_multi_E_M.finemap_regions_res.RDS")
 gene_annot <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_E_S_M_mapping.RDS")
@@ -386,7 +387,7 @@ susie_alpha_res <- anno_susie_alpha_res(finemap_res$susie_alpha_res,
 
 genes_EM <- combine_gene_pips(susie_alpha_res, 
                                group_by = "gene_name",
-                               by = "type",
+                               by = "context",
                                method = "combine_cs",
                                filter_cs = TRUE,
                                include_cs_id = FALSE)
@@ -394,8 +395,31 @@ genes_EM <- combine_gene_pips(susie_alpha_res,
 genes_EM <- genes_EM[genes_EM$combined_pip>0.8,]
 ```
 
+### Adding eQTL to meQTL identifies an additional 16 high PIP genes
+1. 12/17 meQTL genes still have combined PIP > 0.8 after adding eQTL
+2. 3/17 meQTL genes have decreased combined PIP < 0.8 after adding eQTL
+3. 2/17 meQTL genes are lost, due to region selection after adding eQTL
+4. Among the 12 overalpped genes:
+- One gene (BRD7) is mediation (meQTL pip decreases from 0.96 to 0.09, eQTL pip=0.90).
+- Two genes (TNFSF15 and ATG16L1) are competition (eQTL pip = 0.2 and meQTL pip is decreased by 0.2).
+- Nine genes are meQTL alone (no eQTL pip).
+```{r, echo=FALSE, fig.width=5, fig.height=5}
+set1 <- genes_M$gene_name
+set2 <- genes_EM$gene_name
+aa <- venn.diagram(
+  x = list(set1, set2),
+  category.names = c("meQTL alone","meQTL + eQTL"),
+  filename = NULL,
+  lwd = 2,
+  lty = 'blank',
+  fill = c("#87CEFA","#fb8072")
+)
+
+grid.draw(aa)
+```
+
 ### Adding meQTL to eQTL identifies an additional 11 high PIP genes
-```{r echo=FALSE}
+```{r, echo=FALSE, fig.width=5, fig.height=5}
 set1 <- genes_E$gene_name
 set2 <- genes_EM$gene_name
 aa <- venn.diagram(
@@ -410,25 +434,167 @@ aa <- venn.diagram(
 grid.draw(aa)
 ```
 
-### Adding eQTL to meQTL identifies an additional 16 high PIP genes
-1. 12/17 meQTL genes still have combined PIP > 0.8 after adding eQTL
-2. 3/17 meQTL genes have decreased combined PIP < 0.8 after adding eQTL
-3. 2/17 meQTL genes are lost, due to region selection after adding eQTL
-4. Among the 12 overalpped genes:
-- One gene (BRD7) is mediation (meQTL pip decreases from 0.96 to 0.09, eQTL pip=0.90).
-- Two genes (TNFSF15 and ATG16L1) are competition (eQTL pip = 0.2 and meQTL pip is decreased by 0.2).
-- Nine genes are meQTL alone (no eQTL pip).
-```{r echo=FALSE}
-set1 <- genes_M$gene_name
-set2 <- genes_EM$gene_name
-aa <- venn.diagram(
-  x = list(set1, set2),
-  category.names = c("meQTL alone","meQTL + eQTL"),
-  filename = NULL,
-  lwd = 2,
-  lty = 'blank',
-  fill = c("#87CEFA","#fb8072")
-)
+### Genes that identified by meQTL not eQTL
+```{r echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+library(ctwas)
+library(EnsDb.Hsapiens.v86)
+ens_db <- EnsDb.Hsapiens.v86
 
-grid.draw(aa)
+mapping_predictdb <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_E_S_M_mapping.RDS")
+ctwas_res_multi <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_multi_E_M/ibd_multi_E_M.finemap_regions_res.RDS")
+snp_map_multi <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_multi_E_M/ibd_multi_E_M.snp_map.RDS")
+weights_multi <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_multi_E_M/ibd_multi_E_M.preprocessed.weights.RDS")
+
+finemap_res_multi <- ctwas_res_multi$finemap_res
+finemap_res_multi <- anno_finemap_res(finemap_res_multi,
+                                      snp_map = snp_map_multi,
+                                      mapping_table = mapping_predictdb,
+                                      add_gene_annot = TRUE,
+                                      map_by = "molecular_id",
+                                      drop_unmapped = TRUE,
+                                      add_position = TRUE,
+                                      use_gene_pos = "mid")
 ```
+
+```{r}
+finemap_res_multi[!is.na(finemap_res_multi$gene_name) & finemap_res_multi$gene_name == "ETS1", ]
+#pdf(file = "/project/xinhe/shengqian/TNFSF15.pdf",width = 12,height = 10)#
+make_locusplot(finemap_res_multi,
+               region_id = "9_114257521_115159681",
+               ens_db = ens_db,
+               weights = weights_multi,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = TRUE,
+               filter_cs = TRUE,
+               color_pval_by = "cs",
+               color_pip_by = "cs",
+               point.sizes = c(2, 8),
+               label.text.size = 4,
+               axis.text.size = 18,
+               axis.title.size = 18,
+               legend.text.size = 18,
+               panel.heights = c(4, 4, 0.8, 2))
+```
+
+```{r, echo=FALSE, eval=FALSE}
+dev.off()
+
+pdf(file = "/project/xinhe/shengqian/ATG16L1.pdf",width = 12,height = 10)
+#finemap_res_multi[finemap_res_multi$gene_name=="TNFSF15",]
+make_locusplot(finemap_res_multi,
+               region_id = "2_232685293_234242343",
+               ens_db = ens_db,
+               weights = weights_multi,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = TRUE,
+               filter_cs = TRUE,
+               color_pval_by = "cs",
+               color_pip_by = "cs",
+               point.sizes = c(2, 8),
+               label.text.size = 4,
+               axis.text.size = 18,
+               axis.title.size = 18,
+               legend.text.size = 18,
+               panel.heights = c(4, 4, 0.8, 2))
+dev.off()
+
+pdf(file = "/project/xinhe/shengqian/ETS1.pdf",width = 12,height = 10)
+#finemap_res_multi[finemap_res_multi$gene_name=="TNFSF15",]
+make_locusplot(finemap_res_multi,
+               region_id = "11_128318642_130472680",
+               #locus_range = c(128318642, 128800000),
+               ens_db = ens_db,
+               weights = weights_multi,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = TRUE,
+               filter_cs = TRUE,
+               color_pval_by = "cs",
+               color_pip_by = "cs",
+               point.sizes = c(2, 8),
+               label.text.size = 4,
+               axis.text.size = 18,
+               axis.title.size = 18,
+               legend.text.size = 18,
+               panel.heights = c(4, 4, 0.8, 2))
+dev.off()
+
+pdf(file = "/project/xinhe/shengqian/HLA_DRA.pdf",width = 12,height = 10)
+#finemap_res_multi[finemap_res_multi$gene_name=="TNFSF15",]
+make_locusplot(finemap_res_multi,
+               region_id = "6_31603441_32714887",
+               locus_range = c(32214887, 32614887),
+               ens_db = ens_db,
+               weights = weights_multi,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = TRUE,
+               filter_cs = F,
+               color_pval_by = "cs",
+               color_pip_by = "cs",
+               point.sizes = c(1, 6),
+               label.text.size = 4,
+               axis.text.size = 18,
+               axis.title.size = 18,
+               legend.text.size = 18,
+               panel.heights = c(4, 4, 0.8, 2))
+dev.off()
+
+pdf(file = "/project/xinhe/shengqian/ADCY3.pdf",width = 12,height = 10)
+#finemap_res_multi[finemap_res_multi$gene_name=="TNFSF15",]
+make_locusplot(finemap_res_multi,
+               region_id = "2_24464049_26672117",
+               locus_range = c(24464049, 25272117),
+               ens_db = ens_db,
+               weights = weights_multi,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = TRUE,
+               filter_cs = T,
+               color_pval_by = "cs",
+               color_pip_by = "cs",
+               point.sizes = c(2, 6),
+               label.text.size = 4,
+               axis.text.size = 18,
+               axis.title.size = 18,
+               legend.text.size = 18,
+               panel.heights = c(4, 4, 0.8, 2))
+dev.off()
+
+pdf(file = "/project/xinhe/shengqian/RGS14.pdf",width = 12,height = 10)
+#finemap_res_multi[finemap_res_multi$gene_name=="TNFSF15",]
+make_locusplot(finemap_res_multi,
+               region_id = "5_176023592_177824506",
+               ens_db = ens_db,
+               weights = weights_multi,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = TRUE,
+               filter_cs = T,
+               color_pval_by = "cs",
+               color_pip_by = "cs",
+               point.sizes = c(2, 6),
+               label.text.size = 4,
+               axis.text.size = 18,
+               axis.title.size = 18,
+               legend.text.size = 18,
+               panel.heights = c(4, 4, 0.8, 2))
+dev.off()
+
+finemap_res_multi[!is.na(finemap_res_multi$gene_name) & finemap_res_multi$gene_name == "SEC16A", ]
+pdf(file = "/project/xinhe/shengqian/SEC16A.pdf",width = 12,height = 10)
+#finemap_res_multi[finemap_res_multi$gene_name=="TNFSF15",]
+make_locusplot(finemap_res_multi,
+               region_id = "9_136047132_136605890",
+               ens_db = ens_db,
+               weights = weights_multi,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = TRUE,
+               filter_cs = T,
+               color_pval_by = "cs",
+               color_pip_by = "cs",
+               point.sizes = c(2, 6),
+               label.text.size = 4,
+               axis.text.size = 18,
+               axis.title.size = 18,
+               legend.text.size = 18,
+               panel.heights = c(4, 4, 0.8, 2))
+dev.off()
+```
+
