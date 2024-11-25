@@ -405,7 +405,8 @@ genes_EM <- genes_EM[genes_EM$combined_pip>0.8,]
 - One gene (BRD7) is mediation (meQTL pip decreases from 0.96 to 0.09, eQTL pip=0.90).
 - Two genes (TNFSF15 and ATG16L1) are competition (eQTL pip = 0.2 and meQTL pip is decreased by 0.2).
 - Nine genes are meQTL alone (no eQTL pip).
-```{r, echo=FALSE, fig.width=6, fig.height=5}
+
+```{r, echo=FALSE, fig.width=7, fig.height=4}
 set1 <- genes_M$gene_name
 set2 <- genes_EM$gene_name
 aa <- venn.diagram(
@@ -485,7 +486,7 @@ make_locusplot(finemap_res_multi,
 ```
 
 ### Adding meQTL to eQTL identifies an additional 11 high PIP genes
-```{r, echo=FALSE, fig.width=6, fig.height=5}
+```{r, echo=FALSE, fig.width=7, fig.height=4}
 set1 <- genes_E$gene_name
 set2 <- genes_EM$gene_name
 aa <- venn.diagram(
@@ -501,6 +502,9 @@ grid.draw(aa)
 ```
 
 ### Genes that identified by meQTL not eQTL
+```{r echo=FALSE}
+setdiff(set2,set1)
+```
 
 #### ETS1
 Supporting a possible role for Ets1 in inflammatory syndromes of the gut is the identification of SNPs in the human ETS1 gene locus as a susceptibility alleles for celiac disease. https://pmc.ncbi.nlm.nih.gov/articles/PMC10842644/
