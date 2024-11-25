@@ -18,6 +18,8 @@ library(RSQLite)
 library(dplyr)
 library(magrittr)
 library(pheatmap)
+library(EnsDb.Hsapiens.v86)
+ens_db <- EnsDb.Hsapiens.v86
 plot_piechart <- function(ctwas_parameters, colors, by) {
   # Create the initial data frame
   data <- data.frame(
@@ -217,7 +219,7 @@ aplot::plot_list(pve_pie_by_type_multi,pve_pie_by_context_multi)
 ```
 
 ### cTWAS with eQTLs and meQTLs identifies 28 genes with PIP > 0.8
-```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
 gwas_n <- 59957
 finemap_res <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_multi_E_M/ibd_multi_E_M.finemap_regions_res.RDS")
 gene_annot <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_E_S_M_mapping.RDS")
@@ -418,6 +420,70 @@ aa <- venn.diagram(
 grid.draw(aa)
 ```
 
+```{r echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+mapping_predictdb <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_E_S_M_mapping.RDS")
+ctwas_res_multi <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_multi_E_M/ibd_multi_E_M.finemap_regions_res.RDS")
+snp_map_multi <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_multi_E_M/ibd_multi_E_M.snp_map.RDS")
+weights_multi <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_multi_E_M/ibd_multi_E_M.preprocessed.weights.RDS")
+finemap_res_multi <- ctwas_res_multi$finemap_res
+finemap_res_multi <- anno_finemap_res(finemap_res_multi,
+                                      snp_map = snp_map_multi,
+                                      mapping_table = mapping_predictdb,
+                                      add_gene_annot = TRUE,
+                                      map_by = "molecular_id",
+                                      drop_unmapped = TRUE,
+                                      add_position = TRUE,
+                                      use_gene_pos = "mid")
+```
+
+#### BRD7
+```{r echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+#finemap_res_multi[!is.na(finemap_res_multi$gene_name) & finemap_res_multi$gene_name == "ETS1", ]
+#pdf(file = "/project/xinhe/shengqian/TNFSF15.pdf",width = 12,height = 10)#
+make_locusplot(finemap_res_multi,
+               region_id = "16_48974015_52001911",
+               ens_db = ens_db,
+               weights = weights_multi,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = TRUE,
+               filter_cs = TRUE,
+               color_pval_by = "cs",
+               color_pip_by = "cs",
+               panel.heights = c(4, 4, 1, 2)
+               )
+```
+
+#### TNFSF15
+```{r echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+#finemap_res_multi[!is.na(finemap_res_multi$gene_name) & finemap_res_multi$gene_name == "ETS1", ]
+#pdf(file = "/project/xinhe/shengqian/TNFSF15.pdf",width = 12,height = 10)#
+make_locusplot(finemap_res_multi,
+               region_id = "9_114257521_115159681",
+               ens_db = ens_db,
+               weights = weights_multi,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = TRUE,
+               filter_cs = TRUE,
+               color_pval_by = "cs",
+               color_pip_by = "cs",
+               panel.heights = c(4, 4, 1, 2))
+```
+
+#### ATG16L1
+```{r, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+#pdf(file = "/project/xinhe/shengqian/ATG16L1.pdf",width = 12,height = 10)
+make_locusplot(finemap_res_multi,
+               region_id = "2_232685293_234242343",
+               ens_db = ens_db,
+               weights = weights_multi,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = TRUE,
+               filter_cs = TRUE,
+               color_pval_by = "cs",
+               color_pip_by = "cs",
+               panel.heights = c(4, 4, 1, 2))
+```
+
 ### Adding meQTL to eQTL identifies an additional 11 high PIP genes
 ```{r, echo=FALSE, fig.width=6, fig.height=5}
 set1 <- genes_E$gene_name
@@ -435,58 +501,9 @@ grid.draw(aa)
 ```
 
 ### Genes that identified by meQTL not eQTL
-```{r echo=FALSE, message=FALSE, results='hide', warning=FALSE}
-library(ctwas)
-library(EnsDb.Hsapiens.v86)
-ens_db <- EnsDb.Hsapiens.v86
-
-mapping_predictdb <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_E_S_M_mapping.RDS")
-ctwas_res_multi <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_multi_E_M/ibd_multi_E_M.finemap_regions_res.RDS")
-snp_map_multi <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_multi_E_M/ibd_multi_E_M.snp_map.RDS")
-weights_multi <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_multi_E_M/ibd_multi_E_M.preprocessed.weights.RDS")
-
-finemap_res_multi <- ctwas_res_multi$finemap_res
-finemap_res_multi <- anno_finemap_res(finemap_res_multi,
-                                      snp_map = snp_map_multi,
-                                      mapping_table = mapping_predictdb,
-                                      add_gene_annot = TRUE,
-                                      map_by = "molecular_id",
-                                      drop_unmapped = TRUE,
-                                      add_position = TRUE,
-                                      use_gene_pos = "mid")
-```
 
 #### ETS1
-```{r echo=FALSE, message=FALSE, results='hide', warning=FALSE}
-#finemap_res_multi[!is.na(finemap_res_multi$gene_name) & finemap_res_multi$gene_name == "ETS1", ]
-#pdf(file = "/project/xinhe/shengqian/TNFSF15.pdf",width = 12,height = 10)#
-make_locusplot(finemap_res_multi,
-               region_id = "9_114257521_115159681",
-               ens_db = ens_db,
-               weights = weights_multi,
-               highlight_pip = 0.8,
-               filter_protein_coding_genes = TRUE,
-               filter_cs = TRUE,
-               color_pval_by = "cs",
-               color_pip_by = "cs")
-```
-
-
-#### ATG16L1
-```{r, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
-#pdf(file = "/project/xinhe/shengqian/ATG16L1.pdf",width = 12,height = 10)
-make_locusplot(finemap_res_multi,
-               region_id = "2_232685293_234242343",
-               ens_db = ens_db,
-               weights = weights_multi,
-               highlight_pip = 0.8,
-               filter_protein_coding_genes = TRUE,
-               filter_cs = TRUE,
-               color_pval_by = "cs",
-               color_pip_by = "cs")
-```
-
-#### TNFSF15
+Supporting a possible role for Ets1 in inflammatory syndromes of the gut is the identification of SNPs in the human ETS1 gene locus as a susceptibility alleles for celiac disease. https://pmc.ncbi.nlm.nih.gov/articles/PMC10842644/
 ```{r, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 #pdf(file = "/project/xinhe/shengqian/TNFSF15.pdf",width = 12,height = 10)
 make_locusplot(finemap_res_multi,
@@ -497,7 +514,42 @@ make_locusplot(finemap_res_multi,
                filter_protein_coding_genes = TRUE,
                filter_cs = TRUE,
                color_pval_by = "cs",
-               color_pip_by = "cs")
+               color_pip_by = "cs",
+               panel.heights = c(4, 4, 1, 2))
+```
+
+#### RGS14
+Examples conserved between the mouse and human DNMT3A-deficient state comprise RGS14 (Regulator of G-protein signaling 14) and IFITM3 (Interferon-induced transmembrane protein 3), which showed a canonically increased expression with reduced methylation in the promoter region (https://www.nature.com/articles/s41467-022-33844-2#MOESM1)
+
+Colocalization analysis revealed eight candidate genetic variants and risk genes (including LINC00824, CDKAL1, IL10, IL23R, DNAJC27, LPP, RUNX3, and RGS14) associated with a shared genetic basis. Among these, IL23R, DNAJC27, LPP, and RGS14 were further validated by MVMR analysis. (https://www.tandfonline.com/doi/full/10.1080/07853890.2023.2281658#abstract)
+```{r, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+#pdf(file = "/project/xinhe/shengqian/ATG16L1.pdf",width = 12,height = 10)
+make_locusplot(finemap_res_multi,
+               region_id = "5_176023592_177824506",
+               ens_db = ens_db,
+               weights = weights_multi,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = TRUE,
+               filter_cs = TRUE,
+               color_pval_by = "cs",
+               color_pip_by = "cs",
+               panel.heights = c(4, 4, 1, 2))
+```
+
+#### SEC16A
+Both patients harboured other potentially damaging mutations in the GSDMB, ERAP2 and SEC16A genes.(https://pubmed.ncbi.nlm.nih.gov/22543157/)
+```{r, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+#pdf(file = "/project/xinhe/shengqian/ATG16L1.pdf",width = 12,height = 10)
+make_locusplot(finemap_res_multi,
+               region_id = "9_136047132_136605890",
+               ens_db = ens_db,
+               weights = weights_multi,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = TRUE,
+               filter_cs = TRUE,
+               color_pval_by = "cs",
+               color_pip_by = "cs",
+               panel.heights = c(4, 4, 1, 2))
 ```
 
 #### HLA_DRA
@@ -512,7 +564,8 @@ make_locusplot(finemap_res_multi,
                filter_protein_coding_genes = TRUE,
                filter_cs = TRUE,
                color_pval_by = "cs",
-               color_pip_by = "cs")
+               color_pip_by = "cs",
+               panel.heights = c(4, 4, 1, 2))
 ```
 
 #### ADCY3
@@ -527,36 +580,11 @@ make_locusplot(finemap_res_multi,
                filter_protein_coding_genes = TRUE,
                filter_cs = TRUE,
                color_pval_by = "cs",
-               color_pip_by = "cs")
+               color_pip_by = "cs",
+               panel.heights = c(4, 4, 1, 2))
 ```
 
-#### RGS14
-```{r, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
-#pdf(file = "/project/xinhe/shengqian/ATG16L1.pdf",width = 12,height = 10)
-make_locusplot(finemap_res_multi,
-               region_id = "5_176023592_177824506",
-               ens_db = ens_db,
-               weights = weights_multi,
-               highlight_pip = 0.8,
-               filter_protein_coding_genes = TRUE,
-               filter_cs = TRUE,
-               color_pval_by = "cs",
-               color_pip_by = "cs")
-```
 
-#### SEC16A
-```{r, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
-#pdf(file = "/project/xinhe/shengqian/ATG16L1.pdf",width = 12,height = 10)
-make_locusplot(finemap_res_multi,
-               region_id = "9_136047132_136605890",
-               ens_db = ens_db,
-               weights = weights_multi,
-               highlight_pip = 0.8,
-               filter_protein_coding_genes = TRUE,
-               filter_cs = TRUE,
-               color_pval_by = "cs",
-               color_pip_by = "cs")
-```
 
 
 
