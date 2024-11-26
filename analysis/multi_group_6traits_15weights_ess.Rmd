@@ -134,79 +134,7 @@ plot_piechart <- function(ctwas_parameters, colors, by) {
   return(pie)
 }
 
-draw_gene_piechart_type <- function(data, colors) {
-  # Filter data based on combined_pip
-  data <- data[data$combined_pip > 0.8, ]
-  
-  # Count occurrences by eQTL, sQTL, and stQTL
-  byeQTL <- nrow(data[data$eQTL_pip / data$combined_pip > 0.8, ])
-  bysQTL <- nrow(data[data$sQTL_pip / data$combined_pip > 0.8, ])
-  bystQTL <- nrow(data[data$stQTL_pip / data$combined_pip > 0.8, ])
-  
-  # Count occurrences for combined sQTL and stQTL
-  bysQTLstQTL <- nrow(data[((data$stQTL_pip + data$sQTL_pip) / data$combined_pip) > 0.8 &
-                             data$stQTL_pip / data$combined_pip < 0.8 &
-                             data$sQTL_pip / data$combined_pip < 0.8, ])
-  
-  # Count unspecified
-  unspecified <- nrow(data) - byeQTL - bysQTL - bystQTL - bysQTLstQTL
-  
-  # Create vectors for plotting
-  n <- c(byeQTL, bysQTL, bystQTL, bysQTLstQTL, unspecified)
-  prop <- round(n / nrow(data), 3)
-  labels = c("by eQTL", "by sQTL", "by stQTL", "by sQTL+stQTL", "unspecified")
-  lab.ypos = cumsum(prop) - 0.5 * prop
-  
-  # Prepare the data frame for plotting
-  df <- data.frame("n" = n,
-                   "class" = labels,
-                   "prop" = prop,
-                   "lab.ypos" = lab.ypos)
-  
-  # Generate the pie chart
-  ggplot(df, aes(x = "", y = prop, fill = class)) +
-    geom_bar(width = 1, stat = "identity", color = "white") +
-    coord_polar("y", start = 0) +
-    geom_text(aes(label = n),
-              position = position_stack(vjust = 0.5)) +
-    scale_fill_manual(values = colors) +  # Ensure 'palette' is defined
-    theme_void()
-}
 
-draw_gene_piechart_tissue <- function(data, colors){
-  
-  data <- data[data$combined_pip>0.8,]
-  tissues <- colnames(data)[3:7]
-  tissues <- sub("_pip$", "", tissues)
-  colnames(data)[3:7] <- paste0("tissue",c(1:5))
-  
-  
-  bytissue1 <- nrow(data[data$tissue1/data$combined_pip>0.8,])
-  bytissue2 <- nrow(data[data$tissue2/data$combined_pip>0.8,])
-  bytissue3 <- nrow(data[data$tissue3/data$combined_pip>0.8,])
-  bytissue4 <- nrow(data[data$tissue4/data$combined_pip>0.8,])
-  bytissue5 <- nrow(data[data$tissue5/data$combined_pip>0.8,])
-  unspecified <- nrow(data)-bytissue1-bytissue2-bytissue3-bytissue4-bytissue5
-  
-  n <- c(bytissue1,bytissue2,bytissue3,bytissue4,bytissue5,unspecified)
-  
-  prop <- round(n/nrow(data),3)
-  labels = c(tissues,"unspecified")
-  lab.ypos = cumsum(prop) - 0.5*prop
-  df <- data.frame("n" = n,
-                   "class" = labels,
-                   "prop" = prop,
-                   "lab.ypos" = lab.ypos)
-  p <- ggplot(df, aes(x = "", y = prop, fill = class)) +
-    geom_bar(width = 1, stat = "identity", color = "white") +
-    coord_polar("y", start = 0)+
-    geom_text(aes(label = n),
-              position = position_stack(vjust = 0.5))+
-    scale_fill_manual(values = colors) +
-    theme_void()
-  
-  return(p)
-}
 
 plot_heatmap <- function(heatmap_data, main) {
   
@@ -232,6 +160,50 @@ plot_heatmap <- function(heatmap_data, main) {
   return(p)
 }
 
+
+compute_pip_per_cs <- function(combined_data, susie_data) {
+  # Initialize an empty list to store results
+  details <- list()
+  
+  # Iterate over each unique gene name in the combined data
+  unique_genes <- unique(combined_data$gene_name)
+  
+  for (genename in unique_genes) {
+    # dplyr::filter susie data for the current gene
+    susie_alpha_res_multi_per_gene <- susie_data %>%
+      dplyr::filter(gene_name == genename)
+    
+    # Get all unique credible sets for the current gene
+    cs_all <- unique(susie_alpha_res_multi_per_gene$susie_set[susie_alpha_res_multi_per_gene$in_cs])
+    
+    if (length(cs_all) > 1) {
+      # dplyr::filter complete cases and those in credible sets
+      susie_alpha_res_multi_per_gene <- susie_alpha_res_multi_per_gene %>%
+        dplyr::filter(complete.cases(cs), in_cs)
+      
+      # Summarize the data
+      summed_alpha_with_details <- susie_alpha_res_multi_per_gene %>%
+        group_by(susie_set) %>%
+        summarise(
+          total_susie_alpha = round(sum(susie_alpha, na.rm = TRUE), digits = 3),
+          num_molecular_traits = n(),
+          ids_pip = paste0(id, "(", round(susie_alpha, digits = 3), ")", collapse = ", ")
+        )
+      
+      # Add gene name to the summarized data
+      summed_alpha_with_details$gene_name <- genename
+      
+      # Append the result to the details list
+      details[[length(details) + 1]] <- summed_alpha_with_details
+    }
+  }
+  
+  # Combine all results into a single data frame
+  final_details <- bind_rows(details)
+  final_details <- final_details[,c("gene_name","susie_set","total_susie_alpha","num_molecular_traits","ids_pip")]
+  colnames(final_details) <- c("gene_name","CS","total_PIP_CS","num_molecular_traits_CS","ids_pip_CS")
+  return(final_details)
+}
 ```
 
 
@@ -260,10 +232,60 @@ pve_pie_by_context_multi <- plot_piechart(ctwas_parameters = ctwas_parameters_mu
 gridExtra::grid.arrange(pve_pie_by_type_multi,pve_pie_by_context_multi, ncol = 2)
 ```
 
-## Fine-mapping 
+## Postprocessing -- LD mismatch
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=3, fig.height=3}
+
+finemap_res_multi <- ctwas_res_multi$finemap_res
+finemap_res_multi <- ctwas_res_multi$finemap_res
+
+finemap_res_multi_gene <- finemap_res_multi[finemap_res_multi$type != "SNP",]
+
+ggplot(data = finemap_res_multi_gene, aes(x= abs(z), y= susie_pip)) + 
+  geom_point() +
+  ggtitle("Z scores vs PIP") +
+  theme_minimal()
+
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/ld_mismatch/LD_mismatch_", trait,".rdata"))
+
+sprintf("The number of problematic regions = %s", length(problematic_region_ids))
+sprintf("The number of problematic genes = %s", length(problematic_genes))
+sprintf("The number of problematic snps = %s", length(res$problematic_snps))
+sprintf("The number of flipped snps = %s", length(res$flipped_snps))
+
+problematic_snps <- res$condz_stats[res$condz_stats$id %in% res$problematic_snps,]
+
+DT::datatable(problematic_snps,caption = htmltools::tags$caption(style = 'caption-side: topleft; text-align = left; color:black;','Stats for problematic snps'),options = list(pageLength = 5) )
+
+finemap_origin_res_problematic_region <- finemap_res_multi[finemap_res_multi$id %in% problematic_genes,]
+
+merge_origin_nold <- merge(finemap_origin_res_problematic_region,finemap_noLD_res_problematic_region, by = "id")
+merge_origin_nold <- merge_origin_nold[,c("id","susie_pip.x","susie_pip.y")]
+colnames(merge_origin_nold) <-  c("id","susie_pip_origin","susie_pip_ld-mismatch-fixed") 
+
+DT::datatable(merge_origin_nold,caption = htmltools::tags$caption(style = 'caption-side: topleft; text-align = left; color:black;','Original PIP and fixed PIP for problematic genes'),options = list(pageLength = 5) )
+
+```
+
+
+
+
+## Fine-mapping (LD mis-match fixed)
 
 ```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=12}
+
 susie_alpha_res_multi <- ctwas_res_multi$susie_alpha_res
+rerun_finemap_res <- res$finemap_res
+rerun_susie_alpha_res <- res$susie_alpha_res
+res <- update_finemap_res(finemap_res_multi, 
+                          susie_alpha_res_multi, 
+                          rerun_finemap_res, 
+                          rerun_susie_alpha_res,
+                          updated_region_ids = problematic_region_ids)
+
+finemap_res_multi <- res$finemap_res
+susie_alpha_res_multi <- res$susie_alpha_res
 
 susie_alpha_res_multi <- anno_susie_alpha_res(susie_alpha_res_multi,
                                         mapping_table = mapping_two,
@@ -395,40 +417,18 @@ make_locusplot(finemap_res_multi,
 ```
 
 
+## Exploring allelic heterogeneity
 
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=12}
 
+pip_per_cs <- compute_pip_per_cs(combined_pip_by_group_sig_multi, susie_alpha_res_multi)
 
+sprintf("Number of genes having allelic heterogeneity = %s",length(unique(pip_per_cs$gene_name)))
 
-
-
-## Postprocessing -- LD mismatch
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=6}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/ld_mismatch/LD_mismatch_", trait,".rdata"))
-
-sprintf("The number of problematic regions = %s", length(problematic_region_ids))
-sprintf("The number of problematic genes = %s", length(problematic_genes))
-sprintf("The number of problematic snps = %s", length(res$problematic_snps))
-sprintf("The number of flipped snps = %s", length(res$flipped_snps))
-
-problematic_snps <- res$condz_stats[res$condz_stats$id %in% res$problematic_snps,]
-
-DT::datatable(problematic_snps,caption = htmltools::tags$caption(style = 'caption-side: topleft; text-align = left; color:black;','Stats for problematic snps'),options = list(pageLength = 5) )
-
-finemap_res_multi <- ctwas_res_multi$finemap_res
-
-finemap_origin_res_problematic_region <- finemap_res_multi[finemap_res_multi$id %in% problematic_genes,]
-
-merge_origin_nold <- merge(finemap_origin_res_problematic_region,finemap_noLD_res_problematic_region, by = "id")
-merge_origin_nold <- merge_origin_nold[,c("id","susie_pip.x","susie_pip.y")]
-colnames(merge_origin_nold) <-  c("id","susie_pip_origin","susie_pip_ld-mismatch-fixed") 
-
-DT::datatable(merge_origin_nold,caption = htmltools::tags$caption(style = 'caption-side: topleft; text-align = left; color:black;','Original PIP and fixed PIP for problematic genes'),options = list(pageLength = 5) )
-
-
+DT::datatable(pip_per_cs,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','PIP per CS'),options = list(pageLength = 5) )
 
 ```
+
 
 
 # LDL-ukb-d-30780_irnt
@@ -456,24 +456,74 @@ pve_pie_by_context_multi <- plot_piechart(ctwas_parameters = ctwas_parameters_mu
 gridExtra::grid.arrange(pve_pie_by_type_multi,pve_pie_by_context_multi, ncol = 2)
 ```
 
-## Fine-mapping 
+## Postprocessing -- LD mismatch
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=3, fig.height=3}
+
+finemap_res_multi <- ctwas_res_multi$finemap_res
+finemap_res_multi <- ctwas_res_multi$finemap_res
+
+finemap_res_multi_gene <- finemap_res_multi[finemap_res_multi$type != "SNP",]
+
+ggplot(data = finemap_res_multi_gene, aes(x= abs(z), y= susie_pip)) +
+  geom_point() +
+  ggtitle("Z scores vs PIP") +
+  theme_minimal()
+
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/ld_mismatch/LD_mismatch_", trait,".rdata"))
+
+sprintf("The number of problematic regions = %s", length(problematic_region_ids))
+sprintf("The number of problematic genes = %s", length(problematic_genes))
+sprintf("The number of problematic snps = %s", length(res$problematic_snps))
+sprintf("The number of flipped snps = %s", length(res$flipped_snps))
+
+problematic_snps <- res$condz_stats[res$condz_stats$id %in% res$problematic_snps,]
+
+DT::datatable(problematic_snps,caption = htmltools::tags$caption(style = 'caption-side: topleft; text-align = left; color:black;','Stats for problematic snps'),options = list(pageLength = 5) )
+
+finemap_origin_res_problematic_region <- finemap_res_multi[finemap_res_multi$id %in% problematic_genes,]
+
+merge_origin_nold <- merge(finemap_origin_res_problematic_region,finemap_noLD_res_problematic_region, by = "id")
+merge_origin_nold <- merge_origin_nold[,c("id","susie_pip.x","susie_pip.y")]
+colnames(merge_origin_nold) <-  c("id","susie_pip_origin","susie_pip_ld-mismatch-fixed")
+
+DT::datatable(merge_origin_nold,caption = htmltools::tags$caption(style = 'caption-side: topleft; text-align = left; color:black;','Original PIP and fixed PIP for problematic genes'),options = list(pageLength = 5) )
+
+```
+
+
+
+
+## Fine-mapping (LD mis-match fixed)
 
 ```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=12}
+
 susie_alpha_res_multi <- ctwas_res_multi$susie_alpha_res
+rerun_finemap_res <- res$finemap_res
+rerun_susie_alpha_res <- res$susie_alpha_res
+res <- update_finemap_res(finemap_res_multi,
+                          susie_alpha_res_multi,
+                          rerun_finemap_res,
+                          rerun_susie_alpha_res,
+                          updated_region_ids = problematic_region_ids)
+
+finemap_res_multi <- res$finemap_res
+susie_alpha_res_multi <- res$susie_alpha_res
 
 susie_alpha_res_multi <- anno_susie_alpha_res(susie_alpha_res_multi,
                                         mapping_table = mapping_two,
                                         map_by = "molecular_id",
                                         drop_unmapped = TRUE)
 
-combined_pip_by_type_cs_multi <- combine_gene_pips(susie_alpha_res_multi, 
+combined_pip_by_type_cs_multi <- combine_gene_pips(susie_alpha_res_multi,
                                              group_by = "gene_name",
                                              by = "type",
                                              method = "combine_cs",
                                              filter_cs = TRUE,
                                              include_cs_id = T)
 
-combined_pip_by_context_cs_multi <- combine_gene_pips(susie_alpha_res_multi, 
+combined_pip_by_context_cs_multi <- combine_gene_pips(susie_alpha_res_multi,
                                              group_by = "gene_name",
                                              by = "context",
                                              method = "combine_cs",
@@ -484,7 +534,7 @@ DT::datatable(combined_pip_by_type_cs_multi[combined_pip_by_type_cs_multi$combin
 
 DT::datatable(combined_pip_by_context_cs_multi[combined_pip_by_context_cs_multi$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by tissue'),options = list(pageLength = 5) )
 
-combined_pip_by_group_multi <- combine_gene_pips(susie_alpha_res_multi, 
+combined_pip_by_group_multi <- combine_gene_pips(susie_alpha_res_multi,
                                              group_by = "gene_name",
                                              by = "group",
                                              method = "combine_cs",
@@ -510,7 +560,7 @@ susie_alpha_res_single <- anno_susie_alpha_res(susie_alpha_res_single,
                                         map_by = "molecular_id",
                                         drop_unmapped = TRUE)
 
-combined_pip_by_type_single <- combine_gene_pips(susie_alpha_res_single, 
+combined_pip_by_type_single <- combine_gene_pips(susie_alpha_res_single,
                                              group_by = "gene_name",
                                              by = "type",
                                              method = "combine_cs",
@@ -537,7 +587,6 @@ gene_multi_unique_type <- combined_pip_by_group_sig_multi[!combined_pip_by_group
 plot_heatmap(heatmap_data = gene_multi_unique_type, main = "PIP partition for unique genes found by multi-group analysis")
 ```
 
-
 ```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=6}
 
 snp_map_single <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/10.single_tissue_1007/results/",trait,"/",tissue[1],"/",trait,"_",tissue[1], ".snp_map.RDS"))
@@ -554,6 +603,16 @@ finemap_res_single <- anno_finemap_res(finemap_res_single,
                                 add_position = TRUE,
                                 use_gene_pos = "mid")
 
+make_locusplot(finemap_res_single,
+               region_id = "1_22760390_23594100",
+               ens_db = ens_db,
+               weights = weights_single,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = TRUE,
+               filter_cs = TRUE,
+               color_pval_by = "cs",
+               color_pip_by = "cs")
+
 
 snp_map_multi <- readRDS(paste0(results_dir_multi,trait,".snp_map.RDS"))
 weights_multi <- readRDS(paste0(results_dir_multi,trait,".preprocessed.weights.RDS"))
@@ -569,16 +628,6 @@ finemap_res_multi <- anno_finemap_res(finemap_res_multi,
                                 add_position = TRUE,
                                 use_gene_pos = "mid")
 
-make_locusplot(finemap_res_single,
-               region_id = "1_22760390_23594100",
-               ens_db = ens_db,
-               weights = weights_single,
-               highlight_pip = 0.8,
-               filter_protein_coding_genes = TRUE,
-               filter_cs = TRUE,
-               color_pval_by = "cs",
-               color_pip_by = "cs")
-
 make_locusplot(finemap_res_multi,
                region_id = "1_22760390_23594100",
                ens_db = ens_db,
@@ -598,6 +647,7 @@ make_locusplot(finemap_res_single,
                filter_cs = TRUE,
                color_pval_by = "cs",
                color_pip_by = "cs")
+
 
 make_locusplot(finemap_res_multi,
                region_id = "1_61456693_62989418",
@@ -628,39 +678,18 @@ make_locusplot(finemap_res_multi,
                filter_cs = TRUE,
                color_pval_by = "cs",
                color_pip_by = "cs")
+```
+
+## Exploring allelic heterogeneity
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=12}
+
+pip_per_cs <- compute_pip_per_cs(combined_pip_by_group_sig_multi, susie_alpha_res_multi)
+
+DT::datatable(pip_per_cs,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','PIP per CS'),options = list(pageLength = 5) )
 
 ```
 
-
-
-## Postprocessing -- LD mismatch
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=6}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/ld_mismatch/LD_mismatch_", trait,".rdata"))
-
-sprintf("The number of problematic regions = %s", length(problematic_region_ids))
-sprintf("The number of problematic genes = %s", length(problematic_genes))
-sprintf("The number of problematic snps = %s", length(res$problematic_snps))
-sprintf("The number of flipped snps = %s", length(res$flipped_snps))
-
-problematic_snps <- res$condz_stats[res$condz_stats$id %in% res$problematic_snps,]
-
-DT::datatable(problematic_snps,caption = htmltools::tags$caption(style = 'caption-side: topleft; text-align = left; color:black;','Stats for problematic snps'),options = list(pageLength = 5) )
-
-finemap_res_multi <- ctwas_res_multi$finemap_res
-
-finemap_origin_res_problematic_region <- finemap_res_multi[finemap_res_multi$id %in% problematic_genes,]
-
-merge_origin_nold <- merge(finemap_origin_res_problematic_region,finemap_noLD_res_problematic_region, by = "id")
-merge_origin_nold <- merge_origin_nold[,c("id","susie_pip.x","susie_pip.y")]
-colnames(merge_origin_nold) <-  c("id","susie_pip_origin","susie_pip_ld-mismatch-fixed") 
-
-DT::datatable(merge_origin_nold,caption = htmltools::tags$caption(style = 'caption-side: topleft; text-align = left; color:black;','Original PIP and fixed PIP for problematic genes'),options = list(pageLength = 5) )
-
-
-
-```
 
 
 # IBD-ebi-a-GCST004131
@@ -689,24 +718,74 @@ pve_pie_by_context_multi <- plot_piechart(ctwas_parameters = ctwas_parameters_mu
 gridExtra::grid.arrange(pve_pie_by_type_multi,pve_pie_by_context_multi, ncol = 2)
 ```
 
-## Fine-mapping 
+## Postprocessing -- LD mismatch
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=3, fig.height=3}
+
+finemap_res_multi <- ctwas_res_multi$finemap_res
+finemap_res_multi <- ctwas_res_multi$finemap_res
+
+finemap_res_multi_gene <- finemap_res_multi[finemap_res_multi$type != "SNP",]
+
+ggplot(data = finemap_res_multi_gene, aes(x= abs(z), y= susie_pip)) +
+  geom_point() +
+  ggtitle("Z scores vs PIP") +
+  theme_minimal()
+
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/ld_mismatch/LD_mismatch_", trait,".rdata"))
+
+sprintf("The number of problematic regions = %s", length(problematic_region_ids))
+sprintf("The number of problematic genes = %s", length(problematic_genes))
+sprintf("The number of problematic snps = %s", length(res$problematic_snps))
+sprintf("The number of flipped snps = %s", length(res$flipped_snps))
+
+problematic_snps <- res$condz_stats[res$condz_stats$id %in% res$problematic_snps,]
+
+DT::datatable(problematic_snps,caption = htmltools::tags$caption(style = 'caption-side: topleft; text-align = left; color:black;','Stats for problematic snps'),options = list(pageLength = 5) )
+
+finemap_origin_res_problematic_region <- finemap_res_multi[finemap_res_multi$id %in% problematic_genes,]
+
+merge_origin_nold <- merge(finemap_origin_res_problematic_region,finemap_noLD_res_problematic_region, by = "id")
+merge_origin_nold <- merge_origin_nold[,c("id","susie_pip.x","susie_pip.y")]
+colnames(merge_origin_nold) <-  c("id","susie_pip_origin","susie_pip_ld-mismatch-fixed")
+
+DT::datatable(merge_origin_nold,caption = htmltools::tags$caption(style = 'caption-side: topleft; text-align = left; color:black;','Original PIP and fixed PIP for problematic genes'),options = list(pageLength = 5) )
+
+```
+
+
+
+
+## Fine-mapping (LD mis-match fixed)
 
 ```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=12}
+
 susie_alpha_res_multi <- ctwas_res_multi$susie_alpha_res
+rerun_finemap_res <- res$finemap_res
+rerun_susie_alpha_res <- res$susie_alpha_res
+res <- update_finemap_res(finemap_res_multi,
+                          susie_alpha_res_multi,
+                          rerun_finemap_res,
+                          rerun_susie_alpha_res,
+                          updated_region_ids = problematic_region_ids)
+
+finemap_res_multi <- res$finemap_res
+susie_alpha_res_multi <- res$susie_alpha_res
 
 susie_alpha_res_multi <- anno_susie_alpha_res(susie_alpha_res_multi,
                                         mapping_table = mapping_two,
                                         map_by = "molecular_id",
                                         drop_unmapped = TRUE)
 
-combined_pip_by_type_cs_multi <- combine_gene_pips(susie_alpha_res_multi, 
+combined_pip_by_type_cs_multi <- combine_gene_pips(susie_alpha_res_multi,
                                              group_by = "gene_name",
                                              by = "type",
                                              method = "combine_cs",
                                              filter_cs = TRUE,
                                              include_cs_id = T)
 
-combined_pip_by_context_cs_multi <- combine_gene_pips(susie_alpha_res_multi, 
+combined_pip_by_context_cs_multi <- combine_gene_pips(susie_alpha_res_multi,
                                              group_by = "gene_name",
                                              by = "context",
                                              method = "combine_cs",
@@ -717,7 +796,7 @@ DT::datatable(combined_pip_by_type_cs_multi[combined_pip_by_type_cs_multi$combin
 
 DT::datatable(combined_pip_by_context_cs_multi[combined_pip_by_context_cs_multi$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by tissue'),options = list(pageLength = 5) )
 
-combined_pip_by_group_multi <- combine_gene_pips(susie_alpha_res_multi, 
+combined_pip_by_group_multi <- combine_gene_pips(susie_alpha_res_multi,
                                              group_by = "gene_name",
                                              by = "group",
                                              method = "combine_cs",
@@ -743,7 +822,7 @@ susie_alpha_res_single <- anno_susie_alpha_res(susie_alpha_res_single,
                                         map_by = "molecular_id",
                                         drop_unmapped = TRUE)
 
-combined_pip_by_type_single <- combine_gene_pips(susie_alpha_res_single, 
+combined_pip_by_type_single <- combine_gene_pips(susie_alpha_res_single,
                                              group_by = "gene_name",
                                              by = "type",
                                              method = "combine_cs",
@@ -770,35 +849,16 @@ gene_multi_unique_type <- combined_pip_by_group_sig_multi[!combined_pip_by_group
 plot_heatmap(heatmap_data = gene_multi_unique_type, main = "PIP partition for unique genes found by multi-group analysis")
 ```
 
+## Exploring allelic heterogeneity
 
-## Postprocessing -- LD mismatch
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=12}
 
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=6}
+pip_per_cs <- compute_pip_per_cs(combined_pip_by_group_sig_multi, susie_alpha_res_multi)
 
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/ld_mismatch/LD_mismatch_", trait,".rdata"))
-
-sprintf("The number of problematic regions = %s", length(problematic_region_ids))
-sprintf("The number of problematic genes = %s", length(problematic_genes))
-sprintf("The number of problematic snps = %s", length(res$problematic_snps))
-sprintf("The number of flipped snps = %s", length(res$flipped_snps))
-
-problematic_snps <- res$condz_stats[res$condz_stats$id %in% res$problematic_snps,]
-
-DT::datatable(problematic_snps,caption = htmltools::tags$caption(style = 'caption-side: topleft; text-align = left; color:black;','Stats for problematic snps'),options = list(pageLength = 5) )
-
-finemap_res_multi <- ctwas_res_multi$finemap_res
-
-finemap_origin_res_problematic_region <- finemap_res_multi[finemap_res_multi$id %in% problematic_genes,]
-
-merge_origin_nold <- merge(finemap_origin_res_problematic_region,finemap_noLD_res_problematic_region, by = "id")
-merge_origin_nold <- merge_origin_nold[,c("id","susie_pip.x","susie_pip.y")]
-colnames(merge_origin_nold) <-  c("id","susie_pip_origin","susie_pip_ld-mismatch-fixed") 
-
-DT::datatable(merge_origin_nold,caption = htmltools::tags$caption(style = 'caption-side: topleft; text-align = left; color:black;','Original PIP and fixed PIP for problematic genes'),options = list(pageLength = 5) )
-
-
+DT::datatable(pip_per_cs,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','PIP per CS'),options = list(pageLength = 5) )
 
 ```
+
 
 
 # SBP-ukb-a-360
@@ -827,24 +887,74 @@ pve_pie_by_context_multi <- plot_piechart(ctwas_parameters = ctwas_parameters_mu
 gridExtra::grid.arrange(pve_pie_by_type_multi,pve_pie_by_context_multi, ncol = 2)
 ```
 
-## Fine-mapping 
+## Postprocessing -- LD mismatch
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=3, fig.height=3}
+
+finemap_res_multi <- ctwas_res_multi$finemap_res
+finemap_res_multi <- ctwas_res_multi$finemap_res
+
+finemap_res_multi_gene <- finemap_res_multi[finemap_res_multi$type != "SNP",]
+
+ggplot(data = finemap_res_multi_gene, aes(x= abs(z), y= susie_pip)) +
+  geom_point() +
+  ggtitle("Z scores vs PIP") +
+  theme_minimal()
+
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/ld_mismatch/LD_mismatch_", trait,".rdata"))
+
+sprintf("The number of problematic regions = %s", length(problematic_region_ids))
+sprintf("The number of problematic genes = %s", length(problematic_genes))
+sprintf("The number of problematic snps = %s", length(res$problematic_snps))
+sprintf("The number of flipped snps = %s", length(res$flipped_snps))
+
+problematic_snps <- res$condz_stats[res$condz_stats$id %in% res$problematic_snps,]
+
+DT::datatable(problematic_snps,caption = htmltools::tags$caption(style = 'caption-side: topleft; text-align = left; color:black;','Stats for problematic snps'),options = list(pageLength = 5) )
+
+finemap_origin_res_problematic_region <- finemap_res_multi[finemap_res_multi$id %in% problematic_genes,]
+
+merge_origin_nold <- merge(finemap_origin_res_problematic_region,finemap_noLD_res_problematic_region, by = "id")
+merge_origin_nold <- merge_origin_nold[,c("id","susie_pip.x","susie_pip.y")]
+colnames(merge_origin_nold) <-  c("id","susie_pip_origin","susie_pip_ld-mismatch-fixed")
+
+DT::datatable(merge_origin_nold,caption = htmltools::tags$caption(style = 'caption-side: topleft; text-align = left; color:black;','Original PIP and fixed PIP for problematic genes'),options = list(pageLength = 5) )
+
+```
+
+
+
+
+## Fine-mapping (LD mis-match fixed)
 
 ```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=12}
+
 susie_alpha_res_multi <- ctwas_res_multi$susie_alpha_res
+rerun_finemap_res <- res$finemap_res
+rerun_susie_alpha_res <- res$susie_alpha_res
+res <- update_finemap_res(finemap_res_multi,
+                          susie_alpha_res_multi,
+                          rerun_finemap_res,
+                          rerun_susie_alpha_res,
+                          updated_region_ids = problematic_region_ids)
+
+finemap_res_multi <- res$finemap_res
+susie_alpha_res_multi <- res$susie_alpha_res
 
 susie_alpha_res_multi <- anno_susie_alpha_res(susie_alpha_res_multi,
                                         mapping_table = mapping_two,
                                         map_by = "molecular_id",
                                         drop_unmapped = TRUE)
 
-combined_pip_by_type_cs_multi <- combine_gene_pips(susie_alpha_res_multi, 
+combined_pip_by_type_cs_multi <- combine_gene_pips(susie_alpha_res_multi,
                                              group_by = "gene_name",
                                              by = "type",
                                              method = "combine_cs",
                                              filter_cs = TRUE,
                                              include_cs_id = T)
 
-combined_pip_by_context_cs_multi <- combine_gene_pips(susie_alpha_res_multi, 
+combined_pip_by_context_cs_multi <- combine_gene_pips(susie_alpha_res_multi,
                                              group_by = "gene_name",
                                              by = "context",
                                              method = "combine_cs",
@@ -855,7 +965,7 @@ DT::datatable(combined_pip_by_type_cs_multi[combined_pip_by_type_cs_multi$combin
 
 DT::datatable(combined_pip_by_context_cs_multi[combined_pip_by_context_cs_multi$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by tissue'),options = list(pageLength = 5) )
 
-combined_pip_by_group_multi <- combine_gene_pips(susie_alpha_res_multi, 
+combined_pip_by_group_multi <- combine_gene_pips(susie_alpha_res_multi,
                                              group_by = "gene_name",
                                              by = "group",
                                              method = "combine_cs",
@@ -881,7 +991,7 @@ susie_alpha_res_single <- anno_susie_alpha_res(susie_alpha_res_single,
                                         map_by = "molecular_id",
                                         drop_unmapped = TRUE)
 
-combined_pip_by_type_single <- combine_gene_pips(susie_alpha_res_single, 
+combined_pip_by_type_single <- combine_gene_pips(susie_alpha_res_single,
                                              group_by = "gene_name",
                                              by = "type",
                                              method = "combine_cs",
@@ -908,34 +1018,19 @@ gene_multi_unique_type <- combined_pip_by_group_sig_multi[!combined_pip_by_group
 plot_heatmap(heatmap_data = gene_multi_unique_type, main = "PIP partition for unique genes found by multi-group analysis")
 ```
 
-## Postprocessing -- LD mismatch
-
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=6}
-
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/ld_mismatch/LD_mismatch_", trait,".rdata"))
-
-sprintf("The number of problematic regions = %s", length(problematic_region_ids))
-sprintf("The number of problematic genes = %s", length(problematic_genes))
-sprintf("The number of problematic snps = %s", length(res$problematic_snps))
-sprintf("The number of flipped snps = %s", length(res$flipped_snps))
-
-problematic_snps <- res$condz_stats[res$condz_stats$id %in% res$problematic_snps,]
-
-DT::datatable(problematic_snps,caption = htmltools::tags$caption(style = 'caption-side: topleft; text-align = left; color:black;','Stats for problematic snps'),options = list(pageLength = 5) )
-
-finemap_res_multi <- ctwas_res_multi$finemap_res
-
-finemap_origin_res_problematic_region <- finemap_res_multi[finemap_res_multi$id %in% problematic_genes,]
-
-merge_origin_nold <- merge(finemap_origin_res_problematic_region,finemap_noLD_res_problematic_region, by = "id")
-merge_origin_nold <- merge_origin_nold[,c("id","susie_pip.x","susie_pip.y")]
-colnames(merge_origin_nold) <-  c("id","susie_pip_origin","susie_pip_ld-mismatch-fixed") 
-
-DT::datatable(merge_origin_nold,caption = htmltools::tags$caption(style = 'caption-side: topleft; text-align = left; color:black;','Original PIP and fixed PIP for problematic genes'),options = list(pageLength = 5) )
 
 
+
+## Exploring allelic heterogeneity
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=12}
+
+pip_per_cs <- compute_pip_per_cs(combined_pip_by_group_sig_multi, susie_alpha_res_multi)
+
+DT::datatable(pip_per_cs,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','PIP per CS'),options = list(pageLength = 5) )
 
 ```
+
 
 
 # SCZ-ieu-b-5102
@@ -964,24 +1059,74 @@ pve_pie_by_context_multi <- plot_piechart(ctwas_parameters = ctwas_parameters_mu
 gridExtra::grid.arrange(pve_pie_by_type_multi,pve_pie_by_context_multi, ncol = 2)
 ```
 
-## Fine-mapping 
+## Postprocessing -- LD mismatch
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=3, fig.height=3}
+
+finemap_res_multi <- ctwas_res_multi$finemap_res
+finemap_res_multi <- ctwas_res_multi$finemap_res
+
+finemap_res_multi_gene <- finemap_res_multi[finemap_res_multi$type != "SNP",]
+
+ggplot(data = finemap_res_multi_gene, aes(x= abs(z), y= susie_pip)) +
+  geom_point() +
+  ggtitle("Z scores vs PIP") +
+  theme_minimal()
+
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/ld_mismatch/LD_mismatch_", trait,".rdata"))
+
+sprintf("The number of problematic regions = %s", length(problematic_region_ids))
+sprintf("The number of problematic genes = %s", length(problematic_genes))
+sprintf("The number of problematic snps = %s", length(res$problematic_snps))
+sprintf("The number of flipped snps = %s", length(res$flipped_snps))
+
+problematic_snps <- res$condz_stats[res$condz_stats$id %in% res$problematic_snps,]
+
+DT::datatable(problematic_snps,caption = htmltools::tags$caption(style = 'caption-side: topleft; text-align = left; color:black;','Stats for problematic snps'),options = list(pageLength = 5) )
+
+finemap_origin_res_problematic_region <- finemap_res_multi[finemap_res_multi$id %in% problematic_genes,]
+
+merge_origin_nold <- merge(finemap_origin_res_problematic_region,finemap_noLD_res_problematic_region, by = "id")
+merge_origin_nold <- merge_origin_nold[,c("id","susie_pip.x","susie_pip.y")]
+colnames(merge_origin_nold) <-  c("id","susie_pip_origin","susie_pip_ld-mismatch-fixed")
+
+DT::datatable(merge_origin_nold,caption = htmltools::tags$caption(style = 'caption-side: topleft; text-align = left; color:black;','Original PIP and fixed PIP for problematic genes'),options = list(pageLength = 5) )
+
+```
+
+
+
+
+## Fine-mapping (LD mis-match fixed)
 
 ```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=12}
+
 susie_alpha_res_multi <- ctwas_res_multi$susie_alpha_res
+rerun_finemap_res <- res$finemap_res
+rerun_susie_alpha_res <- res$susie_alpha_res
+res <- update_finemap_res(finemap_res_multi,
+                          susie_alpha_res_multi,
+                          rerun_finemap_res,
+                          rerun_susie_alpha_res,
+                          updated_region_ids = problematic_region_ids)
+
+finemap_res_multi <- res$finemap_res
+susie_alpha_res_multi <- res$susie_alpha_res
 
 susie_alpha_res_multi <- anno_susie_alpha_res(susie_alpha_res_multi,
                                         mapping_table = mapping_two,
                                         map_by = "molecular_id",
                                         drop_unmapped = TRUE)
 
-combined_pip_by_type_cs_multi <- combine_gene_pips(susie_alpha_res_multi, 
+combined_pip_by_type_cs_multi <- combine_gene_pips(susie_alpha_res_multi,
                                              group_by = "gene_name",
                                              by = "type",
                                              method = "combine_cs",
                                              filter_cs = TRUE,
                                              include_cs_id = T)
 
-combined_pip_by_context_cs_multi <- combine_gene_pips(susie_alpha_res_multi, 
+combined_pip_by_context_cs_multi <- combine_gene_pips(susie_alpha_res_multi,
                                              group_by = "gene_name",
                                              by = "context",
                                              method = "combine_cs",
@@ -992,7 +1137,7 @@ DT::datatable(combined_pip_by_type_cs_multi[combined_pip_by_type_cs_multi$combin
 
 DT::datatable(combined_pip_by_context_cs_multi[combined_pip_by_context_cs_multi$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by tissue'),options = list(pageLength = 5) )
 
-combined_pip_by_group_multi <- combine_gene_pips(susie_alpha_res_multi, 
+combined_pip_by_group_multi <- combine_gene_pips(susie_alpha_res_multi,
                                              group_by = "gene_name",
                                              by = "group",
                                              method = "combine_cs",
@@ -1018,7 +1163,7 @@ susie_alpha_res_single <- anno_susie_alpha_res(susie_alpha_res_single,
                                         map_by = "molecular_id",
                                         drop_unmapped = TRUE)
 
-combined_pip_by_type_single <- combine_gene_pips(susie_alpha_res_single, 
+combined_pip_by_type_single <- combine_gene_pips(susie_alpha_res_single,
                                              group_by = "gene_name",
                                              by = "type",
                                              method = "combine_cs",
@@ -1045,35 +1190,16 @@ gene_multi_unique_type <- combined_pip_by_group_sig_multi[!combined_pip_by_group
 plot_heatmap(heatmap_data = gene_multi_unique_type, main = "PIP partition for unique genes found by multi-group analysis")
 ```
 
+## Exploring allelic heterogeneity
 
-## Postprocessing -- LD mismatch
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=12}
 
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=6}
+pip_per_cs <- compute_pip_per_cs(combined_pip_by_group_sig_multi, susie_alpha_res_multi)
 
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/ld_mismatch/LD_mismatch_", trait,".rdata"))
-
-sprintf("The number of problematic regions = %s", length(problematic_region_ids))
-sprintf("The number of problematic genes = %s", length(problematic_genes))
-sprintf("The number of problematic snps = %s", length(res$problematic_snps))
-sprintf("The number of flipped snps = %s", length(res$flipped_snps))
-
-problematic_snps <- res$condz_stats[res$condz_stats$id %in% res$problematic_snps,]
-
-DT::datatable(problematic_snps,caption = htmltools::tags$caption(style = 'caption-side: topleft; text-align = left; color:black;','Stats for problematic snps'),options = list(pageLength = 5) )
-
-finemap_res_multi <- ctwas_res_multi$finemap_res
-
-finemap_origin_res_problematic_region <- finemap_res_multi[finemap_res_multi$id %in% problematic_genes,]
-
-merge_origin_nold <- merge(finemap_origin_res_problematic_region,finemap_noLD_res_problematic_region, by = "id")
-merge_origin_nold <- merge_origin_nold[,c("id","susie_pip.x","susie_pip.y")]
-colnames(merge_origin_nold) <-  c("id","susie_pip_origin","susie_pip_ld-mismatch-fixed") 
-
-DT::datatable(merge_origin_nold,caption = htmltools::tags$caption(style = 'caption-side: topleft; text-align = left; color:black;','Original PIP and fixed PIP for problematic genes'),options = list(pageLength = 5) )
-
-
+DT::datatable(pip_per_cs,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','PIP per CS'),options = list(pageLength = 5) )
 
 ```
+
 
 
 # WBC-ieu-b-30
@@ -1102,24 +1228,74 @@ pve_pie_by_context_multi <- plot_piechart(ctwas_parameters = ctwas_parameters_mu
 gridExtra::grid.arrange(pve_pie_by_type_multi,pve_pie_by_context_multi, ncol = 2)
 ```
 
-## Fine-mapping 
+## Postprocessing -- LD mismatch
+
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=3, fig.height=3}
+
+finemap_res_multi <- ctwas_res_multi$finemap_res
+finemap_res_multi <- ctwas_res_multi$finemap_res
+
+finemap_res_multi_gene <- finemap_res_multi[finemap_res_multi$type != "SNP",]
+
+ggplot(data = finemap_res_multi_gene, aes(x= abs(z), y= susie_pip)) +
+  geom_point() +
+  ggtitle("Z scores vs PIP") +
+  theme_minimal()
+
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/ld_mismatch/LD_mismatch_", trait,".rdata"))
+
+sprintf("The number of problematic regions = %s", length(problematic_region_ids))
+sprintf("The number of problematic genes = %s", length(problematic_genes))
+sprintf("The number of problematic snps = %s", length(res$problematic_snps))
+sprintf("The number of flipped snps = %s", length(res$flipped_snps))
+
+problematic_snps <- res$condz_stats[res$condz_stats$id %in% res$problematic_snps,]
+
+DT::datatable(problematic_snps,caption = htmltools::tags$caption(style = 'caption-side: topleft; text-align = left; color:black;','Stats for problematic snps'),options = list(pageLength = 5) )
+
+finemap_origin_res_problematic_region <- finemap_res_multi[finemap_res_multi$id %in% problematic_genes,]
+
+merge_origin_nold <- merge(finemap_origin_res_problematic_region,finemap_noLD_res_problematic_region, by = "id")
+merge_origin_nold <- merge_origin_nold[,c("id","susie_pip.x","susie_pip.y")]
+colnames(merge_origin_nold) <-  c("id","susie_pip_origin","susie_pip_ld-mismatch-fixed")
+
+DT::datatable(merge_origin_nold,caption = htmltools::tags$caption(style = 'caption-side: topleft; text-align = left; color:black;','Original PIP and fixed PIP for problematic genes'),options = list(pageLength = 5) )
+
+```
+
+
+
+
+## Fine-mapping (LD mis-match fixed)
 
 ```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=12}
+
 susie_alpha_res_multi <- ctwas_res_multi$susie_alpha_res
+rerun_finemap_res <- res$finemap_res
+rerun_susie_alpha_res <- res$susie_alpha_res
+res <- update_finemap_res(finemap_res_multi,
+                          susie_alpha_res_multi,
+                          rerun_finemap_res,
+                          rerun_susie_alpha_res,
+                          updated_region_ids = problematic_region_ids)
+
+finemap_res_multi <- res$finemap_res
+susie_alpha_res_multi <- res$susie_alpha_res
 
 susie_alpha_res_multi <- anno_susie_alpha_res(susie_alpha_res_multi,
                                         mapping_table = mapping_two,
                                         map_by = "molecular_id",
                                         drop_unmapped = TRUE)
 
-combined_pip_by_type_cs_multi <- combine_gene_pips(susie_alpha_res_multi, 
+combined_pip_by_type_cs_multi <- combine_gene_pips(susie_alpha_res_multi,
                                              group_by = "gene_name",
                                              by = "type",
                                              method = "combine_cs",
                                              filter_cs = TRUE,
                                              include_cs_id = T)
 
-combined_pip_by_context_cs_multi <- combine_gene_pips(susie_alpha_res_multi, 
+combined_pip_by_context_cs_multi <- combine_gene_pips(susie_alpha_res_multi,
                                              group_by = "gene_name",
                                              by = "context",
                                              method = "combine_cs",
@@ -1130,7 +1306,7 @@ DT::datatable(combined_pip_by_type_cs_multi[combined_pip_by_type_cs_multi$combin
 
 DT::datatable(combined_pip_by_context_cs_multi[combined_pip_by_context_cs_multi$combined_pip>0.8,],caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by tissue'),options = list(pageLength = 5) )
 
-combined_pip_by_group_multi <- combine_gene_pips(susie_alpha_res_multi, 
+combined_pip_by_group_multi <- combine_gene_pips(susie_alpha_res_multi,
                                              group_by = "gene_name",
                                              by = "group",
                                              method = "combine_cs",
@@ -1156,7 +1332,7 @@ susie_alpha_res_single <- anno_susie_alpha_res(susie_alpha_res_single,
                                         map_by = "molecular_id",
                                         drop_unmapped = TRUE)
 
-combined_pip_by_type_single <- combine_gene_pips(susie_alpha_res_single, 
+combined_pip_by_type_single <- combine_gene_pips(susie_alpha_res_single,
                                              group_by = "gene_name",
                                              by = "type",
                                              method = "combine_cs",
@@ -1183,33 +1359,14 @@ gene_multi_unique_type <- combined_pip_by_group_sig_multi[!combined_pip_by_group
 plot_heatmap(heatmap_data = gene_multi_unique_type, main = "PIP partition for unique genes found by multi-group analysis")
 ```
 
+## Exploring allelic heterogeneity
 
-## Postprocessing -- LD mismatch
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=12}
 
-```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=6}
+pip_per_cs <- compute_pip_per_cs(combined_pip_by_group_sig_multi, susie_alpha_res_multi)
 
-load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/ld_mismatch/LD_mismatch_", trait,".rdata"))
-
-sprintf("The number of problematic regions = %s", length(problematic_region_ids))
-sprintf("The number of problematic genes = %s", length(problematic_genes))
-sprintf("The number of problematic snps = %s", length(res$problematic_snps))
-sprintf("The number of flipped snps = %s", length(res$flipped_snps))
-
-problematic_snps <- res$condz_stats[res$condz_stats$id %in% res$problematic_snps,]
-
-DT::datatable(problematic_snps,caption = htmltools::tags$caption(style = 'caption-side: topleft; text-align = left; color:black;','Stats for problematic snps'),options = list(pageLength = 5) )
-
-finemap_res_multi <- ctwas_res_multi$finemap_res
-
-finemap_origin_res_problematic_region <- finemap_res_multi[finemap_res_multi$id %in% problematic_genes,]
-
-merge_origin_nold <- merge(finemap_origin_res_problematic_region,finemap_noLD_res_problematic_region, by = "id")
-merge_origin_nold <- merge_origin_nold[,c("id","susie_pip.x","susie_pip.y")]
-colnames(merge_origin_nold) <-  c("id","susie_pip_origin","susie_pip_ld-mismatch-fixed") 
-
-DT::datatable(merge_origin_nold,caption = htmltools::tags$caption(style = 'caption-side: topleft; text-align = left; color:black;','Original PIP and fixed PIP for problematic genes'),options = list(pageLength = 5) )
-
-
+DT::datatable(pip_per_cs,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','PIP per CS'),options = list(pageLength = 5) )
 
 ```
+
 
