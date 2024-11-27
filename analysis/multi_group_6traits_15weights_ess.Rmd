@@ -161,49 +161,28 @@ plot_heatmap <- function(heatmap_data, main) {
 }
 
 
-compute_pip_per_cs <- function(combined_data, susie_data) {
-  # Initialize an empty list to store results
-  details <- list()
+compute_pip_per_cs <- function(combined_data, susie_data, pip_threshold) {
+  # dplyr::filter and process the susie_data in a vectorized way
+  final_details <- susie_data %>%
+    dplyr::filter(in_cs & complete.cases(cs)) %>%  # Only rows in credible sets and without NA in cs
+    group_by(gene_name, susie_set) %>%      # Group by gene and credible set
+    summarise(
+      total_PIP_CS = round(sum(susie_alpha, na.rm = TRUE), digits = 3), # Sum of susie_alpha
+      num_molecular_traits_CS = n(),                                   # Count of rows
+      ids_pip_CS = paste0(id, "(", round(susie_alpha, digits = 3), ")", collapse = ", "), # Concatenated IDs
+      .groups = "drop" # Drop grouping structure after summarization
+    ) %>%
+    dplyr::filter(total_PIP_CS > pip_threshold) %>% # dplyr::filter by pip_threshold
+    group_by(gene_name) %>%                 # Group by gene_name
+    dplyr::filter(n() >= 2) %>%                    # Keep genes with 2 or more rows
+    ungroup()                               # Remove grouping
   
-  # Iterate over each unique gene name in the combined data
-  unique_genes <- unique(combined_data$gene_name)
+  # Rename columns for consistency
+  colnames(final_details) <- c("gene_name", "CS", "total_PIP_CS", "num_molecular_traits_CS", "ids_pip_CS")
   
-  for (genename in unique_genes) {
-    # dplyr::filter susie data for the current gene
-    susie_alpha_res_multi_per_gene <- susie_data %>%
-      dplyr::filter(gene_name == genename)
-    
-    # Get all unique credible sets for the current gene
-    cs_all <- unique(susie_alpha_res_multi_per_gene$susie_set[susie_alpha_res_multi_per_gene$in_cs])
-    
-    if (length(cs_all) > 1) {
-      # dplyr::filter complete cases and those in credible sets
-      susie_alpha_res_multi_per_gene <- susie_alpha_res_multi_per_gene %>%
-        dplyr::filter(complete.cases(cs), in_cs)
-      
-      # Summarize the data
-      summed_alpha_with_details <- susie_alpha_res_multi_per_gene %>%
-        group_by(susie_set) %>%
-        summarise(
-          total_susie_alpha = round(sum(susie_alpha, na.rm = TRUE), digits = 3),
-          num_molecular_traits = n(),
-          ids_pip = paste0(id, "(", round(susie_alpha, digits = 3), ")", collapse = ", ")
-        )
-      
-      # Add gene name to the summarized data
-      summed_alpha_with_details$gene_name <- genename
-      
-      # Append the result to the details list
-      details[[length(details) + 1]] <- summed_alpha_with_details
-    }
-  }
-  
-  # Combine all results into a single data frame
-  final_details <- bind_rows(details)
-  final_details <- final_details[,c("gene_name","susie_set","total_susie_alpha","num_molecular_traits","ids_pip")]
-  colnames(final_details) <- c("gene_name","CS","total_PIP_CS","num_molecular_traits_CS","ids_pip_CS")
   return(final_details)
 }
+
 ```
 
 
@@ -421,7 +400,7 @@ make_locusplot(finemap_res_multi,
 
 ```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=12}
 
-pip_per_cs <- compute_pip_per_cs(combined_pip_by_group_sig_multi, susie_alpha_res_multi)
+pip_per_cs <- compute_pip_per_cs(combined_pip_by_group_sig_multi, susie_alpha_res_multi,0.3)
 
 sprintf("Number of genes having allelic heterogeneity = %s",length(unique(pip_per_cs$gene_name)))
 
@@ -684,7 +663,9 @@ make_locusplot(finemap_res_multi,
 
 ```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=12}
 
-pip_per_cs <- compute_pip_per_cs(combined_pip_by_group_sig_multi, susie_alpha_res_multi)
+pip_per_cs <- compute_pip_per_cs(combined_pip_by_group_sig_multi, susie_alpha_res_multi,0.3)
+
+sprintf("Number of genes having allelic heterogeneity = %s",length(unique(pip_per_cs$gene_name)))
 
 DT::datatable(pip_per_cs,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','PIP per CS'),options = list(pageLength = 5) )
 
@@ -722,7 +703,6 @@ gridExtra::grid.arrange(pve_pie_by_type_multi,pve_pie_by_context_multi, ncol = 2
 
 ```{r, echo=T, message=FALSE, warning=FALSE, fig.width=3, fig.height=3}
 
-finemap_res_multi <- ctwas_res_multi$finemap_res
 finemap_res_multi <- ctwas_res_multi$finemap_res
 
 finemap_res_multi_gene <- finemap_res_multi[finemap_res_multi$type != "SNP",]
@@ -853,13 +833,41 @@ plot_heatmap(heatmap_data = gene_multi_unique_type, main = "PIP partition for un
 
 ```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=12}
 
-pip_per_cs <- compute_pip_per_cs(combined_pip_by_group_sig_multi, susie_alpha_res_multi)
+pip_per_cs <- compute_pip_per_cs(combined_pip_by_group_sig_multi, susie_alpha_res_multi,0.3)
+
+sprintf("Number of genes having allelic heterogeneity = %s",length(unique(pip_per_cs$gene_name)))
 
 DT::datatable(pip_per_cs,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','PIP per CS'),options = list(pageLength = 5) )
 
 ```
 
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=6}
 
+snp_map_multi <- readRDS(paste0(results_dir_multi,trait,".snp_map.RDS"))
+weights_multi <- readRDS(paste0(results_dir_multi,trait,".preprocessed.weights.RDS"))
+
+finemap_res_multi$molecular_id <- get_molecular_ids(finemap_res_multi)
+finemap_res_multi <- anno_finemap_res(finemap_res_multi,
+                                snp_map = snp_map_multi,
+                                mapping_table = mapping_two,
+                                add_gene_annot = TRUE,
+                                map_by = "molecular_id",
+                                drop_unmapped = TRUE,
+                                add_position = TRUE,
+                                use_gene_pos = "mid")
+
+make_locusplot(finemap_res_multi,
+               region_id = "7_97470258_99117851",
+               ens_db = ens_db,
+               weights = weights_multi,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = TRUE,
+               filter_cs = TRUE,
+               color_pval_by = "cs",
+               color_pip_by = "cs")
+
+
+```
 
 # SBP-ukb-a-360
 
@@ -1025,7 +1033,9 @@ plot_heatmap(heatmap_data = gene_multi_unique_type, main = "PIP partition for un
 
 ```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=12}
 
-pip_per_cs <- compute_pip_per_cs(combined_pip_by_group_sig_multi, susie_alpha_res_multi)
+pip_per_cs <- compute_pip_per_cs(combined_pip_by_group_sig_multi, susie_alpha_res_multi,0.3)
+
+sprintf("Number of genes having allelic heterogeneity = %s",length(unique(pip_per_cs$gene_name)))
 
 DT::datatable(pip_per_cs,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','PIP per CS'),options = list(pageLength = 5) )
 
@@ -1194,7 +1204,9 @@ plot_heatmap(heatmap_data = gene_multi_unique_type, main = "PIP partition for un
 
 ```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=12}
 
-pip_per_cs <- compute_pip_per_cs(combined_pip_by_group_sig_multi, susie_alpha_res_multi)
+pip_per_cs <- compute_pip_per_cs(combined_pip_by_group_sig_multi, susie_alpha_res_multi,0.3)
+
+sprintf("Number of genes having allelic heterogeneity = %s",length(unique(pip_per_cs$gene_name)))
 
 DT::datatable(pip_per_cs,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','PIP per CS'),options = list(pageLength = 5) )
 
@@ -1363,10 +1375,38 @@ plot_heatmap(heatmap_data = gene_multi_unique_type, main = "PIP partition for un
 
 ```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=12}
 
-pip_per_cs <- compute_pip_per_cs(combined_pip_by_group_sig_multi, susie_alpha_res_multi)
+pip_per_cs <- compute_pip_per_cs(combined_pip_by_group_sig_multi, susie_alpha_res_multi,0.3)
+
+sprintf("Number of genes having allelic heterogeneity = %s",length(unique(pip_per_cs$gene_name)))
 
 DT::datatable(pip_per_cs,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','PIP per CS'),options = list(pageLength = 5) )
 
 ```
 
+```{r, echo=T, message=FALSE, warning=FALSE, fig.width=12, fig.height=6}
 
+snp_map_multi <- readRDS(paste0(results_dir_multi,trait,".snp_map.RDS"))
+weights_multi <- readRDS(paste0(results_dir_multi,trait,".preprocessed.weights.RDS"))
+
+finemap_res_multi$molecular_id <- get_molecular_ids(finemap_res_multi)
+finemap_res_multi <- anno_finemap_res(finemap_res_multi,
+                                snp_map = snp_map_multi,
+                                mapping_table = mapping_two,
+                                add_gene_annot = TRUE,
+                                map_by = "molecular_id",
+                                drop_unmapped = TRUE,
+                                add_position = TRUE,
+                                use_gene_pos = "mid")
+
+make_locusplot(finemap_res_multi,
+               region_id = "2_141761033_143761915",
+               ens_db = ens_db,
+               weights = weights_multi,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = TRUE,
+               filter_cs = TRUE,
+               color_pval_by = "cs",
+               color_pip_by = "cs")
+
+
+```

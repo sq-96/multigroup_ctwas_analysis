@@ -1,0 +1,77 @@
+---
+title: "Deciding matching tissue -- extra tissue contribution"
+author: "XSun"
+date: "2024-11-27"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+    toc: true
+---
+
+# Introduction
+
+- For each trait, we select some baseline tissues that well known related to the trait. 
+- Take the rest of tissues with sample size >=200, one at a time, as extra tissue and run multi-tissue eQTL ctwas. 
+- Evaluate the percent of h2g in the extra tissue, conditioned on the known ones. 
+
+```{r}
+library(ctwas)
+
+load("/project2/xinhe/shared_data/multigroup_ctwas/gwas/samplesize.rdata")
+
+```
+
+# IBD-ebi-a-GCST004131
+
+```{r}
+
+trait <- "IBD-ebi-a-GCST004131"
+baseline_tissue <- c("Whole_Blood","Colon_Sigmoid","Colon_Transverse")
+
+
+gwas_n <- samplesize[trait]
+
+result_dir <- paste0("/project/xinhe/xsun/multi_group_ctwas/12.tissue_selection/results/", trait, "/")
+
+extra_tissue <- list.files(path = result_dir)
+extra_tissue <- extra_tissue[-which(extra_tissue == "baseline")]
+
+all <- c()
+for (tissue in c("baseline",extra_tissue)) {
+  
+  para_file <- paste0(result_dir,tissue,"/",trait,"_",tissue,".param.RDS")
+  param <- readRDS(para_file)
+  
+  ctwas_parameters <- summarize_param(param, gwas_n)
+  
+  if(tissue == "baseline") {
+    
+    total_pve <- ctwas_parameters$total_pve
+    prob_h2g <- round(as.numeric(ctwas_parameters$prop_heritability[paste0(c(baseline_tissue),"|eQTL")]*100),digits = 4)
+    prob_h2g <- c(prob_h2g,NA)
+  }else {
+    total_pve <- ctwas_parameters$total_pve
+    prob_h2g <- round(as.numeric(ctwas_parameters$prop_heritability[paste0(c(baseline_tissue,tissue),"|eQTL")]*100),digits = 4)
+  }
+  
+  all <- rbind(all,c(tissue,total_pve,prob_h2g))
+  
+}
+
+
+colnames(all) <- c("extra_tissue","total_pve",paste0("%h2g_",c(baseline_tissue)),"%h2g_extra_tissue")
+all <- as.data.frame(all)
+
+all$total_pve <- round(as.numeric(all$total_pve),digits = 4)
+baseline_pve <- all$total_pve[all$extra_tissue == "baseline"]
+all$pve_gain <- round(as.numeric(all$total_pve - baseline_pve),digits = 4)
+
+all$pve_gain[all$extra_tissue == "baseline"] <- NA
+
+DT::datatable(all,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','PVE change for adding extra tissue'),options = list(pageLength = 10) )
+```
+
+
+
+
+
