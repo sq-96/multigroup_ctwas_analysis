@@ -1,0 +1,73 @@
+---
+title: "tissue selection"
+output: html_document
+date: '2024-10-22'
+editor_options: 
+  chunk_output_type: console
+---
+
+### Method
+1. Run all tissues jointly (very fast if weights have been harmonized).
+2. Rank tissues by %h2g and select reasonable top ones.
+
+### Summary
+1. For IBD, colon transverse and whole blood have much higher %h2g than other tissues. 
+2. For LDL, liver has much higher %h2g than other tissues.
+3. For SBP, the top five ones all make sense, which are artery aorta, brain cortex, artery tibial, cell cultured fibroblasts and adrenal gland.
+4. For WBC, whole blood has much higher %h2g than other tissues. 
+5. For SCZ, the top ones are basal ganglia, cerebellum, hippocampus, hemisphere, cortex ...
+
+### IBD results
+```{r, echo=FALSE, fig.width=10, fig.height=8}
+ctwas_parameters <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_all_tissue_E/ibd_all_tissue_E.ctwas_parameters.RDS")
+prop_h2g <- as.data.frame(cbind(names(ctwas_parameters$prop_heritability),ctwas_parameters$prop_heritability))
+prop_h2g$V2 <- round(as.numeric(prop_h2g$V2),4)
+rownames(prop_h2g) <- NULL
+prop_h2g <- prop_h2g[order(-prop_h2g$V2),]
+colnames(prop_h2g) <- c("group","%h2g")
+DT::datatable(prop_h2g,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Proportion of PVE'),options = list(pageLength = 10) )
+```
+
+### LDL results
+```{r, echo=FALSE, fig.width=10, fig.height=8}
+ctwas_parameters <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ldl_all_tissue_E/ldl_all_tissue_E.ctwas_parameters.RDS")
+prop_h2g <- as.data.frame(cbind(names(ctwas_parameters$prop_heritability),ctwas_parameters$prop_heritability))
+prop_h2g$V2 <- round(as.numeric(prop_h2g$V2),4)
+rownames(prop_h2g) <- NULL
+prop_h2g <- prop_h2g[order(-prop_h2g$V2),]
+DT::datatable(prop_h2g,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Proportion of PVE'),options = list(pageLength = 10) )
+```
+
+### SBP results
+```{r, echo=FALSE, fig.width=10, fig.height=8}
+ctwas_parameters <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/sbp_all_tissue_E/sbp_all_tissue_E.ctwas_parameters.RDS")
+prop_h2g <- as.data.frame(cbind(names(ctwas_parameters$prop_heritability),ctwas_parameters$prop_heritability))
+prop_h2g$V2 <- round(as.numeric(prop_h2g$V2),4)
+rownames(prop_h2g) <- NULL
+prop_h2g <- prop_h2g[order(-prop_h2g$V2),]
+colnames(prop_h2g) <- c("group","%h2g")
+DT::datatable(prop_h2g,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Proportion of PVE'),options = list(pageLength = 10) )
+```
+
+### WBC results
+```{r, echo=FALSE, fig.width=10, fig.height=8}
+ctwas_parameters <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/wbc_all_tissue_E/wbc_all_tissue_E.ctwas_parameters.RDS")
+prop_h2g <- as.data.frame(cbind(names(ctwas_parameters$prop_heritability),ctwas_parameters$prop_heritability))
+prop_h2g$V2 <- round(as.numeric(prop_h2g$V2),4)
+rownames(prop_h2g) <- NULL
+prop_h2g <- prop_h2g[order(-prop_h2g$V2),]
+colnames(prop_h2g) <- c("group","%h2g")
+DT::datatable(prop_h2g,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by modalities and contexts'),options = list(pageLength = 10) )
+```
+
+
+### SCZ results
+```{r, echo=FALSE, fig.width=10, fig.height=8}
+ctwas_parameters <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/scz_all_tissue_E/scz_all_tissue_E.ctwas_parameters.RDS")
+prop_h2g <- as.data.frame(cbind(names(ctwas_parameters$prop_heritability),ctwas_parameters$prop_heritability))
+prop_h2g$V2 <- round(as.numeric(prop_h2g$V2),4)
+rownames(prop_h2g) <- NULL
+prop_h2g <- prop_h2g[order(-prop_h2g$V2),]
+colnames(prop_h2g) <- c("group","%h2g")
+DT::datatable(prop_h2g,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Proportion of PVE'),options = list(pageLength = 10) )
+```
