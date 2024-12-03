@@ -1560,3 +1560,76 @@ fig <- pip_partition_across_tissues(results_dir, runtag, simutags, "UKBBLD", tis
 fig
 ```
 
+
+
+### Compare to other methods
+```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_groups/"
+runtag = "five_groups"
+simutags <- paste(1, 1:5, sep = "-")
+phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
+susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_UKBBLD", ".estimatedL.finemap_regions_res.RDS")
+susieIfs1 <- paste0(results_dir, runtag, "_simu",simutags, "_UKBBLD", ".estimatedL.averaged.finemap_regions_res.RDS")
+zgenefs <- paste0(results_dir, runtag, "_simu",simutags, "_UKBBLD", ".z_gene.RDS")
+plot_df <- data.frame()
+for(i in 1:5){
+  cau <- lapply(phenofs, function(x) {load(x);get_causal_id(phenores)})
+  causal_genes <- grep("\\|", cau[[i]], value = TRUE)
+  z_gene <- readRDS(zgenefs[i])
+  alpha <- 0.05
+  sig_thresh <- qnorm(1-(alpha/nrow(z_gene)/2), lower=T)
+  twas_genes <- z_gene$id[abs(z_gene$z)>sig_thresh]
+  
+  different_enrichment <- get_top_genes(susieIfs[i])
+  
+  plot_df <- rbind(plot_df,
+                   data.frame(simutag=i,
+                              method="Multiple groups",
+                              count=length(intersect(different_enrichment,causal_genes)),
+                              ifcausal=T))
+  plot_df <- rbind(plot_df,
+                   data.frame(simutag=i,
+                              method="Multiple groups",
+                              count=length(different_enrichment)-length(intersect(different_enrichment,causal_genes)),
+                              ifcausal=F))
+  
+  averaged_enrichment <- get_top_genes(susieIfs1[i])
+  
+  plot_df <- rbind(plot_df,
+                   data.frame(simutag=i,
+                              method="One group",
+                              count=length(intersect(averaged_enrichment,causal_genes)),
+                              ifcausal=T))
+  plot_df <- rbind(plot_df,
+                   data.frame(simutag=i,
+                              method="One group",
+                              count=length(averaged_enrichment)-length(intersect(averaged_enrichment,causal_genes)),
+                              ifcausal=F))
+  
+}
+```
+
+```{r, fig.width= 3, fig.height= 3, echo=FALSE}
+plot_df$method <- factor(plot_df$method, levels=c("One group","Multiple groups"))
+
+library(ggpubr)
+
+colset = c("#ebebeb", "#fb8072")
+
+ggbarplot(plot_df, 
+          x = "method", 
+          y = "count", 
+          add = "mean", 
+          fill = "ifcausal", 
+          legend = "none", 
+          ylab="Count", 
+          xlab="",
+          width = 0.6,
+          palette = colset) + grids(linetype = "dashed")+
+  theme(
+    axis.text = element_text(size = 23),   # Font size for axis text
+    axis.title = element_text(size = 23), # Font size for axis labels
+    legend.text = element_text(size = 23),# Font size for legend text
+    legend.title = element_text(size = 23)# Font size for legend title
+  )
+```
