@@ -17,57 +17,97 @@ editor_options:
 4. For WBC, whole blood has much higher %h2g than other tissues. 
 5. For SCZ, the top ones are basal ganglia, cerebellum, hippocampus, hemisphere, cortex ...
 
+```{r echo=FALSE}
+get_results <- function(param_file,ctwas_file){
+  ctwas_parameters <- readRDS(param_file)
+  prop_h2g <- as.data.frame(cbind(names(ctwas_parameters$prop_heritability),ctwas_parameters$prop_heritability,ctwas_parameters$group_pve))
+  prop_h2g$V2 <- round(as.numeric(prop_h2g$V2),4)
+  prop_h2g$V3 <- round(as.numeric(prop_h2g$V3),4)
+  rownames(prop_h2g) <- NULL
+  prop_h2g <- prop_h2g[order(-prop_h2g$V2),]
+  colnames(prop_h2g) <- c("group","%h2g","h2g")
+  
+  pvalue_df <- data.frame()
+  finemap_res <- readRDS(ctwas_file)
+  finemap_res <- finemap_res$finemap_res
+  for(i in unique(finemap_res$group)){
+    snp_pip <- sum(finemap_res[finemap_res$group=="SNP","susie_pip"])
+    snp_n <- dim(finemap_res[finemap_res$group=="SNP",])[1]
+    tissue_pip <- sum(finemap_res[finemap_res$group==i,"susie_pip"])
+    tissue_n <- dim(finemap_res[finemap_res$group==i,])[1]
+    data <- matrix(c(snp_pip, snp_n, tissue_pip, tissue_n), nrow = 2, byrow = TRUE)
+    data <- round(data)
+    result <- fisher.test(data)
+    pvalue_df <- rbind(pvalue_df,data.frame(group=i,pvalue=round(-log10(result$p.value),3)))
+  }
+  output <- merge(prop_h2g, pvalue_df, by = "group")
+  output <- output[order(-output$`%h2g`),]
+  return(output)
+}
+```
+
 ### IBD results
 ```{r, echo=FALSE, fig.width=10, fig.height=8}
-ctwas_parameters <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ibd_all_tissue_E/ibd_all_tissue_E.ctwas_parameters.RDS")
-prop_h2g <- as.data.frame(cbind(names(ctwas_parameters$prop_heritability),ctwas_parameters$prop_heritability))
-prop_h2g$V2 <- round(as.numeric(prop_h2g$V2),4)
-rownames(prop_h2g) <- NULL
-prop_h2g <- prop_h2g[order(-prop_h2g$V2),]
-colnames(prop_h2g) <- c("group","%h2g")
-DT::datatable(prop_h2g,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Proportion of PVE'),options = list(pageLength = 10) )
+param_file <- "/project/xinhe/shengqian/cTWAS_analysis/data/ibd_all_tissue_E/ibd_all_tissue_E.ctwas_parameters.RDS"
+ctwas_file <- "/project/xinhe/shengqian/cTWAS_analysis/data/ibd_all_tissue_E/ibd_all_tissue_E.finemap_regions_res.RDS"
+output <- get_results(param_file,ctwas_file)
+DT::datatable(output,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Proportion of PVE'),options = list(pageLength = 10) )
 ```
 
 ### LDL results
 ```{r, echo=FALSE, fig.width=10, fig.height=8}
-ctwas_parameters <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/ldl_all_tissue_E/ldl_all_tissue_E.ctwas_parameters.RDS")
-prop_h2g <- as.data.frame(cbind(names(ctwas_parameters$prop_heritability),ctwas_parameters$prop_heritability))
-prop_h2g$V2 <- round(as.numeric(prop_h2g$V2),4)
-rownames(prop_h2g) <- NULL
-prop_h2g <- prop_h2g[order(-prop_h2g$V2),]
-DT::datatable(prop_h2g,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Proportion of PVE'),options = list(pageLength = 10) )
+param_file <- "/project/xinhe/shengqian/cTWAS_analysis/data/ldl_all_tissue_E/ldl_all_tissue_E.ctwas_parameters.RDS"
+ctwas_file <- "/project/xinhe/shengqian/cTWAS_analysis/data/ldl_all_tissue_E/ldl_all_tissue_E.finemap_regions_res.RDS"
+output <- get_results(param_file,ctwas_file)
+DT::datatable(output,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Proportion of PVE'),options = list(pageLength = 10) )
 ```
 
 ### SBP results
 ```{r, echo=FALSE, fig.width=10, fig.height=8}
-ctwas_parameters <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/sbp_all_tissue_E/sbp_all_tissue_E.ctwas_parameters.RDS")
-prop_h2g <- as.data.frame(cbind(names(ctwas_parameters$prop_heritability),ctwas_parameters$prop_heritability))
-prop_h2g$V2 <- round(as.numeric(prop_h2g$V2),4)
-rownames(prop_h2g) <- NULL
-prop_h2g <- prop_h2g[order(-prop_h2g$V2),]
-colnames(prop_h2g) <- c("group","%h2g")
-DT::datatable(prop_h2g,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Proportion of PVE'),options = list(pageLength = 10) )
+param_file <- "/project/xinhe/shengqian/cTWAS_analysis/data/sbp_all_tissue_E/sbp_all_tissue_E.ctwas_parameters.RDS"
+ctwas_file <- "/project/xinhe/shengqian/cTWAS_analysis/data/sbp_all_tissue_E/sbp_all_tissue_E.finemap_regions_res.RDS"
+output <- get_results(param_file,ctwas_file)
+DT::datatable(output,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Proportion of PVE'),options = list(pageLength = 10) )
+```
+
+### DBP results
+```{r, echo=FALSE, fig.width=10, fig.height=8}
+param_file <- "/project/xinhe/shengqian/cTWAS_analysis/data/dbp_all_tissue_E/dbp_all_tissue_E.ctwas_parameters.RDS"
+ctwas_file <- "/project/xinhe/shengqian/cTWAS_analysis/data/dbp_all_tissue_E/dbp_all_tissue_E.finemap_regions_res.RDS"
+output <- get_results(param_file,ctwas_file)
+DT::datatable(output,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Proportion of PVE'),options = list(pageLength = 10) )
 ```
 
 ### WBC results
-```{r, echo=FALSE, fig.width=10, fig.height=8}
-ctwas_parameters <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/wbc_all_tissue_E/wbc_all_tissue_E.ctwas_parameters.RDS")
-prop_h2g <- as.data.frame(cbind(names(ctwas_parameters$prop_heritability),ctwas_parameters$prop_heritability))
-prop_h2g$V2 <- round(as.numeric(prop_h2g$V2),4)
-rownames(prop_h2g) <- NULL
-prop_h2g <- prop_h2g[order(-prop_h2g$V2),]
-colnames(prop_h2g) <- c("group","%h2g")
-DT::datatable(prop_h2g,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Combined PIP by modalities and contexts'),options = list(pageLength = 10) )
+```{r, echo=FALSE, fig.width=10, fig.height=8, eval=FALSE}
+param_file <- "/project/xinhe/shengqian/cTWAS_analysis/data/wbc_all_tissue_E/wbc_all_tissue_E.ctwas_parameters.RDS"
+ctwas_file <- "/project/xinhe/shengqian/cTWAS_analysis/data/wbc_all_tissue_E/wbc_all_tissue_E.finemap_regions_res.RDS"
+output <- get_results(param_file,ctwas_file)
+DT::datatable(output,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Proportion of PVE'),options = list(pageLength = 10) )
 ```
 
 
 ### SCZ results
 ```{r, echo=FALSE, fig.width=10, fig.height=8}
-ctwas_parameters <- readRDS("/project/xinhe/shengqian/cTWAS_analysis/data/scz_all_tissue_E/scz_all_tissue_E.ctwas_parameters.RDS")
-prop_h2g <- as.data.frame(cbind(names(ctwas_parameters$prop_heritability),ctwas_parameters$prop_heritability))
-prop_h2g$V2 <- round(as.numeric(prop_h2g$V2),4)
-rownames(prop_h2g) <- NULL
-prop_h2g <- prop_h2g[order(-prop_h2g$V2),]
-colnames(prop_h2g) <- c("group","%h2g")
-DT::datatable(prop_h2g,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Proportion of PVE'),options = list(pageLength = 10) )
+param_file <- "/project/xinhe/shengqian/cTWAS_analysis/data/scz_all_tissue_E/scz_all_tissue_E.ctwas_parameters.RDS"
+ctwas_file <- "/project/xinhe/shengqian/cTWAS_analysis/data/scz_all_tissue_E/scz_all_tissue_E.finemap_regions_res.RDS"
+output <- get_results(param_file,ctwas_file)
+DT::datatable(output,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Proportion of PVE'),options = list(pageLength = 10) )
+```
+
+
+### BIP results
+```{r, echo=FALSE, fig.width=10, fig.height=8}
+param_file <- "/project/xinhe/shengqian/cTWAS_analysis/data/bip_all_tissue_E/bip_all_tissue_E.ctwas_parameters.RDS"
+ctwas_file <- "/project/xinhe/shengqian/cTWAS_analysis/data/bip_all_tissue_E/bip_all_tissue_E.finemap_regions_res.RDS"
+output <- get_results(param_file,ctwas_file)
+DT::datatable(output,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Proportion of PVE'),options = list(pageLength = 10) )
+```
+
+### MDD results
+```{r, echo=FALSE, fig.width=10, fig.height=8}
+param_file <- "/project/xinhe/shengqian/cTWAS_analysis/data/mdd_all_tissue_E/mdd_all_tissue_E.ctwas_parameters.RDS"
+ctwas_file <- "/project/xinhe/shengqian/cTWAS_analysis/data/mdd_all_tissue_E/mdd_all_tissue_E.finemap_regions_res.RDS"
+output <- get_results(param_file,ctwas_file)
+DT::datatable(output,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Proportion of PVE'),options = list(pageLength = 10) )
 ```
