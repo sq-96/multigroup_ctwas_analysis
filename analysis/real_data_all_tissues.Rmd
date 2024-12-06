@@ -20,12 +20,15 @@ editor_options:
 ```{r echo=FALSE}
 get_results <- function(param_file,ctwas_file){
   ctwas_parameters <- readRDS(param_file)
-  prop_h2g <- as.data.frame(cbind(names(ctwas_parameters$prop_heritability),ctwas_parameters$prop_heritability,ctwas_parameters$group_pve))
+  prop_h2g <- as.data.frame(cbind(names(ctwas_parameters$prop_heritability),ctwas_parameters$prop_heritability,ctwas_parameters$group_pve,c(ctwas_parameters$enrichment,1),ctwas_parameters$group_pvalue,ctwas_parameters$odds_ratio))
   prop_h2g$V2 <- round(as.numeric(prop_h2g$V2),4)
   prop_h2g$V3 <- round(as.numeric(prop_h2g$V3),4)
+  prop_h2g$V4 <- round(as.numeric(prop_h2g$V4),4)
+  prop_h2g$V5 <- round(as.numeric(prop_h2g$V5),4)
+  prop_h2g$V6 <- round(as.numeric(prop_h2g$V6),4)
   rownames(prop_h2g) <- NULL
   prop_h2g <- prop_h2g[order(-prop_h2g$V2),]
-  colnames(prop_h2g) <- c("group","%h2g","h2g")
+  colnames(prop_h2g) <- c("group","%h2g","h2g","enrichment","enrichment_pvalue1","odds_ratio1")
   
   pvalue_df <- data.frame()
   finemap_res <- readRDS(ctwas_file)
@@ -35,10 +38,15 @@ get_results <- function(param_file,ctwas_file){
     snp_n <- dim(finemap_res[finemap_res$group=="SNP",])[1]
     tissue_pip <- sum(finemap_res[finemap_res$group==i,"susie_pip"])
     tissue_n <- dim(finemap_res[finemap_res$group==i,])[1]
-    data <- matrix(c(snp_pip, snp_n, tissue_pip, tissue_n), nrow = 2, byrow = TRUE)
+    #y <- c(finemap_res[finemap_res$group=="SNP","susie_pip"],finemap_res[finemap_res$group==i,"susie_pip"])
+    #x <- as.factor(c(rep(0,snp_n),rep(1,tissue_n)))
+    #res <- glm(y ~ x, family = quasibinomial('logit'))
+    #res_sum <- summary(res)
+    #fractional_pvalue <- res_sum$coefficients[2,4]
+    data <- matrix(c(tissue_pip, tissue_n, snp_pip, snp_n), nrow = 2, byrow = TRUE)
     data <- round(data)
     result <- fisher.test(data)
-    pvalue_df <- rbind(pvalue_df,data.frame(group=i,pvalue=round(-log10(result$p.value),3)))
+    pvalue_df <- rbind(pvalue_df,data.frame(group=i,enrichment_pvalue2=round(-log10(result$p.value),3),odds_ratio2=round(result$estimate,3),low=round(result$conf.int[1],3),up=round(result$conf.int[2],3)))
   }
   output <- merge(prop_h2g, pvalue_df, by = "group")
   output <- output[order(-output$`%h2g`),]
