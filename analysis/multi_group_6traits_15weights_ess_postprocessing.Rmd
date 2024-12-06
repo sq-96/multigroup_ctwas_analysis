@@ -899,164 +899,166 @@ if(nrow(pip_per_cs) > 0) {
 
 ```
 
-<!-- # WBC-ieu-b-30 -->
+# WBC-ieu-b-30
 
-<!-- ```{r message=FALSE, warning=FALSE} -->
-<!-- trait <- "WBC-ieu-b-30" -->
+```{r message=FALSE, warning=FALSE}
+trait <- "WBC-ieu-b-30"
 
-<!-- results_dir_origin <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/results/",trait,"/") -->
-<!-- ctwas_res_origin <- readRDS(paste0(results_dir_origin,trait,".ctwas.res.RDS")) -->
+results_dir_origin <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/results/",trait,"/")
+ctwas_res_origin <- readRDS(paste0(results_dir_origin,trait,".ctwas.res.RDS"))
 
-<!-- finemap_res_origin <- ctwas_res_origin$finemap_res -->
-<!-- ``` -->
+finemap_res_origin <- ctwas_res_origin$finemap_res
+```
 
-<!-- ## Region merge -->
+## Region merge
 
-<!-- ```{r message=FALSE, warning=FALSE} -->
+```{r message=FALSE, warning=FALSE}
 
-<!-- load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld/rm_",trait,".rdata")) -->
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld/rm_",trait,".rdata"))
 
-<!-- finemap_res_rm <- res_regionmerge$finemap_res -->
-<!-- finemap_res_rm_boundary_genes <- finemap_res_rm[finemap_res_rm$id %in%selected_boundary_genes$id,] -->
-<!-- finemap_res_rm_boundary_genes_pip <- finemap_res_rm_boundary_genes[,c("id","susie_pip","cs")] -->
-
-
-<!-- finemap_res_origin_boundary_genes <- finemap_res_origin[finemap_res_origin$id %in%selected_boundary_genes$id,] -->
-<!-- finemap_res_origin_boundary_genes_pip <- finemap_res_origin_boundary_genes[,c("id","susie_pip","cs")] -->
-
-<!-- finemap_res_compare_regionmerge <- merge(finemap_res_origin_boundary_genes_pip,finemap_res_rm_boundary_genes_pip, by = "id") -->
-<!-- colnames(finemap_res_compare_regionmerge) <- c("id","susie_pip_origin","cs_origin","susie_pip_reginmerge","cs_reginmerge") -->
-
-<!-- DT::datatable(finemap_res_compare_regionmerge,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Selected boundary genes (susie_pip > 0.5)'),options = list(pageLength = 10) ) -->
-<!-- ``` -->
-
-<!-- ## LD-mismatch  -->
-
-<!-- ```{r message=FALSE, warning=FALSE} -->
-
-<!-- load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld/rmld_",trait,".rdata")) -->
-
-<!-- sprintf("The number of problematic regions = %s", length(problematic_region_ids)) -->
-<!-- sprintf("The number of problematic genes = %s", length(problematic_genes)) -->
-<!-- sprintf("The number of problematic snps = %s", length(res_ldmismatch$problematic_snps)) -->
-<!-- sprintf("The number of flipped snps = %s", length(res_ldmismatch$flipped_snps)) -->
-
-<!-- finemap_rm_res_problematic_region <- finemap_res_rm[finemap_res_rm$id %in% problematic_genes,] -->
-
-<!-- finemap_noLD_res_problematic_region <- res_rmld$finemap_res -->
-<!-- merge_regionmerge_nold <- merge(finemap_rm_res_problematic_region,finemap_noLD_res_problematic_region, by = "id") -->
-<!-- merge_regionmerge_nold <- merge_regionmerge_nold[,c("id","susie_pip.x","susie_pip.y")] -->
-<!-- colnames(merge_regionmerge_nold) <-  c("id","susie_pip_after_regionmerge","susie_pip_ld-mismatch-fixed")  -->
-
-<!-- DT::datatable(merge_regionmerge_nold,caption = htmltools::tags$caption(style = 'caption-side: topleft; text-align = left; color:black;','PIP after region merge and fixed PIP for problematic genes'),options = list(pageLength = 5) ) -->
-
-<!-- ``` -->
+finemap_res_rm <- res_regionmerge$finemap_res
+finemap_res_rm_boundary_genes <- finemap_res_rm[finemap_res_rm$id %in%selected_boundary_genes$id,]
+finemap_res_rm_boundary_genes_pip <- finemap_res_rm_boundary_genes[,c("id","susie_pip","cs")]
 
 
+finemap_res_origin_boundary_genes <- finemap_res_origin[finemap_res_origin$id %in%selected_boundary_genes$id,]
+finemap_res_origin_boundary_genes_pip <- finemap_res_origin_boundary_genes[,c("id","susie_pip","cs")]
 
-<!-- ```{r message=FALSE, warning=FALSE, fig.width=10, fig.height=3} -->
+finemap_res_compare_regionmerge <- merge(finemap_res_origin_boundary_genes_pip,finemap_res_rm_boundary_genes_pip, by = "id")
+colnames(finemap_res_compare_regionmerge) <- c("id","susie_pip_origin","cs_origin","susie_pip_reginmerge","cs_reginmerge")
 
-<!-- finemap_res_origin <- ctwas_res_origin$finemap_res -->
-<!-- finemap_res_origin_gene <- finemap_res_origin[finemap_res_origin$type != "SNP",] -->
+DT::datatable(finemap_res_compare_regionmerge,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Selected boundary genes (susie_pip > 0.5)'),options = list(pageLength = 10) )
+```
 
-<!-- p1 <- ggplot(data = finemap_res_origin_gene, aes(x= abs(z), y= susie_pip)) +  -->
-<!--   geom_point() + -->
-<!--   ggtitle("Original ctwas results") + -->
-<!--   theme_minimal() -->
+## LD-mismatch
 
+```{r message=FALSE, warning=FALSE}
 
-<!-- finemap_res_rm_gene <- finemap_res_rm[finemap_res_rm$type != "SNP",] -->
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld/rmld_",trait,".rdata"))
 
-<!-- p2 <- ggplot(data = finemap_res_rm_gene, aes(x= abs(z), y= susie_pip)) +  -->
-<!--   geom_point() + -->
-<!--   ggtitle("After region merge") + -->
-<!--   theme_minimal() -->
+sprintf("The number of problematic regions = %s", length(problematic_region_ids))
+sprintf("The number of problematic genes = %s", length(problematic_genes))
+sprintf("The number of problematic snps = %s", length(res_ldmismatch$problematic_snps))
+sprintf("The number of flipped snps = %s", length(res_ldmismatch$flipped_snps))
 
+finemap_rm_res_problematic_region <- finemap_res_rm[finemap_res_rm$id %in% problematic_genes,]
 
-<!-- finemap_noLD_res_problematic_region_gene <- finemap_noLD_res_problematic_region[finemap_noLD_res_problematic_region$type !="SNP",] -->
+finemap_noLD_res_problematic_region <- res_rmld$finemap_res
+merge_regionmerge_nold <- merge(finemap_rm_res_problematic_region,finemap_noLD_res_problematic_region, by = "id")
+merge_regionmerge_nold <- merge_regionmerge_nold[,c("id","susie_pip.x","susie_pip.y")]
+colnames(merge_regionmerge_nold) <-  c("id","susie_pip_after_regionmerge","susie_pip_ld-mismatch-fixed")
 
-<!-- p3 <- ggplot(data = finemap_noLD_res_problematic_region_gene, aes(x= abs(z), y= susie_pip)) +  -->
-<!--   geom_point() + -->
-<!--   ggtitle("After LD mismatch fixed") + -->
-<!--   theme_minimal() -->
+DT::datatable(merge_regionmerge_nold,caption = htmltools::tags$caption(style = 'caption-side: topleft; text-align = left; color:black;','PIP after region merge and fixed PIP for problematic genes'),options = list(pageLength = 5) )
 
-
-<!-- grid.arrange(p1,p2,p3, ncol = 3) -->
-<!-- ``` -->
-
-
-<!-- ## Comparing results without post processing -->
-
-<!-- ```{r message=FALSE, warning=FALSE} -->
-
-<!-- susie_alpha_res_origin <- ctwas_res_origin$susie_alpha_res -->
-<!-- susie_alpha_res_origin <- anno_susie_alpha_res(susie_alpha_res_origin, -->
-<!--                                         mapping_table = mapping_two, -->
-<!--                                         map_by = "molecular_id", -->
-<!--                                         drop_unmapped = TRUE) -->
-
-<!-- combined_pip_by_type_cs_origin <- combine_gene_pips(susie_alpha_res_origin,  -->
-<!--                                              group_by = "gene_name", -->
-<!--                                              by = "type", -->
-<!--                                              method = "combine_cs", -->
-<!--                                              filter_cs = TRUE, -->
-<!--                                              include_cs_id = T) -->
-<!-- combined_pip_by_type_sig_origin <- combined_pip_by_type_cs_origin[combined_pip_by_type_cs_origin$combined_pip > 0.8,] -->
-
-<!-- susie_alpha_res_rm <- res_regionmerge$susie_alpha_res -->
-<!-- susie_alpha_res_rm <- anno_susie_alpha_res(susie_alpha_res_rm, -->
-<!--                                         mapping_table = mapping_two, -->
-<!--                                         map_by = "molecular_id", -->
-<!--                                         drop_unmapped = TRUE) -->
-
-<!-- combined_pip_by_type_cs_rm <- combine_gene_pips(susie_alpha_res_rm,  -->
-<!--                                              group_by = "gene_name", -->
-<!--                                              by = "type", -->
-<!--                                              method = "combine_cs", -->
-<!--                                              filter_cs = TRUE, -->
-<!--                                              include_cs_id = T) -->
-<!-- combined_pip_by_type_sig_rm <- combined_pip_by_type_cs_rm[combined_pip_by_type_cs_rm$combined_pip > 0.8,] -->
+```
 
 
 
-<!-- susie_alpha_res_rmld <- res_rmld$susie_alpha_res -->
-<!-- susie_alpha_res_rmld <- anno_susie_alpha_res(susie_alpha_res_rmld, -->
-<!--                                         mapping_table = mapping_two, -->
-<!--                                         map_by = "molecular_id", -->
-<!--                                         drop_unmapped = TRUE) -->
+```{r message=FALSE, warning=FALSE, fig.width=10, fig.height=3}
 
-<!-- combined_pip_by_type_cs_rmld <- combine_gene_pips(susie_alpha_res_rmld,  -->
-<!--                                              group_by = "gene_name", -->
-<!--                                              by = "type", -->
-<!--                                              method = "combine_cs", -->
-<!--                                              filter_cs = TRUE, -->
-<!--                                              include_cs_id = T) -->
-<!-- combined_pip_by_type_sig_rmld <- combined_pip_by_type_cs_rmld[combined_pip_by_type_cs_rmld$combined_pip > 0.8,] -->
+finemap_res_origin <- ctwas_res_origin$finemap_res
+finemap_res_origin_gene <- finemap_res_origin[finemap_res_origin$type != "SNP",]
+
+p1 <- ggplot(data = finemap_res_origin_gene, aes(x= abs(z), y= susie_pip)) +
+  geom_point() +
+  ggtitle("Original ctwas results") +
+  theme_minimal()
 
 
-<!-- origin_unique <- combined_pip_by_type_sig_origin[!combined_pip_by_type_sig_origin$gene_name %in% combined_pip_by_type_sig_rmld$gene_name,] -->
+finemap_res_rm_gene <- finemap_res_rm[finemap_res_rm$type != "SNP",]
 
-<!-- origin_unique <- merge(origin_unique, combined_pip_by_type_cs_rm, by = "gene_name", all.x = TRUE) -->
+p2 <- ggplot(data = finemap_res_rm_gene, aes(x= abs(z), y= susie_pip)) +
+  geom_point() +
+  ggtitle("After region merge") +
+  theme_minimal()
 
-<!-- # Then merge the result with combined_pip_by_type_cs_rmld -->
-<!-- origin_unique <- merge(origin_unique, combined_pip_by_type_cs_rmld, by = "gene_name", all.x = TRUE) -->
-<!-- origin_unique_show <- origin_unique[,c("gene_name","combined_pip.x","combined_pip.y","combined_pip","eQTL_pip.x","eQTL_pip.y","eQTL_pip","sQTL_pip.x","sQTL_pip.y","sQTL_pip","stQTL_pip.x","stQTL_pip.x","stQTL_pip","combined_cs_id.x","combined_cs_id.y","combined_cs_id")] -->
 
-<!-- colnames(origin_unique_show) <- c("gene_name","combined_pip_origin","combined_pip_rm","combined_pip_rmld","eQTL_pip_origin","eQTL_pip_rm","eQTL_pip_rmld","sQTL_pip_origin","sQTL_pip_rm","sQTL_pip_rmld","stQTL_pip_origin","stQTL_pip_origin","stQTL_pip_rmld","combined_cs_id_origin","combined_cs_id_rm","combined_cs_id_rmld") -->
+finemap_noLD_res_problematic_region_gene <- finemap_noLD_res_problematic_region[finemap_noLD_res_problematic_region$type !="SNP",]
 
-<!-- DT::datatable(origin_unique_show,caption = htmltools::tags$caption(style = 'caption-side: top; text-align: left; color: black;','Genes no longer significant after post processing'),options = list(pageLength = 5)) -->
+p3 <- ggplot(data = finemap_noLD_res_problematic_region_gene, aes(x= abs(z), y= susie_pip)) +
+  geom_point() +
+  ggtitle("After LD mismatch fixed") +
+  theme_minimal()
 
-<!-- ``` -->
 
-<!-- ## Exploring allelic heterogeneity -->
+grid.arrange(p1,p2,p3, ncol = 3)
+```
 
-<!-- ```{r message=FALSE, warning=FALSE} -->
 
-<!-- pip_per_cs <- compute_pip_per_cs(combined_pip_by_type_sig_rmld, susie_alpha_res_rmld) -->
+## Comparing results without post processing
 
-<!-- sprintf("Number of genes having allelic heterogeneity = %s",length(unique(pip_per_cs$gene_name))) -->
+```{r message=FALSE, warning=FALSE}
 
-<!-- DT::datatable(pip_per_cs,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','PIP per CS'),options = list(pageLength = 5) ) -->
+susie_alpha_res_origin <- ctwas_res_origin$susie_alpha_res
+susie_alpha_res_origin <- anno_susie_alpha_res(susie_alpha_res_origin,
+                                        mapping_table = mapping_two,
+                                        map_by = "molecular_id",
+                                        drop_unmapped = TRUE)
 
-<!-- ``` -->
+combined_pip_by_type_cs_origin <- combine_gene_pips(susie_alpha_res_origin,
+                                             group_by = "gene_name",
+                                             by = "type",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = T)
+combined_pip_by_type_sig_origin <- combined_pip_by_type_cs_origin[combined_pip_by_type_cs_origin$combined_pip > 0.8,]
+
+susie_alpha_res_rm <- res_regionmerge$susie_alpha_res
+susie_alpha_res_rm <- anno_susie_alpha_res(susie_alpha_res_rm,
+                                        mapping_table = mapping_two,
+                                        map_by = "molecular_id",
+                                        drop_unmapped = TRUE)
+
+combined_pip_by_type_cs_rm <- combine_gene_pips(susie_alpha_res_rm,
+                                             group_by = "gene_name",
+                                             by = "type",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = T)
+combined_pip_by_type_sig_rm <- combined_pip_by_type_cs_rm[combined_pip_by_type_cs_rm$combined_pip > 0.8,]
+
+
+
+susie_alpha_res_rmld <- res_rmld$susie_alpha_res
+susie_alpha_res_rmld <- anno_susie_alpha_res(susie_alpha_res_rmld,
+                                        mapping_table = mapping_two,
+                                        map_by = "molecular_id",
+                                        drop_unmapped = TRUE)
+
+combined_pip_by_type_cs_rmld <- combine_gene_pips(susie_alpha_res_rmld,
+                                             group_by = "gene_name",
+                                             by = "type",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = T)
+combined_pip_by_type_sig_rmld <- combined_pip_by_type_cs_rmld[combined_pip_by_type_cs_rmld$combined_pip > 0.8,]
+
+
+origin_unique <- combined_pip_by_type_sig_origin[!combined_pip_by_type_sig_origin$gene_name %in% combined_pip_by_type_sig_rmld$gene_name,]
+
+origin_unique <- merge(origin_unique, combined_pip_by_type_cs_rm, by = "gene_name", all.x = TRUE)
+
+# Then merge the result with combined_pip_by_type_cs_rmld
+origin_unique <- merge(origin_unique, combined_pip_by_type_cs_rmld, by = "gene_name", all.x = TRUE)
+origin_unique_show <- origin_unique[,c("gene_name","combined_pip.x","combined_pip.y","combined_pip","eQTL_pip.x","eQTL_pip.y","eQTL_pip","sQTL_pip.x","sQTL_pip.y","sQTL_pip","stQTL_pip.x","stQTL_pip.x","stQTL_pip","combined_cs_id.x","combined_cs_id.y","combined_cs_id")]
+
+colnames(origin_unique_show) <- c("gene_name","combined_pip_origin","combined_pip_rm","combined_pip_rmld","eQTL_pip_origin","eQTL_pip_rm","eQTL_pip_rmld","sQTL_pip_origin","sQTL_pip_rm","sQTL_pip_rmld","stQTL_pip_origin","stQTL_pip_origin","stQTL_pip_rmld","combined_cs_id_origin","combined_cs_id_rm","combined_cs_id_rmld")
+
+DT::datatable(origin_unique_show,caption = htmltools::tags$caption(style = 'caption-side: top; text-align: left; color: black;','Genes no longer significant after post processing'),options = list(pageLength = 5))
+
+```
+
+## Exploring allelic heterogeneity
+
+```{r message=FALSE, warning=FALSE}
+
+pip_per_cs <- compute_pip_per_cs(combined_pip_by_type_sig_rmld, susie_alpha_res_rmld)
+
+sprintf("Number of genes having allelic heterogeneity = %s",length(unique(pip_per_cs$gene_name)))
+
+if(nrow(pip_per_cs) > 0) {
+  DT::datatable(pip_per_cs,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','PIP per CS'),options = list(pageLength = 5) )
+}
+
+```
 
