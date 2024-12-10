@@ -160,15 +160,15 @@ DT::datatable(output,caption = htmltools::tags$caption( style = 'caption-side: t
 ```
 
 
-```{r}
+```{r, echo=FALSE, eval=FALSE}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue_highPVE/"
 runtag = "one_tissue"
-enrichment <- c()
-simutags <- paste(1, 7:14, sep = "-")
+pvalue <- c()
+simutags <- paste(1, 1:20, sep = "-")
 param_files <- paste0(results_dir, runtag, "_simu",simutags, "_UKBBLD", ".ctwas_parameters.RDS")
 for(j in param_files){
   ctwas_parameters <- readRDS(j)
-  enrichment <- c(enrichment,ctwas_parameters$enrichment)
+  pvalue <- c(pvalue,10^(-ctwas_parameters$group_pvalue[1]))
 }
 ```
 
@@ -190,6 +190,43 @@ for(i in 1:7){
 
 enrichment_df <- as.data.frame(do.call(cbind,enrichment_list))
 rownames(enrichment_df) <- 1:20
+colnames(enrichment_df) <- c("group1","group10","group20","group40","group60","group80","group100")
+```
+
+```{r, echo=FALSE, eval=FALSE}
+# Convert the data frame to a long format
+library(tidyr)
+long_df <- pivot_longer(enrichment_df, cols = everything(), names_to = "Group", values_to = "Value")
+long_df$Group <- factor(long_df$Group, levels = c("group1", "group10", "group20", "group40", "group60", "group80", "group100"))
+# Plot using ggplot2
+library(ggplot2)
+
+ggplot(long_df, aes(x = Group, y = Value, color = Group)) +
+  geom_point() +
+  labs(title = "Scatter Plot of Enrichment Data",
+       x = "Groups",
+       y = "Values") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r, echo=FALSE, eval=FALSE}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue_highPVE/"
+runtag = "one_tissue"
+enrichment_list <- list()
+for(i in 1:7){
+  simutags <- paste(i, 1:20, sep = "-")
+  param_files <- paste0(results_dir, runtag, "_simu",simutags, "_UKBBLD", ".ctwas_parameters.RDS")
+  enrichment <- c()
+  for(j in param_files){
+    ctwas_parameters <- readRDS(j)
+    enrichment <- c(enrichment,ctwas_parameters$odds_ratio)
+  }
+  enrichment_list[[i]]<-enrichment
+}
+
+enrichment_df <- as.data.frame(do.call(cbind,enrichment_list))
+#rownames(enrichment_df) <- 1:20
 colnames(enrichment_df) <- c("group1","group10","group20","group40","group60","group80","group100")
 ```
 
