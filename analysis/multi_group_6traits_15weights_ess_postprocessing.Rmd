@@ -293,9 +293,9 @@ merge_regionmerge_nold <- merge(finemap_rm_res_problematic_region,finemap_noLD_r
 merge_regionmerge_nold <- merge_regionmerge_nold[,c("id","susie_pip.x","susie_pip.y")]
 colnames(merge_regionmerge_nold) <-  c("id","susie_pip_after_regionmerge","susie_pip_ld-mismatch-fixed") 
 
-if(nrow(pip_per_cs) > 0) {
-  DT::datatable(pip_per_cs,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','PIP per CS'),options = list(pageLength = 5) )
-}
+DT::datatable(merge_regionmerge_nold,caption = htmltools::tags$caption(style = 'caption-side: topleft; text-align = left; color:black;','PIP after region merge and fixed PIP for problematic genes'),options = list(pageLength = 5) )
+
+
 ```
 
 
@@ -403,7 +403,9 @@ pip_per_cs <- compute_pip_per_cs(combined_pip_by_type_sig_rmld, susie_alpha_res_
 
 sprintf("Number of genes having allelic heterogeneity = %s",length(unique(pip_per_cs$gene_name)))
 
-DT::datatable(pip_per_cs,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','PIP per CS'),options = list(pageLength = 5) )
+if(nrow(pip_per_cs) > 0) {
+  DT::datatable(pip_per_cs,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','PIP per CS'),options = list(pageLength = 5) )
+}
 
 ```
 
