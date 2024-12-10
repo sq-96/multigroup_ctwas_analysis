@@ -28,29 +28,29 @@ get_results <- function(param_file,ctwas_file){
   prop_h2g$V6 <- round(as.numeric(prop_h2g$V6),4)
   rownames(prop_h2g) <- NULL
   prop_h2g <- prop_h2g[order(-prop_h2g$V2),]
-  colnames(prop_h2g) <- c("group","%h2g","h2g","enrichment","enrichment_pvalue1","odds_ratio1")
+  colnames(prop_h2g) <- c("group","%h2g","h2g","enrichment","enrichment_pvalue","odds_ratio")
   
-  pvalue_df <- data.frame()
-  finemap_res <- readRDS(ctwas_file)
-  finemap_res <- finemap_res$finemap_res
-  for(i in unique(finemap_res$group)){
-    snp_pip <- sum(finemap_res[finemap_res$group=="SNP","susie_pip"])
-    snp_n <- dim(finemap_res[finemap_res$group=="SNP",])[1]
-    tissue_pip <- sum(finemap_res[finemap_res$group==i,"susie_pip"])
-    tissue_n <- dim(finemap_res[finemap_res$group==i,])[1]
+  #pvalue_df <- data.frame()
+  #finemap_res <- readRDS(ctwas_file)
+  #finemap_res <- finemap_res$finemap_res
+  #for(i in unique(finemap_res$group)){
+  #  snp_pip <- sum(finemap_res[finemap_res$group=="SNP","susie_pip"])
+  #  snp_n <- dim(finemap_res[finemap_res$group=="SNP",])[1]
+  #  tissue_pip <- sum(finemap_res[finemap_res$group==i,"susie_pip"])
+  #  tissue_n <- dim(finemap_res[finemap_res$group==i,])[1]
     #y <- c(finemap_res[finemap_res$group=="SNP","susie_pip"],finemap_res[finemap_res$group==i,"susie_pip"])
     #x <- as.factor(c(rep(0,snp_n),rep(1,tissue_n)))
     #res <- glm(y ~ x, family = quasibinomial('logit'))
     #res_sum <- summary(res)
     #fractional_pvalue <- res_sum$coefficients[2,4]
-    data <- matrix(c(tissue_pip, tissue_n, snp_pip, snp_n), nrow = 2, byrow = TRUE)
-    data <- round(data)
-    result <- fisher.test(data)
-    pvalue_df <- rbind(pvalue_df,data.frame(group=i,enrichment_pvalue2=round(-log10(result$p.value),3),odds_ratio2=round(result$estimate,3),low=round(result$conf.int[1],3),up=round(result$conf.int[2],3)))
-  }
-  output <- merge(prop_h2g, pvalue_df, by = "group")
-  output <- output[order(-output$`%h2g`),]
-  return(output)
+  #  data <- matrix(c(tissue_pip, tissue_n, snp_pip, snp_n), nrow = 2, byrow = TRUE)
+  #  data <- round(data)
+  #  result <- fisher.test(data)
+  #  pvalue_df <- rbind(pvalue_df,data.frame(group=i,enrichment_pvalue2=round(-log10(result$p.value),3),odds_ratio2=round(result$estimate,3),low=round(result$conf.int[1],3),up=round(result$conf.int[2],3)))
+  #}
+  #output <- merge(prop_h2g, pvalue_df, by = "group")
+  #output <- output[order(-output$`%h2g`),]
+  return(prop_h2g)
 }
 ```
 
@@ -103,7 +103,6 @@ output <- get_results(param_file,ctwas_file)
 DT::datatable(output,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Proportion of PVE'),options = list(pageLength = 10) )
 ```
 
-
 ### BIP results
 ```{r, echo=FALSE, fig.width=10, fig.height=8}
 param_file <- "/project/xinhe/shengqian/cTWAS_analysis/data/bip_all_tissue_E/bip_all_tissue_E.ctwas_parameters.RDS"
@@ -119,3 +118,95 @@ ctwas_file <- "/project/xinhe/shengqian/cTWAS_analysis/data/mdd_all_tissue_E/mdd
 output <- get_results(param_file,ctwas_file)
 DT::datatable(output,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Proportion of PVE'),options = list(pageLength = 10) )
 ```
+
+### RA results
+```{r, echo=FALSE, fig.width=10, fig.height=8}
+param_file <- "/project/xinhe/shengqian/cTWAS_analysis/data/ra_all_tissue_E/ra_all_tissue_E.ctwas_parameters.RDS"
+ctwas_file <- "/project/xinhe/shengqian/cTWAS_analysis/data/ra_all_tissue_E/ra_all_tissue_E.finemap_regions_res.RDS"
+output <- get_results(param_file,ctwas_file)
+DT::datatable(output,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Proportion of PVE'),options = list(pageLength = 10) )
+```
+
+### BMI results
+```{r, echo=FALSE, fig.width=10, fig.height=8}
+param_file <- "/project/xinhe/shengqian/cTWAS_analysis/data/bmi_all_tissue_E/bmi_all_tissue_E.ctwas_parameters.RDS"
+ctwas_file <- "/project/xinhe/shengqian/cTWAS_analysis/data/bmi_all_tissue_E/bmi_all_tissue_E.finemap_regions_res.RDS"
+output <- get_results(param_file,ctwas_file)
+DT::datatable(output,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Proportion of PVE'),options = list(pageLength = 10) )
+```
+
+### HTN results
+```{r, echo=FALSE, fig.width=10, fig.height=8}
+param_file <- "/project/xinhe/shengqian/cTWAS_analysis/data/htn_all_tissue_E/htn_all_tissue_E.ctwas_parameters.RDS"
+ctwas_file <- "/project/xinhe/shengqian/cTWAS_analysis/data/htn_all_tissue_E/htn_all_tissue_E.finemap_regions_res.RDS"
+output <- get_results(param_file,ctwas_file)
+DT::datatable(output,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Proportion of PVE'),options = list(pageLength = 10) )
+```
+
+### T2D results
+```{r, echo=FALSE, fig.width=10, fig.height=8}
+param_file <- "/project/xinhe/shengqian/cTWAS_analysis/data/t2d_all_tissue_E/t2d_all_tissue_E.ctwas_parameters.RDS"
+ctwas_file <- "/project/xinhe/shengqian/cTWAS_analysis/data/t2d_all_tissue_E/t2d_all_tissue_E.finemap_regions_res.RDS"
+output <- get_results(param_file,ctwas_file)
+DT::datatable(output,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Proportion of PVE'),options = list(pageLength = 10) )
+```
+
+### TG results
+```{r, echo=FALSE, fig.width=10, fig.height=8}
+param_file <- "/project/xinhe/shengqian/cTWAS_analysis/data/tg_all_tissue_E/tg_all_tissue_E.ctwas_parameters.RDS"
+ctwas_file <- "/project/xinhe/shengqian/cTWAS_analysis/data/tg_all_tissue_E/tg_all_tissue_E.finemap_regions_res.RDS"
+output <- get_results(param_file,ctwas_file)
+DT::datatable(output,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Proportion of PVE'),options = list(pageLength = 10) )
+```
+
+
+```{r}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue_highPVE/"
+runtag = "one_tissue"
+enrichment <- c()
+simutags <- paste(1, 7:14, sep = "-")
+param_files <- paste0(results_dir, runtag, "_simu",simutags, "_UKBBLD", ".ctwas_parameters.RDS")
+for(j in param_files){
+  ctwas_parameters <- readRDS(j)
+  enrichment <- c(enrichment,ctwas_parameters$enrichment)
+}
+```
+
+
+```{r, echo=FALSE, eval=FALSE}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue_highPVE/"
+runtag = "one_tissue"
+enrichment_list <- list()
+for(i in 1:7){
+  simutags <- paste(i, 1:20, sep = "-")
+  param_files <- paste0(results_dir, runtag, "_simu",simutags, "_UKBBLD", ".ctwas_parameters.RDS")
+  enrichment <- c()
+  for(j in param_files){
+    ctwas_parameters <- readRDS(j)
+    enrichment <- c(enrichment,ctwas_parameters$enrichment)
+  }
+  enrichment_list[[i]]<-enrichment
+}
+
+enrichment_df <- as.data.frame(do.call(cbind,enrichment_list))
+rownames(enrichment_df) <- 1:20
+colnames(enrichment_df) <- c("group1","group10","group20","group40","group60","group80","group100")
+```
+
+```{r, echo=FALSE, eval=FALSE}
+# Convert the data frame to a long format
+library(tidyr)
+long_df <- pivot_longer(enrichment_df, cols = everything(), names_to = "Group", values_to = "Value")
+long_df$Group <- factor(long_df$Group, levels = c("group1", "group10", "group20", "group40", "group60", "group80", "group100"))
+# Plot using ggplot2
+library(ggplot2)
+
+ggplot(long_df, aes(x = Group, y = Value, color = Group)) +
+  geom_point() +
+  labs(title = "Scatter Plot of Enrichment Data",
+       x = "Groups",
+       y = "Values") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
