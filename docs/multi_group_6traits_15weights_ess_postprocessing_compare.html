@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="XSun" />
+
+<meta name="date" content="2024-12-09" />
+
+<title>6 Traits, 5 tissues, eQTL + sQTL + stQTL – compute ukbb LD, eqtl, sqtl from predictdb; stQTL from Munro et al; post-processing</title>
+
+<script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/htmlwidgets-1.5.4/htmlwidgets.js"></script>
+<link href="site_libs/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet" />
+<script src="site_libs/datatables-binding-0.22/datatables.js"></script>
+<link href="site_libs/dt-core-1.11.3/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="site_libs/dt-core-1.11.3/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="site_libs/dt-core-1.11.3/js/jquery.dataTables.min.js"></script>
+<link href="site_libs/crosstalk-1.2.0/css/crosstalk.min.css" rel="stylesheet" />
+<script src="site_libs/crosstalk-1.2.0/js/crosstalk.min.js"></script>
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">multigroup_ctwas_analysis</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/sq-96/multigroup_ctwas_analysis">
+    <span class="fab fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">6 Traits, 5 tissues, eQTL + sQTL + stQTL –
+compute ukbb LD, eqtl, sqtl from predictdb; stQTL from Munro et al;
+post-processing</h1>
+<h4 class="author">XSun</h4>
+<h4 class="date">2024-12-09</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span
+class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2024-12-10
+</p>
+<p>
+<strong>Checks:</strong> <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> 1
+</p>
+<p>
+<strong>Knit directory:</strong> <code>multigroup_ctwas_analysis/</code>
+<span class="glyphicon glyphicon-question-sign" aria-hidden="true"
+title="This is the local directory in which the code in this file was executed.">
+</span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version
+1.7.0). The <em>Checks</em> tab describes the reproducibility checks
+that were applied when the results were created. The <em>Past
+versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges">
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted
+changes </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguncommittedchanges"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The R Markdown is untracked by Git. To know which version of the R
+Markdown file created these results, you’ll want to first commit it to
+the Git repo. If you’re still working on the analysis, you can ignore
+this warning. When you’re finished, you can run
+<code>wflow_publish</code> to commit the R Markdown file and build the
+HTML.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the
+global environment can affect the analysis in your R Markdown file in
+unknown ways. For reproduciblity it’s best to always run the code in an
+empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20231112code">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Seed:</strong>
+<code>set.seed(20231112)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20231112code"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20231112)</code> was run prior to running
+the code in the R Markdown file. Setting a seed ensures that any results
+that rely on randomness, e.g. subsampling or permutations, are
+reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Session information:</strong>
+recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package
+versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be
+confident that you successfully produced the results during this
+run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr
+project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree984b87f5cbe50f3ffd9e5532de15534c9e6e0911targetblank984b87fa">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/984b87f5cbe50f3ffd9e5532de15534c9e6e0911" target="_blank">984b87f</a>
+</a>
+</p>
+</div>
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree984b87f5cbe50f3ffd9e5532de15534c9e6e0911targetblank984b87fa"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development
+and connecting the code version to the results is critical for
+reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/984b87f5cbe50f3ffd9e5532de15534c9e6e0911" target="_blank">984b87f</a>.
+See the <em>Past versions</em> tab to see a history of the changes made
+to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for
+the analysis have been committed to Git prior to generating the results
+(you can use <code>wflow_publish</code> or
+<code>wflow_git_commit</code>). workflowr only checks the R Markdown
+file, but you know if there are other scripts or data files that it
+depends on. Below is the status of the Git repository when the results
+were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .Rhistory
+
+Untracked files:
+    Untracked:  analysis/multi_group_6traits_15weights_ess_postprocessing_compare.Rmd
+
+Unstaged changes:
+    Modified:   analysis/multi_group_6traits_15weights_ess_postprocessing.Rmd
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not
+included in this status report because it is ok for generated content to
+have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+<p>
+There are no past versions. Publish this analysis with
+<code>wflow_publish()</code> to start tracking its development.
+</p>
+<hr>
+</div>
+</div>
+</div>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>We compare post-processed results with the original results: <a
+href="https://sq-96.github.io/multigroup_ctwas_analysis/multi_group_6traits_15weights_ess.html"
+class="uri">https://sq-96.github.io/multigroup_ctwas_analysis/multi_group_6traits_15weights_ess.html</a></p>
+<p>The post-processing steps include the following:</p>
+<ol style="list-style-type: decimal">
+<li><p><strong>Region Merging</strong></p>
+<p>For the regions with <code>susie_pip &gt; 0.5</code></p></li>
+<li><p><strong>LD Mismatch Fixing</strong></p></li>
+</ol>
+<ul>
+<li>Regions were selected where nonSNP_PIP &gt; 0.5.</li>
+<li>For genes with <code>susie_pip &gt; thresholds</code> (0.5 and 0.2),
+we performed LD mismatch diagnosis.</li>
+<li>To address LD mismatches, two strategies were employed:
+<ul>
+<li>Fine-mapping the region without LD.</li>
+<li>Removing mismatched SNPs, updating gene Z-scores, and
+re-fine-mapping with LD.</li>
+</ul></li>
+</ul>
+<pre class="r"><code>library(ctwas)
+library(EnsDb.Hsapiens.v86)
+library(ggplot2)
+library(gridExtra)
+library(dplyr)
+
+# ens_db &lt;- EnsDb.Hsapiens.v86
+# 
+# mapping_predictdb &lt;- readRDS(&quot;/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS&quot;)
+# mapping_munro &lt;- readRDS(&quot;/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/Munro_mapping.RDS&quot;)
+# mapping_two &lt;- rbind(mapping_predictdb,mapping_munro)
+# 
+# 
+# compute_pip_per_cs &lt;- function(combined_data, susie_data) {
+#   # Initialize an empty list to store results
+#   details &lt;- list()
+#   
+#   # Iterate over each unique gene name in the combined data
+#   unique_genes &lt;- unique(combined_data$gene_name)
+#   
+#   for (genename in unique_genes) {
+#     # dplyr::filter susie data for the current gene
+#     susie_alpha_res_multi_per_gene &lt;- susie_data %&gt;%
+#       dplyr::filter(gene_name == genename)
+#     
+#     # Get all unique credible sets for the current gene
+#     cs_all &lt;- unique(susie_alpha_res_multi_per_gene$susie_set[susie_alpha_res_multi_per_gene$in_cs])
+#     
+#     if (length(cs_all) &gt; 1) {
+#       # dplyr::filter complete cases and those in credible sets
+#       susie_alpha_res_multi_per_gene &lt;- susie_alpha_res_multi_per_gene %&gt;%
+#         dplyr::filter(complete.cases(cs), in_cs)
+#       
+#       # Summarize the data
+#       summed_alpha_with_details &lt;- susie_alpha_res_multi_per_gene %&gt;%
+#         group_by(susie_set) %&gt;%
+#         summarise(
+#           total_susie_alpha = round(sum(susie_alpha, na.rm = TRUE), digits = 3),
+#           num_molecular_traits = n(),
+#           ids_pip = paste0(id, &quot;(&quot;, round(susie_alpha, digits = 3), &quot;)&quot;, collapse = &quot;, &quot;)
+#         )
+#       
+#       # Add gene name to the summarized data
+#       summed_alpha_with_details$gene_name &lt;- genename
+#       
+#       # Append the result to the details list
+#       details[[length(details) + 1]] &lt;- summed_alpha_with_details
+#     }
+#   }
+#   
+#   # Combine all results into a single data frame
+#   final_details &lt;- bind_rows(details)
+#   
+#   if(nrow(final_details) &gt; 0){
+#     final_details &lt;- final_details[,c(&quot;gene_name&quot;,&quot;susie_set&quot;,&quot;total_susie_alpha&quot;,&quot;num_molecular_traits&quot;,&quot;ids_pip&quot;)]
+#     colnames(final_details) &lt;- c(&quot;gene_name&quot;,&quot;CS&quot;,&quot;total_PIP_CS&quot;,&quot;num_molecular_traits_CS&quot;,&quot;ids_pip_CS&quot;)
+#   }
+#   
+#   
+#   return(final_details)
+# }</code></pre>
+</div>
+<div id="afib-ebi-a-gcst006414" class="section level1">
+<h1>aFib-ebi-a-GCST006414</h1>
+<pre class="r"><code>trait &lt;- &quot;aFib-ebi-a-GCST006414&quot;
+
+results_dir_origin &lt;- paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/results/&quot;,trait,&quot;/&quot;)
+ctwas_res_origin &lt;- readRDS(paste0(results_dir_origin,trait,&quot;.ctwas.res.RDS&quot;))
+
+finemap_res_origin &lt;- ctwas_res_origin$finemap_res</code></pre>
+<div id="region-merge" class="section level2">
+<h2>Region merge</h2>
+<pre class="r"><code>load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld/rm_&quot;,trait,&quot;.rdata&quot;))
+
+finemap_res_rm &lt;- res_regionmerge$finemap_res
+finemap_res_rm_boundary_genes &lt;- finemap_res_rm[finemap_res_rm$id %in%selected_boundary_genes$id,]
+finemap_res_rm_boundary_genes_pip &lt;- finemap_res_rm_boundary_genes[,c(&quot;id&quot;,&quot;susie_pip&quot;,&quot;cs&quot;)]
+
+
+finemap_res_origin_boundary_genes &lt;- finemap_res_origin[finemap_res_origin$id %in%selected_boundary_genes$id,]
+finemap_res_origin_boundary_genes_pip &lt;- finemap_res_origin_boundary_genes[,c(&quot;id&quot;,&quot;susie_pip&quot;,&quot;cs&quot;)]
+
+finemap_res_compare_regionmerge &lt;- merge(finemap_res_origin_boundary_genes_pip,finemap_res_rm_boundary_genes_pip, by = &quot;id&quot;)
+colnames(finemap_res_compare_regionmerge) &lt;- c(&quot;id&quot;,&quot;susie_pip_origin&quot;,&quot;cs_origin&quot;,&quot;susie_pip_reginmerge&quot;,&quot;cs_reginmerge&quot;)
+
+DT::datatable(finemap_res_compare_regionmerge,caption = htmltools::tags$caption( style = &#39;caption-side: left; text-align: left; color:black;  font-size:150% ;&#39;,&#39;Selected boundary genes (susie_pip &gt; 0.5)&#39;),options = list(pageLength = 10) )</code></pre>
+<div id="htmlwidget-4de263013227ca78a293" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-4de263013227ca78a293">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">Selected boundary genes (susie_pip &gt; 0.5)<\/caption>","data":[["1","2","3","4","5","6","7","8","9"],["ENSG00000078674.grp_1.downstream.ENST00000325083|Heart_Atrial_Appendage_stQTL","ENSG00000078674.grp_1.downstream.ENST00000524226|Heart_Atrial_Appendage_stQTL","ENSG00000104763|Thyroid_stQTL","ENSG00000114450|Heart_Atrial_Appendage_stQTL","ENSG00000146535.grp_2.downstream.ENST00000407904|Artery_Tibial_stQTL","ENSG00000169902|Artery_Tibial_stQTL","ENSG00000170873.18|Heart_Atrial_Appendage_eQTL","ENSG00000172650.13|Heart_Atrial_Appendage_eQTL","ENSG00000177791|Heart_Atrial_Appendage_stQTL"],[0.999998629090069,0.985956277107355,0.99999999999998,0.550905325980547,0.56173765689386,1,0.640580595271782,1,1],["L4","L3","L1","L1","L1","L1","L1","L1","L1"],[4.42012853499874e-05,0.00011643516975357,0.999999999999894,0.169074712735097,0.108528771493765,0.616687169919746,0.0359304849704689,2.33044584740938e-08,1],[null,null,"L1","L1","L1",null,"L1",null,"L1"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>id<\/th>\n      <th>susie_pip_origin<\/th>\n      <th>cs_origin<\/th>\n      <th>susie_pip_reginmerge<\/th>\n      <th>cs_reginmerge<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[2,4]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="ld-mismatch" class="section level2">
+<h2>LD-mismatch</h2>
+<div id="diagnosis" class="section level3">
+<h3>Diagnosis</h3>
+<pre class="r"><code>load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld/ldmismatch_diagnosis_pipthres02_&quot;, trait, &quot;.rdata&quot;))
+
+pip_02 &lt;- data.frame(
+  &quot;PIP Threshold&quot; = &quot;0.2&quot;,
+  &quot;Number of Selected Regions&quot; = length(selected_region_ids),
+  &quot;Number of Problematic Genes&quot; = length(problematic_genes),
+  &quot;Number of Problematic Regions&quot; = length(problematic_region_ids),
+  &quot;Number of Problematic SNPs&quot; = length(res_ldmismatch$problematic_snps),
+  &quot;Number of Flipped SNPs&quot; = length(res_ldmismatch$flipped_snps)
+)
+
+load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld/ldmismatch_diagnosis_pipthres05_&quot;, trait, &quot;.rdata&quot;))
+
+
+pip_05 &lt;- data.frame(
+  &quot;PIP Threshold&quot; = &quot;0.5&quot;,
+  &quot;Number of Selected Regions&quot; = length(selected_region_ids),
+  &quot;Number of Problematic Genes&quot; = length(problematic_genes),
+  &quot;Number of Problematic Regions&quot; = length(problematic_region_ids),
+  &quot;Number of Problematic SNPs&quot; = length(res_ldmismatch$problematic_snps),
+  &quot;Number of Flipped SNPs&quot; = length(res_ldmismatch$flipped_snps)
+)
+
+
+results_table &lt;- rbind(pip_02, pip_05)
+
+DT::datatable(results_table,caption = htmltools::tags$caption( style = &#39;caption-side: left; text-align: left; color:black;  font-size:150% ;&#39;,&#39;LD mismatch diagnosis table for different gene cutoff&#39;),options = list(pageLength = 10) )</code></pre>
+<div id="htmlwidget-20575149739a71fc930f" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-20575149739a71fc930f">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">LD mismatch diagnosis table for different gene cutoff<\/caption>","data":[["1","2"],["0.2","0.5"],[101,101],[5,5],[5,5],[2175,2175],[24,24]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>PIP.Threshold<\/th>\n      <th>Number.of.Selected.Regions<\/th>\n      <th>Number.of.Problematic.Genes<\/th>\n      <th>Number.of.Problematic.Regions<\/th>\n      <th>Number.of.Problematic.SNPs<\/th>\n      <th>Number.of.Flipped.SNPs<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[2,3,4,5,6]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="comparing-2-ld-mismatch-fixing-methods" class="section level3">
+<h3>Comparing 2 LD mismatch fixing methods</h3>
+<pre class="r"><code>load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld/ldmismatch_pipthres05_nold_&quot;,trait,&quot;.rdata&quot;))
+finemap_res_ldmm_nold &lt;- res_ldmm_nold$finemap_res
+load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld/ldmismatch_pipthres05_removesnp_&quot;,trait,&quot;.rdata&quot;))
+finemap_res_ldmm_removesnp &lt;- res_ldmm_removesnp$finemap_res
+
+finemap_res_ldmm_nold_problematic_gene &lt;- finemap_res_ldmm_nold[finemap_res_ldmm_nold$region_id %in% problematic_region_ids &amp; finemap_res_ldmm_nold$type != &quot;SNP&quot;,]
+finemap_res_ldmm_removesnp_problematic_gene &lt;- finemap_res_ldmm_removesnp[finemap_res_ldmm_removesnp$region_id %in% problematic_region_ids &amp; finemap_res_ldmm_removesnp$type != &quot;SNP&quot;,]
+
+merge_2method &lt;- merge(finemap_res_ldmm_nold_problematic_gene,finemap_res_ldmm_removesnp_problematic_gene, by =&quot;id&quot;)
+
+ggplot(data = merge_2method, aes(x= susie_pip.x, y= susie_pip.y)) + 
+  geom_point() +
+  labs(x=&quot;PIP_noLD&quot;, y=&quot;PIP_removesnp&quot;) + 
+  geom_abline(slope = 1, intercept = 0, col =&quot;red&quot;) + 
+  ggtitle(&quot;Comparing PIP for 2 methods -- problematic regions only, genes only&quot;) +
+  theme_minimal()</code></pre>
+<p><img src="figure/multi_group_6traits_15weights_ess_postprocessing_compare.Rmd/unnamed-chunk-5-1.png" width="384" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="comparing-z-scores-and-susie_pip" class="section level2">
+<h2>Comparing z-scores and susie_pip</h2>
+<pre class="r"><code>finemap_res_origin &lt;- ctwas_res_origin$finemap_res
+finemap_res_origin_gene &lt;- finemap_res_origin[finemap_res_origin$type != &quot;SNP&quot;,]
+
+p1 &lt;- ggplot(data = finemap_res_origin_gene, aes(x= abs(z), y= susie_pip)) + 
+  geom_point() +
+  ggtitle(&quot;Original ctwas results&quot;) +
+  theme_minimal()
+
+
+finemap_res_rm_gene &lt;- finemap_res_rm[finemap_res_rm$type != &quot;SNP&quot;,]
+
+p2 &lt;- ggplot(data = finemap_res_rm_gene, aes(x= abs(z), y= susie_pip)) + 
+  geom_point() +
+  ggtitle(&quot;After region merge&quot;) +
+  theme_minimal()
+
+
+finemap_res_ldmm_nold_gene &lt;- finemap_res_ldmm_nold[finemap_res_ldmm_nold$type !=&quot;SNP&quot;,]
+
+p3 &lt;- ggplot(data = finemap_res_ldmm_nold_gene, aes(x= abs(z), y= susie_pip)) + 
+  geom_point() +
+  ggtitle(&quot;After LD mismatch fixed -- noLD&quot;) +
+  theme_minimal()
+
+finemap_res_ldmm_removesnp_gene &lt;- finemap_res_ldmm_removesnp[finemap_res_ldmm_removesnp$type !=&quot;SNP&quot;,]
+
+p4 &lt;- ggplot(data = finemap_res_ldmm_removesnp_gene, aes(x= abs(z), y= susie_pip)) + 
+  geom_point() +
+  ggtitle(&quot;After LD mismatch fixed -- SNP removed&quot;) +
+  theme_minimal()
+
+
+grid.arrange(p1,p2,p3,p4, ncol = 4)</code></pre>
+<p><img src="figure/multi_group_6traits_15weights_ess_postprocessing_compare.Rmd/unnamed-chunk-6-1.png" width="1632" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="ibd-ebi-a-gcst004131" class="section level1">
+<h1>IBD-ebi-a-GCST004131</h1>
+<pre class="r"><code>trait &lt;- &quot;IBD-ebi-a-GCST004131&quot;
+
+results_dir_origin &lt;- paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/results/&quot;,trait,&quot;/&quot;)
+ctwas_res_origin &lt;- readRDS(paste0(results_dir_origin,trait,&quot;.ctwas.res.RDS&quot;))
+
+finemap_res_origin &lt;- ctwas_res_origin$finemap_res</code></pre>
+<div id="region-merge-1" class="section level2">
+<h2>Region merge</h2>
+<pre class="r"><code>load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld/rm_&quot;,trait,&quot;.rdata&quot;))
+
+finemap_res_rm &lt;- res_regionmerge$finemap_res
+finemap_res_rm_boundary_genes &lt;- finemap_res_rm[finemap_res_rm$id %in%selected_boundary_genes$id,]
+finemap_res_rm_boundary_genes_pip &lt;- finemap_res_rm_boundary_genes[,c(&quot;id&quot;,&quot;susie_pip&quot;,&quot;cs&quot;)]
+
+
+finemap_res_origin_boundary_genes &lt;- finemap_res_origin[finemap_res_origin$id %in%selected_boundary_genes$id,]
+finemap_res_origin_boundary_genes_pip &lt;- finemap_res_origin_boundary_genes[,c(&quot;id&quot;,&quot;susie_pip&quot;,&quot;cs&quot;)]
+
+finemap_res_compare_regionmerge &lt;- merge(finemap_res_origin_boundary_genes_pip,finemap_res_rm_boundary_genes_pip, by = &quot;id&quot;)
+colnames(finemap_res_compare_regionmerge) &lt;- c(&quot;id&quot;,&quot;susie_pip_origin&quot;,&quot;cs_origin&quot;,&quot;susie_pip_reginmerge&quot;,&quot;cs_reginmerge&quot;)
+
+DT::datatable(finemap_res_compare_regionmerge,caption = htmltools::tags$caption( style = &#39;caption-side: left; text-align: left; color:black;  font-size:150% ;&#39;,&#39;Selected boundary genes (susie_pip &gt; 0.5)&#39;),options = list(pageLength = 10) )</code></pre>
+<div id="htmlwidget-a23c348805048a1f64c7" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-a23c348805048a1f64c7">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">Selected boundary genes (susie_pip &gt; 0.5)<\/caption>","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14"],["ENSG00000075426|Cells_Cultured_fibroblasts_stQTL","ENSG00000114316.grp_1.downstream.ENST00000265560|Spleen_stQTL","ENSG00000138796|Testis_stQTL","ENSG00000159128|Testis_stQTL","ENSG00000164403.grp_2.downstream.ENST00000606676|Whole_Blood_stQTL","ENSG00000173421.grp_2.downstream.ENST00000438782|Testis_stQTL","ENSG00000174945.grp_2.downstream.ENST00000407112|Spleen_stQTL","ENSG00000196367.grp_2.downstream.ENST00000482799|Adipose_Subcutaneous_stQTL","ENSG00000197050|Adipose_Subcutaneous_stQTL","ENSG00000198742|Spleen_stQTL","ENSG00000198742|Testis_stQTL","ENSG00000204498|Cells_Cultured_fibroblasts_stQTL","ENSG00000232629|Spleen_stQTL","ENSG00000233276.grp_1.downstream.ENST00000419783|Spleen_stQTL"],[0.882426080306825,1,0.747477296923775,0.830030040959451,0.999999999919422,0.799657722507412,0.995333080806046,0.981324555639873,0.5161986540731,0.944692139397425,1,0.99995310092348,0.999999999998355,1],["L1","L1","L1","L1","L2","L1","L1","L2","L1","L2","L1","L1","L4","L3"],[0.0056128385431925,5.57412520763023e-06,0.042824337146429,0.0655326213720439,4.30699414344371e-06,0.681197906731395,0.0309213700689958,2.54955945244717e-10,0.0314278501849687,4.11123576021799e-05,0.988961259206468,1.11022302462516e-14,0,1.96331936019867e-06],[null,null,"L1","L1",null,"L1","L1",null,"L1",null,"L1",null,null,null]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>id<\/th>\n      <th>susie_pip_origin<\/th>\n      <th>cs_origin<\/th>\n      <th>susie_pip_reginmerge<\/th>\n      <th>cs_reginmerge<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[2,4]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="ld-mismatch-1" class="section level2">
+<h2>LD-mismatch</h2>
+<div id="diagnosis-1" class="section level3">
+<h3>Diagnosis</h3>
+<pre class="r"><code>load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld/ldmismatch_diagnosis_pipthres02_&quot;, trait, &quot;.rdata&quot;))
+
+pip_02 &lt;- data.frame(
+  &quot;PIP Threshold&quot; = &quot;0.2&quot;,
+  &quot;Number of Selected Regions&quot; = length(selected_region_ids),
+  &quot;Number of Problematic Genes&quot; = length(problematic_genes),
+  &quot;Number of Problematic Regions&quot; = length(problematic_region_ids),
+  &quot;Number of Problematic SNPs&quot; = length(res_ldmismatch$problematic_snps),
+  &quot;Number of Flipped SNPs&quot; = length(res_ldmismatch$flipped_snps)
+)
+
+load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld/ldmismatch_diagnosis_pipthres05_&quot;, trait, &quot;.rdata&quot;))
+
+
+pip_05 &lt;- data.frame(
+  &quot;PIP Threshold&quot; = &quot;0.5&quot;,
+  &quot;Number of Selected Regions&quot; = length(selected_region_ids),
+  &quot;Number of Problematic Genes&quot; = length(problematic_genes),
+  &quot;Number of Problematic Regions&quot; = length(problematic_region_ids),
+  &quot;Number of Problematic SNPs&quot; = length(res_ldmismatch$problematic_snps),
+  &quot;Number of Flipped SNPs&quot; = length(res_ldmismatch$flipped_snps)
+)
+
+
+results_table &lt;- rbind(pip_02, pip_05)
+
+DT::datatable(results_table,caption = htmltools::tags$caption( style = &#39;caption-side: left; text-align: left; color:black;  font-size:150% ;&#39;,&#39;LD mismatch diagnosis table for different gene cutoff&#39;),options = list(pageLength = 10) )</code></pre>
+<div id="htmlwidget-93928d62269dcef60a51" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-93928d62269dcef60a51">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">LD mismatch diagnosis table for different gene cutoff<\/caption>","data":[["1","2"],["0.2","0.5"],[68,68],[4,4],[4,4],[538,538],[5,5]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>PIP.Threshold<\/th>\n      <th>Number.of.Selected.Regions<\/th>\n      <th>Number.of.Problematic.Genes<\/th>\n      <th>Number.of.Problematic.Regions<\/th>\n      <th>Number.of.Problematic.SNPs<\/th>\n      <th>Number.of.Flipped.SNPs<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[2,3,4,5,6]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="comparing-2-ld-mismatch-fixing-methods-1"
+class="section level3">
+<h3>Comparing 2 LD mismatch fixing methods</h3>
+<pre class="r"><code>load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld/ldmismatch_pipthres05_nold_&quot;,trait,&quot;.rdata&quot;))
+finemap_res_ldmm_nold &lt;- res_ldmm_nold$finemap_res
+load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld/ldmismatch_pipthres05_removesnp_&quot;,trait,&quot;.rdata&quot;))
+finemap_res_ldmm_removesnp &lt;- res_ldmm_removesnp$finemap_res
+
+finemap_res_ldmm_nold_problematic_gene &lt;- finemap_res_ldmm_nold[finemap_res_ldmm_nold$region_id %in% problematic_region_ids &amp; finemap_res_ldmm_nold$type != &quot;SNP&quot;,]
+finemap_res_ldmm_removesnp_problematic_gene &lt;- finemap_res_ldmm_removesnp[finemap_res_ldmm_removesnp$region_id %in% problematic_region_ids &amp; finemap_res_ldmm_removesnp$type != &quot;SNP&quot;,]
+
+merge_2method &lt;- merge(finemap_res_ldmm_nold_problematic_gene,finemap_res_ldmm_removesnp_problematic_gene, by =&quot;id&quot;)
+
+ggplot(data = merge_2method, aes(x= susie_pip.x, y= susie_pip.y)) + 
+  geom_point() +
+  labs(x=&quot;PIP_noLD&quot;, y=&quot;PIP_removesnp&quot;) + 
+  geom_abline(slope = 1, intercept = 0, col =&quot;red&quot;) + 
+  ggtitle(&quot;Comparing PIP for 2 methods -- problematic regions only, genes only&quot;) +
+  theme_minimal()</code></pre>
+<p><img src="figure/multi_group_6traits_15weights_ess_postprocessing_compare.Rmd/unnamed-chunk-10-1.png" width="384" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="comparing-z-scores-and-susie_pip-1" class="section level2">
+<h2>Comparing z-scores and susie_pip</h2>
+<pre class="r"><code>finemap_res_origin &lt;- ctwas_res_origin$finemap_res
+finemap_res_origin_gene &lt;- finemap_res_origin[finemap_res_origin$type != &quot;SNP&quot;,]
+
+p1 &lt;- ggplot(data = finemap_res_origin_gene, aes(x= abs(z), y= susie_pip)) + 
+  geom_point() +
+  ggtitle(&quot;Original ctwas results&quot;) +
+  theme_minimal()
+
+
+finemap_res_rm_gene &lt;- finemap_res_rm[finemap_res_rm$type != &quot;SNP&quot;,]
+
+p2 &lt;- ggplot(data = finemap_res_rm_gene, aes(x= abs(z), y= susie_pip)) + 
+  geom_point() +
+  ggtitle(&quot;After region merge&quot;) +
+  theme_minimal()
+
+
+finemap_res_ldmm_nold_gene &lt;- finemap_res_ldmm_nold[finemap_res_ldmm_nold$type !=&quot;SNP&quot;,]
+
+p3 &lt;- ggplot(data = finemap_res_ldmm_nold_gene, aes(x= abs(z), y= susie_pip)) + 
+  geom_point() +
+  ggtitle(&quot;After LD mismatch fixed -- noLD&quot;) +
+  theme_minimal()
+
+finemap_res_ldmm_removesnp_gene &lt;- finemap_res_ldmm_removesnp[finemap_res_ldmm_removesnp$type !=&quot;SNP&quot;,]
+
+p4 &lt;- ggplot(data = finemap_res_ldmm_removesnp_gene, aes(x= abs(z), y= susie_pip)) + 
+  geom_point() +
+  ggtitle(&quot;After LD mismatch fixed -- SNP removed&quot;) +
+  theme_minimal()
+
+
+grid.arrange(p1,p2,p3,p4, ncol = 4)</code></pre>
+<p><img src="figure/multi_group_6traits_15weights_ess_postprocessing_compare.Rmd/unnamed-chunk-11-1.png" width="1632" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="sbp-ukb-a-360" class="section level1">
+<h1>SBP-ukb-a-360</h1>
+<pre class="r"><code>trait &lt;- &quot;SBP-ukb-a-360&quot;
+
+results_dir_origin &lt;- paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/results/&quot;,trait,&quot;/&quot;)
+ctwas_res_origin &lt;- readRDS(paste0(results_dir_origin,trait,&quot;.ctwas.res.RDS&quot;))
+
+finemap_res_origin &lt;- ctwas_res_origin$finemap_res</code></pre>
+<div id="region-merge-2" class="section level2">
+<h2>Region merge</h2>
+<pre class="r"><code>load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld/rm_&quot;,trait,&quot;.rdata&quot;))
+
+finemap_res_rm &lt;- res_regionmerge$finemap_res
+finemap_res_rm_boundary_genes &lt;- finemap_res_rm[finemap_res_rm$id %in%selected_boundary_genes$id,]
+finemap_res_rm_boundary_genes_pip &lt;- finemap_res_rm_boundary_genes[,c(&quot;id&quot;,&quot;susie_pip&quot;,&quot;cs&quot;)]
+
+
+finemap_res_origin_boundary_genes &lt;- finemap_res_origin[finemap_res_origin$id %in%selected_boundary_genes$id,]
+finemap_res_origin_boundary_genes_pip &lt;- finemap_res_origin_boundary_genes[,c(&quot;id&quot;,&quot;susie_pip&quot;,&quot;cs&quot;)]
+
+finemap_res_compare_regionmerge &lt;- merge(finemap_res_origin_boundary_genes_pip,finemap_res_rm_boundary_genes_pip, by = &quot;id&quot;)
+colnames(finemap_res_compare_regionmerge) &lt;- c(&quot;id&quot;,&quot;susie_pip_origin&quot;,&quot;cs_origin&quot;,&quot;susie_pip_reginmerge&quot;,&quot;cs_reginmerge&quot;)
+
+DT::datatable(finemap_res_compare_regionmerge,caption = htmltools::tags$caption( style = &#39;caption-side: left; text-align: left; color:black;  font-size:150% ;&#39;,&#39;Selected boundary genes (susie_pip &gt; 0.5)&#39;),options = list(pageLength = 10) )</code></pre>
+<div id="htmlwidget-16707cd634e93674753d" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-16707cd634e93674753d">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">Selected boundary genes (susie_pip &gt; 0.5)<\/caption>","data":[["1","2","3","4","5","6","7","8","9","10"],["ENSG00000002822.15|Heart_Atrial_Appendage_eQTL","ENSG00000025434|Adipose_Subcutaneous_stQTL","ENSG00000067560|Heart_Atrial_Appendage_stQTL","ENSG00000108883|Brain_Cortex_stQTL","ENSG00000121068|Heart_Atrial_Appendage_stQTL","ENSG00000128829|Brain_Cortex_stQTL","ENSG00000139436.grp_1.downstream.ENST00000320063|Skin_Sun_Exposed_Lower_leg_stQTL","ENSG00000145020.grp_1.downstream.ENST00000636188|Heart_Atrial_Appendage_stQTL","ENSG00000146966|Brain_Cortex_stQTL","ENSG00000177791|Heart_Atrial_Appendage_stQTL"],[0.523274888061062,0.99999680375922,1,1,0.831050625033969,0.647756903652289,0.804673897805632,0.999999958235712,0.984577422783082,0.999999888841081],["L1","L1","L3","L3","L1","L1","L1","L1","L1","L1"],[0,0,8.18604921393185e-06,0,0.505463883933089,0.0519501546422485,1.02473585172902e-13,0.000879126061092861,0.680626639631409,0.999999449861951],[null,null,null,null,"L1","L1",null,null,"L1","L1"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>id<\/th>\n      <th>susie_pip_origin<\/th>\n      <th>cs_origin<\/th>\n      <th>susie_pip_reginmerge<\/th>\n      <th>cs_reginmerge<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[2,4]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="ld-mismatch-2" class="section level2">
+<h2>LD-mismatch</h2>
+<div id="diagnosis-2" class="section level3">
+<h3>Diagnosis</h3>
+<pre class="r"><code>load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld/ldmismatch_diagnosis_pipthres02_&quot;, trait, &quot;.rdata&quot;))
+
+pip_02 &lt;- data.frame(
+  &quot;PIP Threshold&quot; = &quot;0.2&quot;,
+  &quot;Number of Selected Regions&quot; = length(selected_region_ids),
+  &quot;Number of Problematic Genes&quot; = length(problematic_genes),
+  &quot;Number of Problematic Regions&quot; = length(problematic_region_ids),
+  &quot;Number of Problematic SNPs&quot; = length(res_ldmismatch$problematic_snps),
+  &quot;Number of Flipped SNPs&quot; = length(res_ldmismatch$flipped_snps)
+)
+
+load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld/ldmismatch_diagnosis_pipthres05_&quot;, trait, &quot;.rdata&quot;))
+
+
+pip_05 &lt;- data.frame(
+  &quot;PIP Threshold&quot; = &quot;0.5&quot;,
+  &quot;Number of Selected Regions&quot; = length(selected_region_ids),
+  &quot;Number of Problematic Genes&quot; = length(problematic_genes),
+  &quot;Number of Problematic Regions&quot; = length(problematic_region_ids),
+  &quot;Number of Problematic SNPs&quot; = length(res_ldmismatch$problematic_snps),
+  &quot;Number of Flipped SNPs&quot; = length(res_ldmismatch$flipped_snps)
+)
+
+
+results_table &lt;- rbind(pip_02, pip_05)
+
+DT::datatable(results_table,caption = htmltools::tags$caption( style = &#39;caption-side: left; text-align: left; color:black;  font-size:150% ;&#39;,&#39;LD mismatch diagnosis table for different gene cutoff&#39;),options = list(pageLength = 10) )</code></pre>
+<div id="htmlwidget-37e46cf92521dcbed3f8" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-37e46cf92521dcbed3f8">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">LD mismatch diagnosis table for different gene cutoff<\/caption>","data":[["1","2"],["0.2","0.5"],[125,125],[10,10],[4,4],[1073,1073],[193,193]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>PIP.Threshold<\/th>\n      <th>Number.of.Selected.Regions<\/th>\n      <th>Number.of.Problematic.Genes<\/th>\n      <th>Number.of.Problematic.Regions<\/th>\n      <th>Number.of.Problematic.SNPs<\/th>\n      <th>Number.of.Flipped.SNPs<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[2,3,4,5,6]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="comparing-2-ld-mismatch-fixing-methods-2"
+class="section level3">
+<h3>Comparing 2 LD mismatch fixing methods</h3>
+<pre class="r"><code>load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld/ldmismatch_pipthres05_nold_&quot;,trait,&quot;.rdata&quot;))
+finemap_res_ldmm_nold &lt;- res_ldmm_nold$finemap_res
+load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld/ldmismatch_pipthres05_removesnp_&quot;,trait,&quot;.rdata&quot;))
+finemap_res_ldmm_removesnp &lt;- res_ldmm_removesnp$finemap_res
+
+finemap_res_ldmm_nold_problematic_gene &lt;- finemap_res_ldmm_nold[finemap_res_ldmm_nold$region_id %in% problematic_region_ids &amp; finemap_res_ldmm_nold$type != &quot;SNP&quot;,]
+finemap_res_ldmm_removesnp_problematic_gene &lt;- finemap_res_ldmm_removesnp[finemap_res_ldmm_removesnp$region_id %in% problematic_region_ids &amp; finemap_res_ldmm_removesnp$type != &quot;SNP&quot;,]
+
+merge_2method &lt;- merge(finemap_res_ldmm_nold_problematic_gene,finemap_res_ldmm_removesnp_problematic_gene, by =&quot;id&quot;)
+
+ggplot(data = merge_2method, aes(x= susie_pip.x, y= susie_pip.y)) + 
+  geom_point() +
+  labs(x=&quot;PIP_noLD&quot;, y=&quot;PIP_removesnp&quot;) + 
+  geom_abline(slope = 1, intercept = 0, col =&quot;red&quot;) + 
+  ggtitle(&quot;Comparing PIP for 2 methods -- problematic regions only, genes only&quot;) +
+  theme_minimal()</code></pre>
+<p><img src="figure/multi_group_6traits_15weights_ess_postprocessing_compare.Rmd/unnamed-chunk-15-1.png" width="384" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="comparing-z-scores-and-susie_pip-2" class="section level2">
+<h2>Comparing z-scores and susie_pip</h2>
+<pre class="r"><code>finemap_res_origin &lt;- ctwas_res_origin$finemap_res
+finemap_res_origin_gene &lt;- finemap_res_origin[finemap_res_origin$type != &quot;SNP&quot;,]
+
+p1 &lt;- ggplot(data = finemap_res_origin_gene, aes(x= abs(z), y= susie_pip)) + 
+  geom_point() +
+  ggtitle(&quot;Original ctwas results&quot;) +
+  theme_minimal()
+
+
+finemap_res_rm_gene &lt;- finemap_res_rm[finemap_res_rm$type != &quot;SNP&quot;,]
+
+p2 &lt;- ggplot(data = finemap_res_rm_gene, aes(x= abs(z), y= susie_pip)) + 
+  geom_point() +
+  ggtitle(&quot;After region merge&quot;) +
+  theme_minimal()
+
+
+finemap_res_ldmm_nold_gene &lt;- finemap_res_ldmm_nold[finemap_res_ldmm_nold$type !=&quot;SNP&quot;,]
+
+p3 &lt;- ggplot(data = finemap_res_ldmm_nold_gene, aes(x= abs(z), y= susie_pip)) + 
+  geom_point() +
+  ggtitle(&quot;After LD mismatch fixed -- noLD&quot;) +
+  theme_minimal()
+
+finemap_res_ldmm_removesnp_gene &lt;- finemap_res_ldmm_removesnp[finemap_res_ldmm_removesnp$type !=&quot;SNP&quot;,]
+
+p4 &lt;- ggplot(data = finemap_res_ldmm_removesnp_gene, aes(x= abs(z), y= susie_pip)) + 
+  geom_point() +
+  ggtitle(&quot;After LD mismatch fixed -- SNP removed&quot;) +
+  theme_minimal()
+
+
+grid.arrange(p1,p2,p3,p4, ncol = 4)</code></pre>
+<p><img src="figure/multi_group_6traits_15weights_ess_postprocessing_compare.Rmd/unnamed-chunk-16-1.png" width="1632" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="scz-ieu-b-5102" class="section level1">
+<h1>SCZ-ieu-b-5102</h1>
+<pre class="r"><code>trait &lt;- &quot;SCZ-ieu-b-5102&quot;
+
+results_dir_origin &lt;- paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/results/&quot;,trait,&quot;/&quot;)
+ctwas_res_origin &lt;- readRDS(paste0(results_dir_origin,trait,&quot;.ctwas.res.RDS&quot;))
+
+finemap_res_origin &lt;- ctwas_res_origin$finemap_res</code></pre>
+<div id="region-merge-3" class="section level2">
+<h2>Region merge</h2>
+<pre class="r"><code>load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld/rm_&quot;,trait,&quot;.rdata&quot;))
+
+finemap_res_rm &lt;- res_regionmerge$finemap_res
+finemap_res_rm_boundary_genes &lt;- finemap_res_rm[finemap_res_rm$id %in%selected_boundary_genes$id,]
+finemap_res_rm_boundary_genes_pip &lt;- finemap_res_rm_boundary_genes[,c(&quot;id&quot;,&quot;susie_pip&quot;,&quot;cs&quot;)]
+
+
+finemap_res_origin_boundary_genes &lt;- finemap_res_origin[finemap_res_origin$id %in%selected_boundary_genes$id,]
+finemap_res_origin_boundary_genes_pip &lt;- finemap_res_origin_boundary_genes[,c(&quot;id&quot;,&quot;susie_pip&quot;,&quot;cs&quot;)]
+
+finemap_res_compare_regionmerge &lt;- merge(finemap_res_origin_boundary_genes_pip,finemap_res_rm_boundary_genes_pip, by = &quot;id&quot;)
+colnames(finemap_res_compare_regionmerge) &lt;- c(&quot;id&quot;,&quot;susie_pip_origin&quot;,&quot;cs_origin&quot;,&quot;susie_pip_reginmerge&quot;,&quot;cs_reginmerge&quot;)
+
+DT::datatable(finemap_res_compare_regionmerge,caption = htmltools::tags$caption( style = &#39;caption-side: left; text-align: left; color:black;  font-size:150% ;&#39;,&#39;Selected boundary genes (susie_pip &gt; 0.5)&#39;),options = list(pageLength = 10) )</code></pre>
+<div id="htmlwidget-99e959167faff8d1fc37" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-99e959167faff8d1fc37">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">Selected boundary genes (susie_pip &gt; 0.5)<\/caption>","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15"],["ENSG00000086189|Heart_Left_Ventricle_stQTL","ENSG00000106268|Spleen_stQTL","ENSG00000110583.grp_2.downstream.ENST00000542163|Spleen_stQTL","ENSG00000134569|Brain_Hippocampus_stQTL","ENSG00000146966|Spleen_stQTL","ENSG00000148356|Brain_Spinal_cord_cervical_c-1_stQTL","ENSG00000149179.grp_2.downstream.ENST00000528488|Adrenal_Gland_stQTL","ENSG00000166888.grp_2.downstream.ENST00000300134|Brain_Hippocampus_stQTL","ENSG00000178149|Brain_Hippocampus_stQTL","ENSG00000183066.grp_2.downstream.ENST00000436265|Adrenal_Gland_stQTL","ENSG00000204632.grp_1.downstream.ENST00000360323|Adrenal_Gland_stQTL","ENSG00000206503|Spleen_stQTL","ENSG00000239521.grp_2.downstream.ENST00000414739|Brain_Hippocampus_stQTL","ENSG00000242866.grp_2.downstream.ENST00000450892|Spleen_stQTL","intron_6_31463279_31463371|Heart_Left_Ventricle_sQTL"],[0.600420224101996,0.994934560996929,0.743851503521131,1,0.995021290659694,0.637436677713247,0.979156127243807,0.562917278456802,0.68217217391122,0.699756430578261,1,1,0.999853666176675,0.761141013471567,0.999605565285253],["L1","L2","L1","L1","L1","L1","L3","L1","L1","L1","L3","L2","L1","L1","L2"],[0.0918178887758643,2.35265860235589e-05,0.31015974707519,0.000278233146923657,0.0277986519891349,0.133724364641907,2.79836154248869e-10,0.00881146894087514,0.00157797809480587,0.0069310352640255,0,0,0.00816379388542798,1.85011184530293e-05,0],["L1",null,null,null,"L1","L1",null,null,"L1",null,null,null,"L1",null,null]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>id<\/th>\n      <th>susie_pip_origin<\/th>\n      <th>cs_origin<\/th>\n      <th>susie_pip_reginmerge<\/th>\n      <th>cs_reginmerge<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[2,4]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="ld-mismatch-3" class="section level2">
+<h2>LD-mismatch</h2>
+<div id="diagnosis-3" class="section level3">
+<h3>Diagnosis</h3>
+<pre class="r"><code>load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld/ldmismatch_diagnosis_pipthres02_&quot;, trait, &quot;.rdata&quot;))
+
+pip_02 &lt;- data.frame(
+  &quot;PIP Threshold&quot; = &quot;0.2&quot;,
+  &quot;Number of Selected Regions&quot; = length(selected_region_ids),
+  &quot;Number of Problematic Genes&quot; = length(problematic_genes),
+  &quot;Number of Problematic Regions&quot; = length(problematic_region_ids),
+  &quot;Number of Problematic SNPs&quot; = length(res_ldmismatch$problematic_snps),
+  &quot;Number of Flipped SNPs&quot; = length(res_ldmismatch$flipped_snps)
+)
+
+load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld/ldmismatch_diagnosis_pipthres05_&quot;, trait, &quot;.rdata&quot;))
+
+
+pip_05 &lt;- data.frame(
+  &quot;PIP Threshold&quot; = &quot;0.5&quot;,
+  &quot;Number of Selected Regions&quot; = length(selected_region_ids),
+  &quot;Number of Problematic Genes&quot; = length(problematic_genes),
+  &quot;Number of Problematic Regions&quot; = length(problematic_region_ids),
+  &quot;Number of Problematic SNPs&quot; = length(res_ldmismatch$problematic_snps),
+  &quot;Number of Flipped SNPs&quot; = length(res_ldmismatch$flipped_snps)
+)
+
+
+results_table &lt;- rbind(pip_02, pip_05)
+
+DT::datatable(results_table,caption = htmltools::tags$caption( style = &#39;caption-side: left; text-align: left; color:black;  font-size:150% ;&#39;,&#39;LD mismatch diagnosis table for different gene cutoff&#39;),options = list(pageLength = 10) )</code></pre>
+<div id="htmlwidget-4a6133f685aa29daac40" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-4a6133f685aa29daac40">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">LD mismatch diagnosis table for different gene cutoff<\/caption>","data":[["1","2"],["0.2","0.5"],[95,95],[7,7],[3,3],[345,345],[4,4]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>PIP.Threshold<\/th>\n      <th>Number.of.Selected.Regions<\/th>\n      <th>Number.of.Problematic.Genes<\/th>\n      <th>Number.of.Problematic.Regions<\/th>\n      <th>Number.of.Problematic.SNPs<\/th>\n      <th>Number.of.Flipped.SNPs<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[2,3,4,5,6]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="comparing-2-ld-mismatch-fixing-methods-3"
+class="section level3">
+<h3>Comparing 2 LD mismatch fixing methods</h3>
+<pre class="r"><code>load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld/ldmismatch_pipthres05_nold_&quot;,trait,&quot;.rdata&quot;))
+finemap_res_ldmm_nold &lt;- res_ldmm_nold$finemap_res
+load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld/ldmismatch_pipthres05_removesnp_&quot;,trait,&quot;.rdata&quot;))
+finemap_res_ldmm_removesnp &lt;- res_ldmm_removesnp$finemap_res
+
+finemap_res_ldmm_nold_problematic_gene &lt;- finemap_res_ldmm_nold[finemap_res_ldmm_nold$region_id %in% problematic_region_ids &amp; finemap_res_ldmm_nold$type != &quot;SNP&quot;,]
+finemap_res_ldmm_removesnp_problematic_gene &lt;- finemap_res_ldmm_removesnp[finemap_res_ldmm_removesnp$region_id %in% problematic_region_ids &amp; finemap_res_ldmm_removesnp$type != &quot;SNP&quot;,]
+
+merge_2method &lt;- merge(finemap_res_ldmm_nold_problematic_gene,finemap_res_ldmm_removesnp_problematic_gene, by =&quot;id&quot;)
+
+ggplot(data = merge_2method, aes(x= susie_pip.x, y= susie_pip.y)) + 
+  geom_point() +
+  labs(x=&quot;PIP_noLD&quot;, y=&quot;PIP_removesnp&quot;) + 
+  geom_abline(slope = 1, intercept = 0, col =&quot;red&quot;) + 
+  ggtitle(&quot;Comparing PIP for 2 methods -- problematic regions only, genes only&quot;) +
+  theme_minimal()</code></pre>
+<p><img src="figure/multi_group_6traits_15weights_ess_postprocessing_compare.Rmd/unnamed-chunk-20-1.png" width="384" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="comparing-z-scores-and-susie_pip-3" class="section level2">
+<h2>Comparing z-scores and susie_pip</h2>
+<pre class="r"><code>finemap_res_origin &lt;- ctwas_res_origin$finemap_res
+finemap_res_origin_gene &lt;- finemap_res_origin[finemap_res_origin$type != &quot;SNP&quot;,]
+
+p1 &lt;- ggplot(data = finemap_res_origin_gene, aes(x= abs(z), y= susie_pip)) + 
+  geom_point() +
+  ggtitle(&quot;Original ctwas results&quot;) +
+  theme_minimal()
+
+
+finemap_res_rm_gene &lt;- finemap_res_rm[finemap_res_rm$type != &quot;SNP&quot;,]
+
+p2 &lt;- ggplot(data = finemap_res_rm_gene, aes(x= abs(z), y= susie_pip)) + 
+  geom_point() +
+  ggtitle(&quot;After region merge&quot;) +
+  theme_minimal()
+
+
+finemap_res_ldmm_nold_gene &lt;- finemap_res_ldmm_nold[finemap_res_ldmm_nold$type !=&quot;SNP&quot;,]
+
+p3 &lt;- ggplot(data = finemap_res_ldmm_nold_gene, aes(x= abs(z), y= susie_pip)) + 
+  geom_point() +
+  ggtitle(&quot;After LD mismatch fixed -- noLD&quot;) +
+  theme_minimal()
+
+finemap_res_ldmm_removesnp_gene &lt;- finemap_res_ldmm_removesnp[finemap_res_ldmm_removesnp$type !=&quot;SNP&quot;,]
+
+p4 &lt;- ggplot(data = finemap_res_ldmm_removesnp_gene, aes(x= abs(z), y= susie_pip)) + 
+  geom_point() +
+  ggtitle(&quot;After LD mismatch fixed -- SNP removed&quot;) +
+  theme_minimal()
+
+
+grid.arrange(p1,p2,p3,p4, ncol = 4)</code></pre>
+<p><img src="figure/multi_group_6traits_15weights_ess_postprocessing_compare.Rmd/unnamed-chunk-21-1.png" width="1632" style="display: block; margin: auto;" /></p>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.2.0 (2022-04-22)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: CentOS Linux 7 (Core)
+
+Matrix products: default
+BLAS/LAPACK: /software/openblas-0.3.13-el7-x86_64/lib/libopenblas_haswellp-r0.3.13.so
+
+locale:
+[1] C
+
+attached base packages:
+[1] stats4    stats     graphics  grDevices utils     datasets  methods  
+[8] base     
+
+other attached packages:
+ [1] dplyr_1.1.4               gridExtra_2.3            
+ [3] ggplot2_3.5.1             EnsDb.Hsapiens.v86_2.99.0
+ [5] ensembldb_2.20.2          AnnotationFilter_1.20.0  
+ [7] GenomicFeatures_1.48.3    AnnotationDbi_1.58.0     
+ [9] Biobase_2.56.0            GenomicRanges_1.48.0     
+[11] GenomeInfoDb_1.39.9       IRanges_2.30.0           
+[13] S4Vectors_0.34.0          BiocGenerics_0.42.0      
+[15] ctwas_0.4.20             
+
+loaded via a namespace (and not attached):
+  [1] colorspace_2.0-3            rjson_0.2.21               
+  [3] ellipsis_0.3.2              rprojroot_2.0.3            
+  [5] XVector_0.36.0              locuszoomr_0.2.1           
+  [7] fs_1.5.2                    rstudioapi_0.13            
+  [9] farver_2.1.0                DT_0.22                    
+ [11] ggrepel_0.9.1               bit64_4.0.5                
+ [13] fansi_1.0.3                 xml2_1.3.3                 
+ [15] codetools_0.2-18            logging_0.10-108           
+ [17] cachem_1.0.6                knitr_1.39                 
+ [19] jsonlite_1.8.0              workflowr_1.7.0            
+ [21] Rsamtools_2.12.0            dbplyr_2.1.1               
+ [23] png_0.1-7                   readr_2.1.2                
+ [25] compiler_4.2.0              httr_1.4.3                 
+ [27] assertthat_0.2.1            Matrix_1.5-3               
+ [29] fastmap_1.1.0               lazyeval_0.2.2             
+ [31] cli_3.6.1                   later_1.3.0                
+ [33] htmltools_0.5.2             prettyunits_1.1.1          
+ [35] tools_4.2.0                 gtable_0.3.0               
+ [37] glue_1.6.2                  GenomeInfoDbData_1.2.8     
+ [39] rappdirs_0.3.3              Rcpp_1.0.12                
+ [41] jquerylib_0.1.4             vctrs_0.6.5                
+ [43] Biostrings_2.64.0           rtracklayer_1.56.0         
+ [45] crosstalk_1.2.0             xfun_0.41                  
+ [47] stringr_1.5.1               lifecycle_1.0.4            
+ [49] irlba_2.3.5                 restfulr_0.0.14            
+ [51] XML_3.99-0.14               zlibbioc_1.42.0            
+ [53] zoo_1.8-10                  scales_1.3.0               
+ [55] gggrid_0.2-0                hms_1.1.1                  
+ [57] promises_1.2.0.1            MatrixGenerics_1.8.0       
+ [59] ProtGenerics_1.28.0         parallel_4.2.0             
+ [61] SummarizedExperiment_1.26.1 LDlinkR_1.2.3              
+ [63] yaml_2.3.5                  curl_4.3.2                 
+ [65] memoise_2.0.1               sass_0.4.1                 
+ [67] biomaRt_2.54.1              stringi_1.7.6              
+ [69] RSQLite_2.3.1               highr_0.9                  
+ [71] BiocIO_1.6.0                filelock_1.0.2             
+ [73] BiocParallel_1.30.3         rlang_1.1.2                
+ [75] pkgconfig_2.0.3             matrixStats_0.62.0         
+ [77] bitops_1.0-7                evaluate_0.15              
+ [79] lattice_0.20-45             purrr_1.0.2                
+ [81] labeling_0.4.2              GenomicAlignments_1.32.0   
+ [83] htmlwidgets_1.5.4           cowplot_1.1.1              
+ [85] bit_4.0.4                   tidyselect_1.2.0           
+ [87] magrittr_2.0.3              R6_2.5.1                   
+ [89] generics_0.1.2              DelayedArray_0.22.0        
+ [91] DBI_1.2.2                   withr_2.5.0                
+ [93] pgenlibr_0.3.3              pillar_1.9.0               
+ [95] KEGGREST_1.36.3             RCurl_1.98-1.7             
+ [97] mixsqp_0.3-43               tibble_3.2.1               
+ [99] crayon_1.5.1                utf8_1.2.2                 
+[101] BiocFileCache_2.4.0         plotly_4.10.0              
+[103] tzdb_0.4.0                  rmarkdown_2.25             
+[105] progress_1.2.2              grid_4.2.0                 
+[107] data.table_1.14.2           blob_1.2.3                 
+[109] git2r_0.30.1                digest_0.6.29              
+[111] tidyr_1.3.0                 httpuv_1.6.5               
+[113] munsell_0.5.0               viridisLite_0.4.0          
+[115] bslib_0.3.1                </code></pre>
+</div>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
