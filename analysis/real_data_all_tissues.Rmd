@@ -29,7 +29,7 @@ get_results <- function(param_file,ctwas_file){
   rownames(prop_h2g) <- NULL
   prop_h2g <- prop_h2g[order(-prop_h2g$V2),]
   colnames(prop_h2g) <- c("group","%h2g","h2g","enrichment","enrichment_pvalue","odds_ratio")
-  
+  prop_h2g <- prop_h2g[prop_h2g$group!="SNP",]
   #pvalue_df <- data.frame()
   #finemap_res <- readRDS(ctwas_file)
   #finemap_res <- finemap_res$finemap_res
@@ -54,7 +54,7 @@ get_results <- function(param_file,ctwas_file){
 }
 ```
 
-### IBD results
+### IBD results (Inflammatory bowel disease)
 ```{r, echo=FALSE, fig.width=10, fig.height=8}
 param_file <- "/project/xinhe/shengqian/cTWAS_analysis/data/ibd_all_tissue_E/ibd_all_tissue_E.ctwas_parameters.RDS"
 ctwas_file <- "/project/xinhe/shengqian/cTWAS_analysis/data/ibd_all_tissue_E/ibd_all_tissue_E.finemap_regions_res.RDS"
@@ -62,7 +62,7 @@ output <- get_results(param_file,ctwas_file)
 DT::datatable(output,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Proportion of PVE'),options = list(pageLength = 10) )
 ```
 
-### LDL results
+### LDL results (low-density lipoprotein)
 ```{r, echo=FALSE, fig.width=10, fig.height=8}
 param_file <- "/project/xinhe/shengqian/cTWAS_analysis/data/ldl_all_tissue_E/ldl_all_tissue_E.ctwas_parameters.RDS"
 ctwas_file <- "/project/xinhe/shengqian/cTWAS_analysis/data/ldl_all_tissue_E/ldl_all_tissue_E.finemap_regions_res.RDS"
@@ -70,7 +70,7 @@ output <- get_results(param_file,ctwas_file)
 DT::datatable(output,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Proportion of PVE'),options = list(pageLength = 10) )
 ```
 
-### SBP results
+### SBP results (Systolic blood pressure)
 ```{r, echo=FALSE, fig.width=10, fig.height=8}
 param_file <- "/project/xinhe/shengqian/cTWAS_analysis/data/sbp_all_tissue_E/sbp_all_tissue_E.ctwas_parameters.RDS"
 ctwas_file <- "/project/xinhe/shengqian/cTWAS_analysis/data/sbp_all_tissue_E/sbp_all_tissue_E.finemap_regions_res.RDS"
@@ -78,10 +78,18 @@ output <- get_results(param_file,ctwas_file)
 DT::datatable(output,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Proportion of PVE'),options = list(pageLength = 10) )
 ```
 
-### DBP results
+### DBP results (Diastolic blood pressure)
 ```{r, echo=FALSE, fig.width=10, fig.height=8}
 param_file <- "/project/xinhe/shengqian/cTWAS_analysis/data/dbp_all_tissue_E/dbp_all_tissue_E.ctwas_parameters.RDS"
 ctwas_file <- "/project/xinhe/shengqian/cTWAS_analysis/data/dbp_all_tissue_E/dbp_all_tissue_E.finemap_regions_res.RDS"
+output <- get_results(param_file,ctwas_file)
+DT::datatable(output,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Proportion of PVE'),options = list(pageLength = 10) )
+```
+
+### HTN results (Hypertension)
+```{r, echo=FALSE, fig.width=10, fig.height=8}
+param_file <- "/project/xinhe/shengqian/cTWAS_analysis/data/htn_all_tissue_E/htn_all_tissue_E.ctwas_parameters.RDS"
+ctwas_file <- "/project/xinhe/shengqian/cTWAS_analysis/data/htn_all_tissue_E/htn_all_tissue_E.finemap_regions_res.RDS"
 output <- get_results(param_file,ctwas_file)
 DT::datatable(output,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Proportion of PVE'),options = list(pageLength = 10) )
 ```
@@ -131,14 +139,6 @@ DT::datatable(output,caption = htmltools::tags$caption( style = 'caption-side: t
 ```{r, echo=FALSE, fig.width=10, fig.height=8}
 param_file <- "/project/xinhe/shengqian/cTWAS_analysis/data/bmi_all_tissue_E/bmi_all_tissue_E.ctwas_parameters.RDS"
 ctwas_file <- "/project/xinhe/shengqian/cTWAS_analysis/data/bmi_all_tissue_E/bmi_all_tissue_E.finemap_regions_res.RDS"
-output <- get_results(param_file,ctwas_file)
-DT::datatable(output,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Proportion of PVE'),options = list(pageLength = 10) )
-```
-
-### HTN results
-```{r, echo=FALSE, fig.width=10, fig.height=8}
-param_file <- "/project/xinhe/shengqian/cTWAS_analysis/data/htn_all_tissue_E/htn_all_tissue_E.ctwas_parameters.RDS"
-ctwas_file <- "/project/xinhe/shengqian/cTWAS_analysis/data/htn_all_tissue_E/htn_all_tissue_E.finemap_regions_res.RDS"
 output <- get_results(param_file,ctwas_file)
 DT::datatable(output,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;','Proportion of PVE'),options = list(pageLength = 10) )
 ```
