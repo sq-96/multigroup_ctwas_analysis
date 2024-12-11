@@ -28,16 +28,16 @@ The post-processing steps include the following:
 
 ```{r message=FALSE, warning=FALSE}
 library(ctwas)
-#library(EnsDb.Hsapiens.v86)
+library(EnsDb.Hsapiens.v86)
 library(ggplot2)
 library(gridExtra)
 library(dplyr)
 
-# ens_db <- EnsDb.Hsapiens.v86
-# 
-# mapping_predictdb <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
-# mapping_munro <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/Munro_mapping.RDS")
-# mapping_two <- rbind(mapping_predictdb,mapping_munro)
+ens_db <- EnsDb.Hsapiens.v86
+
+mapping_predictdb <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
+mapping_munro <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/Munro_mapping.RDS")
+mapping_two <- rbind(mapping_predictdb,mapping_munro)
 # 
 # 
 # compute_pip_per_cs <- function(combined_data, susie_data) {
@@ -509,6 +509,16 @@ p3 <- ggplot(data = merge_rm_ldmm_removesnp, aes(x= susie_pip.x, y= susie_pip.y)
   theme_minimal()
 
 grid.arrange(p1,p2,p3, ncol = 3)
+
+
+finemap_res_ldmm_nold <- anno_finemap_res(finemap_res_ldmm_nold,
+                                                        snp_map = updated_data_res_regionmerge[["updated_snp_map"]],
+                                                        mapping_table = mapping_two,
+                                                        add_gene_annot = TRUE,
+                                                        map_by = "molecular_id",
+                                                        drop_unmapped = TRUE,
+                                                        add_position = TRUE,
+                                                        use_gene_pos = "mid")
 ```
 
 ## Comparing z-scores and susie_pip
@@ -549,6 +559,74 @@ p4 <- ggplot(data = finemap_res_ldmm_removesnp_gene, aes(x= abs(z), y= susie_pip
 grid.arrange(p1,p2,p3,p4, ncol = 4)
 ```
 
+```{r message=FALSE, warning=FALSE, fig.width=12, fig.height=24}
+weights_origin <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/results/",trait,"/",trait,".preprocessed.weights.RDS"))
+
+
+finemap_res_rm <- anno_finemap_res(finemap_res_rm,
+                                          snp_map = updated_data_res_regionmerge[["updated_snp_map"]],
+                                          mapping_table = mapping_two,
+                                          add_gene_annot = TRUE,
+                                          map_by = "molecular_id",
+                                          drop_unmapped = TRUE,
+                                          add_position = TRUE,
+                                          use_gene_pos = "mid")
+print("locus plot -- after region merge")
+make_locusplot(finemap_res_rm,
+               region_id = "9_136047132_136605890",
+               ens_db = ens_db,
+               weights = weights_origin,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = TRUE,
+               filter_cs = TRUE,
+               color_pval_by = "cs",
+               color_pip_by = "cs")
+
+
+
+
+finemap_res_ldmm_nold <- anno_finemap_res(finemap_res_ldmm_nold,
+                                          snp_map = updated_data_res_regionmerge[["updated_snp_map"]],
+                                          mapping_table = mapping_two,
+                                          add_gene_annot = TRUE,
+                                          map_by = "molecular_id",
+                                          drop_unmapped = TRUE,
+                                          add_position = TRUE,
+                                          use_gene_pos = "mid")
+print("locus plot -- LD mismatch: no LD")
+
+make_locusplot(finemap_res_ldmm_nold,
+               region_id = "9_136047132_136605890",
+               ens_db = ens_db,
+               weights = weights_origin,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = TRUE,
+               filter_cs = TRUE,
+               color_pval_by = "cs",
+               color_pip_by = "cs")
+
+
+
+finemap_res_ldmm_removesnp <- anno_finemap_res(finemap_res_ldmm_removesnp,
+                                   snp_map = updated_data_res_regionmerge[["updated_snp_map"]],
+                                   mapping_table = mapping_two,
+                                   add_gene_annot = TRUE,
+                                   map_by = "molecular_id",
+                                   drop_unmapped = TRUE,
+                                   add_position = TRUE,
+                                   use_gene_pos = "mid")
+print("locus plot -- LD mismatch: snp removed")
+make_locusplot(finemap_res_ldmm_removesnp,
+               region_id = "9_136047132_136605890",
+               ens_db = ens_db,
+               weights = weights_origin,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = TRUE,
+               filter_cs = TRUE,
+               color_pval_by = "cs",
+               color_pip_by = "cs")
+
+```
 
 # SBP-ukb-a-360
 
