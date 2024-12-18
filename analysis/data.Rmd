@@ -38,6 +38,13 @@ gwas_ukb <- gtex[gtex$Consortium == "UK Biobank",]
 gwas_ukb_show <- gwas_ukb[,c("Category","new_Phenotype","new_abbreviation","Sample_Size","Cases","Tag")]
 gwas_ukb_show <- gwas_ukb_show[order(gwas_ukb_show$Category),]
 DT::datatable(gwas_ukb_show,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;',"Munro's GWAS (GTEx, only UKB are shown)"),options = list(pageLength = 10) )
+
+
+gwas_noukb <- gtex[gtex$Consortium != "UK Biobank",]
+gwas_noukb <- gwas_noukb[,c("Category","new_Phenotype","new_abbreviation","Sample_Size","Cases","Tag")]
+gwas_noukb_show <- gwas_noukb[order(gwas_noukb$Category),]
+DT::datatable(gwas_noukb_show,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;',"Munro's GWAS (GTEx, non-UKB are shown)"),options = list(pageLength = 10) )
+
 ```
 
 
