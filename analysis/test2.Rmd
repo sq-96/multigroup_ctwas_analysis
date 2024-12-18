@@ -1,0 +1,125 @@
+ ---
+title: "6 Traits, 5 tissues, eQTL + sQTL + stQTL – compute ukbb LD, eqtl, sqtl from predictdb; stQTL from Munro et al; post-processing"
+author: "XSun"
+date: "2024-12-09"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+    toc: true
+---
+
+# Introduction
+
+We compare post-processed results with the original results: https://sq-96.github.io/multigroup_ctwas_analysis/multi_group_6traits_15weights_ess.html
+
+The post-processing steps include the following:
+
+1. **Region Merging**  
+
+   For the regions with `susie_pip > 0.5` 
+   
+2. **LD Mismatch Fixing**
+
+-   Regions were selected where nonSNP_PIP > 0.5.
+-   For genes with `susie_pip > thresholds` (0.5 and 0.2), we performed LD mismatch diagnosis.
+-   To address LD mismatches, two strategies were employed:
+    -   Fine-mapping the region without LD.
+    -   Removing mismatched SNPs, updating gene Z-scores, and re-fine-mapping with LD.
+```{r message=FALSE, warning=FALSE}
+library(ctwas)
+library(EnsDb.Hsapiens.v86)
+library(ggplot2)
+library(gridExtra)
+library(dplyr)
+
+ens_db <- EnsDb.Hsapiens.v86
+
+mapping_predictdb <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
+mapping_munro <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/Munro_mapping.RDS")
+mapping_two <- rbind(mapping_predictdb,mapping_munro)
+# 
+# 
+# compute_pip_per_cs <- function(combined_data, susie_data) {
+#   # Initialize an empty list to store results
+#   details <- list()
+#   
+#   # Iterate over each unique gene name in the combined data
+#   unique_genes <- unique(combined_data$gene_name)
+#   
+#   for (genename in unique_genes) {
+#     # dplyr::filter susie data for the current gene
+#     susie_alpha_res_multi_per_gene <- susie_data %>%
+#       dplyr::filter(gene_name == genename)
+#     
+#     # Get all unique credible sets for the current gene
+#     cs_all <- unique(susie_alpha_res_multi_per_gene$susie_set[susie_alpha_res_multi_per_gene$in_cs])
+#     
+#     if (length(cs_all) > 1) {
+#       # dplyr::filter complete cases and those in credible sets
+#       susie_alpha_res_multi_per_gene <- susie_alpha_res_multi_per_gene %>%
+#         dplyr::filter(complete.cases(cs), in_cs)
+#       
+#       # Summarize the data
+#       summed_alpha_with_details <- susie_alpha_res_multi_per_gene %>%
+#         group_by(susie_set) %>%
+#         summarise(
+#           total_susie_alpha = round(sum(susie_alpha, na.rm = TRUE), digits = 3),
+#           num_molecular_traits = n(),
+#           ids_pip = paste0(id, "(", round(susie_alpha, digits = 3), ")", collapse = ", ")
+#         )
+#       
+#       # Add gene name to the summarized data
+#       summed_alpha_with_details$gene_name <- genename
+#       
+#       # Append the result to the details list
+#       details[[length(details) + 1]] <- summed_alpha_with_details
+#     }
+#   }
+#   
+#   # Combine all results into a single data frame
+#   final_details <- bind_rows(details)
+#   
+#   if(nrow(final_details) > 0){
+#     final_details <- final_details[,c("gene_name","susie_set","total_susie_alpha","num_molecular_traits","ids_pip")]
+#     colnames(final_details) <- c("gene_name","CS","total_PIP_CS","num_molecular_traits_CS","ids_pip_CS")
+#   }
+#   
+#   
+#   return(final_details)
+# }
+
+```
+
+
+# aFib-ebi-a-GCST006414
+
+```{r message=FALSE, warning=FALSE}
+trait <- "aFib-ebi-a-GCST006414"
+
+results_dir_origin <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/results/",trait,"/")
+ctwas_res_origin <- readRDS(paste0(results_dir_origin,trait,".ctwas.res.RDS"))
+
+finemap_res_origin <- ctwas_res_origin$finemap_res
+```
+
+## Region merge. 
+
+```{r message=FALSE, warning=FALSE}
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld/rm_",trait,".rdata"))
+
+finemap_res_rm <- res_regionmerge$finemap_res
+finemap_res_rm_boundary_genes <- finemap_res_rm[finemap_res_rm$id %in%selected_boundary_genes$id,]
+finemap_res_rm_boundary_genes_pip <- finemap_res_rm_boundary_genes[,c("id","susie_pip","cs")]
+
+
+finemap_res_origin_boundary_genes <- finemap_res_origin[finemap_res_origin$id %in%selected_boundary_genes$id,]
+finemap_res_origin_boundary_genes_pip <- finemap_res_origin_boundary_genes[,c("id","susie_pip","cs")]
+
+finemap_res_compare_regionmerge <- merge(finemap_res_origin_boundary_genes_pip,finemap_res_rm_boundary_genes_pip, by = "id")
+colnames(finemap_res_compare_regionmerge) <- c("id","susie_pip_origin","cs_origin","susie_pip_reginmerge","cs_reginmerge")
+
+DT::datatable(finemap_res_compare_regionmerge,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Selected boundary genes (susie_pip > 0.5)'),options = list(pageLength = 10) )
+```
+
+
