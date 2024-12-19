@@ -161,8 +161,8 @@ p3 <- ggplot(data = merge_rm_ldmm_removesnp, aes(x= susie_pip.x, y= susie_pip.y,
   geom_abline(slope = 1, intercept = 0, col ="red") +
   ggtitle("problematic regions only, genes only") +
   theme_minimal()
-print(sprintf("Total genes in problematic regions = %s",nrow(merge_rm_ldmm_removesnp)))
-print(sprintf("Number of genes disappeared after removing prblematic SNPs = %s", sum(merge_rm_ldmm_removesnp$susie_pip.y == 1.5)))
+print(sprintf("Total number of molecular traits in problematic regions = %s",nrow(merge_rm_ldmm_removesnp)))
+print(sprintf("Number of molecular traits disappeared after removing prblematic SNPs = %s", sum(merge_rm_ldmm_removesnp$susie_pip.y == 1.5)))
 
 finemap_res_rm_problematic_gene$highlight <- ifelse(finemap_res_rm_problematic_gene$id %in% problematic_genes, "problematic genes", "good genes")
 print(sprintf("The number of problematic genes with PIP < 0.01 = %s",sum(finemap_res_rm_problematic_gene$highlight == "problematic genes" & finemap_res_rm_problematic_gene$susie_pip < 0.01)))
@@ -352,11 +352,14 @@ make_locusplot(finemap_res_ldmm_removesnp,
 
 finemap_res_rm_gene_region <- finemap_res_rm_gene[finemap_res_rm_gene$region_id == region_id,]
 finemap_res_ldmm_removesnp_gene_region <- finemap_res_ldmm_removesnp_gene[finemap_res_ldmm_removesnp_gene$region_id == region_id,]
-merged_region_gene <- merge(finemap_res_rm_gene_region,finemap_res_ldmm_removesnp_gene_region,by = "id")
+merged_region_gene <- merge(finemap_res_rm_gene_region,finemap_res_ldmm_removesnp_gene_region,by = "id",all.x=T)
 merged_region_gene <- merged_region_gene[,c("id","gene_name.x","z.x","susie_pip.x","cs.x","z.y","susie_pip.y","cs.y")]
 colnames(merged_region_gene) <- c("id","gene_name","z_regionmerge","susie_pip_regionmerge","cs_regionmerge","z_ldmismatch","susie_pip_ldmismatch","cs_ldmismatch")
 
 merged_region_gene$highlight <- ifelse(merged_region_gene$id %in% problematic_genes, "problematic genes", "good genes")
+
+merged_region_gene$z_ldmismatch[is.na(merged_region_gene$z_ldmismatch)] <- 10
+print("The dots showing z_ldmismatch =10 means: these genes were removed since the only QTLs of them are problematic")
 
 ggplot(data = merged_region_gene, aes(x= z_regionmerge, y= z_ldmismatch, color = highlight, alpha = highlight)) +
   geom_point() +
@@ -485,8 +488,8 @@ p3 <- ggplot(data = merge_rm_ldmm_removesnp, aes(x= susie_pip.x, y= susie_pip.y,
   geom_abline(slope = 1, intercept = 0, col ="red") +
   ggtitle("problematic regions only, genes only") +
   theme_minimal()
-print(sprintf("Total genes in problematic regions = %s",nrow(merge_rm_ldmm_removesnp)))
-print(sprintf("Number of genes disappeared after removing prblematic SNPs = %s", sum(merge_rm_ldmm_removesnp$susie_pip.y == 1.5)))
+print(sprintf("Total number of molecular traits in problematic regions = %s",nrow(merge_rm_ldmm_removesnp)))
+print(sprintf("Number of molecular traits disappeared after removing prblematic SNPs = %s", sum(merge_rm_ldmm_removesnp$susie_pip.y == 1.5)))
 
 finemap_res_rm_problematic_gene$highlight <- ifelse(finemap_res_rm_problematic_gene$id %in% problematic_genes, "problematic genes", "good genes")
 print(sprintf("The number of problematic genes with PIP < 0.01 = %s",sum(finemap_res_rm_problematic_gene$highlight == "problematic genes" & finemap_res_rm_problematic_gene$susie_pip < 0.01)))
@@ -712,8 +715,8 @@ p3 <- ggplot(data = merge_rm_ldmm_removesnp, aes(x= susie_pip.x, y= susie_pip.y,
   geom_abline(slope = 1, intercept = 0, col ="red") +
   ggtitle("problematic regions only, genes only") +
   theme_minimal()
-print(sprintf("Total genes in problematic regions = %s",nrow(merge_rm_ldmm_removesnp)))
-print(sprintf("Number of genes disappeared after removing prblematic SNPs = %s", sum(merge_rm_ldmm_removesnp$susie_pip.y == 1.5)))
+print(sprintf("Total number of molecular traits in problematic regions = %s",nrow(merge_rm_ldmm_removesnp)))
+print(sprintf("Number of molecular traits disappeared after removing prblematic SNPs = %s", sum(merge_rm_ldmm_removesnp$susie_pip.y == 1.5)))
 
 finemap_res_rm_problematic_gene$highlight <- ifelse(finemap_res_rm_problematic_gene$id %in% problematic_genes, "problematic genes", "good genes")
 print(sprintf("The number of problematic genes with PIP < 0.01 = %s",sum(finemap_res_rm_problematic_gene$highlight == "problematic genes" & finemap_res_rm_problematic_gene$susie_pip < 0.01)))
@@ -939,8 +942,8 @@ p3 <- ggplot(data = merge_rm_ldmm_removesnp, aes(x= susie_pip.x, y= susie_pip.y,
   geom_abline(slope = 1, intercept = 0, col ="red") + 
   ggtitle("problematic regions only, genes only") +
   theme_minimal()
-print(sprintf("Total genes in problematic regions = %s",nrow(merge_rm_ldmm_removesnp)))
-print(sprintf("Number of genes disappeared after removing prblematic SNPs = %s", sum(merge_rm_ldmm_removesnp$susie_pip.y == 1.5)))
+print(sprintf("Total number of molecular traits in problematic regions = %s",nrow(merge_rm_ldmm_removesnp)))
+print(sprintf("Number of molecular traits disappeared after removing prblematic SNPs = %s", sum(merge_rm_ldmm_removesnp$susie_pip.y == 1.5)))
 
 finemap_res_rm_problematic_gene$highlight <- ifelse(finemap_res_rm_problematic_gene$id %in% problematic_genes, "problematic genes", "good genes")
 print(sprintf("The number of problematic genes with PIP < 0.01 = %s",sum(finemap_res_rm_problematic_gene$highlight == "problematic genes" & finemap_res_rm_problematic_gene$susie_pip < 0.01)))
@@ -1131,11 +1134,14 @@ make_locusplot(finemap_res_ldmm_removesnp,
 
 finemap_res_rm_gene_region <- finemap_res_rm_gene[finemap_res_rm_gene$region_id == region_id,]
 finemap_res_ldmm_removesnp_gene_region <- finemap_res_ldmm_removesnp_gene[finemap_res_ldmm_removesnp_gene$region_id == region_id,]
-merged_region_gene <- merge(finemap_res_rm_gene_region,finemap_res_ldmm_removesnp_gene_region,by = "id")
+merged_region_gene <- merge(finemap_res_rm_gene_region,finemap_res_ldmm_removesnp_gene_region,by = "id",all.x=T)
 merged_region_gene <- merged_region_gene[,c("id","gene_name.x","z.x","susie_pip.x","cs.x","z.y","susie_pip.y","cs.y")]
 colnames(merged_region_gene) <- c("id","gene_name","z_regionmerge","susie_pip_regionmerge","cs_regionmerge","z_ldmismatch","susie_pip_ldmismatch","cs_ldmismatch")
 
 merged_region_gene$highlight <- ifelse(merged_region_gene$id %in% problematic_genes, "problematic genes", "good genes")
+
+merged_region_gene$z_ldmismatch[is.na(merged_region_gene$z_ldmismatch)] <- 10
+print("The dots showing z_ldmismatch =10 means: these genes were removed since the only QTLs of them are problematic")
 
 ggplot(data = merged_region_gene, aes(x= z_regionmerge, y= z_ldmismatch, color = highlight, alpha = highlight)) +
   geom_point() +
@@ -1188,11 +1194,14 @@ make_locusplot(finemap_res_ldmm_removesnp,
 
 finemap_res_rm_gene_region <- finemap_res_rm_gene[finemap_res_rm_gene$region_id == region_id,]
 finemap_res_ldmm_removesnp_gene_region <- finemap_res_ldmm_removesnp_gene[finemap_res_ldmm_removesnp_gene$region_id == region_id,]
-merged_region_gene <- merge(finemap_res_rm_gene_region,finemap_res_ldmm_removesnp_gene_region,by = "id")
+merged_region_gene <- merge(finemap_res_rm_gene_region,finemap_res_ldmm_removesnp_gene_region,by = "id",all.x=T)
 merged_region_gene <- merged_region_gene[,c("id","gene_name.x","z.x","susie_pip.x","cs.x","z.y","susie_pip.y","cs.y")]
 colnames(merged_region_gene) <- c("id","gene_name","z_regionmerge","susie_pip_regionmerge","cs_regionmerge","z_ldmismatch","susie_pip_ldmismatch","cs_ldmismatch")
 
 merged_region_gene$highlight <- ifelse(merged_region_gene$id %in% problematic_genes, "problematic genes", "good genes")
+
+merged_region_gene$z_ldmismatch[is.na(merged_region_gene$z_ldmismatch)] <- 10
+print("The dots showing z_ldmismatch =10 means: these genes were removed since the only QTLs of them are problematic")
 
 ggplot(data = merged_region_gene, aes(x= z_regionmerge, y= z_ldmismatch, color = highlight, alpha = highlight)) +
   geom_point() +
@@ -1326,8 +1335,8 @@ p3 <- ggplot(data = merge_rm_ldmm_removesnp, aes(x= susie_pip.x, y= susie_pip.y,
   geom_abline(slope = 1, intercept = 0, col ="red") +
   ggtitle("problematic regions only, genes only") +
   theme_minimal()
-print(sprintf("Total genes in problematic regions = %s",nrow(merge_rm_ldmm_removesnp)))
-print(sprintf("Number of genes disappeared after removing prblematic SNPs = %s", sum(merge_rm_ldmm_removesnp$susie_pip.y == 1.5)))
+print(sprintf("Total number of molecular traits in problematic regions = %s",nrow(merge_rm_ldmm_removesnp)))
+print(sprintf("Number of molecular traits disappeared after removing prblematic SNPs = %s", sum(merge_rm_ldmm_removesnp$susie_pip.y == 1.5)))
 
 finemap_res_rm_problematic_gene$highlight <- ifelse(finemap_res_rm_problematic_gene$id %in% problematic_genes, "problematic genes", "good genes")
 print(sprintf("The number of problematic genes with PIP < 0.01 = %s",sum(finemap_res_rm_problematic_gene$highlight == "problematic genes" & finemap_res_rm_problematic_gene$susie_pip < 0.01)))
@@ -1553,8 +1562,8 @@ p3 <- ggplot(data = merge_rm_ldmm_removesnp, aes(x= susie_pip.x, y= susie_pip.y,
   geom_abline(slope = 1, intercept = 0, col ="red") +
   ggtitle("problematic regions only, genes only") +
   theme_minimal()
-print(sprintf("Total genes in problematic regions = %s",nrow(merge_rm_ldmm_removesnp)))
-print(sprintf("Number of genes disappeared after removing prblematic SNPs = %s", sum(merge_rm_ldmm_removesnp$susie_pip.y == 1.5)))
+print(sprintf("Total number of molecular traits in problematic regions = %s",nrow(merge_rm_ldmm_removesnp)))
+print(sprintf("Number of molecular traits disappeared after removing prblematic SNPs = %s", sum(merge_rm_ldmm_removesnp$susie_pip.y == 1.5)))
 
 finemap_res_rm_problematic_gene$highlight <- ifelse(finemap_res_rm_problematic_gene$id %in% problematic_genes, "problematic genes", "good genes")
 print(sprintf("The number of problematic genes with PIP < 0.01 = %s",sum(finemap_res_rm_problematic_gene$highlight == "problematic genes" & finemap_res_rm_problematic_gene$susie_pip < 0.01)))

@@ -167,8 +167,8 @@ if(file.exists(file_ldmismatch_results)) {
     geom_abline(slope = 1, intercept = 0, col ="red") + 
     ggtitle("problematic regions only, genes only") +
     theme_minimal()
-  print(sprintf("Total genes in problematic regions = %s",nrow(merge_rm_ldmm_removesnp)))
-  print(sprintf("Number of genes disappeared after removing prblematic SNPs = %s", sum(merge_rm_ldmm_removesnp$susie_pip.y == 1.5)))
+  print(sprintf("Total number of molecular traits in problematic regions = %s",nrow(merge_rm_ldmm_removesnp)))
+  print(sprintf("Number of molecular traits disappeared after removing prblematic SNPs = %s", sum(merge_rm_ldmm_removesnp$susie_pip.y == 1.5)))
   print("The dots showing PIP =1.5 means: these genes were removed since the only QTLs of them are problematic")
   grid.arrange(p1,p2,p3, ncol = 3)
 
@@ -335,6 +335,107 @@ if(file.exists(file_ldmismatch_results)){
 
 ```
 
+## Examples for LD-mismatch fixing
+
+
+```{r message=FALSE, warning=FALSE, fig.width=12, fig.height=9}
+weights_origin <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/results/",trait,"/",trait,".preprocessed.weights.RDS"))
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld/ldmismatch_pipthres02_removesnp_weights_updated_nozfilter_",trait,".rdata"))
+
+region_id <- "10_110801735_113568673"
+
+finemap_res_rm <- anno_finemap_res(finemap_res_rm,
+                                          snp_map = updated_data_res_regionmerge[["updated_snp_map"]],
+                                          mapping_table = mapping_two,
+                                          add_gene_annot = TRUE,
+                                          map_by = "molecular_id",
+                                          drop_unmapped = TRUE,
+                                          add_position = TRUE,
+                                          use_gene_pos = "mid")
+
+finemap_res_ldmm_nold <- anno_finemap_res(finemap_res_ldmm_nold,
+                                          snp_map = updated_data_res_regionmerge[["updated_snp_map"]],
+                                          mapping_table = mapping_two,
+                                          add_gene_annot = TRUE,
+                                          map_by = "molecular_id",
+                                          drop_unmapped = TRUE,
+                                          add_position = TRUE,
+                                          use_gene_pos = "mid")
+
+finemap_res_ldmm_removesnp <- anno_finemap_res(finemap_res_ldmm_removesnp,
+                                   snp_map = updated_data_res_regionmerge[["updated_snp_map"]],
+                                   mapping_table = mapping_two,
+                                   add_gene_annot = TRUE,
+                                   map_by = "molecular_id",
+                                   drop_unmapped = TRUE,
+                                   add_position = TRUE,
+                                   use_gene_pos = "mid")
+
+finemap_res_rm_gene <- finemap_res_rm[finemap_res_rm$type != "SNP",]
+finemap_res_ldmm_removesnp_gene <- finemap_res_ldmm_removesnp[finemap_res_ldmm_removesnp$type !="SNP",]
+
+
+
+print("locus plot -- after region merge")
+make_locusplot(finemap_res_rm,
+               region_id = region_id,
+               ens_db = ens_db,
+               weights = weights_origin,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = TRUE,
+               filter_cs = TRUE,
+               color_pval_by = "cs",
+               color_pip_by = "cs",panel.heights = c(4,4,1,1))
+
+
+print("locus plot -- LD mismatch: no LD")
+
+make_locusplot(finemap_res_ldmm_nold,
+               region_id = region_id,
+               ens_db = ens_db,
+               weights = weights_origin,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = TRUE,
+               filter_cs = TRUE,
+               color_pval_by = "cs",
+               color_pip_by = "cs",panel.heights = c(4,4,1,1))
+
+
+print("locus plot -- LD mismatch: snp removed")
+make_locusplot(finemap_res_ldmm_removesnp,
+               region_id = region_id,
+               ens_db = ens_db,
+               weights = weights_updated,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = TRUE,
+               filter_cs = TRUE,
+               color_pval_by = "cs",
+               color_pip_by = "cs",panel.heights = c(4,4,1,1))
+
+
+finemap_res_rm_gene_region <- finemap_res_rm_gene[finemap_res_rm_gene$region_id == region_id,]
+finemap_res_ldmm_removesnp_gene_region <- finemap_res_ldmm_removesnp_gene[finemap_res_ldmm_removesnp_gene$region_id == region_id,]
+merged_region_gene <- merge(finemap_res_rm_gene_region,finemap_res_ldmm_removesnp_gene_region,by = "id",all.x=T)
+merged_region_gene <- merged_region_gene[,c("id","gene_name.x","z.x","susie_pip.x","cs.x","z.y","susie_pip.y","cs.y")]
+colnames(merged_region_gene) <- c("id","gene_name","z_regionmerge","susie_pip_regionmerge","cs_regionmerge","z_ldmismatch","susie_pip_ldmismatch","cs_ldmismatch")
+
+merged_region_gene$highlight <- ifelse(merged_region_gene$id %in% problematic_genes, "problematic genes", "good genes")
+
+merged_region_gene$z_ldmismatch[is.na(merged_region_gene$z_ldmismatch)] <- 10
+print("The dots showing z_ldmismatch =10 means: these genes were removed since the only QTLs of them are problematic")
+
+ggplot(data = merged_region_gene, aes(x= z_regionmerge, y= z_ldmismatch, color = highlight, alpha = highlight)) +
+  geom_point() +
+  scale_color_manual(values = c("problematic genes" = "red", "good genes" = "black")) +
+  scale_alpha_manual(values = c("problematic genes" = 1, "good genes" = 0.3)) +
+  ggtitle("Comparing z-scores before/after removing the problematic SNPs") +
+  theme_minimal()
+
+DT::datatable(merged_region_gene[merged_region_gene$z_ldmismatch != merged_region_gene$z_regionmerge,],caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Genes with different z before / after removing the problematic SNPs'),options = list(pageLength = 10) )
+
+```
+
 
 # LDL-ukb-d-30780_irnt
 
@@ -487,8 +588,8 @@ if(file.exists(file_ldmismatch_results)) {
     ggtitle("problematic regions only, genes only") +
     theme_minimal()
   
-  print(sprintf("Total genes in problematic regions = %s",nrow(merge_rm_ldmm_removesnp)))
-  print(sprintf("Number of genes disappeared after removing prblematic SNPs = %s", sum(merge_rm_ldmm_removesnp$susie_pip.y == 1.5)))
+  print(sprintf("Total number of molecular traits in problematic regions = %s",nrow(merge_rm_ldmm_removesnp)))
+  print(sprintf("Number of molecular traits disappeared after removing prblematic SNPs = %s", sum(merge_rm_ldmm_removesnp$susie_pip.y == 1.5)))
   print("The dots showing PIP =1.5 means: these genes were removed since the only QTLs of them are problematic")
   print("Notes: 2 intron overlapped")
   grid.arrange(p1,p2,p3, ncol = 3)
@@ -737,11 +838,14 @@ make_locusplot(finemap_res_ldmm_removesnp,
 
 finemap_res_rm_gene_region <- finemap_res_rm_gene[finemap_res_rm_gene$region_id == region_id,]
 finemap_res_ldmm_removesnp_gene_region <- finemap_res_ldmm_removesnp_gene[finemap_res_ldmm_removesnp_gene$region_id == region_id,]
-merged_region_gene <- merge(finemap_res_rm_gene_region,finemap_res_ldmm_removesnp_gene_region,by = "id")
+merged_region_gene <- merge(finemap_res_rm_gene_region,finemap_res_ldmm_removesnp_gene_region,by = "id",all.x=T)
 merged_region_gene <- merged_region_gene[,c("id","gene_name.x","z.x","susie_pip.x","cs.x","z.y","susie_pip.y","cs.y")]
 colnames(merged_region_gene) <- c("id","gene_name","z_regionmerge","susie_pip_regionmerge","cs_regionmerge","z_ldmismatch","susie_pip_ldmismatch","cs_ldmismatch")
 
 merged_region_gene$highlight <- ifelse(merged_region_gene$id %in% problematic_genes, "problematic genes", "good genes")
+
+merged_region_gene$z_ldmismatch[is.na(merged_region_gene$z_ldmismatch)] <- 10
+print("The dots showing z_ldmismatch =10 means: these genes were removed since the only QTLs of them are problematic")
 
 ggplot(data = merged_region_gene, aes(x= z_regionmerge, y= z_ldmismatch, color = highlight, alpha = highlight)) +
   geom_point() +
@@ -905,8 +1009,8 @@ if(file.exists(file_ldmismatch_results)) {
     ggtitle("problematic regions only, genes only") +
     theme_minimal()
 
-  print(sprintf("Total genes in problematic regions = %s",nrow(merge_rm_ldmm_removesnp)))
-  print(sprintf("Number of genes disappeared after removing prblematic SNPs = %s", sum(merge_rm_ldmm_removesnp$susie_pip.y == 1.5)))
+  print(sprintf("Total number of molecular traits in problematic regions = %s",nrow(merge_rm_ldmm_removesnp)))
+  print(sprintf("Number of molecular traits disappeared after removing prblematic SNPs = %s", sum(merge_rm_ldmm_removesnp$susie_pip.y == 1.5)))
   print("The dots showing PIP =1.5 means: these genes were removed since the only QTLs of them are problematic")
   grid.arrange(p1,p2,p3, ncol = 3)
 
@@ -1226,8 +1330,8 @@ if(file.exists(file_ldmismatch_results)) {
     ggtitle("problematic regions only, genes only") +
     theme_minimal()
 
-  print(sprintf("Total genes in problematic regions = %s",nrow(merge_rm_ldmm_removesnp)))
-  print(sprintf("Number of genes disappeared after removing prblematic SNPs = %s", sum(merge_rm_ldmm_removesnp$susie_pip.y == 1.5)))
+  print(sprintf("Total number of molecular traits in problematic regions = %s",nrow(merge_rm_ldmm_removesnp)))
+  print(sprintf("Number of molecular traits disappeared after removing prblematic SNPs = %s", sum(merge_rm_ldmm_removesnp$susie_pip.y == 1.5)))
   print("The dots showing PIP =1.5 means: these genes were removed since the only QTLs of them are problematic")
   grid.arrange(p1,p2,p3, ncol = 3)
 
@@ -1696,8 +1800,8 @@ if(file.exists(file_ldmismatch_results)) {
     geom_abline(slope = 1, intercept = 0, col ="red") + 
     ggtitle("problematic regions only, genes only") +
     theme_minimal()
-  print(sprintf("Total genes in problematic regions = %s",nrow(merge_rm_ldmm_removesnp)))
-  print(sprintf("Number of genes disappeared after removing prblematic SNPs = %s", sum(merge_rm_ldmm_removesnp$susie_pip.y == 1.5)))
+  print(sprintf("Total number of molecular traits in problematic regions = %s",nrow(merge_rm_ldmm_removesnp)))
+  print(sprintf("Number of molecular traits disappeared after removing prblematic SNPs = %s", sum(merge_rm_ldmm_removesnp$susie_pip.y == 1.5)))
   print("The dots showing PIP =1.5 means: these genes were removed since the only QTLs of them are problematic")
   grid.arrange(p1,p2,p3, ncol = 3)
 
@@ -2016,8 +2120,8 @@ if(file.exists(file_ldmismatch_results)) {
     geom_abline(slope = 1, intercept = 0, col ="red") + 
     ggtitle("problematic regions only, genes only") +
     theme_minimal()
-  print(sprintf("Total genes in problematic regions = %s",nrow(merge_rm_ldmm_removesnp)))
-  print(sprintf("Number of genes disappeared after removing prblematic SNPs = %s", sum(merge_rm_ldmm_removesnp$susie_pip.y == 1.5)))
+  print(sprintf("Total number of molecular traits in problematic regions = %s",nrow(merge_rm_ldmm_removesnp)))
+  print(sprintf("Number of molecular traits disappeared after removing prblematic SNPs = %s", sum(merge_rm_ldmm_removesnp$susie_pip.y == 1.5)))
   print("The dots showing PIP =1.5 means: these genes were removed since the only QTLs of them are problematic")
   grid.arrange(p1,p2,p3, ncol = 3)
 
