@@ -1,0 +1,446 @@
+---
+title: "LDL_newtissue_example"
+author: "XSun"
+date: "2024-12-20"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+    toc: true
+---
+
+# Introduction
+
+Tissues are: "Liver","Spleen","Esophagus_Gastroesophageal_Junction","Esophagus_Muscularis","Esophagus_Mucosa"
+
+```{r message=FALSE, warning=FALSE}
+library(ctwas)
+library(EnsDb.Hsapiens.v86)
+library(ggplot2)
+library(gridExtra)
+library(dplyr)
+
+ens_db <- EnsDb.Hsapiens.v86
+
+mapping_predictdb <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
+mapping_munro <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/Munro_mapping.RDS")
+mapping_two <- rbind(mapping_predictdb,mapping_munro)
+
+load("/project2/xinhe/shared_data/multigroup_ctwas/gwas/samplesize.rdata")
+
+colors <- c(  "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728",  "#9467bd", "#8c564b", "#e377c2", "#7f7f7f",  "#bcbd22",  "#17becf",  "#f7b6d2",  "#c5b0d5",  "#9edae5", "#ffbb78",  "#98df8a",  "#ff9896" )
+
+plot_piechart <- function(ctwas_parameters, colors, by) {
+  # Create the initial data frame
+  data <- data.frame(
+    category = names(ctwas_parameters$prop_heritability),
+    percentage = ctwas_parameters$prop_heritability
+  )
+  
+  # Split the category into context and type
+  data <- data %>%
+    mutate(
+      context = sub("\\|.*", "", category),
+      type = sub(".*\\|", "", category)
+    )
+  
+  # Aggregate the data based on the 'by' parameter
+  if (by == "type") {
+    data <- data %>%
+      group_by(type) %>%
+      summarize(percentage = sum(percentage)) %>%
+      mutate(category = type)  # Use type as the new category
+  } else if (by == "context") {
+    data <- data %>%
+      group_by(context) %>%
+      summarize(percentage = sum(percentage)) %>%
+      mutate(category = context)  # Use context as the new category
+  } else {
+    stop("Invalid 'by' parameter. Use 'type' or 'context'.")
+  }
+  
+  # Calculate percentage labels for the chart
+  data$percentage_label <- paste0(round(data$percentage * 100, 1), "%")
+  
+  # Create the pie chart
+  pie <- ggplot(data, aes(x = "", y = percentage, fill = category)) +
+    geom_bar(stat = "identity", width = 1) +
+    coord_polar("y", start = 0) +
+    theme_void() +  # Remove background and axes
+    geom_text(aes(label = percentage_label), 
+              position = position_stack(vjust = 0.5), size = 3) +  # Adjust size as needed
+    scale_fill_manual(values = colors) +  # Custom colors
+    labs(fill = "Category") +  # Legend title
+    ggtitle("Percent of Heritability")  # Title
+  
+  return(pie)
+}
+```
+
+# LDL-ukb-d-30780_irnt
+
+```{r message=FALSE, warning=FALSE}
+trait <- "LDL-ukb-d-30780_irnt"
+
+results_dir_origin <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/results-newtissues/",trait,"/")
+ctwas_res_origin <- readRDS(paste0(results_dir_origin,trait,".ctwas.res.RDS"))
+
+finemap_res_origin <- ctwas_res_origin$finemap_res
+```
+
+## Parameters
+
+```{r message=FALSE, warning=FALSE, fig.width=12, fig.height=9}
+gwas_n <- samplesize[trait]
+tissue <- c("Liver","Spleen","Esophagus_Gastroesophageal_Junction","Esophagus_Muscularis","Esophagus_Mucosa")
+
+param_origin <- ctwas_res_origin$param
+make_convergence_plots(param_origin, gwas_n, colors = colors)
+
+
+ctwas_parameters_origin <- summarize_param(param_origin, gwas_n)
+pve_pie_by_type_origin <- plot_piechart(ctwas_parameters = ctwas_parameters_origin, colors = colors, by = "type")
+pve_pie_by_context_origin <- plot_piechart(ctwas_parameters = ctwas_parameters_origin, colors = colors, by = "context")
+
+gridExtra::grid.arrange(pve_pie_by_type_origin,pve_pie_by_context_origin, ncol = 2)
+```
+
+## Region merge
+
+```{r message=FALSE, warning=FALSE}
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld-newtissues/rm_",trait,".rdata"))
+
+finemap_res_rm <- res_regionmerge$finemap_res
+finemap_res_rm_boundary_genes <- finemap_res_rm[finemap_res_rm$id %in%selected_boundary_genes$id,]
+finemap_res_rm_boundary_genes_pip <- finemap_res_rm_boundary_genes[,c("id","susie_pip","cs")]
+
+
+finemap_res_origin_boundary_genes <- finemap_res_origin[finemap_res_origin$id %in%selected_boundary_genes$id,]
+finemap_res_origin_boundary_genes_pip <- finemap_res_origin_boundary_genes[,c("id","susie_pip","cs")]
+
+finemap_res_compare_regionmerge <- merge(finemap_res_origin_boundary_genes_pip,finemap_res_rm_boundary_genes_pip, by = "id")
+colnames(finemap_res_compare_regionmerge) <- c("id","susie_pip_origin","cs_origin","susie_pip_reginmerge","cs_reginmerge")
+
+DT::datatable(finemap_res_compare_regionmerge,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Selected boundary genes (susie_pip > 0.5)'),options = list(pageLength = 10) )
+```
+
+## LD-mismatch
+### Diagnosis
+
+```{r message=FALSE, warning=FALSE}
+
+file_pipthreshold02 <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld-newtissues/ldmismatch_diagnosis_pipthres02_nozfilter_", trait, ".rdata")
+
+if (file.exists(file_pipthreshold02)) {
+  load(file_pipthreshold02)
+  pip_02 <- data.frame(
+  "PIP Threshold" = "0.2",
+  "Number of Selected Regions" = length(selected_region_ids),
+  "Number of Problematic Genes" = length(problematic_genes),
+  "Number of Problematic Regions" = length(problematic_region_ids),
+  "Number of Problematic SNPs" = length(res_ldmismatch$problematic_snps),
+  "Number of Flipped SNPs" = length(res_ldmismatch$flipped_snps)
+)
+}else{
+
+  load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld-newtissues/ldmismatch_diagnosis_pipthres02_", trait, ".rdata"))
+  pip_02 <- data.frame(
+  "PIP Threshold" = "0.2",
+  "Number of Selected Regions Number of Selected Regions" = length(selected_region_ids),
+  "Number of Problematic Genes" = 0,
+  "Number of Problematic Regions" = 0,
+  "Number of Problematic SNPs" = length(res_ldmismatch$problematic_snps),
+  "Number of Flipped SNPs" = length(res_ldmismatch$flipped_snps)
+)
+
+}
+
+file_pipthreshold05 <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld-newtissues/ldmismatch_diagnosis_pipthres05_nozfilter_", trait, ".rdata")
+
+if (file.exists(file_pipthreshold05)) {
+  load(file_pipthreshold05)
+  pip_05 <- data.frame(
+  "PIP Threshold" = "0.5",
+  "Number of Selected Regions" = length(selected_region_ids),
+  "Number of Problematic Genes" = length(problematic_genes),
+  "Number of Problematic Regions" = length(problematic_region_ids),
+  "Number of Problematic SNPs" = length(res_ldmismatch$problematic_snps),
+  "Number of Flipped SNPs" = length(res_ldmismatch$flipped_snps)
+)
+}else{
+
+  load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld-newtissues/ldmismatch_diagnosis_pipthres05_", trait, ".rdata"))
+  pip_05 <- data.frame(
+  "PIP Threshold" = "0.5",
+  "Number of Selected Regions" = length(selected_region_ids),
+  "Number of Problematic Genes" = 0,
+  "Number of Problematic Regions" = 0,
+  "Number of Problematic SNPs" = length(res_ldmismatch$problematic_snps),
+  "Number of Flipped SNPs" = length(res_ldmismatch$flipped_snps)
+)
+
+}
+
+
+results_table <- rbind(pip_02, pip_05)
+
+DT::datatable(results_table,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','LD mismatch diagnosis table for different gene cutoff'),options = list(pageLength = 10) )
+
+```
+
+### Comparing 2 LD mismatch fixing methods
+
+```{r message=FALSE, warning=FALSE, fig.width=14, fig.height=4}
+
+file_ldmismatch_results <- paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld-newtissues/ldmismatch_pipthres02_nold_nozfilter_",trait,".rdata")
+
+if(file.exists(file_ldmismatch_results)) {
+
+  load(file_pipthreshold02)
+
+  load(file_ldmismatch_results)
+  finemap_res_ldmm_nold <- res_ldmm_nold$finemap_res
+  load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld-newtissues/ldmismatch_pipthres02_removesnp_nozfilter_",trait,".rdata"))
+  finemap_res_ldmm_removesnp <- res_ldmm_removesnp$finemap_res
+
+  finemap_res_ldmm_nold_problematic_gene <- finemap_res_ldmm_nold[finemap_res_ldmm_nold$region_id %in% problematic_region_ids & finemap_res_ldmm_nold$type != "SNP",]
+  finemap_res_ldmm_removesnp_problematic_gene <- finemap_res_ldmm_removesnp[finemap_res_ldmm_removesnp$region_id %in% problematic_region_ids & finemap_res_ldmm_removesnp$type != "SNP",]
+
+  merge_2method <- merge(finemap_res_ldmm_nold_problematic_gene,finemap_res_ldmm_removesnp_problematic_gene, by ="id",all.x=T)
+  merge_2method$highlight <- ifelse(merge_2method$id %in% problematic_genes, "problematic genes", "good genes")
+  merge_2method$susie_pip.y[is.na(merge_2method$susie_pip.y)] <- 1.5
+    p1 <- ggplot(data = merge_2method, aes(x = susie_pip.x, y = susie_pip.y, color = highlight, alpha = highlight)) + 
+    geom_point() +
+    scale_color_manual(values = c("problematic genes" = "red", "good genes" = "black")) +  
+    scale_alpha_manual(values = c("problematic genes" = 1, "good genes" = 0.1)) +
+    labs(x = "PIP_noLD", y = "PIP_removesnp") + 
+    geom_abline(slope = 1, intercept = 0, col = "red") + 
+    ggtitle("Problematic regions only, genes only") +
+    theme_minimal()
+
+  finemap_res_rm_problematic_gene <- finemap_res_rm[finemap_res_rm$region_id %in% problematic_region_ids & finemap_res_rm$type != "SNP",]
+
+  merge_rm_ldmm_nold <-  merge(finemap_res_rm_problematic_gene,finemap_res_ldmm_nold_problematic_gene, by ="id",all.x=T)
+  merge_rm_ldmm_nold$highlight <- ifelse(merge_rm_ldmm_nold$id %in% problematic_genes, "problematic genes", "good genes")
+  merge_rm_ldmm_nold$susie_pip.y[is.na(merge_rm_ldmm_nold$susie_pip.y)] <- 1.5
+  p2 <- ggplot(data = merge_rm_ldmm_nold, aes(x= susie_pip.x, y= susie_pip.y, color = highlight, alpha = highlight)) + 
+    geom_point() +
+    labs(x="PIP_after_regionmerge", y="PIP_noLD") + 
+    scale_color_manual(values = c("problematic genes" = "red", "good genes" = "black")) +  
+    scale_alpha_manual(values = c("problematic genes" = 1, "good genes" = 0.1)) +
+    geom_abline(slope = 1, intercept = 0, col ="red") + 
+    ggtitle("problematic regions only, genes only") +
+    theme_minimal()
+
+  merge_rm_ldmm_removesnp <-  merge(finemap_res_rm_problematic_gene,finemap_res_ldmm_removesnp_problematic_gene, by ="id",all.x =T)
+  merge_rm_ldmm_removesnp$highlight <- ifelse(merge_rm_ldmm_removesnp$id %in% problematic_genes, "problematic genes", "good genes")
+  merge_rm_ldmm_removesnp$susie_pip.y[is.na(merge_rm_ldmm_removesnp$susie_pip.y)] <- 1.5
+  p3 <- ggplot(data = merge_rm_ldmm_removesnp, aes(x= susie_pip.x, y= susie_pip.y, color = highlight, alpha = highlight)) + 
+    geom_point() +
+    labs(x="PIP_after_regionmerge", y="PIP_removesnp") + 
+    scale_alpha_manual(values = c("problematic genes" = 1, "good genes" = 0.1)) +
+    scale_color_manual(values = c("problematic genes" = "red", "good genes" = "black")) +
+    geom_abline(slope = 1, intercept = 0, col ="red") + 
+    ggtitle("problematic regions only, genes only") +
+    theme_minimal()
+  
+  print(sprintf("Total number of molecular traits in problematic regions = %s",nrow(merge_rm_ldmm_removesnp)))
+  print(sprintf("Number of molecular traits disappeared after removing prblematic SNPs = %s", sum(merge_rm_ldmm_removesnp$susie_pip.y == 1.5)))
+  print("The dots showing PIP =1.5 means: these genes were removed since the only QTLs of them are problematic")
+  print("Notes: 2 intron overlapped")
+  grid.arrange(p1,p2,p3, ncol = 3)
+
+
+
+}else{
+
+  print("There's no problematic genes, no need to compare")
+
+}
+
+
+
+
+```
+
+## Comparing z-scores and susie_pip
+
+```{r message=FALSE, warning=FALSE,fig.width=17, fig.height=4}
+
+if(file.exists(file_ldmismatch_results)){
+
+  finemap_res_origin <- ctwas_res_origin$finemap_res
+  finemap_res_origin_gene <- finemap_res_origin[finemap_res_origin$type != "SNP",]
+  finemap_res_origin_gene$highlight <- ifelse(finemap_res_origin_gene$id %in% problematic_genes, "problematic genes", "good genes")
+
+  p1 <- ggplot(data = finemap_res_origin_gene, aes(x= abs(z), y= susie_pip, color = highlight)) +
+    geom_point() +
+    scale_color_manual(values = c("problematic genes" = "red", "good genes" = "black")) +
+    ggtitle("Original ctwas results") +
+    theme_minimal()
+
+
+  finemap_res_rm_gene <- finemap_res_rm[finemap_res_rm$type != "SNP",]
+  finemap_res_rm_gene$highlight <- ifelse(finemap_res_rm_gene$id %in% problematic_genes, "problematic genes", "good genes")
+
+  p2 <- ggplot(data = finemap_res_rm_gene, aes(x= abs(z), y= susie_pip, color = highlight)) +
+    geom_point() +
+    scale_color_manual(values = c("problematic genes" = "red", "good genes" = "black")) +
+    ggtitle("After region merge") +
+    theme_minimal()
+
+
+  finemap_res_ldmm_nold_gene <- finemap_res_ldmm_nold[finemap_res_ldmm_nold$type !="SNP",]
+  finemap_res_ldmm_nold_gene$highlight <- ifelse(finemap_res_ldmm_nold_gene$id %in% problematic_genes, "problematic genes", "good genes")
+
+  p3 <- ggplot(data = finemap_res_ldmm_nold_gene, aes(x= abs(z), y= susie_pip, color = highlight)) +
+    geom_point() +
+    scale_color_manual(values = c("problematic genes" = "red", "good genes" = "black")) +
+    ggtitle("After LD mismatch fixed -- noLD") +
+    theme_minimal()
+
+  finemap_res_ldmm_removesnp_gene <- finemap_res_ldmm_removesnp[finemap_res_ldmm_removesnp$type !="SNP",]
+  finemap_res_ldmm_removesnp_gene$highlight <- ifelse(finemap_res_ldmm_removesnp_gene$id %in% problematic_genes, "problematic genes", "good genes")
+
+  p4 <- ggplot(data = finemap_res_ldmm_removesnp_gene, aes(x= abs(z), y= susie_pip, color = highlight)) +
+    geom_point() +
+    scale_color_manual(values = c("problematic genes" = "red", "good genes" = "black")) +
+    ggtitle("After LD mismatch fixed -- SNP removed") +
+    theme_minimal()
+
+
+  grid.arrange(p1,p2,p3,p4, ncol = 4)
+
+  print("L - estimated in region merge step")
+  print(updated_data_res_regionmerge$updated_region_L[problematic_region_ids])
+  load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld-newtissues/ldmismatch_pipthres02_removesnp_rescreenregion_nozfilter_",trait,".rdata"))
+  print("L - re-estimated after updating z_scores, region data")
+  print(screen_res$screened_region_L)
+}else{
+
+  print("There's no problematic genes")
+
+  finemap_res_origin <- ctwas_res_origin$finemap_res
+  finemap_res_origin_gene <- finemap_res_origin[finemap_res_origin$type != "SNP",]
+
+  p1 <- ggplot(data = finemap_res_origin_gene, aes(x= abs(z), y= susie_pip)) +
+    geom_point() +
+    ggtitle("Original ctwas results") +
+    theme_minimal()
+
+
+  finemap_res_rm_gene <- finemap_res_rm[finemap_res_rm$type != "SNP",]
+
+  p2 <- ggplot(data = finemap_res_rm_gene, aes(x= abs(z), y= susie_pip)) +
+    geom_point() +
+    ggtitle("After region merge") +
+    theme_minimal()
+
+  grid.arrange(p1,p2, ncol = 2)
+}
+
+
+```
+
+## Examples for LD-mismatch fixing
+
+
+```{r message=FALSE, warning=FALSE, fig.width=12, fig.height=9}
+weights_origin <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/results/",trait,"/",trait,".preprocessed.weights.RDS"))
+
+load(paste0("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld-newtissues/ldmismatch_pipthres02_removesnp_weights_updated_nozfilter_",trait,".rdata"))
+
+region_id <- "19_9127717_13360313"
+
+finemap_res_rm <- anno_finemap_res(finemap_res_rm,
+                                          snp_map = updated_data_res_regionmerge[["updated_snp_map"]],
+                                          mapping_table = mapping_two,
+                                          add_gene_annot = TRUE,
+                                          map_by = "molecular_id",
+                                          drop_unmapped = TRUE,
+                                          add_position = TRUE,
+                                          use_gene_pos = "mid")
+
+finemap_res_ldmm_nold <- anno_finemap_res(finemap_res_ldmm_nold,
+                                          snp_map = updated_data_res_regionmerge[["updated_snp_map"]],
+                                          mapping_table = mapping_two,
+                                          add_gene_annot = TRUE,
+                                          map_by = "molecular_id",
+                                          drop_unmapped = TRUE,
+                                          add_position = TRUE,
+                                          use_gene_pos = "mid")
+
+finemap_res_ldmm_removesnp <- anno_finemap_res(finemap_res_ldmm_removesnp,
+                                   snp_map = updated_data_res_regionmerge[["updated_snp_map"]],
+                                   mapping_table = mapping_two,
+                                   add_gene_annot = TRUE,
+                                   map_by = "molecular_id",
+                                   drop_unmapped = TRUE,
+                                   add_position = TRUE,
+                                   use_gene_pos = "mid")
+
+finemap_res_rm_gene <- finemap_res_rm[finemap_res_rm$type != "SNP",]
+finemap_res_ldmm_removesnp_gene <- finemap_res_ldmm_removesnp[finemap_res_ldmm_removesnp$type !="SNP",]
+
+
+
+print("locus plot -- after region merge")
+make_locusplot(finemap_res_rm,
+               region_id = region_id,
+               ens_db = ens_db,
+               weights = weights_origin,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = TRUE,
+               filter_cs = TRUE,
+               color_pval_by = "cs",
+               color_pip_by = "cs",panel.heights = c(4,4,1,1))
+
+
+print("locus plot -- LD mismatch: no LD")
+
+make_locusplot(finemap_res_ldmm_nold,
+               region_id = region_id,
+               ens_db = ens_db,
+               weights = weights_origin,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = TRUE,
+               filter_cs = TRUE,
+               color_pval_by = "cs",
+               color_pip_by = "cs",panel.heights = c(4,4,1,1))
+
+
+print("locus plot -- LD mismatch: snp removed")
+make_locusplot(finemap_res_ldmm_removesnp,
+               region_id = region_id,
+               ens_db = ens_db,
+               weights = weights_updated,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = TRUE,
+               filter_cs = TRUE,
+               color_pval_by = "cs",
+               color_pip_by = "cs",panel.heights = c(4,4,1,1))
+
+
+finemap_res_rm_gene_region <- finemap_res_rm_gene[finemap_res_rm_gene$region_id == region_id,]
+finemap_res_ldmm_removesnp_gene_region <- finemap_res_ldmm_removesnp_gene[finemap_res_ldmm_removesnp_gene$region_id == region_id,]
+merged_region_gene <- merge(finemap_res_rm_gene_region,finemap_res_ldmm_removesnp_gene_region,by = "id",all.x=T)
+merged_region_gene <- merged_region_gene[,c("id","gene_name.x","z.x","susie_pip.x","cs.x","z.y","susie_pip.y","cs.y")]
+colnames(merged_region_gene) <- c("id","gene_name","z_regionmerge","susie_pip_regionmerge","cs_regionmerge","z_ldmismatch","susie_pip_ldmismatch","cs_ldmismatch")
+
+merged_region_gene$highlight <- ifelse(merged_region_gene$id %in% problematic_genes, "problematic genes", "good genes")
+
+merged_region_gene$z_ldmismatch[is.na(merged_region_gene$z_ldmismatch)] <- 10
+print("The dots showing z_ldmismatch =10 means: these genes were removed since the only QTLs of them are problematic")
+
+ggplot(data = merged_region_gene, aes(x= z_regionmerge, y= z_ldmismatch, color = highlight, alpha = highlight)) +
+  geom_point() +
+  scale_color_manual(values = c("problematic genes" = "red", "good genes" = "black")) +
+  scale_alpha_manual(values = c("problematic genes" = 1, "good genes" = 0.3)) +
+  ggtitle("Comparing z-scores before/after removing the problematic SNPs") +
+  theme_minimal()
+
+DT::datatable(merged_region_gene[merged_region_gene$z_ldmismatch != merged_region_gene$z_regionmerge,],caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Genes with different z before / after removing the problematic SNPs'),options = list(pageLength = 10) )
+
+```
+
+
