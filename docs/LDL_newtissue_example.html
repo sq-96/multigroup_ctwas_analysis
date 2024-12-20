@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="XSun" />
+
+<meta name="date" content="2024-12-20" />
+
+<title>LDL_newtissue_example</title>
+
+<script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/htmlwidgets-1.5.4/htmlwidgets.js"></script>
+<link href="site_libs/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet" />
+<script src="site_libs/datatables-binding-0.22/datatables.js"></script>
+<link href="site_libs/dt-core-1.11.3/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="site_libs/dt-core-1.11.3/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="site_libs/dt-core-1.11.3/js/jquery.dataTables.min.js"></script>
+<link href="site_libs/crosstalk-1.2.0/css/crosstalk.min.css" rel="stylesheet" />
+<script src="site_libs/crosstalk-1.2.0/js/crosstalk.min.js"></script>
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">multigroup_ctwas_analysis</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/sq-96/multigroup_ctwas_analysis">
+    <span class="fab fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">LDL_newtissue_example</h1>
+<h4 class="author">XSun</h4>
+<h4 class="date">2024-12-20</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span
+class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2024-12-20
+</p>
+<p>
+<strong>Checks:</strong> <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> 1
+</p>
+<p>
+<strong>Knit directory:</strong> <code>multigroup_ctwas_analysis/</code>
+<span class="glyphicon glyphicon-question-sign" aria-hidden="true"
+title="This is the local directory in which the code in this file was executed.">
+</span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version
+1.7.0). The <em>Checks</em> tab describes the reproducibility checks
+that were applied when the results were created. The <em>Past
+versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges">
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted
+changes </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguncommittedchanges"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The R Markdown is untracked by Git. To know which version of the R
+Markdown file created these results, you’ll want to first commit it to
+the Git repo. If you’re still working on the analysis, you can ignore
+this warning. When you’re finished, you can run
+<code>wflow_publish</code> to commit the R Markdown file and build the
+HTML.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the
+global environment can affect the analysis in your R Markdown file in
+unknown ways. For reproduciblity it’s best to always run the code in an
+empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20231112code">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Seed:</strong>
+<code>set.seed(20231112)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20231112code"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20231112)</code> was run prior to running
+the code in the R Markdown file. Setting a seed ensures that any results
+that rely on randomness, e.g. subsampling or permutations, are
+reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Session information:</strong>
+recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package
+versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be
+confident that you successfully produced the results during this
+run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr
+project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistreec435195bbb3d1f3995f289a55839f385a03e4913targetblankc435195a">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/c435195bbb3d1f3995f289a55839f385a03e4913" target="_blank">c435195</a>
+</a>
+</p>
+</div>
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistreec435195bbb3d1f3995f289a55839f385a03e4913targetblankc435195a"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development
+and connecting the code version to the results is critical for
+reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/c435195bbb3d1f3995f289a55839f385a03e4913" target="_blank">c435195</a>.
+See the <em>Past versions</em> tab to see a history of the changes made
+to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for
+the analysis have been committed to Git prior to generating the results
+(you can use <code>wflow_publish</code> or
+<code>wflow_git_commit</code>). workflowr only checks the R Markdown
+file, but you know if there are other scripts or data files that it
+depends on. Below is the status of the Git repository when the results
+were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .Rhistory
+
+Untracked files:
+    Untracked:  analysis/LDL_newtissue_example.Rmd
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not
+included in this status report because it is ok for generated content to
+have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+<p>
+There are no past versions. Publish this analysis with
+<code>wflow_publish()</code> to start tracking its development.
+</p>
+<hr>
+</div>
+</div>
+</div>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>Tissues are:
+“Liver”,“Spleen”,“Esophagus_Gastroesophageal_Junction”,“Esophagus_Muscularis”,“Esophagus_Mucosa”</p>
+<pre class="r"><code>library(ctwas)
+library(EnsDb.Hsapiens.v86)
+library(ggplot2)
+library(gridExtra)
+library(dplyr)
+
+ens_db &lt;- EnsDb.Hsapiens.v86
+
+mapping_predictdb &lt;- readRDS(&quot;/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS&quot;)
+mapping_munro &lt;- readRDS(&quot;/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/Munro_mapping.RDS&quot;)
+mapping_two &lt;- rbind(mapping_predictdb,mapping_munro)
+
+load(&quot;/project2/xinhe/shared_data/multigroup_ctwas/gwas/samplesize.rdata&quot;)
+
+colors &lt;- c(  &quot;#1f77b4&quot;, &quot;#ff7f0e&quot;, &quot;#2ca02c&quot;, &quot;#d62728&quot;,  &quot;#9467bd&quot;, &quot;#8c564b&quot;, &quot;#e377c2&quot;, &quot;#7f7f7f&quot;,  &quot;#bcbd22&quot;,  &quot;#17becf&quot;,  &quot;#f7b6d2&quot;,  &quot;#c5b0d5&quot;,  &quot;#9edae5&quot;, &quot;#ffbb78&quot;,  &quot;#98df8a&quot;,  &quot;#ff9896&quot; )
+
+plot_piechart &lt;- function(ctwas_parameters, colors, by) {
+  # Create the initial data frame
+  data &lt;- data.frame(
+    category = names(ctwas_parameters$prop_heritability),
+    percentage = ctwas_parameters$prop_heritability
+  )
+  
+  # Split the category into context and type
+  data &lt;- data %&gt;%
+    mutate(
+      context = sub(&quot;\\|.*&quot;, &quot;&quot;, category),
+      type = sub(&quot;.*\\|&quot;, &quot;&quot;, category)
+    )
+  
+  # Aggregate the data based on the &#39;by&#39; parameter
+  if (by == &quot;type&quot;) {
+    data &lt;- data %&gt;%
+      group_by(type) %&gt;%
+      summarize(percentage = sum(percentage)) %&gt;%
+      mutate(category = type)  # Use type as the new category
+  } else if (by == &quot;context&quot;) {
+    data &lt;- data %&gt;%
+      group_by(context) %&gt;%
+      summarize(percentage = sum(percentage)) %&gt;%
+      mutate(category = context)  # Use context as the new category
+  } else {
+    stop(&quot;Invalid &#39;by&#39; parameter. Use &#39;type&#39; or &#39;context&#39;.&quot;)
+  }
+  
+  # Calculate percentage labels for the chart
+  data$percentage_label &lt;- paste0(round(data$percentage * 100, 1), &quot;%&quot;)
+  
+  # Create the pie chart
+  pie &lt;- ggplot(data, aes(x = &quot;&quot;, y = percentage, fill = category)) +
+    geom_bar(stat = &quot;identity&quot;, width = 1) +
+    coord_polar(&quot;y&quot;, start = 0) +
+    theme_void() +  # Remove background and axes
+    geom_text(aes(label = percentage_label), 
+              position = position_stack(vjust = 0.5), size = 3) +  # Adjust size as needed
+    scale_fill_manual(values = colors) +  # Custom colors
+    labs(fill = &quot;Category&quot;) +  # Legend title
+    ggtitle(&quot;Percent of Heritability&quot;)  # Title
+  
+  return(pie)
+}</code></pre>
+</div>
+<div id="ldl-ukb-d-30780_irnt" class="section level1">
+<h1>LDL-ukb-d-30780_irnt</h1>
+<pre class="r"><code>trait &lt;- &quot;LDL-ukb-d-30780_irnt&quot;
+
+results_dir_origin &lt;- paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/results-newtissues/&quot;,trait,&quot;/&quot;)
+ctwas_res_origin &lt;- readRDS(paste0(results_dir_origin,trait,&quot;.ctwas.res.RDS&quot;))
+
+finemap_res_origin &lt;- ctwas_res_origin$finemap_res</code></pre>
+<div id="parameters" class="section level2">
+<h2>Parameters</h2>
+<pre class="r"><code>gwas_n &lt;- samplesize[trait]
+tissue &lt;- c(&quot;Liver&quot;,&quot;Spleen&quot;,&quot;Esophagus_Gastroesophageal_Junction&quot;,&quot;Esophagus_Muscularis&quot;,&quot;Esophagus_Mucosa&quot;)
+
+param_origin &lt;- ctwas_res_origin$param
+make_convergence_plots(param_origin, gwas_n, colors = colors)</code></pre>
+<p><img src="figure/LDL_newtissue_example.Rmd/unnamed-chunk-3-1.png" width="1152" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ctwas_parameters_origin &lt;- summarize_param(param_origin, gwas_n)
+pve_pie_by_type_origin &lt;- plot_piechart(ctwas_parameters = ctwas_parameters_origin, colors = colors, by = &quot;type&quot;)
+pve_pie_by_context_origin &lt;- plot_piechart(ctwas_parameters = ctwas_parameters_origin, colors = colors, by = &quot;context&quot;)
+
+gridExtra::grid.arrange(pve_pie_by_type_origin,pve_pie_by_context_origin, ncol = 2)</code></pre>
+<p><img src="figure/LDL_newtissue_example.Rmd/unnamed-chunk-3-2.png" width="1152" style="display: block; margin: auto;" /></p>
+</div>
+<div id="region-merge" class="section level2">
+<h2>Region merge</h2>
+<pre class="r"><code>load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld-newtissues/rm_&quot;,trait,&quot;.rdata&quot;))
+
+finemap_res_rm &lt;- res_regionmerge$finemap_res
+finemap_res_rm_boundary_genes &lt;- finemap_res_rm[finemap_res_rm$id %in%selected_boundary_genes$id,]
+finemap_res_rm_boundary_genes_pip &lt;- finemap_res_rm_boundary_genes[,c(&quot;id&quot;,&quot;susie_pip&quot;,&quot;cs&quot;)]
+
+
+finemap_res_origin_boundary_genes &lt;- finemap_res_origin[finemap_res_origin$id %in%selected_boundary_genes$id,]
+finemap_res_origin_boundary_genes_pip &lt;- finemap_res_origin_boundary_genes[,c(&quot;id&quot;,&quot;susie_pip&quot;,&quot;cs&quot;)]
+
+finemap_res_compare_regionmerge &lt;- merge(finemap_res_origin_boundary_genes_pip,finemap_res_rm_boundary_genes_pip, by = &quot;id&quot;)
+colnames(finemap_res_compare_regionmerge) &lt;- c(&quot;id&quot;,&quot;susie_pip_origin&quot;,&quot;cs_origin&quot;,&quot;susie_pip_reginmerge&quot;,&quot;cs_reginmerge&quot;)
+
+DT::datatable(finemap_res_compare_regionmerge,caption = htmltools::tags$caption( style = &#39;caption-side: left; text-align: left; color:black;  font-size:150% ;&#39;,&#39;Selected boundary genes (susie_pip &gt; 0.5)&#39;),options = list(pageLength = 10) )</code></pre>
+<div id="htmlwidget-4de263013227ca78a293" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-4de263013227ca78a293">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">Selected boundary genes (susie_pip &gt; 0.5)<\/caption>","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16"],["ENSG00000004975|Esophagus_Gastroesophageal_Junction_stQTL","ENSG00000067208|Liver_stQTL","ENSG00000100994|Liver_stQTL","ENSG00000100997.grp_2.downstream.ENST00000465694|Esophagus_Gastroesophageal_Junction_stQTL","ENSG00000108424.grp_2.downstream.ENST00000540627|Spleen_stQTL","ENSG00000117500.grp_1.downstream.ENST00000370280|Spleen_stQTL","ENSG00000130733|Esophagus_Mucosa_stQTL","ENSG00000131242|Esophagus_Mucosa_stQTL","ENSG00000134201.grp_1.downstream.ENST00000648974|Spleen_stQTL","ENSG00000136238|Liver_stQTL","ENSG00000147654|Liver_stQTL","ENSG00000167711|Liver_stQTL","ENSG00000178852|Esophagus_Mucosa_stQTL","ENSG00000196735|Esophagus_Gastroesophageal_Junction_stQTL","ENSG00000204287|Esophagus_Mucosa_stQTL","ENSG00000204482.grp_1.downstream.ENST00000339530|Liver_stQTL"],[0.99998950479089,0.692076703644494,0.762841525935751,0.538863173077716,1,1,0.999999890759153,0.999995994828998,1,0.680323144335051,0.920789083314638,0.838894493246697,0.513795901763676,0.908210091631585,1,0.999245418770304],["L2","L1","L1","L1","L1","L1","L5","L1","L1","L1","L1","L1","L1","L2","L2","L2"],[1.53904546552619e-05,0.0956549403306962,0.000261870129068753,0.511952643245826,4.49188846673998e-07,4.20347151197653e-07,1.11022302462516e-15,0.00013011040164157,0,0.0545789187472223,0.0217808648709937,0.130420938137838,0.207714058953494,0.000223386309074258,1.54331293300558e-08,9.96081504193169e-05],[null,"L1",null,"L1",null,null,null,null,null,"L1","L1","L1","L1",null,null,null]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>id<\/th>\n      <th>susie_pip_origin<\/th>\n      <th>cs_origin<\/th>\n      <th>susie_pip_reginmerge<\/th>\n      <th>cs_reginmerge<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[2,4]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="ld-mismatch" class="section level2">
+<h2>LD-mismatch</h2>
+<div id="diagnosis" class="section level3">
+<h3>Diagnosis</h3>
+<pre class="r"><code>file_pipthreshold02 &lt;- paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld-newtissues/ldmismatch_diagnosis_pipthres02_nozfilter_&quot;, trait, &quot;.rdata&quot;)
+
+if (file.exists(file_pipthreshold02)) {
+  load(file_pipthreshold02)
+  pip_02 &lt;- data.frame(
+  &quot;PIP Threshold&quot; = &quot;0.2&quot;,
+  &quot;Number of Selected Regions&quot; = length(selected_region_ids),
+  &quot;Number of Problematic Genes&quot; = length(problematic_genes),
+  &quot;Number of Problematic Regions&quot; = length(problematic_region_ids),
+  &quot;Number of Problematic SNPs&quot; = length(res_ldmismatch$problematic_snps),
+  &quot;Number of Flipped SNPs&quot; = length(res_ldmismatch$flipped_snps)
+)
+}else{
+
+  load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld-newtissues/ldmismatch_diagnosis_pipthres02_&quot;, trait, &quot;.rdata&quot;))
+  pip_02 &lt;- data.frame(
+  &quot;PIP Threshold&quot; = &quot;0.2&quot;,
+  &quot;Number of Selected Regions Number of Selected Regions&quot; = length(selected_region_ids),
+  &quot;Number of Problematic Genes&quot; = 0,
+  &quot;Number of Problematic Regions&quot; = 0,
+  &quot;Number of Problematic SNPs&quot; = length(res_ldmismatch$problematic_snps),
+  &quot;Number of Flipped SNPs&quot; = length(res_ldmismatch$flipped_snps)
+)
+
+}
+
+file_pipthreshold05 &lt;- paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld-newtissues/ldmismatch_diagnosis_pipthres05_nozfilter_&quot;, trait, &quot;.rdata&quot;)
+
+if (file.exists(file_pipthreshold05)) {
+  load(file_pipthreshold05)
+  pip_05 &lt;- data.frame(
+  &quot;PIP Threshold&quot; = &quot;0.5&quot;,
+  &quot;Number of Selected Regions&quot; = length(selected_region_ids),
+  &quot;Number of Problematic Genes&quot; = length(problematic_genes),
+  &quot;Number of Problematic Regions&quot; = length(problematic_region_ids),
+  &quot;Number of Problematic SNPs&quot; = length(res_ldmismatch$problematic_snps),
+  &quot;Number of Flipped SNPs&quot; = length(res_ldmismatch$flipped_snps)
+)
+}else{
+
+  load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld-newtissues/ldmismatch_diagnosis_pipthres05_&quot;, trait, &quot;.rdata&quot;))
+  pip_05 &lt;- data.frame(
+  &quot;PIP Threshold&quot; = &quot;0.5&quot;,
+  &quot;Number of Selected Regions&quot; = length(selected_region_ids),
+  &quot;Number of Problematic Genes&quot; = 0,
+  &quot;Number of Problematic Regions&quot; = 0,
+  &quot;Number of Problematic SNPs&quot; = length(res_ldmismatch$problematic_snps),
+  &quot;Number of Flipped SNPs&quot; = length(res_ldmismatch$flipped_snps)
+)
+
+}
+
+
+results_table &lt;- rbind(pip_02, pip_05)
+
+DT::datatable(results_table,caption = htmltools::tags$caption( style = &#39;caption-side: left; text-align: left; color:black;  font-size:150% ;&#39;,&#39;LD mismatch diagnosis table for different gene cutoff&#39;),options = list(pageLength = 10) )</code></pre>
+<div id="htmlwidget-20575149739a71fc930f" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-20575149739a71fc930f">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">LD mismatch diagnosis table for different gene cutoff<\/caption>","data":[["1","2"],["0.2","0.5"],[116,116],[1,1],[1,1],[381,381],[9,9]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>PIP.Threshold<\/th>\n      <th>Number.of.Selected.Regions<\/th>\n      <th>Number.of.Problematic.Genes<\/th>\n      <th>Number.of.Problematic.Regions<\/th>\n      <th>Number.of.Problematic.SNPs<\/th>\n      <th>Number.of.Flipped.SNPs<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[2,3,4,5,6]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="comparing-2-ld-mismatch-fixing-methods" class="section level3">
+<h3>Comparing 2 LD mismatch fixing methods</h3>
+<pre class="r"><code>file_ldmismatch_results &lt;- paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld-newtissues/ldmismatch_pipthres02_nold_nozfilter_&quot;,trait,&quot;.rdata&quot;)
+
+if(file.exists(file_ldmismatch_results)) {
+
+  load(file_pipthreshold02)
+
+  load(file_ldmismatch_results)
+  finemap_res_ldmm_nold &lt;- res_ldmm_nold$finemap_res
+  load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld-newtissues/ldmismatch_pipthres02_removesnp_nozfilter_&quot;,trait,&quot;.rdata&quot;))
+  finemap_res_ldmm_removesnp &lt;- res_ldmm_removesnp$finemap_res
+
+  finemap_res_ldmm_nold_problematic_gene &lt;- finemap_res_ldmm_nold[finemap_res_ldmm_nold$region_id %in% problematic_region_ids &amp; finemap_res_ldmm_nold$type != &quot;SNP&quot;,]
+  finemap_res_ldmm_removesnp_problematic_gene &lt;- finemap_res_ldmm_removesnp[finemap_res_ldmm_removesnp$region_id %in% problematic_region_ids &amp; finemap_res_ldmm_removesnp$type != &quot;SNP&quot;,]
+
+  merge_2method &lt;- merge(finemap_res_ldmm_nold_problematic_gene,finemap_res_ldmm_removesnp_problematic_gene, by =&quot;id&quot;,all.x=T)
+  merge_2method$highlight &lt;- ifelse(merge_2method$id %in% problematic_genes, &quot;problematic genes&quot;, &quot;good genes&quot;)
+  merge_2method$susie_pip.y[is.na(merge_2method$susie_pip.y)] &lt;- 1.5
+    p1 &lt;- ggplot(data = merge_2method, aes(x = susie_pip.x, y = susie_pip.y, color = highlight, alpha = highlight)) + 
+    geom_point() +
+    scale_color_manual(values = c(&quot;problematic genes&quot; = &quot;red&quot;, &quot;good genes&quot; = &quot;black&quot;)) +  
+    scale_alpha_manual(values = c(&quot;problematic genes&quot; = 1, &quot;good genes&quot; = 0.1)) +
+    labs(x = &quot;PIP_noLD&quot;, y = &quot;PIP_removesnp&quot;) + 
+    geom_abline(slope = 1, intercept = 0, col = &quot;red&quot;) + 
+    ggtitle(&quot;Problematic regions only, genes only&quot;) +
+    theme_minimal()
+
+  finemap_res_rm_problematic_gene &lt;- finemap_res_rm[finemap_res_rm$region_id %in% problematic_region_ids &amp; finemap_res_rm$type != &quot;SNP&quot;,]
+
+  merge_rm_ldmm_nold &lt;-  merge(finemap_res_rm_problematic_gene,finemap_res_ldmm_nold_problematic_gene, by =&quot;id&quot;,all.x=T)
+  merge_rm_ldmm_nold$highlight &lt;- ifelse(merge_rm_ldmm_nold$id %in% problematic_genes, &quot;problematic genes&quot;, &quot;good genes&quot;)
+  merge_rm_ldmm_nold$susie_pip.y[is.na(merge_rm_ldmm_nold$susie_pip.y)] &lt;- 1.5
+  p2 &lt;- ggplot(data = merge_rm_ldmm_nold, aes(x= susie_pip.x, y= susie_pip.y, color = highlight, alpha = highlight)) + 
+    geom_point() +
+    labs(x=&quot;PIP_after_regionmerge&quot;, y=&quot;PIP_noLD&quot;) + 
+    scale_color_manual(values = c(&quot;problematic genes&quot; = &quot;red&quot;, &quot;good genes&quot; = &quot;black&quot;)) +  
+    scale_alpha_manual(values = c(&quot;problematic genes&quot; = 1, &quot;good genes&quot; = 0.1)) +
+    geom_abline(slope = 1, intercept = 0, col =&quot;red&quot;) + 
+    ggtitle(&quot;problematic regions only, genes only&quot;) +
+    theme_minimal()
+
+  merge_rm_ldmm_removesnp &lt;-  merge(finemap_res_rm_problematic_gene,finemap_res_ldmm_removesnp_problematic_gene, by =&quot;id&quot;,all.x =T)
+  merge_rm_ldmm_removesnp$highlight &lt;- ifelse(merge_rm_ldmm_removesnp$id %in% problematic_genes, &quot;problematic genes&quot;, &quot;good genes&quot;)
+  merge_rm_ldmm_removesnp$susie_pip.y[is.na(merge_rm_ldmm_removesnp$susie_pip.y)] &lt;- 1.5
+  p3 &lt;- ggplot(data = merge_rm_ldmm_removesnp, aes(x= susie_pip.x, y= susie_pip.y, color = highlight, alpha = highlight)) + 
+    geom_point() +
+    labs(x=&quot;PIP_after_regionmerge&quot;, y=&quot;PIP_removesnp&quot;) + 
+    scale_alpha_manual(values = c(&quot;problematic genes&quot; = 1, &quot;good genes&quot; = 0.1)) +
+    scale_color_manual(values = c(&quot;problematic genes&quot; = &quot;red&quot;, &quot;good genes&quot; = &quot;black&quot;)) +
+    geom_abline(slope = 1, intercept = 0, col =&quot;red&quot;) + 
+    ggtitle(&quot;problematic regions only, genes only&quot;) +
+    theme_minimal()
+  
+  print(sprintf(&quot;Total number of molecular traits in problematic regions = %s&quot;,nrow(merge_rm_ldmm_removesnp)))
+  print(sprintf(&quot;Number of molecular traits disappeared after removing prblematic SNPs = %s&quot;, sum(merge_rm_ldmm_removesnp$susie_pip.y == 1.5)))
+  print(&quot;The dots showing PIP =1.5 means: these genes were removed since the only QTLs of them are problematic&quot;)
+  print(&quot;Notes: 2 intron overlapped&quot;)
+  grid.arrange(p1,p2,p3, ncol = 3)
+
+
+
+}else{
+
+  print(&quot;There&#39;s no problematic genes, no need to compare&quot;)
+
+}</code></pre>
+<pre><code>[1] &quot;Total number of molecular traits in problematic regions = 1630&quot;
+[1] &quot;Number of molecular traits disappeared after removing prblematic SNPs = 375&quot;
+[1] &quot;The dots showing PIP =1.5 means: these genes were removed since the only QTLs of them are problematic&quot;
+[1] &quot;Notes: 2 intron overlapped&quot;</code></pre>
+<p><img src="figure/LDL_newtissue_example.Rmd/unnamed-chunk-6-1.png" width="1344" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="comparing-z-scores-and-susie_pip" class="section level2">
+<h2>Comparing z-scores and susie_pip</h2>
+<pre class="r"><code>if(file.exists(file_ldmismatch_results)){
+
+  finemap_res_origin &lt;- ctwas_res_origin$finemap_res
+  finemap_res_origin_gene &lt;- finemap_res_origin[finemap_res_origin$type != &quot;SNP&quot;,]
+  finemap_res_origin_gene$highlight &lt;- ifelse(finemap_res_origin_gene$id %in% problematic_genes, &quot;problematic genes&quot;, &quot;good genes&quot;)
+
+  p1 &lt;- ggplot(data = finemap_res_origin_gene, aes(x= abs(z), y= susie_pip, color = highlight)) +
+    geom_point() +
+    scale_color_manual(values = c(&quot;problematic genes&quot; = &quot;red&quot;, &quot;good genes&quot; = &quot;black&quot;)) +
+    ggtitle(&quot;Original ctwas results&quot;) +
+    theme_minimal()
+
+
+  finemap_res_rm_gene &lt;- finemap_res_rm[finemap_res_rm$type != &quot;SNP&quot;,]
+  finemap_res_rm_gene$highlight &lt;- ifelse(finemap_res_rm_gene$id %in% problematic_genes, &quot;problematic genes&quot;, &quot;good genes&quot;)
+
+  p2 &lt;- ggplot(data = finemap_res_rm_gene, aes(x= abs(z), y= susie_pip, color = highlight)) +
+    geom_point() +
+    scale_color_manual(values = c(&quot;problematic genes&quot; = &quot;red&quot;, &quot;good genes&quot; = &quot;black&quot;)) +
+    ggtitle(&quot;After region merge&quot;) +
+    theme_minimal()
+
+
+  finemap_res_ldmm_nold_gene &lt;- finemap_res_ldmm_nold[finemap_res_ldmm_nold$type !=&quot;SNP&quot;,]
+  finemap_res_ldmm_nold_gene$highlight &lt;- ifelse(finemap_res_ldmm_nold_gene$id %in% problematic_genes, &quot;problematic genes&quot;, &quot;good genes&quot;)
+
+  p3 &lt;- ggplot(data = finemap_res_ldmm_nold_gene, aes(x= abs(z), y= susie_pip, color = highlight)) +
+    geom_point() +
+    scale_color_manual(values = c(&quot;problematic genes&quot; = &quot;red&quot;, &quot;good genes&quot; = &quot;black&quot;)) +
+    ggtitle(&quot;After LD mismatch fixed -- noLD&quot;) +
+    theme_minimal()
+
+  finemap_res_ldmm_removesnp_gene &lt;- finemap_res_ldmm_removesnp[finemap_res_ldmm_removesnp$type !=&quot;SNP&quot;,]
+  finemap_res_ldmm_removesnp_gene$highlight &lt;- ifelse(finemap_res_ldmm_removesnp_gene$id %in% problematic_genes, &quot;problematic genes&quot;, &quot;good genes&quot;)
+
+  p4 &lt;- ggplot(data = finemap_res_ldmm_removesnp_gene, aes(x= abs(z), y= susie_pip, color = highlight)) +
+    geom_point() +
+    scale_color_manual(values = c(&quot;problematic genes&quot; = &quot;red&quot;, &quot;good genes&quot; = &quot;black&quot;)) +
+    ggtitle(&quot;After LD mismatch fixed -- SNP removed&quot;) +
+    theme_minimal()
+
+
+  grid.arrange(p1,p2,p3,p4, ncol = 4)
+
+  print(&quot;L - estimated in region merge step&quot;)
+  print(updated_data_res_regionmerge$updated_region_L[problematic_region_ids])
+  load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld-newtissues/ldmismatch_pipthres02_removesnp_rescreenregion_nozfilter_&quot;,trait,&quot;.rdata&quot;))
+  print(&quot;L - re-estimated after updating z_scores, region data&quot;)
+  print(screen_res$screened_region_L)
+}else{
+
+  print(&quot;There&#39;s no problematic genes&quot;)
+
+  finemap_res_origin &lt;- ctwas_res_origin$finemap_res
+  finemap_res_origin_gene &lt;- finemap_res_origin[finemap_res_origin$type != &quot;SNP&quot;,]
+
+  p1 &lt;- ggplot(data = finemap_res_origin_gene, aes(x= abs(z), y= susie_pip)) +
+    geom_point() +
+    ggtitle(&quot;Original ctwas results&quot;) +
+    theme_minimal()
+
+
+  finemap_res_rm_gene &lt;- finemap_res_rm[finemap_res_rm$type != &quot;SNP&quot;,]
+
+  p2 &lt;- ggplot(data = finemap_res_rm_gene, aes(x= abs(z), y= susie_pip)) +
+    geom_point() +
+    ggtitle(&quot;After region merge&quot;) +
+    theme_minimal()
+
+  grid.arrange(p1,p2, ncol = 2)
+}</code></pre>
+<p><img src="figure/LDL_newtissue_example.Rmd/unnamed-chunk-7-1.png" width="1632" style="display: block; margin: auto;" /></p>
+<pre><code>[1] &quot;L - estimated in region merge step&quot;
+19_9127717_13360313 
+                  5 
+[1] &quot;L - re-estimated after updating z_scores, region data&quot;
+19_9127717_13360313 
+                  5 </code></pre>
+</div>
+<div id="examples-for-ld-mismatch-fixing" class="section level2">
+<h2>Examples for LD-mismatch fixing</h2>
+<pre class="r"><code>weights_origin &lt;- readRDS(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/results/&quot;,trait,&quot;/&quot;,trait,&quot;.preprocessed.weights.RDS&quot;))
+
+load(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/post_process_rm_ld-newtissues/ldmismatch_pipthres02_removesnp_weights_updated_nozfilter_&quot;,trait,&quot;.rdata&quot;))
+
+region_id &lt;- &quot;19_9127717_13360313&quot;
+
+finemap_res_rm &lt;- anno_finemap_res(finemap_res_rm,
+                                          snp_map = updated_data_res_regionmerge[[&quot;updated_snp_map&quot;]],
+                                          mapping_table = mapping_two,
+                                          add_gene_annot = TRUE,
+                                          map_by = &quot;molecular_id&quot;,
+                                          drop_unmapped = TRUE,
+                                          add_position = TRUE,
+                                          use_gene_pos = &quot;mid&quot;)</code></pre>
+<pre><code>2024-12-20 17:43:11 INFO::Annotating fine-mapping result ...
+2024-12-20 17:43:11 INFO::Map molecular traits to genes
+2024-12-20 17:43:12 INFO::Split PIPs for molecular traits mapped to multiple genes
+2024-12-20 17:43:19 INFO::Add gene positions
+2024-12-20 17:43:22 INFO::Add SNP positions</code></pre>
+<pre class="r"><code>finemap_res_ldmm_nold &lt;- anno_finemap_res(finemap_res_ldmm_nold,
+                                          snp_map = updated_data_res_regionmerge[[&quot;updated_snp_map&quot;]],
+                                          mapping_table = mapping_two,
+                                          add_gene_annot = TRUE,
+                                          map_by = &quot;molecular_id&quot;,
+                                          drop_unmapped = TRUE,
+                                          add_position = TRUE,
+                                          use_gene_pos = &quot;mid&quot;)</code></pre>
+<pre><code>2024-12-20 17:43:40 INFO::Annotating fine-mapping result ...
+2024-12-20 17:43:40 INFO::Map molecular traits to genes
+2024-12-20 17:43:41 INFO::Split PIPs for molecular traits mapped to multiple genes
+2024-12-20 17:43:48 INFO::Add gene positions
+2024-12-20 17:43:48 INFO::Add SNP positions</code></pre>
+<pre class="r"><code>finemap_res_ldmm_removesnp &lt;- anno_finemap_res(finemap_res_ldmm_removesnp,
+                                   snp_map = updated_data_res_regionmerge[[&quot;updated_snp_map&quot;]],
+                                   mapping_table = mapping_two,
+                                   add_gene_annot = TRUE,
+                                   map_by = &quot;molecular_id&quot;,
+                                   drop_unmapped = TRUE,
+                                   add_position = TRUE,
+                                   use_gene_pos = &quot;mid&quot;)</code></pre>
+<pre><code>2024-12-20 17:43:53 INFO::Annotating fine-mapping result ...
+2024-12-20 17:43:53 INFO::Map molecular traits to genes
+2024-12-20 17:43:53 INFO::Split PIPs for molecular traits mapped to multiple genes
+2024-12-20 17:44:00 INFO::Add gene positions
+2024-12-20 17:44:00 INFO::Add SNP positions</code></pre>
+<pre class="r"><code>finemap_res_rm_gene &lt;- finemap_res_rm[finemap_res_rm$type != &quot;SNP&quot;,]
+finemap_res_ldmm_removesnp_gene &lt;- finemap_res_ldmm_removesnp[finemap_res_ldmm_removesnp$type !=&quot;SNP&quot;,]
+
+
+
+print(&quot;locus plot -- after region merge&quot;)</code></pre>
+<pre><code>[1] &quot;locus plot -- after region merge&quot;</code></pre>
+<pre class="r"><code>make_locusplot(finemap_res_rm,
+               region_id = region_id,
+               ens_db = ens_db,
+               weights = weights_origin,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = TRUE,
+               filter_cs = TRUE,
+               color_pval_by = &quot;cs&quot;,
+               color_pip_by = &quot;cs&quot;,panel.heights = c(4,4,1,1))</code></pre>
+<pre><code>2024-12-20 17:44:09 INFO::Limit to protein coding genes
+2024-12-20 17:44:09 INFO::focal id: intron_19_11120522_11123174|Liver_sQTL
+2024-12-20 17:44:09 INFO::focal molecular trait: LDLR Liver sQTL
+2024-12-20 17:44:09 INFO::Range of locus: chr19:9127860-13930432
+2024-12-20 17:44:09 INFO::focal molecular trait QTL positions: 11120205,11120527
+2024-12-20 17:44:09 INFO::Limit PIPs to credible sets</code></pre>
+<p><img src="figure/LDL_newtissue_example.Rmd/unnamed-chunk-8-1.png" width="1152" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>print(&quot;locus plot -- LD mismatch: no LD&quot;)</code></pre>
+<pre><code>[1] &quot;locus plot -- LD mismatch: no LD&quot;</code></pre>
+<pre class="r"><code>make_locusplot(finemap_res_ldmm_nold,
+               region_id = region_id,
+               ens_db = ens_db,
+               weights = weights_origin,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = TRUE,
+               filter_cs = TRUE,
+               color_pval_by = &quot;cs&quot;,
+               color_pip_by = &quot;cs&quot;,panel.heights = c(4,4,1,1))</code></pre>
+<pre><code>2024-12-20 17:44:14 INFO::Limit to protein coding genes
+2024-12-20 17:44:14 INFO::focal id: ENSG00000197256.10|Liver_eQTL
+2024-12-20 17:44:14 INFO::focal molecular trait: KANK2 Liver eQTL
+2024-12-20 17:44:14 INFO::Range of locus: chr19:9127860-13930432
+2024-12-20 17:44:14 INFO::focal molecular trait QTL positions: 11197621
+2024-12-20 17:44:14 INFO::Limit PIPs to credible sets</code></pre>
+<p><img src="figure/LDL_newtissue_example.Rmd/unnamed-chunk-8-2.png" width="1152" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>print(&quot;locus plot -- LD mismatch: snp removed&quot;)</code></pre>
+<pre><code>[1] &quot;locus plot -- LD mismatch: snp removed&quot;</code></pre>
+<pre class="r"><code>make_locusplot(finemap_res_ldmm_removesnp,
+               region_id = region_id,
+               ens_db = ens_db,
+               weights = weights_updated,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = TRUE,
+               filter_cs = TRUE,
+               color_pval_by = &quot;cs&quot;,
+               color_pip_by = &quot;cs&quot;,panel.heights = c(4,4,1,1))</code></pre>
+<pre><code>2024-12-20 17:44:19 INFO::Limit to protein coding genes
+2024-12-20 17:44:19 INFO::focal id: intron_19_11116212_11120092|Liver_sQTL
+2024-12-20 17:44:19 INFO::focal molecular trait: LDLR Liver sQTL
+2024-12-20 17:44:19 INFO::Range of locus: chr19:9127860-13930432
+2024-12-20 17:44:19 INFO::focal molecular trait QTL positions: 11116394
+2024-12-20 17:44:19 INFO::Limit PIPs to credible sets</code></pre>
+<p><img src="figure/LDL_newtissue_example.Rmd/unnamed-chunk-8-3.png" width="1152" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>finemap_res_rm_gene_region &lt;- finemap_res_rm_gene[finemap_res_rm_gene$region_id == region_id,]
+finemap_res_ldmm_removesnp_gene_region &lt;- finemap_res_ldmm_removesnp_gene[finemap_res_ldmm_removesnp_gene$region_id == region_id,]
+merged_region_gene &lt;- merge(finemap_res_rm_gene_region,finemap_res_ldmm_removesnp_gene_region,by = &quot;id&quot;,all.x=T)
+merged_region_gene &lt;- merged_region_gene[,c(&quot;id&quot;,&quot;gene_name.x&quot;,&quot;z.x&quot;,&quot;susie_pip.x&quot;,&quot;cs.x&quot;,&quot;z.y&quot;,&quot;susie_pip.y&quot;,&quot;cs.y&quot;)]
+colnames(merged_region_gene) &lt;- c(&quot;id&quot;,&quot;gene_name&quot;,&quot;z_regionmerge&quot;,&quot;susie_pip_regionmerge&quot;,&quot;cs_regionmerge&quot;,&quot;z_ldmismatch&quot;,&quot;susie_pip_ldmismatch&quot;,&quot;cs_ldmismatch&quot;)
+
+merged_region_gene$highlight &lt;- ifelse(merged_region_gene$id %in% problematic_genes, &quot;problematic genes&quot;, &quot;good genes&quot;)
+
+merged_region_gene$z_ldmismatch[is.na(merged_region_gene$z_ldmismatch)] &lt;- 10
+print(&quot;The dots showing z_ldmismatch =10 means: these genes were removed since the only QTLs of them are problematic&quot;)</code></pre>
+<pre><code>[1] &quot;The dots showing z_ldmismatch =10 means: these genes were removed since the only QTLs of them are problematic&quot;</code></pre>
+<pre class="r"><code>ggplot(data = merged_region_gene, aes(x= z_regionmerge, y= z_ldmismatch, color = highlight, alpha = highlight)) +
+  geom_point() +
+  scale_color_manual(values = c(&quot;problematic genes&quot; = &quot;red&quot;, &quot;good genes&quot; = &quot;black&quot;)) +
+  scale_alpha_manual(values = c(&quot;problematic genes&quot; = 1, &quot;good genes&quot; = 0.3)) +
+  ggtitle(&quot;Comparing z-scores before/after removing the problematic SNPs&quot;) +
+  theme_minimal()</code></pre>
+<p><img src="figure/LDL_newtissue_example.Rmd/unnamed-chunk-8-4.png" width="1152" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>DT::datatable(merged_region_gene[merged_region_gene$z_ldmismatch != merged_region_gene$z_regionmerge,],caption = htmltools::tags$caption( style = &#39;caption-side: left; text-align: left; color:black;  font-size:150% ;&#39;,&#39;Genes with different z before / after removing the problematic SNPs&#39;),options = list(pageLength = 10) )</code></pre>
+<div id="htmlwidget-a23c348805048a1f64c7" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-a23c348805048a1f64c7">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">Genes with different z before / after removing the problematic SNPs<\/caption>","data":[["3","7","11","15","19","21","26","29","33","37","40","47","55","60","66","69","74","82","87","97","100","106","111","115","118","120","122","123","125","127","131","136","140","141","142","148","153","155","159","163","169","172","176","178","179","180","181","185","187","190","193","196","205","211","218","230","234","236","240","243","248","254","257","265","268","269","273","276","277","280","285","290","295","300","305","309","315","319","322","325","327","331","339","347","349","352","355","358","362","367","369","372","375","378","381","387","392","396","398","399","400","401","402","404","406","409","413","418","423","428","432","435","438","446","449","452","459","465","468","471","476","481","486","492","498","502","507","511","516","524","529","531","539","543","547","550","553","559","563","567","569","571","576","583","596","598","602","606","611","618","621","627","633","636","641","649","661","666","671","674","678","681","682","686","689","694","700","702","705","710","715","719","724","726","729","736","741","746","752","757","760","764","768","771","774","783","787","791","794","803","811","816","819","823","828","833","843","847","853","857","860","864","867","869","871","873","876","879","886","898","900","902","906","911","918","919","922","927","932","936","940","942","945","948","956","959","962","971","975","978","981","985","988","991","994","998","1001","1005","1006","1009","1012","1016","1022","1025","1030","1033","1036","1041","1051","1057","1061","1079","1087","1094","1099","1104","1109","1114","1121","1124","1126","1130","1133","1135","1138","1141","1145","1149","1154","1157","1161","1165","1170","1176","1181","1182","1187","1188","1202","1203","1220","1221","1246","1247","1260","1261","1270","1271","1276","1277","1291","1292","1295","1299","1300","1306","1311","1316","1322","1324","1325","1326","1327","1328","1329","1341","1347","1352","1357","1362","1365","1368","1373","1377","1379","1383","1386","1393","1413","1418","1423","1428","1437","1441","1443","1447","1448","1454","1459","1464","1466","1470","1477","1481","1488","1492","1496","1501","1506","1517","1518","1525","1530","1535","1540","1544","1552","1556","1564","1576","1577","1582","1583","1588","1589","1598","1599","1612","1613","1622","1623","1636","1637","1650","1651","1664","1665","1676","1679","1686","1690","1695","1701","1705","1709","1715","1719","1724","1729","1735","1740","1742","1750","1752","1758","1762","1766","1770","1774","1778","1781","1784","1793","1794","1795","1797","1799","1801","1802","1805","1807","1811","1813","1815","1817"],["ENSG00000008441.16|Esophagus_Muscularis_eQTL","ENSG00000065989.15|Esophagus_Muscularis_eQTL","ENSG00000076662.9|Esophagus_Muscularis_eQTL","ENSG00000079805.16|Esophagus_Muscularis_eQTL","ENSG00000079999.13|Esophagus_Muscularis_eQTL","ENSG00000079999|Esophagus_Muscularis_stQTL","ENSG00000095059.15|Esophagus_Muscularis_eQTL","ENSG00000095066.11|Esophagus_Muscularis_eQTL","ENSG00000099203.6|Esophagus_Muscularis_eQTL","ENSG00000099203|Esophagus_Muscularis_stQTL","ENSG00000102575.10|Esophagus_Muscularis_eQTL","ENSG00000104774.12|Esophagus_Muscularis_eQTL","ENSG00000104903.4|Esophagus_Muscularis_eQTL","ENSG00000104903|Esophagus_Muscularis_stQTL","ENSG00000104915.14|Esophagus_Muscularis_eQTL","ENSG00000105088.8|Esophagus_Muscularis_eQTL","ENSG00000105364.13|Esophagus_Muscularis_eQTL","ENSG00000105397.13|Esophagus_Muscularis_eQTL","ENSG00000105397|Esophagus_Muscularis_stQTL","ENSG00000105514.7|Esophagus_Muscularis_eQTL","ENSG00000105518.13|Esophagus_Muscularis_eQTL","ENSG00000105520|Esophagus_Muscularis_stQTL","ENSG00000105583.9|Esophagus_Muscularis_eQTL","ENSG00000105607.12|Esophagus_Muscularis_eQTL","ENSG00000105607.grp_1.downstream.ENST00000589039|Esophagus_Muscularis_stQTL","ENSG00000105607.grp_1.downstream.ENST00000590472|Esophagus_Muscularis_stQTL","ENSG00000105607.grp_1.downstream.ENST00000591050|Esophagus_Muscularis_stQTL","ENSG00000105607.grp_2.downstream.ENST00000589039|Esophagus_Muscularis_stQTL","ENSG00000105607.grp_2.downstream.ENST00000590472|Esophagus_Muscularis_stQTL","ENSG00000105607.grp_2.downstream.ENST00000591050|Esophagus_Muscularis_stQTL","ENSG00000105612.8|Esophagus_Muscularis_eQTL","ENSG00000123144.10|Esophagus_Muscularis_eQTL","ENSG00000127445|Esophagus_Muscularis_stQTL","ENSG00000127452.grp_2.downstream.ENST00000586073|Esophagus_Muscularis_stQTL","ENSG00000127452.grp_2.downstream.ENST00000586651|Esophagus_Muscularis_stQTL","ENSG00000129347.19|Esophagus_Muscularis_eQTL","ENSG00000129347|Esophagus_Muscularis_stQTL","ENSG00000129351.17|Esophagus_Muscularis_eQTL","ENSG00000129353.14|Esophagus_Muscularis_eQTL","ENSG00000129354.11|Esophagus_Muscularis_eQTL","ENSG00000129355.6|Esophagus_Muscularis_eQTL","ENSG00000130158.13|Esophagus_Muscularis_eQTL","ENSG00000130159.13|Esophagus_Muscularis_eQTL","ENSG00000130159.grp_2.downstream.ENST00000593231|Esophagus_Muscularis_stQTL","ENSG00000130164.13|Esophagus_Mucosa_eQTL","ENSG00000130164.13|Spleen_eQTL","ENSG00000130165.10|Esophagus_Muscularis_eQTL","ENSG00000130165.grp_1.downstream.ENST00000252445|Esophagus_Muscularis_stQTL","ENSG00000130165.grp_1.downstream.ENST00000590700|Esophagus_Muscularis_stQTL","ENSG00000130173.13|Esophagus_Muscularis_eQTL","ENSG00000130175.9|Esophagus_Muscularis_eQTL","ENSG00000130175|Esophagus_Muscularis_stQTL","ENSG00000130733.10|Esophagus_Muscularis_eQTL","ENSG00000130734.9|Esophagus_Muscularis_eQTL","ENSG00000130803.14|Esophagus_Muscularis_eQTL","ENSG00000130811|Esophagus_Muscularis_stQTL","ENSG00000130818.11|Esophagus_Muscularis_eQTL","ENSG00000130818|Esophagus_Gastroesophageal_Junction_stQTL","ENSG00000132004.12|Esophagus_Muscularis_eQTL","ENSG00000132010.15|Esophagus_Muscularis_eQTL","ENSG00000132010.grp_2.downstream.ENST00000600335|Esophagus_Muscularis_stQTL","ENSG00000142453.11|Esophagus_Muscularis_eQTL","ENSG00000142453|Esophagus_Muscularis_stQTL","ENSG00000161860.7|Esophagus_Muscularis_eQTL","ENSG00000161860.grp_1.downstream.ENST00000293695|Esophagus_Muscularis_stQTL","ENSG00000161860.grp_1.downstream.ENST00000592819|Esophagus_Muscularis_stQTL","ENSG00000161888.11|Esophagus_Muscularis_eQTL","ENSG00000161888.grp_1.downstream.ENST00000592540|Esophagus_Muscularis_stQTL","ENSG00000161888.grp_2.downstream.ENST00000592540|Esophagus_Muscularis_stQTL","ENSG00000161914.9|Esophagus_Muscularis_eQTL","ENSG00000167815.11|Esophagus_Muscularis_eQTL","ENSG00000171223.5|Esophagus_Muscularis_eQTL","ENSG00000171291.8|Esophagus_Muscularis_eQTL","ENSG00000171295.12|Esophagus_Muscularis_eQTL","ENSG00000171295|Esophagus_Muscularis_stQTL","ENSG00000171466.9|Esophagus_Muscularis_eQTL","ENSG00000171469.10|Esophagus_Muscularis_eQTL","ENSG00000171469.grp_1.downstream.ENST00000326044|Esophagus_Muscularis_stQTL","ENSG00000171469.grp_1.downstream.ENST00000424629|Esophagus_Muscularis_stQTL","ENSG00000171469.grp_2.downstream.ENST00000302851|Esophagus_Muscularis_stQTL","ENSG00000171469.grp_2.downstream.ENST00000326044|Esophagus_Muscularis_stQTL","ENSG00000173875.13|Esophagus_Muscularis_eQTL","ENSG00000173928.2|Esophagus_Muscularis_eQTL","ENSG00000174652|Spleen_stQTL","ENSG00000177599.12|Esophagus_Muscularis_eQTL","ENSG00000177599.grp_1.downstream.ENST00000479762|Esophagus_Muscularis_stQTL","ENSG00000177599.grp_1.downstream.ENST00000492230|Esophagus_Muscularis_stQTL","ENSG00000177599.grp_2.downstream.ENST00000479762|Esophagus_Muscularis_stQTL","ENSG00000177599.grp_2.downstream.ENST00000492230|Esophagus_Muscularis_stQTL","ENSG00000179115.10|Esophagus_Muscularis_eQTL","ENSG00000179115|Esophagus_Muscularis_stQTL","ENSG00000179218.13|Esophagus_Muscularis_eQTL","ENSG00000179262.9|Esophagus_Muscularis_eQTL","ENSG00000179284.5|Esophagus_Muscularis_eQTL","ENSG00000180739.13|Esophagus_Muscularis_eQTL","ENSG00000180855.15|Esophagus_Muscularis_eQTL","ENSG00000183401.11|Esophagus_Muscularis_eQTL","ENSG00000188000.3|Esophagus_Muscularis_eQTL","ENSG00000188000.grp_1.downstream.ENST00000641288|Esophagus_Mucosa_stQTL","ENSG00000188000.grp_1.downstream.ENST00000641288|Esophagus_Muscularis_stQTL","ENSG00000188000.grp_1.downstream.ENST00000642043|Esophagus_Gastroesophageal_Junction_stQTL","ENSG00000188000.grp_1.downstream.ENST00000642043|Esophagus_Mucosa_stQTL","ENSG00000188000.grp_1.downstream.ENST00000642043|Esophagus_Muscularis_stQTL","ENSG00000188033.9|Esophagus_Muscularis_eQTL","ENSG00000188033|Esophagus_Muscularis_stQTL","ENSG00000188321.13|Esophagus_Muscularis_eQTL","ENSG00000188321.grp_1.downstream.ENST00000587557|Esophagus_Mucosa_stQTL","ENSG00000188629.11|Esophagus_Muscularis_eQTL","ENSG00000188868.13|Esophagus_Muscularis_eQTL","ENSG00000196361.9|Esophagus_Muscularis_eQTL","ENSG00000196466.grp_1.downstream.ENST00000460935|Esophagus_Muscularis_stQTL","ENSG00000196466.grp_1.downstream.ENST00000595766|Esophagus_Muscularis_stQTL","ENSG00000196605.7|Esophagus_Muscularis_eQTL","ENSG00000196605|Esophagus_Muscularis_stQTL","ENSG00000196646.grp_1.downstream.ENST00000425827|Esophagus_Muscularis_stQTL","ENSG00000196646.grp_1.downstream.ENST00000652580|Esophagus_Muscularis_stQTL","ENSG00000197044.10|Esophagus_Muscularis_eQTL","ENSG00000197054.11|Esophagus_Muscularis_eQTL","ENSG00000197054|Esophagus_Muscularis_stQTL","ENSG00000197256.10|Esophagus_Muscularis_eQTL","ENSG00000197647.11|Esophagus_Muscularis_eQTL","ENSG00000197857.13|Esophagus_Muscularis_eQTL","ENSG00000197933.12|Esophagus_Muscularis_eQTL","ENSG00000197961.11|Esophagus_Muscularis_eQTL","ENSG00000198003.11|Esophagus_Muscularis_eQTL","ENSG00000198429.9|Esophagus_Muscularis_eQTL","ENSG00000198551.9|Esophagus_Muscularis_eQTL","ENSG00000205517.12|Esophagus_Muscularis_eQTL","ENSG00000213339.8|Esophagus_Muscularis_eQTL","ENSG00000214212.8|Esophagus_Muscularis_eQTL","ENSG00000220201.7|Esophagus_Muscularis_eQTL","ENSG00000223547.9|Esophagus_Muscularis_eQTL","ENSG00000244165.1|Esophagus_Muscularis_eQTL","ENSG00000249709.7|Esophagus_Muscularis_eQTL","ENSG00000249709|Esophagus_Muscularis_stQTL","ENSG00000257446.3|Esophagus_Muscularis_eQTL","ENSG00000257591.5|Esophagus_Muscularis_eQTL","ENSG00000267673.6|Esophagus_Muscularis_eQTL","ENSG00000270011.6|Esophagus_Muscularis_eQTL","intron_19_10005985_10006073|Esophagus_Muscularis_sQTL","intron_19_10006231_10010298|Esophagus_Muscularis_sQTL","intron_19_10091353_10091476|Esophagus_Muscularis_sQTL","intron_19_10091353_10091584|Esophagus_Muscularis_sQTL","intron_19_10109707_10109913|Esophagus_Muscularis_sQTL","intron_19_10168364_10173090|Esophagus_Muscularis_sQTL","intron_19_10173174_10173871|Esophagus_Muscularis_sQTL","intron_19_10177367_10180187|Esophagus_Muscularis_sQTL","intron_19_10177367_10180350|Esophagus_Muscularis_sQTL","intron_19_10180234_10180350|Esophagus_Muscularis_sQTL","intron_19_10315492_10315705|Esophagus_Muscularis_sQTL","intron_19_10315553_10315705|Esophagus_Muscularis_sQTL","intron_19_10321259_10321531|Esophagus_Muscularis_sQTL","intron_19_10350968_10351052|Esophagus_Muscularis_sQTL","intron_19_10351484_10352434|Esophagus_Muscularis_sQTL","intron_19_10353646_10354042|Esophagus_Muscularis_sQTL","intron_19_10359302_10360962|Esophagus_Muscularis_sQTL","intron_19_10361836_10362078|Esophagus_Muscularis_sQTL","intron_19_10361955_10362078|Esophagus_Muscularis_sQTL","intron_19_10362181_10362549|Esophagus_Muscularis_sQTL","intron_19_10369877_10378214|Esophagus_Muscularis_sQTL","intron_19_10379689_10380380|Esophagus_Muscularis_sQTL","intron_19_10379779_10380380|Esophagus_Muscularis_sQTL","intron_19_10400689_10403378|Esophagus_Muscularis_sQTL","intron_19_10489368_10491577|Esophagus_Muscularis_sQTL","intron_19_10544325_10544709|Esophagus_Muscularis_sQTL","intron_19_10544325_10544783|Esophagus_Muscularis_sQTL","intron_19_10545130_10547189|Esophagus_Muscularis_sQTL","intron_19_10545130_10548904|Esophagus_Muscularis_sQTL","intron_19_10547071_10547189|Esophagus_Muscularis_sQTL","intron_19_10547115_10547189|Esophagus_Muscularis_sQTL","intron_19_10547253_10548904|Esophagus_Muscularis_sQTL","intron_19_10558060_10559359|Esophagus_Muscularis_sQTL","intron_19_10565034_10565717|Esophagus_Muscularis_sQTL","intron_19_10565034_10565906|Esophagus_Muscularis_sQTL","intron_19_10565790_10565906|Esophagus_Muscularis_sQTL","intron_19_10602561_10626253|Esophagus_Muscularis_sQTL","intron_19_10625670_10626253|Esophagus_Muscularis_sQTL","intron_19_10642451_10642897|Esophagus_Muscularis_sQTL","intron_19_10654487_10670516|Esophagus_Muscularis_sQTL","intron_19_10677310_10678613|Esophagus_Muscularis_sQTL","intron_19_10677310_10679097|Esophagus_Muscularis_sQTL","intron_19_10678704_10679097|Esophagus_Muscularis_sQTL","intron_19_10679927_10680346|Esophagus_Muscularis_sQTL","intron_19_10682704_10683125|Esophagus_Muscularis_sQTL","intron_19_10682704_10683137|Esophagus_Muscularis_sQTL","intron_19_10702254_10706710|Esophagus_Muscularis_sQTL","intron_19_10702254_10707302|Esophagus_Muscularis_sQTL","intron_19_10706825_10707302|Esophagus_Muscularis_sQTL","intron_19_10707380_10707466|Esophagus_Muscularis_sQTL","intron_19_10707615_10708951|Esophagus_Muscularis_sQTL","intron_19_10713040_10713118|Esophagus_Muscularis_sQTL","intron_19_10713040_10713124|Esophagus_Muscularis_sQTL","intron_19_10797518_10798486|Esophagus_Muscularis_sQTL","intron_19_10808580_10812264|Esophagus_Muscularis_sQTL","intron_19_10830378_10830978|Esophagus_Muscularis_sQTL","intron_19_10830378_10830981|Esophagus_Muscularis_sQTL","intron_19_10908145_10908550|Esophagus_Muscularis_sQTL","intron_19_10908145_10909103|Esophagus_Muscularis_sQTL","intron_19_10916777_10919595|Esophagus_Muscularis_sQTL","intron_19_10919320_10919595|Esophagus_Muscularis_sQTL","intron_19_10919680_10919877|Esophagus_Muscularis_sQTL","intron_19_10961174_10984121|Esophagus_Muscularis_sQTL","intron_19_10961729_10984124|Esophagus_Muscularis_sQTL","intron_19_10987924_10989317|Esophagus_Muscularis_sQTL","intron_19_10996380_10996494|Esophagus_Muscularis_sQTL","intron_19_11008023_11010381|Esophagus_Muscularis_sQTL","intron_19_11025508_11026300|Esophagus_Muscularis_sQTL","intron_19_11035132_11039458|Esophagus_Muscularis_sQTL","intron_19_11035132_11041307|Esophagus_Muscularis_sQTL","intron_19_11116212_11116859|Esophagus_Muscularis_sQTL","intron_19_11116212_11120092|Esophagus_Muscularis_sQTL","intron_19_11120522_11123174|Liver_sQTL","intron_19_11178447_11178553|Esophagus_Muscularis_sQTL","intron_19_11178471_11178553|Esophagus_Muscularis_sQTL","intron_19_11194042_11194475|Esophagus_Muscularis_sQTL","intron_19_11194042_11194503|Esophagus_Muscularis_sQTL","intron_19_11194590_11195556|Esophagus_Muscularis_sQTL","intron_19_11194590_11195622|Esophagus_Muscularis_sQTL","intron_19_11195820_11196050|Esophagus_Muscularis_sQTL","intron_19_11195820_11197485|Esophagus_Muscularis_sQTL","intron_19_11195820_11197707|Esophagus_Muscularis_sQTL","intron_19_11195881_11196050|Esophagus_Muscularis_sQTL","intron_19_11195881_11197485|Esophagus_Muscularis_sQTL","intron_19_11196227_11197485|Esophagus_Muscularis_sQTL","intron_19_11214649_11215387|Esophagus_Muscularis_sQTL","intron_19_11217391_11222109|Esophagus_Muscularis_sQTL","intron_19_11222020_11222109|Esophagus_Muscularis_sQTL","intron_19_11229035_11232185|Esophagus_Muscularis_sQTL","intron_19_11229390_11229760|Esophagus_Muscularis_sQTL","intron_19_11229390_11233203|Esophagus_Muscularis_sQTL","intron_19_11232289_11233203|Esophagus_Muscularis_sQTL","intron_19_11238304_11241632|Esophagus_Muscularis_sQTL","intron_19_11238304_11242045|Esophagus_Muscularis_sQTL","intron_19_11251086_11252119|Esophagus_Muscularis_sQTL","intron_19_11346624_11349654|Esophagus_Muscularis_sQTL","intron_19_11346627_11348966|Esophagus_Muscularis_sQTL","intron_19_11346627_11349654|Esophagus_Muscularis_sQTL","intron_19_11346634_11348966|Esophagus_Muscularis_sQTL","intron_19_11346634_11349576|Esophagus_Muscularis_sQTL","intron_19_11346634_11349654|Esophagus_Muscularis_sQTL","intron_19_11346960_11349654|Esophagus_Muscularis_sQTL","intron_19_11349083_11349654|Esophagus_Muscularis_sQTL","intron_19_11350199_11350808|Esophagus_Muscularis_sQTL","intron_19_11350199_11353451|Esophagus_Muscularis_sQTL","intron_19_11352118_11353451|Esophagus_Muscularis_sQTL","intron_19_11352133_11353451|Esophagus_Muscularis_sQTL","intron_19_11354696_11354873|Esophagus_Muscularis_sQTL","intron_19_11357739_11359532|Esophagus_Muscularis_sQTL","intron_19_11397597_11399855|Esophagus_Muscularis_sQTL","intron_19_11399951_11400040|Esophagus_Muscularis_sQTL","intron_19_11399969_11400040|Esophagus_Muscularis_sQTL","intron_19_11405231_11405323|Esophagus_Muscularis_sQTL","intron_19_11405426_11406419|Esophagus_Muscularis_sQTL","intron_19_11416148_11416614|Esophagus_Muscularis_sQTL","intron_19_11442515_11445389|Esophagus_Muscularis_sQTL","intron_19_11447597_11447693|Esophagus_Muscularis_sQTL","intron_19_11447618_11447693|Esophagus_Muscularis_sQTL","intron_19_11447618_11447723|Esophagus_Muscularis_sQTL","intron_19_11498339_11505488|Esophagus_Muscularis_sQTL","intron_19_11507562_11507702|Esophagus_Muscularis_sQTL","intron_19_11507850_11507991|Esophagus_Muscularis_sQTL","intron_19_11508048_11510617|Esophagus_Muscularis_sQTL","intron_19_11508048_11513056|Esophagus_Muscularis_sQTL","intron_19_11508048_11519075|Esophagus_Muscularis_sQTL","intron_19_11510660_11513056|Esophagus_Muscularis_sQTL","intron_19_11514221_11519075|Esophagus_Muscularis_sQTL","intron_19_11519193_11529062|Esophagus_Muscularis_sQTL","intron_19_11538990_11541076|Esophagus_Muscularis_sQTL","intron_19_11540021_11541076|Esophagus_Muscularis_sQTL","intron_19_11540686_11541076|Esophagus_Muscularis_sQTL","intron_19_11554365_11555522|Esophagus_Muscularis_sQTL","intron_19_11554365_11559191|Esophagus_Muscularis_sQTL","intron_19_11578657_11578844|Esophagus_Muscularis_sQTL","intron_19_11725327_11738817|Esophagus_Muscularis_sQTL","intron_19_11804667_11805947|Esophagus_Muscularis_sQTL","intron_19_11804667_11805947|Esophagus_Muscularis_sQTL","intron_19_11814450_11830283|Esophagus_Muscularis_sQTL","intron_19_11814450_11830283|Esophagus_Muscularis_sQTL","intron_19_11947307_11947514|Esophagus_Muscularis_sQTL","intron_19_11947307_11947514|Esophagus_Muscularis_sQTL","intron_19_11947574_11948276|Esophagus_Muscularis_sQTL","intron_19_11947574_11948276|Esophagus_Muscularis_sQTL","intron_19_11965211_11977038|Esophagus_Muscularis_sQTL","intron_19_11965211_11977038|Esophagus_Muscularis_sQTL","intron_19_11977164_11977371|Esophagus_Muscularis_sQTL","intron_19_11977164_11977371|Esophagus_Muscularis_sQTL","intron_19_11977164_11978116|Esophagus_Muscularis_sQTL","intron_19_11977164_11978116|Esophagus_Muscularis_sQTL","intron_19_11977431_11978116|Esophagus_Muscularis_sQTL","intron_19_11977431_11978116|Esophagus_Muscularis_sQTL","intron_19_12018292_12035537|Esophagus_Muscularis_sQTL","intron_19_12018292_12035537|Esophagus_Muscularis_sQTL","intron_19_12074157_12074361|Esophagus_Muscularis_sQTL","intron_19_12110431_12111246|Esophagus_Muscularis_sQTL","intron_19_12110694_12111246|Esophagus_Muscularis_sQTL","intron_19_12226527_12230460|Esophagus_Muscularis_sQTL","intron_19_12275033_12276148|Esophagus_Muscularis_sQTL","intron_19_12276082_12294692|Esophagus_Muscularis_sQTL","intron_19_12319665_12321272|Esophagus_Muscularis_sQTL","intron_19_12465733_12466462|Esophagus_Muscularis_sQTL","intron_19_12465733_12466462|Esophagus_Muscularis_sQTL","intron_19_12465733_12466462|Esophagus_Muscularis_sQTL","intron_19_12466850_12484655|Esophagus_Muscularis_sQTL","intron_19_12466850_12484655|Esophagus_Muscularis_sQTL","intron_19_12466850_12484655|Esophagus_Muscularis_sQTL","intron_19_12611082_12623700|Esophagus_Muscularis_sQTL","intron_19_12649428_12649913|Esophagus_Muscularis_sQTL","intron_19_12658344_12658428|Esophagus_Muscularis_sQTL","intron_19_12658344_12661260|Esophagus_Muscularis_sQTL","intron_19_12658510_12661260|Esophagus_Muscularis_sQTL","intron_19_12668617_12669128|Esophagus_Muscularis_sQTL","intron_19_12669233_12669354|Esophagus_Muscularis_sQTL","intron_19_12670821_12672847|Esophagus_Muscularis_sQTL","intron_19_12676142_12677291|Esophagus_Muscularis_sQTL","intron_19_12677211_12677291|Esophagus_Muscularis_sQTL","intron_19_12679922_12680161|Esophagus_Muscularis_sQTL","intron_19_12690110_12691166|Esophagus_Muscularis_sQTL","intron_19_12691454_12694594|Esophagus_Muscularis_sQTL","intron_19_12701644_12701752|Esophagus_Muscularis_sQTL","intron_19_12701672_12701752|Esophagus_Muscularis_sQTL","intron_19_12702147_12702823|Esophagus_Muscularis_sQTL","intron_19_12702177_12702823|Esophagus_Muscularis_sQTL","intron_19_12705768_12706010|Esophagus_Muscularis_sQTL","intron_19_12705768_12706196|Esophagus_Muscularis_sQTL","intron_19_12705830_12706196|Esophagus_Muscularis_sQTL","intron_19_12715710_12719029|Esophagus_Muscularis_sQTL","intron_19_12715739_12719029|Esophagus_Muscularis_sQTL","intron_19_12765724_12765829|Esophagus_Muscularis_sQTL","intron_19_12765724_12765927|Esophagus_Muscularis_sQTL","intron_19_12774897_12775405|Esophagus_Muscularis_sQTL","intron_19_12774897_12778300|Esophagus_Muscularis_sQTL","intron_19_12774897_12778345|Esophagus_Muscularis_sQTL","intron_19_12896121_12896205|Esophagus_Muscularis_sQTL","intron_19_12897863_12899468|Esophagus_Muscularis_sQTL","intron_19_12897863_12913995|Esophagus_Muscularis_sQTL","intron_19_12924807_12924904|Esophagus_Muscularis_sQTL","intron_19_12948358_12948497|Esophagus_Muscularis_sQTL","intron_19_12948358_12948514|Esophagus_Muscularis_sQTL","intron_19_12948552_12948686|Esophagus_Muscularis_sQTL","intron_19_12995864_13025021|Esophagus_Muscularis_sQTL","intron_19_12995864_13025021|Esophagus_Muscularis_sQTL","intron_19_13075671_13081680|Esophagus_Muscularis_sQTL","intron_19_13088136_13090299|Esophagus_Muscularis_sQTL","intron_19_13100728_13100837|Esophagus_Muscularis_sQTL","intron_19_13100748_13100837|Esophagus_Muscularis_sQTL","intron_19_13101048_13102531|Esophagus_Muscularis_sQTL","intron_19_13112817_13112896|Esophagus_Muscularis_sQTL","intron_19_13116052_13116136|Esophagus_Muscularis_sQTL","intron_19_13118454_13135200|Esophagus_Muscularis_sQTL","intron_19_9324780_9333015|Esophagus_Muscularis_sQTL","intron_19_9324780_9333015|Esophagus_Muscularis_sQTL","intron_19_9324780_9341102|Esophagus_Muscularis_sQTL","intron_19_9324780_9341102|Esophagus_Muscularis_sQTL","intron_19_9324780_9364862|Esophagus_Muscularis_sQTL","intron_19_9324780_9364862|Esophagus_Muscularis_sQTL","intron_19_9337858_9338494|Esophagus_Muscularis_sQTL","intron_19_9337858_9338494|Esophagus_Muscularis_sQTL","intron_19_9338582_9339193|Esophagus_Muscularis_sQTL","intron_19_9338582_9339193|Esophagus_Muscularis_sQTL","intron_19_9339319_9341102|Esophagus_Muscularis_sQTL","intron_19_9339319_9341102|Esophagus_Muscularis_sQTL","intron_19_9364948_9371610|Esophagus_Muscularis_sQTL","intron_19_9364948_9371610|Esophagus_Muscularis_sQTL","intron_19_9364948_9376316|Esophagus_Muscularis_sQTL","intron_19_9364948_9376316|Esophagus_Muscularis_sQTL","intron_19_9371752_9376316|Esophagus_Muscularis_sQTL","intron_19_9371752_9376316|Esophagus_Muscularis_sQTL","intron_19_9415742_9417828|Esophagus_Muscularis_sQTL","intron_19_9420218_9433668|Esophagus_Muscularis_sQTL","intron_19_9420218_9434075|Esophagus_Muscularis_sQTL","intron_19_9420218_9434798|Esophagus_Muscularis_sQTL","intron_19_9420218_9435108|Esophagus_Muscularis_sQTL","intron_19_9433786_9434075|Esophagus_Muscularis_sQTL","intron_19_9434235_9434798|Esophagus_Muscularis_sQTL","intron_19_9434859_9435108|Esophagus_Muscularis_sQTL","intron_19_9531067_9532845|Esophagus_Muscularis_sQTL","intron_19_9533966_9535188|Esophagus_Muscularis_sQTL","intron_19_9535279_9536208|Esophagus_Muscularis_sQTL","intron_19_9568175_9569002|Esophagus_Muscularis_sQTL","intron_19_9617171_9618091|Esophagus_Muscularis_sQTL","intron_19_9617226_9618091|Esophagus_Muscularis_sQTL","intron_19_9617758_9618091|Esophagus_Muscularis_sQTL","intron_19_9656653_9658009|Esophagus_Muscularis_sQTL","intron_19_9658135_9659379|Esophagus_Muscularis_sQTL","intron_19_9752440_9756486|Esophagus_Muscularis_sQTL","intron_19_9752440_9757416|Esophagus_Muscularis_sQTL","intron_19_9752440_9758059|Esophagus_Muscularis_sQTL","intron_19_9758764_9762082|Esophagus_Muscularis_sQTL","intron_19_9759942_9762082|Esophagus_Muscularis_sQTL","intron_19_9765035_9768289|Esophagus_Muscularis_sQTL","intron_19_9765035_9785938|Esophagus_Muscularis_sQTL","intron_19_9811717_9813231|Esophagus_Muscularis_sQTL","intron_19_9962887_9966314|Esophagus_Muscularis_sQTL","intron_19_9966426_9966536|Esophagus_Muscularis_sQTL","intron_19_9966426_9966536|Liver_sQTL","intron_19_9969912_9970622|Esophagus_Muscularis_sQTL","intron_19_9969922_9970622|Esophagus_Muscularis_sQTL","intron_19_9971258_9972919|Esophagus_Muscularis_sQTL","intron_19_9977701_9977812|Esophagus_Muscularis_sQTL","intron_19_9977701_9978574|Esophagus_Muscularis_sQTL","intron_19_9985895_9986315|Esophagus_Muscularis_sQTL","intron_19_9989522_9991610|Esophagus_Muscularis_sQTL","intron_19_9989606_9991610|Esophagus_Muscularis_sQTL","intron_19_9992048_9992694|Esophagus_Muscularis_sQTL","intron_19_9992048_9992827|Esophagus_Muscularis_sQTL"],["NFIX","PDE4A","ICAM3","DNM2","KEAP1","KEAP1","DHPS","HOOK2","TMED1","TMED1","ACP5","MAN2B1","LYL1","LYL1","STX10","OLFM2","MRPL4","TYK2","TYK2","RAB3D","TMEM205","PLPPR2","WDR83OS","GCDH","GCDH","GCDH","GCDH","GCDH","GCDH","GCDH","DNASE2","C19orf43","PIN1","FBXL12","FBXL12","KRI1","KRI1","ILF3","SLC44A2","AP1M2","CDKN2D","DOCK6","ECSIT","ECSIT","LDLR","LDLR","ELOF1","ELOF1","ELOF1","ANGPTL8","PRKCSH","PRKCSH","YIPF2","ATG4D","ZNF317","EIF3G","ZNF426","ZNF426","FBXW9","ZNF20","ZNF20","CARM1","CARM1","SYCE2","SYCE2","SYCE2","SPC24","SPC24","SPC24","ZNF653","PRDX2","JUNB","ZNF439","ZNF440","ZNF440","ZNF562","ZNF561","ZNF561","ZNF561","ZNF561","ZNF561","ZNF791","SWSAP1","ZNF266","ZNF491","ZNF491","ZNF491","ZNF491","ZNF491","FARSA","FARSA","CALR","RAD23A","DAND5","S1PR5","ZNF443","CCDC159","OR7D2","OR7D2","OR7D2","OR7D2","OR7D2","OR7D2","ZNF490","ZNF490","ZNF559","ZNF559","ZNF177","ZNF563","ELAVL3","ZNF799","ZNF799","ZNF846","ZNF846","ZNF136","ZNF136","ZNF441","ZNF763","ZNF763","KANK2","ZNF433","ZNF44","ZNF823","ZNF121","CCDC151","ZNF69","ZNF627","RGL3","QTRT1","C19orf38","ZGLP1","ZNF844","P2RY11","ZNF564","ZNF564","ZNF878","ZNF625","FDX2","ZNF559-ZNF177","COL5A3","COL5A3","C19orf66","C19orf66","PPAN","DNMT1","DNMT1","DNMT1","DNMT1","DNMT1","FDX2","FDX2","RAVER1","TYK2","TYK2","TYK2","TYK2","TYK2","TYK2","TYK2","TYK2","TYK2","TYK2","CDC37","KEAP1","ATG4D","ATG4D","ATG4D","ATG4D","ATG4D","ATG4D","ATG4D","KRI1","KRI1","KRI1","KRI1","SLC44A2","SLC44A2","SLC44A2","ILF3","ILF3","ILF3","ILF3","ILF3","ILF3","ILF3","QTRT1","QTRT1","QTRT1","QTRT1","QTRT1","QTRT1","QTRT1","DNM2","DNM2","DNM2","DNM2","CARM1","CARM1","CARM1","CARM1","CARM1","SMARCA4","SMARCA4","SMARCA4","SMARCA4","SMARCA4","SMARCA4","SMARCA4","SMARCA4","LDLR","LDLR","LDLR","KANK2","KANK2","KANK2","KANK2","KANK2","KANK2","KANK2","KANK2","KANK2","KANK2","KANK2","KANK2","DOCK6","DOCK6","DOCK6","DOCK6","DOCK6","DOCK6","DOCK6","DOCK6","DOCK6","DOCK6","CCDC159","CCDC159","CCDC159","CCDC159","CCDC159","CCDC159","CCDC159","CCDC159","CCDC159","CCDC159","CCDC159","CCDC159","PLPPR2","PLPPR2","RGL3","RGL3","RGL3","RGL3","RGL3","RGL3","PRKCSH","PRKCSH","PRKCSH","PRKCSH","ZNF653","ECSIT","ECSIT","ECSIT","ECSIT","ECSIT","ECSIT","ECSIT","ECSIT","CNN1","CNN1","CNN1","ELOF1","ELOF1","ACP5","ZNF823","ZNF440","ZNF491","ZNF440","ZNF491","ZNF700","ZNF763","ZNF700","ZNF763","ZNF700","ZNF763","ZNF700","ZNF763","ZNF700","ZNF763","ZNF700","ZNF763","ZNF433","ZNF878","ZNF844","ZNF788","ZNF788","ZNF44","ZNF44","ZNF44","ZNF563","ZNF709","ZNF564","CTD-2192J16.21","ZNF709","ZNF564","CTD-2192J16.21","ZNF791","MAN2B1","MAN2B1","MAN2B1","MAN2B1","WDR83OS","WDR83OS","WDR83","DHPS","DHPS","DHPS","FBXW9","FBXW9","TNPO2","TNPO2","TNPO2","TNPO2","TNPO2","TNPO2","TNPO2","TNPO2","TNPO2","HOOK2","HOOK2","HOOK2","HOOK2","HOOK2","GCDH","GCDH","GCDH","FARSA","RAD23A","RAD23A","RAD23A","NFIX","DAND5","NFIX","NFIX","LYL1","LYL1","LYL1","TRMT1","TRMT1","NACC1","ZNF559","ZNF177","ZNF559","ZNF177","ZNF559","ZNF177","ZNF177","ZNF559","ZNF177","ZNF559","ZNF559","ZNF177","ZNF177","ZNF559","ZNF559","ZNF177","ZNF559","ZNF177","ZNF266","ZNF266","ZNF266","ZNF266","ZNF266","ZNF266","ZNF266","ZNF266","ZNF426","ZNF426","ZNF426","ZNF121","ZNF561","ZNF561","ZNF561","ZNF562","ZNF562","ZNF846","ZNF846","ZNF846","ZNF846","ZNF846","ZNF846","ZNF846","FBXL12","COL5A3","COL5A3","COL5A3","COL5A3","COL5A3","COL5A3","COL5A3","COL5A3","COL5A3","COL5A3","COL5A3","COL5A3","COL5A3"],[-0.697555829834105,0.571676672227427,-0.591294713517121,5.63099394085483,0.404432064068492,0.321481178396107,-0.573891727948756,-1.30051852788632,-2.07025679670658,-3.74624944097589,-0.692221331194429,1.0750843935353,-0.34803149606288,0.520098324884796,1.05590745853893,1.02029720913398,0.513393717479271,2.43542388640045,1.43741620514977,2.49368380137924,-1.33258939022738,3.1676580318563,2.45428936384074,0.336529291484798,0.133097370976444,-0.383996254342007,-0.347786737537414,0.150426858275415,-0.376815326471384,-0.351568191440289,2.08134989744108,1.33495231056129,-3.37267663745448,0.630072924667867,-0.654810409086213,-5.22916515863197,-3.56470165526866,-2.86364008514784,-7.64956444320219,-6.55943586299495,6.88796265421885,4.4111776447106,2.69923635715545,-7.26160792506136,-24.7073216638519,-24.7073216638519,1.14898722563316,-2.65463504773527,2.96424982149983,3.20342131743978,-2.7390321863919,-2.36481429548951,12.0661989845398,0.715417064629361,0.190835902301928,3.40121289065613,-0.991723204978789,0.3385219166979,2.48364434687297,-1.62948775526367,-2.05953217056999,-12.2552332129423,-12.5833544471148,-0.323412416801252,-0.687463845886494,0.658030160550322,2.13012798036633,-7.20338322933411,-7.82118009590508,1.84209400185411,2.97026317833329,-0.732747078367581,1.08189784161835,-2.1262178530675,-2.55814720184601,0.00415962567745002,-0.820085913197761,-0.651998632864809,0.994438421384769,1.26391162013908,-0.45329883905112,-0.403092214246329,0.845542904748437,-1.37370585852558,-0.115358805392664,5.45924546698114,-4.84816912037595,5.57027949833087,-5.1184728327253,0.24786455828215,0.224161124520717,-0.378328745737601,-0.280330123796459,-0.343438445282436,-0.754872979214604,-1.3652605669666,2.5479357990038,-0.401937656443967,-0.385131609159358,-0.662084122134022,1.23784399115435,0.0598159352161602,0.643588334429611,-0.260738573462037,0.545323162798272,0.405845461466314,0.802636984368717,0.801871548127179,1.07743093391429,-0.840087265269882,-0.526758393496849,0.505997784506673,1.24090180773574,-0.243014715155916,2.38388248028707,-2.41361301462327,2.92869558020145,1.46760830522584,2.07870456351522,5.65706143128717,2.5931252696692,-2.14458404343885,1.46050859382829,-1.0754047893728,0.238804198995759,0.0495640637691443,-1.14898722563316,-0.0918791208791645,0.736802318256563,-2.07025679670658,0.29029576811114,3.46942450091242,-0.0364674636598471,-1.15026310660706,0.956354411119294,-3.48123483040214,-2.1342170107939,-3.9764205327396,0.801871548127179,-0.954179074946917,0.759436357481613,0.0846311943366219,-0.0846311943366219,-2.0460801915025,3.001345838415,-3.22652323794278,-0.117968813449199,0.117968813449199,-3.55089123589389,-2.49416329830264,5.36620690816932,5.24503355931397,-1.77703615108557,-0.835659243977584,6.1412522090405,-0.437236964794265,-0.358815374371131,0.358815374371131,-0.298688030970956,-0.461875236861267,-0.820445649828643,0.820445649828643,2.60611989356647,-0.370676630084763,0.0286617466765995,-0.0286617466765995,-9.59313299577212,2.31389252948893,-2.31389252948893,-2.04166754497965,-2.31389252948893,-0.757363197959384,-2.75837064084145,2.41578539218144,-1.38413055711932,7.9051284614613,-7.51494263343251,-2.39854752638066,0.61322194321033,1.28099601770529,2.43067479739981,-1.27659102011818,-2.45574546621675,-2.45966221366396,2.45966221366396,3.46139780577073,-3.42318628645647,4.45774630648843,2.00253349138698,7.35775583648557,-6.94064097302386,-6.94064097302386,0.936650115210787,-1.51062857640125,-1.29307652264504,-1.29307652264504,11.6169623034328,-12.3452048417111,-10.8824640587367,10.7769114964459,4.10228162945773,-13.0742882398497,13.0742882398497,2.4989813473373,-14.729312837087,7.82412222500797,-12.7315433523677,-0.610478043357444,-1.47116083839377,-13.5694074918646,16.8687248996043,26.8978244543332,1.08432237181595,-1.08432237181595,-2.0309893319486,2.0309893319486,6.26838463769283,-6.26838463769283,-6.02996434427566,6.03046388560098,6.28826955074908,-6.13167526202069,6.26838463769283,-6.12432051122497,3.34587288395145,0.162648902650994,-0.129429864713592,3.01703813450152,-4.179736511922,-3.01703813450152,-2.35588223576775,-4.27636903156295,4.07015628199013,-4.4111776447106,0.939437448910667,-0.879342864889368,1.0157756913842,-0.883920568822071,1.0157756913842,1.0157756913842,1.33258939022738,-1.0157756913842,1.38894621638493,1.38894621638493,2.61607397198389,-1.40968596597081,-3.95814623400761,-1.77218776094507,-1.38163532792255,0.114246913016752,-0.00557507507507512,0.390658506075903,0.390658506075903,-3.2874731683602,-1.04696240705377,-1.70941797934579,1.79454767147968,1.79795434991821,-0.6860884499784,-0.185395124001678,0.185395124001678,-2.37576667918431,-1.84176727459473,1.84176727459473,-2.37277779339917,0.689282191408165,-0.890748378153886,-1.47716807639429,1.28580363183594,-0.842126342618175,1.11965299573308,-1.11965299573308,0.853477812752924,0.185012611177423,3.29733959311259,3.29733959311259,2.87544104373508,2.87544104373508,0.344818186128225,0.344818186128225,-2.27711228538594,-2.27711228538594,-0.145812784744767,-0.145812784744767,0.156950462033511,0.156950462033511,0.148305134497305,0.148305134497305,-0.155704020289334,-0.155704020289334,-2.8560208648247,-2.8560208648247,4.51129151291522,3.53208301166917,-3.53208301166917,-1.70693303987129,0.348397568505069,-2.39890576764445,0.356885644768683,-1.28920570264824,-1.28920570264824,-1.28920570264824,0.260251056711107,0.260251056711107,0.260251056711107,-0.212123527282974,0.482201032975684,1.9329982806499,-1.9329982806499,-1.9329982806499,-0.816412762944205,0.816412762944205,-2.77832310838453,0.789721293494532,-1.87501001843369,-0.871919328379499,-0.608902048344606,2.48646830552457,0.467676866107651,-0.467676866107651,0.467676866107651,-0.467676866107651,-0.570454987361429,0.570454987361429,0.645362546669673,-0.571570949279632,0.571570949279632,1.48709032877569,-1.48709032877569,1.30051852788632,-0.382467132121335,-1.30197532409171,-0.47766934083215,0.354526166796108,-0.359123461554854,-1.93002617633891,0.17076468599826,-0.17076468599826,-0.17076468599826,-0.700722050305252,-0.700722050305252,-1.22390646301692,-0.36839530332659,0.685125001314557,-0.651274249854844,-0.298017213204171,2.54663212435257,0.460554469112909,2.54137587238248,1.35528185693962,1.35528185693962,0.823511709829694,0.823511709829694,-1.77845753706279,-1.77845753706279,1.93597254770759,1.93597254770759,0.676433225615966,0.676433225615966,-0.823511709829695,-0.823511709829695,2.08275572358661,2.08275572358661,-1.9477671284476,-1.9477671284476,1.73264230185056,1.73264230185056,0.996688460558598,-0.857956477388425,0.997452661968427,1.38041703145135,-0.669002635819905,-1.49844454636824,-1.6479676828251,1.16524084453624,1.05206584592439,-1.05288315806684,1.052743255532,0.880664371452855,0.810252917135745,0.810252917135745,-0.810252917135744,-0.102968728939206,-0.0354283790607628,0.159670002704939,0.142311333513693,-0.159670002704938,0.798620567166204,-2.12628916131615,-1.3313813697348,1.3313813697348,1.38441523136369,-2.10066371681457,-1.36524206300233,-1.36524206300233,1.74644161733193,-1.74644161733193,1.52150265621083,-1.43467813329966,1.43467813329966,1.18975916318748,-1.53097366169119,1.53097366169119,-1.8613655287261,1.8613655287261],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1.11022302462516e-16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1.66533453693773e-15,0,0,0,0,9.5514766909055e-06,0,0,0,0,0,0,0,0,3.66373598126302e-15,0,0,0,0,0,0,0,0,3.33066907387547e-16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1.11022302462516e-16,0,2.22044604925031e-16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1.11022302462516e-16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6.66133814775094e-16,4.44089209850063e-16,0,0,5.55111512312578e-16,0,4.44089209850063e-16,3.33066907387547e-16,3.33066907387547e-16,0,0,0,0,8.88178419700125e-16,1.11022302462516e-16,1.11022302462516e-16,0,0,0,0,1.11022302462516e-16,3.33066907387547e-16,0,7.7715611723761e-16,0,5.54334356195341e-13,5.54334356195341e-13,0,0,1.11022302462516e-16,0,0,0,0,0,1,0,0,0,0,3.33066907387547e-16,3.33066907387547e-16,0,0,1.11022302462516e-16,1.11022302462516e-16,3.33066907387547e-16,1.11022302462516e-16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,"L2",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,0.44465780986201,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,-1.84138858535753,10,10,10,10,10,10,10,10,10,10,10,10,10,10,-0.65668790072957,10,1.44118267237096,0.366989216250108,10,10,10,10,0.801871548127179,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,13.644536360949,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,0,null,0,0,null,null,null,null,0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],["good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","problematic genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes","good genes"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>id<\/th>\n      <th>gene_name<\/th>\n      <th>z_regionmerge<\/th>\n      <th>susie_pip_regionmerge<\/th>\n      <th>cs_regionmerge<\/th>\n      <th>z_ldmismatch<\/th>\n      <th>susie_pip_ldmismatch<\/th>\n      <th>cs_ldmismatch<\/th>\n      <th>highlight<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4,6,7]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.2.0 (2022-04-22)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: CentOS Linux 7 (Core)
+
+Matrix products: default
+BLAS/LAPACK: /software/openblas-0.3.13-el7-x86_64/lib/libopenblas_haswellp-r0.3.13.so
+
+locale:
+[1] C
+
+attached base packages:
+[1] stats4    stats     graphics  grDevices utils     datasets  methods  
+[8] base     
+
+other attached packages:
+ [1] dplyr_1.1.4               gridExtra_2.3            
+ [3] ggplot2_3.5.1             EnsDb.Hsapiens.v86_2.99.0
+ [5] ensembldb_2.20.2          AnnotationFilter_1.20.0  
+ [7] GenomicFeatures_1.48.3    AnnotationDbi_1.58.0     
+ [9] Biobase_2.56.0            GenomicRanges_1.48.0     
+[11] GenomeInfoDb_1.39.9       IRanges_2.30.0           
+[13] S4Vectors_0.34.0          BiocGenerics_0.42.0      
+[15] ctwas_0.4.20.9001        
+
+loaded via a namespace (and not attached):
+  [1] colorspace_2.0-3            rjson_0.2.21               
+  [3] ellipsis_0.3.2              rprojroot_2.0.3            
+  [5] XVector_0.36.0              locuszoomr_0.2.1           
+  [7] fs_1.5.2                    rstudioapi_0.13            
+  [9] farver_2.1.0                DT_0.22                    
+ [11] ggrepel_0.9.1               bit64_4.0.5                
+ [13] fansi_1.0.3                 xml2_1.3.3                 
+ [15] codetools_0.2-18            logging_0.10-108           
+ [17] cachem_1.0.6                knitr_1.39                 
+ [19] jsonlite_1.8.0              workflowr_1.7.0            
+ [21] Rsamtools_2.12.0            dbplyr_2.1.1               
+ [23] png_0.1-7                   readr_2.1.2                
+ [25] compiler_4.2.0              httr_1.4.3                 
+ [27] assertthat_0.2.1            Matrix_1.5-3               
+ [29] fastmap_1.1.0               lazyeval_0.2.2             
+ [31] cli_3.6.1                   later_1.3.0                
+ [33] htmltools_0.5.2             prettyunits_1.1.1          
+ [35] tools_4.2.0                 gtable_0.3.0               
+ [37] glue_1.6.2                  GenomeInfoDbData_1.2.8     
+ [39] rappdirs_0.3.3              Rcpp_1.0.12                
+ [41] jquerylib_0.1.4             vctrs_0.6.5                
+ [43] Biostrings_2.64.0           rtracklayer_1.56.0         
+ [45] crosstalk_1.2.0             xfun_0.41                  
+ [47] stringr_1.5.1               lifecycle_1.0.4            
+ [49] irlba_2.3.5                 restfulr_0.0.14            
+ [51] XML_3.99-0.14               zlibbioc_1.42.0            
+ [53] zoo_1.8-10                  scales_1.3.0               
+ [55] gggrid_0.2-0                hms_1.1.1                  
+ [57] promises_1.2.0.1            MatrixGenerics_1.8.0       
+ [59] ProtGenerics_1.28.0         parallel_4.2.0             
+ [61] SummarizedExperiment_1.26.1 LDlinkR_1.2.3              
+ [63] yaml_2.3.5                  curl_4.3.2                 
+ [65] memoise_2.0.1               sass_0.4.1                 
+ [67] biomaRt_2.54.1              stringi_1.7.6              
+ [69] RSQLite_2.3.1               highr_0.9                  
+ [71] BiocIO_1.6.0                filelock_1.0.2             
+ [73] BiocParallel_1.30.3         rlang_1.1.2                
+ [75] pkgconfig_2.0.3             matrixStats_0.62.0         
+ [77] bitops_1.0-7                evaluate_0.15              
+ [79] lattice_0.20-45             purrr_1.0.2                
+ [81] labeling_0.4.2              GenomicAlignments_1.32.0   
+ [83] htmlwidgets_1.5.4           cowplot_1.1.1              
+ [85] bit_4.0.4                   tidyselect_1.2.0           
+ [87] magrittr_2.0.3              R6_2.5.1                   
+ [89] generics_0.1.2              DelayedArray_0.22.0        
+ [91] DBI_1.2.2                   withr_2.5.0                
+ [93] pgenlibr_0.3.3              pillar_1.9.0               
+ [95] KEGGREST_1.36.3             RCurl_1.98-1.7             
+ [97] mixsqp_0.3-43               tibble_3.2.1               
+ [99] crayon_1.5.1                utf8_1.2.2                 
+[101] BiocFileCache_2.4.0         plotly_4.10.0              
+[103] tzdb_0.4.0                  rmarkdown_2.25             
+[105] progress_1.2.2              grid_4.2.0                 
+[107] data.table_1.14.2           blob_1.2.3                 
+[109] git2r_0.30.1                digest_0.6.29              
+[111] tidyr_1.3.0                 httpuv_1.6.5               
+[113] munsell_0.5.0               viridisLite_0.4.0          
+[115] bslib_0.3.1                </code></pre>
+</div>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
