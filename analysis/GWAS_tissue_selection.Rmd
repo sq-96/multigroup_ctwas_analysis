@@ -1,13 +1,10 @@
 ---
 title: "GWAS tissue selection"
-output:
-  html_document:
-    self_contained: false
+output: html_document
 date: '2024-12-25'
 ---
 
-```{r}
-library(DT)
+```{r results='asis', echo=F}
 sample_size <- list("WBC-ieu-b-30" = 563946,
                     "SBP-ukb-a-360" = 317754,
                     "LDL-ukb-d-30780_irnt" = 343621,
@@ -26,42 +23,19 @@ sample_size <- list("WBC-ieu-b-30" = 563946,
                     "T2D-panukb" = 418949,
                     "MDD-ieu-b-102" = 500199,
                     "BIP-ieu-b-5110" = 413466)
-```
 
-```{r results='asis', echo=FALSE}
-output_tables <- lapply(names(sample_size), function(i) {
-  param <- readRDS(paste0("/project/xinhe/shengqian/all_tissues_screen/results_E/", i, "/", i, ".param.RDS"))
-  ctwas_parameters <- ctwas:::summarize_param(param, sample_size[[i]])
-  
-  prop_h2g <- as.data.frame(cbind(
-    names(ctwas_parameters$prop_heritability),
-    ctwas_parameters$prop_heritability,
-    ctwas_parameters$group_pve,
-    c(ctwas_parameters$enrichment, 1),
-    param$group_pvalue
-  ))
-  
-  prop_h2g$V2 <- round(as.numeric(prop_h2g$V2), 4)
-  prop_h2g$V3 <- round(as.numeric(prop_h2g$V3), 4)
-  prop_h2g$V4 <- round(as.numeric(prop_h2g$V4), 4)
+for(i in names(sample_size)){
+  param <- readRDS(paste0("/project/xinhe/shengqian/all_tissues_screen/results_E/",i,"/",i,".param.RDS"))
+  ctwas_parameters <- ctwas:::summarize_param(param,376792)
+  prop_h2g <- as.data.frame(cbind(names(ctwas_parameters$prop_heritability),ctwas_parameters$prop_heritability,ctwas_parameters$group_pve, c(ctwas_parameters$enrichment,1), param$group_pvalue))
+  prop_h2g$V2 <- round(as.numeric(prop_h2g$V2),4)
+  prop_h2g$V3 <- round(as.numeric(prop_h2g$V3),4)
+  prop_h2g$V4 <- round(as.numeric(prop_h2g$V4),4)
   rownames(prop_h2g) <- NULL
-  prop_h2g <- prop_h2g[order(-prop_h2g$V2), ]
-  colnames(prop_h2g) <- c("group", "%h2g", "h2g", "enrichment", "pvalue")
-  prop_h2g <- prop_h2g[prop_h2g$group != "SNP", ]
-  
-  DT::datatable(
-    prop_h2g,
-    caption = htmltools::tags$caption(
-      style = "caption-side: top; text-align: left; color: black;",
-      paste("Table for", i)
-    ),
-    options = list(pageLength = 6)
-  )
-})
-```
-
-```{r results='asis', echo=FALSE}
-for (table in output_tables) {
-  print(table)
+  prop_h2g <- prop_h2g[order(-prop_h2g$V2),]
+  colnames(prop_h2g) <- c("group","%h2g","h2g","enrichment","pvalue")
+  prop_h2g <- prop_h2g[prop_h2g$group!="SNP",]
+  print(i)
+  print(head(prop_h2g,10))
 }
 ```
