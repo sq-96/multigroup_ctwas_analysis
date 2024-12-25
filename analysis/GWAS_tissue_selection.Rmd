@@ -1,0 +1,54 @@
+---
+title: "GWAS tissue selection"
+output: html_document
+date: '2024-12-25'
+editor_options: 
+  chunk_output_type: console
+---
+
+### Method
+1. Run all tissues jointly (very fast if weights have been harmonized).
+2. Rank tissues by %h2g and select reasonable top ones.
+
+### Summary
+1. For IBD, colon transverse and whole blood have much higher %h2g than other tissues. 
+2. For LDL, liver has much higher %h2g than other tissues.
+3. For SBP, the top five ones all make sense, which are artery aorta, brain cortex, artery tibial, cell cultured fibroblasts and adrenal gland.
+4. For WBC, whole blood has much higher %h2g than other tissues. 
+5. For SCZ, the top ones are basal ganglia, cerebellum, hippocampus, hemisphere, cortex ...
+
+
+```{r}
+sample_size <- list("WBC-ieu-b-30" = 563946,
+                    "SBP-ukb-a-360" = 317754,
+                    "LDL-ukb-d-30780_irnt" = 343621,
+                    "aFib-ebi-a-GCST006414" = 1030826,
+                    "IBD-ebi-a-GCST004131" = 59957,
+                    "SCZ-ieu-b-5102" = 127906,
+                    "BMI-panukb" = 419163,
+                    "Height-panukb" = 419596,
+                    "PLT-panukb" = 407992,
+                    "RBC-panukb" = 407995,
+                    "HB-panukb" =  407994,
+                    "HTN-panukb" = 420473,
+                    "RA-panukb" =  376792,
+                    "T1D-GCST90014023" = 520580,
+                    "ATH_gtexukb" = 337119,
+                    "T2D-panukb" = 418949,
+                    "MDD-ieu-b-102" = 500199,
+                    "BIP-ieu-b-5110" = 413466)
+
+for(i in names(sample_size)){
+  param <- readRDS(paste0("/project/xinhe/shengqian/all_tissues_screen/results_E/",i,"/",i,".param.RDS"))
+  ctwas_parameters <- ctwas:::summarize_param(param,376792)
+  prop_h2g <- as.data.frame(cbind(names(ctwas_parameters$prop_heritability),ctwas_parameters$prop_heritability,ctwas_parameters$group_pve, c(ctwas_parameters$enrichment,1), param$group_pvalue))
+  prop_h2g$V2 <- round(as.numeric(prop_h2g$V2),4)
+  prop_h2g$V3 <- round(as.numeric(prop_h2g$V3),4)
+  prop_h2g$V4 <- round(as.numeric(prop_h2g$V4),4)
+  rownames(prop_h2g) <- NULL
+  prop_h2g <- prop_h2g[order(-prop_h2g$V2),]
+  colnames(prop_h2g) <- c("group","%h2g","h2g","enrichment","pvalue")
+  prop_h2g <- prop_h2g[prop_h2g$group!="SNP",]
+  DT::datatable(prop_h2g,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;',i),options = list(pageLength = 10))
+}
+```
