@@ -23,8 +23,6 @@ sample_size <- list("WBC-ieu-b-30" = 563946,
                     "T2D-panukb" = 418949,
                     "MDD-ieu-b-102" = 500199,
                     "BIP-ieu-b-5110" = 413466)
-
-DT::datatable(matrix())
 ```
 
 
@@ -40,6 +38,7 @@ for(i in names(sample_size)){
   prop_h2g <- prop_h2g[order(-prop_h2g$V2),]
   colnames(prop_h2g) <- c("group","%h2g","h2g","enrichment","pvalue")
   prop_h2g <- prop_h2g[prop_h2g$group!="SNP",]
+  cat(knitr::knit_print(i))
   cat(knitr::knit_print(DT::datatable(prop_h2g,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;',i),options = list(pageLength = 10))))
 }
 ```
