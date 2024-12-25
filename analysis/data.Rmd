@@ -24,6 +24,32 @@ output:
 
 ## Extended 1
 
+### Munro's traits (GTEx)
+
+https://zenodo.org/records/3629742#.XjCh9OF7m90
+
+```{r}
+
+gtex <- data.table::fread("/project/xinhe/xsun/multi_group_ctwas/data/gwas/gwas_metadata_gtex.txt")
+
+#gwas_selected_gtex <- readxl::read_excel("/project/xinhe/xsun/multi_group_ctwas/data/gwas/gwas_selected.xlsx",sheet = 4)
+
+gwas_ukb <- gtex[gtex$Consortium == "UK Biobank",]
+gwas_ukb_show <- gwas_ukb[,c("Category","new_Phenotype","new_abbreviation","Sample_Size","Cases","Tag")]
+gwas_ukb_show <- gwas_ukb_show[order(gwas_ukb_show$Category),]
+DT::datatable(gwas_ukb_show,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;',"Munro's GWAS (GTEx, only UKB are shown)"),options = list(pageLength = 10) )
+
+
+gwas_noukb <- gtex[gtex$Consortium != "UK Biobank",]
+gwas_noukb <- gwas_noukb[,c("Category","new_Phenotype","new_abbreviation","Sample_Size","Cases","Tag")]
+gwas_noukb_show <- gwas_noukb[order(gwas_noukb$Category),]
+DT::datatable(gwas_noukb_show,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;',"Munro's GWAS (GTEx, non-UKB are shown)"),options = list(pageLength = 10) )
+
+```
+
+
+
+
 ### Pan-UKB
 
 https://www.medrxiv.org/content/10.1101/2024.03.13.24303864v2.full.pdf
@@ -66,26 +92,6 @@ gwas_detail <- merge(gwas_selected_ukbfin, gwas_catalog, by.x = "ID", by.y = "id
 gwas_detail <- gwas_detail[match(gwas_selected_ukbfin$traits,gwas_detail$traits),]
 gwas_detail <- gwas_detail[c(setdiff(names(gwas_detail), "ID"), "ID")]
 DT::datatable(gwas_detail,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','GWAS selected from ukb+finn meta'),options = list(pageLength = 10) )
-```
-
-### Munro's traits
-
-https://zenodo.org/records/3629742#.XjCh9OF7m90
-
-
-```{r}
-
-gtex <- data.table::fread("/project/xinhe/xsun/multi_group_ctwas/data/gwas/gwas_metadata_gtex.txt")
-
-gwas_selected_gtex <- readxl::read_excel("/project/xinhe/xsun/multi_group_ctwas/data/gwas/gwas_selected.xlsx",sheet = 4)
-
-gwas_detail <- merge(gwas_selected_gtex, gtex, by.x = "ID", by.y = "Tag", all.x = TRUE)
-gwas_detail <- gwas_detail[match(gwas_selected_gtex$traits,gwas_detail$traits),]
-gwas_detail <- gwas_detail[c(setdiff(names(gwas_detail), "ID"), "ID")]
-
-gwas_detail <- gwas_detail[,c("trait_category","sub_category","traits","abbreviation.x","Consortium","PUBMED_Paper_Link","Phenotype","Sample_Size","Population","ID")]
-
-DT::datatable(gwas_detail,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;',"Munro's GWAS"),options = list(pageLength = 10) )
 ```
 
 
