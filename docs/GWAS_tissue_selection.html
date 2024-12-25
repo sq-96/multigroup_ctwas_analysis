@@ -475,16 +475,16 @@ This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a> analysi
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree1d8b9ae6ba6534b8f4e7d17b45a8aeca17dd0cbdtargetblank1d8b9aea"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/1d8b9ae6ba6534b8f4e7d17b45a8aeca17dd0cbd" target="_blank">1d8b9ae</a> </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistreee0136fbc1fab82ca0df5ae317f9b80f76cf3bb28targetblanke0136fba"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/e0136fbc1fab82ca0df5ae317f9b80f76cf3bb28" target="_blank">e0136fb</a> </a>
 </p>
 </div>
-<div id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree1d8b9ae6ba6534b8f4e7d17b45a8aeca17dd0cbdtargetblank1d8b9aea" class="panel-collapse collapse">
+<div id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistreee0136fbc1fab82ca0df5ae317f9b80f76cf3bb28targetblanke0136fba" class="panel-collapse collapse">
 <div class="panel-body">
 <p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility.
 </p>
 <p>
-The results in this page were generated with repository version <a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/1d8b9ae6ba6534b8f4e7d17b45a8aeca17dd0cbd" target="_blank">1d8b9ae</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
+The results in this page were generated with repository version <a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/e0136fbc1fab82ca0df5ae317f9b80f76cf3bb28" target="_blank">e0136fb</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
 </p>
 <p>
 Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
@@ -532,6 +532,40 @@ Message
 <tbody>
 <tr>
 <td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/e0136fbc1fab82ca0df5ae317f9b80f76cf3bb28/analysis/GWAS_tissue_selection.Rmd" target="_blank">e0136fb</a>
+</td>
+<td>
+sq-96
+</td>
+<td>
+2024-12-25
+</td>
+<td>
+update
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/sq-96/multigroup_ctwas_analysis/e0136fbc1fab82ca0df5ae317f9b80f76cf3bb28/docs/GWAS_tissue_selection.html" target="_blank">e0136fb</a>
+</td>
+<td>
+sq-96
+</td>
+<td>
+2024-12-25
+</td>
+<td>
+update
+</td>
+</tr>
+<tr>
+<td>
 html
 </td>
 <td>
@@ -571,23 +605,8 @@ update
 </div>
 </div>
 </div>
-<div id="method" class="section level3">
-<h3>Method</h3>
-<ol style="list-style-type: decimal">
-<li>Run all tissues jointly (very fast if weights have been harmonized).</li>
-<li>Rank tissues by %h2g and select reasonable top ones.</li>
-</ol>
-</div>
-<div id="summary" class="section level3">
-<h3>Summary</h3>
-<ol style="list-style-type: decimal">
-<li>For IBD, colon transverse and whole blood have much higher %h2g than other tissues.</li>
-<li>For LDL, liver has much higher %h2g than other tissues.</li>
-<li>For SBP, the top five ones all make sense, which are artery aorta, brain cortex, artery tibial, cell cultured fibroblasts and adrenal gland.</li>
-<li>For WBC, whole blood has much higher %h2g than other tissues.</li>
-<li>For SCZ, the top ones are basal ganglia, cerebellum, hippocampus, hemisphere, cortex …</li>
-</ol>
-<pre class="r"><code>sample_size &lt;- list(&quot;WBC-ieu-b-30&quot; = 563946,
+<pre class="r"><code>library(DT)
+sample_size &lt;- list(&quot;WBC-ieu-b-30&quot; = 563946,
                     &quot;SBP-ukb-a-360&quot; = 317754,
                     &quot;LDL-ukb-d-30780_irnt&quot; = 343621,
                     &quot;aFib-ebi-a-GCST006414&quot; = 1030826,
@@ -617,7 +636,13 @@ for(i in names(sample_size)){
   prop_h2g &lt;- prop_h2g[order(-prop_h2g$V2),]
   colnames(prop_h2g) &lt;- c(&quot;group&quot;,&quot;%h2g&quot;,&quot;h2g&quot;,&quot;enrichment&quot;,&quot;pvalue&quot;)
   prop_h2g &lt;- prop_h2g[prop_h2g$group!=&quot;SNP&quot;,]
-  print(DT::datatable(prop_h2g,caption = htmltools::tags$caption( style = &#39;caption-side: topleft; text-align = left; color:black;&#39;,i),options = list(pageLength = 6)))
+  datatable(prop_h2g,
+        caption = htmltools::tags$caption(
+            style = &quot;caption-side: top; text-align: left; color: black;&quot;,
+            i
+        ),
+        options = list(pageLength = 6)
+    )
 }</code></pre>
 <br>
 <p>
@@ -646,74 +671,72 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
-[1] workflowr_1.7.0
+[1] DT_0.22         workflowr_1.7.0
 
 loaded via a namespace (and not attached):
   [1] colorspace_2.1-1            rjson_0.2.23               
   [3] rprojroot_2.0.3             XVector_0.38.0             
   [5] locuszoomr_0.3.5            GenomicRanges_1.50.2       
   [7] fs_1.6.4                    rstudioapi_0.14            
-  [9] DT_0.22                     ggrepel_0.9.6              
- [11] bit64_4.5.2                 AnnotationDbi_1.60.2       
- [13] fansi_1.0.6                 xml2_1.3.3                 
- [15] codetools_0.2-18            logging_0.10-108           
- [17] cachem_1.1.0                knitr_1.48                 
- [19] jsonlite_1.8.9              Rsamtools_2.14.0           
- [21] dbplyr_2.5.0                png_0.1-7                  
- [23] readr_2.1.5                 compiler_4.2.0             
- [25] httr_1.4.7                  Matrix_1.5-3               
- [27] fastmap_1.2.0               lazyeval_0.2.2             
- [29] cli_3.6.3                   later_1.3.2                
- [31] htmltools_0.5.8.1           prettyunits_1.2.0          
- [33] tools_4.2.0                 gtable_0.3.5               
- [35] glue_1.7.0                  GenomeInfoDbData_1.2.9     
- [37] dplyr_1.1.4                 rappdirs_0.3.3             
- [39] Rcpp_1.0.13                 Biobase_2.58.0             
- [41] jquerylib_0.1.4             vctrs_0.6.5                
- [43] Biostrings_2.66.0           rtracklayer_1.58.0         
- [45] crosstalk_1.2.1             xfun_0.47                  
- [47] stringr_1.5.1               ps_1.7.1                   
- [49] lifecycle_1.0.4             irlba_2.3.5.1              
- [51] restfulr_0.0.15             ensembldb_2.22.0           
- [53] XML_3.99-0.14               getPass_0.2-2              
- [55] zlibbioc_1.44.0             zoo_1.8-12                 
- [57] scales_1.3.0                gggrid_0.2-0               
- [59] hms_1.1.3                   promises_1.3.0             
- [61] MatrixGenerics_1.10.0       ProtGenerics_1.30.0        
- [63] parallel_4.2.0              SummarizedExperiment_1.28.0
- [65] AnnotationFilter_1.22.0     LDlinkR_1.4.0              
- [67] ctwas_0.4.15                yaml_2.3.10                
- [69] curl_5.2.3                  memoise_2.0.1              
- [71] ggplot2_3.5.1               sass_0.4.9                 
- [73] biomaRt_2.54.1              stringi_1.8.4              
- [75] RSQLite_2.3.7               S4Vectors_0.36.2           
- [77] BiocIO_1.8.0                GenomicFeatures_1.50.4     
- [79] BiocGenerics_0.44.0         filelock_1.0.3             
- [81] BiocParallel_1.32.6         GenomeInfoDb_1.34.9        
- [83] rlang_1.1.4                 pkgconfig_2.0.3            
- [85] matrixStats_1.4.1           bitops_1.0-8               
- [87] evaluate_1.0.0              lattice_0.20-45            
- [89] purrr_1.0.2                 GenomicAlignments_1.34.1   
- [91] htmlwidgets_1.6.4           cowplot_1.1.3              
- [93] bit_4.5.0                   processx_3.7.0             
- [95] tidyselect_1.2.1            magrittr_2.0.3             
- [97] R6_2.5.1                    IRanges_2.32.0             
- [99] generics_0.1.3              DelayedArray_0.24.0        
-[101] DBI_1.2.3                   pgenlibr_0.3.7             
-[103] pillar_1.9.0                whisker_0.4                
+  [9] ggrepel_0.9.6               bit64_4.5.2                
+ [11] AnnotationDbi_1.60.2        fansi_1.0.6                
+ [13] xml2_1.3.3                  codetools_0.2-18           
+ [15] logging_0.10-108            cachem_1.1.0               
+ [17] knitr_1.48                  jsonlite_1.8.9             
+ [19] Rsamtools_2.14.0            dbplyr_2.5.0               
+ [21] png_0.1-7                   readr_2.1.5                
+ [23] compiler_4.2.0              httr_1.4.7                 
+ [25] Matrix_1.5-3                fastmap_1.2.0              
+ [27] lazyeval_0.2.2              cli_3.6.3                  
+ [29] later_1.3.2                 htmltools_0.5.8.1          
+ [31] prettyunits_1.2.0           tools_4.2.0                
+ [33] gtable_0.3.5                glue_1.7.0                 
+ [35] GenomeInfoDbData_1.2.9      dplyr_1.1.4                
+ [37] rappdirs_0.3.3              Rcpp_1.0.13                
+ [39] Biobase_2.58.0              jquerylib_0.1.4            
+ [41] vctrs_0.6.5                 Biostrings_2.66.0          
+ [43] rtracklayer_1.58.0          crosstalk_1.2.1            
+ [45] xfun_0.47                   stringr_1.5.1              
+ [47] ps_1.7.1                    irlba_2.3.5.1              
+ [49] lifecycle_1.0.4             restfulr_0.0.15            
+ [51] ensembldb_2.22.0            XML_3.99-0.14              
+ [53] getPass_0.2-2               zlibbioc_1.44.0            
+ [55] zoo_1.8-12                  scales_1.3.0               
+ [57] gggrid_0.2-0                hms_1.1.3                  
+ [59] promises_1.3.0              MatrixGenerics_1.10.0      
+ [61] ProtGenerics_1.30.0         parallel_4.2.0             
+ [63] SummarizedExperiment_1.28.0 AnnotationFilter_1.22.0    
+ [65] LDlinkR_1.4.0               ctwas_0.4.15               
+ [67] yaml_2.3.10                 curl_5.2.3                 
+ [69] memoise_2.0.1               ggplot2_3.5.1              
+ [71] sass_0.4.9                  biomaRt_2.54.1             
+ [73] stringi_1.8.4               RSQLite_2.3.7              
+ [75] S4Vectors_0.36.2            BiocIO_1.8.0               
+ [77] GenomicFeatures_1.50.4      BiocGenerics_0.44.0        
+ [79] filelock_1.0.3              BiocParallel_1.32.6        
+ [81] GenomeInfoDb_1.34.9         rlang_1.1.4                
+ [83] pkgconfig_2.0.3             matrixStats_1.4.1          
+ [85] bitops_1.0-8                evaluate_1.0.0             
+ [87] lattice_0.20-45             purrr_1.0.2                
+ [89] GenomicAlignments_1.34.1    htmlwidgets_1.6.4          
+ [91] cowplot_1.1.3               bit_4.5.0                  
+ [93] processx_3.7.0              tidyselect_1.2.1           
+ [95] magrittr_2.0.3              R6_2.5.1                   
+ [97] IRanges_2.32.0              generics_0.1.3             
+ [99] DelayedArray_0.24.0         DBI_1.2.3                  
+[101] pgenlibr_0.3.7              pillar_1.9.0               
+[103] whisker_0.4                 mixsqp_0.3-54              
 [105] KEGGREST_1.38.0             RCurl_1.98-1.16            
-[107] mixsqp_0.3-54               tibble_3.2.1               
-[109] crayon_1.5.3                utf8_1.2.4                 
-[111] BiocFileCache_2.6.1         plotly_4.10.4              
-[113] tzdb_0.4.0                  rmarkdown_2.28             
-[115] progress_1.2.3              grid_4.2.0                 
-[117] data.table_1.16.0           blob_1.2.4                 
-[119] callr_3.7.2                 git2r_0.30.1               
-[121] digest_0.6.37               tidyr_1.3.1                
-[123] httpuv_1.6.5                stats4_4.2.0               
-[125] munsell_0.5.1               viridisLite_0.4.2          
-[127] bslib_0.8.0                </code></pre>
-</div>
+[107] tibble_3.2.1                crayon_1.5.3               
+[109] utf8_1.2.4                  BiocFileCache_2.6.1        
+[111] plotly_4.10.4               tzdb_0.4.0                 
+[113] rmarkdown_2.28              progress_1.2.3             
+[115] grid_4.2.0                  data.table_1.16.0          
+[117] blob_1.2.4                  callr_3.7.2                
+[119] git2r_0.30.1                digest_0.6.37              
+[121] tidyr_1.3.1                 httpuv_1.6.5               
+[123] stats4_4.2.0                munsell_0.5.1              
+[125] viridisLite_0.4.2           bslib_0.8.0                </code></pre>
 </div>
 
 

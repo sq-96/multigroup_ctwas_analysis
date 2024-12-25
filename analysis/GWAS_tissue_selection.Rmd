@@ -6,19 +6,8 @@ editor_options:
   chunk_output_type: console
 ---
 
-### Method
-1. Run all tissues jointly (very fast if weights have been harmonized).
-2. Rank tissues by %h2g and select reasonable top ones.
-
-### Summary
-1. For IBD, colon transverse and whole blood have much higher %h2g than other tissues. 
-2. For LDL, liver has much higher %h2g than other tissues.
-3. For SBP, the top five ones all make sense, which are artery aorta, brain cortex, artery tibial, cell cultured fibroblasts and adrenal gland.
-4. For WBC, whole blood has much higher %h2g than other tissues. 
-5. For SCZ, the top ones are basal ganglia, cerebellum, hippocampus, hemisphere, cortex ...
-
-
-```{r}
+```{r results='asis', echo=TRUE}
+library(DT)
 sample_size <- list("WBC-ieu-b-30" = 563946,
                     "SBP-ukb-a-360" = 317754,
                     "LDL-ukb-d-30780_irnt" = 343621,
@@ -49,6 +38,12 @@ for(i in names(sample_size)){
   prop_h2g <- prop_h2g[order(-prop_h2g$V2),]
   colnames(prop_h2g) <- c("group","%h2g","h2g","enrichment","pvalue")
   prop_h2g <- prop_h2g[prop_h2g$group!="SNP",]
-  print(DT::datatable(prop_h2g,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;',i),options = list(pageLength = 6)))
+  datatable(prop_h2g,
+        caption = htmltools::tags$caption(
+            style = "caption-side: top; text-align: left; color: black;",
+            i
+        ),
+        options = list(pageLength = 6)
+    )
 }
 ```
