@@ -475,16 +475,16 @@ This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a> analysi
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistreee0136fbc1fab82ca0df5ae317f9b80f76cf3bb28targetblanke0136fba"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/e0136fbc1fab82ca0df5ae317f9b80f76cf3bb28" target="_blank">e0136fb</a> </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree631921f6008a5e2c2fa1fc04d38ddbbc76a49fa7targetblank631921fa"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/631921f6008a5e2c2fa1fc04d38ddbbc76a49fa7" target="_blank">631921f</a> </a>
 </p>
 </div>
-<div id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistreee0136fbc1fab82ca0df5ae317f9b80f76cf3bb28targetblanke0136fba" class="panel-collapse collapse">
+<div id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree631921f6008a5e2c2fa1fc04d38ddbbc76a49fa7targetblank631921fa" class="panel-collapse collapse">
 <div class="panel-body">
 <p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility.
 </p>
 <p>
-The results in this page were generated with repository version <a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/e0136fbc1fab82ca0df5ae317f9b80f76cf3bb28" target="_blank">e0136fb</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
+The results in this page were generated with repository version <a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/631921f6008a5e2c2fa1fc04d38ddbbc76a49fa7" target="_blank">631921f</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
 </p>
 <p>
 Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
@@ -492,6 +492,7 @@ Note that you need to be careful to ensure that all relevant files for the analy
 <pre><code>
 Unstaged changes:
     Modified:   analysis/GWAS_tissue_selection.Rmd
+    Modified:   analysis/real_data_all_tissues.Rmd
 
 </code></pre>
 <p>
@@ -530,6 +531,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/631921f6008a5e2c2fa1fc04d38ddbbc76a49fa7/analysis/GWAS_tissue_selection.Rmd" target="_blank">631921f</a>
+</td>
+<td>
+sq-96
+</td>
+<td>
+2024-12-25
+</td>
+<td>
+update
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/sq-96/multigroup_ctwas_analysis/631921f6008a5e2c2fa1fc04d38ddbbc76a49fa7/docs/GWAS_tissue_selection.html" target="_blank">631921f</a>
+</td>
+<td>
+sq-96
+</td>
+<td>
+2024-12-25
+</td>
+<td>
+update
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -623,26 +658,38 @@ sample_size &lt;- list(&quot;WBC-ieu-b-30&quot; = 563946,
                     &quot;ATH_gtexukb&quot; = 337119,
                     &quot;T2D-panukb&quot; = 418949,
                     &quot;MDD-ieu-b-102&quot; = 500199,
-                    &quot;BIP-ieu-b-5110&quot; = 413466)
-
-for(i in names(sample_size)){
-  param &lt;- readRDS(paste0(&quot;/project/xinhe/shengqian/all_tissues_screen/results_E/&quot;,i,&quot;/&quot;,i,&quot;.param.RDS&quot;))
-  ctwas_parameters &lt;- ctwas:::summarize_param(param,376792)
-  prop_h2g &lt;- as.data.frame(cbind(names(ctwas_parameters$prop_heritability),ctwas_parameters$prop_heritability,ctwas_parameters$group_pve, c(ctwas_parameters$enrichment,1), param$group_pvalue))
-  prop_h2g$V2 &lt;- round(as.numeric(prop_h2g$V2),4)
-  prop_h2g$V3 &lt;- round(as.numeric(prop_h2g$V3),4)
-  prop_h2g$V4 &lt;- round(as.numeric(prop_h2g$V4),4)
+                    &quot;BIP-ieu-b-5110&quot; = 413466)</code></pre>
+<pre class="r"><code>output_tables &lt;- lapply(names(sample_size), function(i) {
+  param &lt;- readRDS(paste0(&quot;/project/xinhe/shengqian/all_tissues_screen/results_E/&quot;, i, &quot;/&quot;, i, &quot;.param.RDS&quot;))
+  ctwas_parameters &lt;- ctwas:::summarize_param(param, sample_size[[i]])
+  
+  prop_h2g &lt;- as.data.frame(cbind(
+    names(ctwas_parameters$prop_heritability),
+    ctwas_parameters$prop_heritability,
+    ctwas_parameters$group_pve,
+    c(ctwas_parameters$enrichment, 1),
+    param$group_pvalue
+  ))
+  
+  prop_h2g$V2 &lt;- round(as.numeric(prop_h2g$V2), 4)
+  prop_h2g$V3 &lt;- round(as.numeric(prop_h2g$V3), 4)
+  prop_h2g$V4 &lt;- round(as.numeric(prop_h2g$V4), 4)
   rownames(prop_h2g) &lt;- NULL
-  prop_h2g &lt;- prop_h2g[order(-prop_h2g$V2),]
-  colnames(prop_h2g) &lt;- c(&quot;group&quot;,&quot;%h2g&quot;,&quot;h2g&quot;,&quot;enrichment&quot;,&quot;pvalue&quot;)
-  prop_h2g &lt;- prop_h2g[prop_h2g$group!=&quot;SNP&quot;,]
-  datatable(prop_h2g,
-        caption = htmltools::tags$caption(
-            style = &quot;caption-side: top; text-align: left; color: black;&quot;,
-            i
-        ),
-        options = list(pageLength = 6)
-    )
+  prop_h2g &lt;- prop_h2g[order(-prop_h2g$V2), ]
+  colnames(prop_h2g) &lt;- c(&quot;group&quot;, &quot;%h2g&quot;, &quot;h2g&quot;, &quot;enrichment&quot;, &quot;pvalue&quot;)
+  prop_h2g &lt;- prop_h2g[prop_h2g$group != &quot;SNP&quot;, ]
+  
+  DT::datatable(
+    prop_h2g,
+    caption = htmltools::tags$caption(
+      style = &quot;caption-side: top; text-align: left; color: black;&quot;,
+      paste(&quot;Table for&quot;, i)
+    ),
+    options = list(pageLength = 6)
+  )
+})</code></pre>
+<pre class="r"><code>for (table in output_tables) {
+  print(table)
 }</code></pre>
 <br>
 <p>
