@@ -36,7 +36,11 @@ sample_size <- list("WBC-ieu-b-30" = 563946,
                     "ATH_gtexukb" = 337119,
                     "T2D-panukb" = 418949,
                     "MDD-ieu-b-102" = 500199,
-                    "BIP-ieu-b-5110" = 413466)
+                    "BIP-ieu-b-5110" = 413466,
+                    "ADHD-ieu-a-1183" = 55374,
+                    "ASD-ieu-a-1185" = 46351,
+                    "PD-ieu-b-7" = 482730,
+                    "NS-ukb-a-230" = 274108)
 
 for(i in names(sample_size)){
   param <- readRDS(paste0("/project/xinhe/shengqian/all_tissues_screen/results_E/",i,"/",i,".param.RDS"))
@@ -49,10 +53,46 @@ for(i in names(sample_size)){
   prop_h2g <- prop_h2g[order(-prop_h2g$V2),]
   colnames(prop_h2g) <- c("group","%h2g","h2g","enrichment","pvalue")
   prop_h2g <- prop_h2g[prop_h2g$group!="SNP",]
-  print(DT::datatable(prop_h2g,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;',i),options = list(pageLength = 10)))
+  DT::datatable(prop_h2g,caption = htmltools::tags$caption( style = 'caption-side: topleft; text-align = left; color:black;',i),options = list(pageLength = 10))
 }
 ```
 
+```{r}
+output_tables <- lapply(names(sample_size), function(i) {
+  param <- readRDS(paste0("/project/xinhe/shengqian/all_tissues_screen/results_E/", i, "/", i, ".param.RDS"))
+  ctwas_parameters <- ctwas:::summarize_param(param, sample_size[[i]])
+  
+  prop_h2g <- as.data.frame(cbind(
+    names(ctwas_parameters$prop_heritability),
+    ctwas_parameters$prop_heritability,
+    ctwas_parameters$group_pve,
+    c(ctwas_parameters$enrichment, 1),
+    param$group_pvalue
+  ))
+  
+  prop_h2g$V2 <- round(as.numeric(prop_h2g$V2), 4)
+  prop_h2g$V3 <- round(as.numeric(prop_h2g$V3), 4)
+  prop_h2g$V4 <- round(as.numeric(prop_h2g$V4), 4)
+  rownames(prop_h2g) <- NULL
+  prop_h2g <- prop_h2g[order(-prop_h2g$V2), ]
+  colnames(prop_h2g) <- c("group", "%h2g", "h2g", "enrichment", "pvalue")
+  prop_h2g <- prop_h2g[prop_h2g$group != "SNP", ]
+  
+  DT::datatable(
+    prop_h2g,
+    caption = htmltools::tags$caption(
+      style = "caption-side: top; text-align: left; color: black;",
+      paste("Table for", i)
+    ),
+    options = list(pageLength = 6)
+  )
+})
+
+# Print the output tables to ensure they render in the HTML
+for (table in output_tables) {
+  print(table)
+}
+```
 
 
 ```{r echo=FALSE}
