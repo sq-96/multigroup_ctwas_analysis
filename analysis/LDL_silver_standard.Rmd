@@ -1,0 +1,231 @@
+---
+title: "LDL analysis after postprocessing"
+author: "XSun"
+date: "2025-01-05"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+    toc: true
+---
+
+# Introduction
+
+We used the LDL genes reported by multi-group analysis after postprocess to do some downstream analysiss.
+
+
+```{r warning=F, message=F}
+library(ctwas)
+library(dplyr)
+library(EnsDb.Hsapiens.v86)
+library(pheatmap)
+ens_db <- EnsDb.Hsapiens.v86
+
+mapping_predictdb <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
+mapping_munro <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/Munro_mapping.RDS")
+mapping_two <- rbind(mapping_predictdb,mapping_munro)
+
+
+plot_heatmap_byomics <- function(heatmap_data, main) {
+
+  rownames(heatmap_data) <- heatmap_data$gene_name
+  heatmap_data <- heatmap_data %>% dplyr::select(-gene_name, -combined_pip)
+
+  if(nrow(heatmap_data) ==1){
+
+    heatmap_data <- rbind(heatmap_data,rep(0,ncol(heatmap_data)))
+    rownames(heatmap_data)[2] <- "fake_gene_for_plotting"
+
+  }
+
+  heatmap_matrix <- as.matrix(heatmap_data)
+
+  p <- pheatmap(heatmap_matrix,
+                cluster_rows = F,   # Cluster the rows (genes)
+                cluster_cols = F,   # Cluster the columns (QTL types)
+                color = colorRampPalette(c("white", "red"))(50), # Color gradient
+                display_numbers = TRUE, # Display numbers in cells
+                main = main,labels_row = rownames(heatmap_data), silent = T)
+
+  return(p)
+}
+
+plot_heatmap_bytissue <- function(heatmap_data, main, tissues) {
+  
+  rownames(heatmap_data) <- heatmap_data$gene_name
+  heatmap_data <- heatmap_data %>% dplyr::select(-gene_name, -combined_pip)
+  
+  pip_types <- c("|eQTL_pip", "|sQTL_pip", "|stQTL_pip")
+
+  combinations <- expand.grid(pip_types, tissues)
+  order <- paste0(combinations$Var2, combinations$Var1)
+  
+  heatmap_data <- heatmap_data[,order]
+  
+  if(nrow(heatmap_data) ==1){
+    
+    heatmap_data <- rbind(heatmap_data,rep(0,ncol(heatmap_data)))
+    rownames(heatmap_data)[2] <- "fake_gene_for_plotting"
+    
+  }
+  
+  heatmap_matrix <- as.matrix(heatmap_data)
+  
+  p <- pheatmap(heatmap_matrix,
+                cluster_rows = F,   # Cluster the rows (genes)
+                cluster_cols = F,   # Cluster the columns (QTL types)
+                color = colorRampPalette(c("white", "red"))(50), # Color gradient
+                display_numbers = TRUE, # Display numbers in cells
+                main = main,labels_row = rownames(heatmap_data), silent = T)
+  
+  return(p)
+}
+
+
+get_ctwas_file <- function(trait, tissue = NULL, folder_results) {
+  # Build file paths
+  if (is.null(tissue)) {
+    file_ctwas_res_origin <- paste0(folder_results, "/", trait, "/", trait, ".finemap_regions_res.RDS")
+    file_ctwas_res_regionmerge <- paste0(folder_results, "/", trait, "/", trait, ".regionmerge_finemap_regions_res.RDS")
+    file_ctwas_res_ldmismatch <- paste0(folder_results, "/", trait, "/", trait, ".ldmismatch_finemap_regions_res.RDS")
+  } else {
+    file_ctwas_res_origin <- paste0(folder_results, "/", trait, "/", trait, "_", tissue, ".finemap_regions_res.RDS")
+    file_ctwas_res_regionmerge <- paste0(folder_results, "/", trait, "/", trait, "_", tissue, ".regionmerge_finemap_regions_res.RDS")
+    file_ctwas_res_ldmismatch <- paste0(folder_results, "/", trait, "/", trait, "_", tissue, ".ldmismatch_finemap_regions_res.RDS")
+  }
+  
+  # Determine which file exists
+  file_ctwas_result <- if (file.exists(file_ctwas_res_ldmismatch)) {
+    file_ctwas_res_ldmismatch
+  } else if (file.exists(file_ctwas_res_regionmerge)) {
+    file_ctwas_res_regionmerge
+  } else {
+    file_ctwas_res_origin
+  }
+  
+  return(file_ctwas_result)
+}
+```
+
+
+# Results
+
+## Single eQTL analysis results
+
+```{r warning=F, message=F}
+
+trait <- "LDL-ukb-d-30780_irnt"
+tissue <- "Liver"
+
+folder_single_results <- "/project/xinhe/shengqian/single_tissue_screen/processed_weights/expression_weights/"
+
+file_ctwas_result <- get_ctwas_file(trait, tissue, folder_single_results)
+
+ctwas_res_single_post <- readRDS(file_ctwas_result)
+
+z_gene_single <-readRDS(paste0(folder_single_results,"/",trait,"/",trait,"_",tissue,".z_gene.RDS"))
+
+susie_alpha_res_single_post <- ctwas_res_single_post$susie_alpha_res
+susie_alpha_res_single_post <- anno_susie_alpha_res(susie_alpha_res_single_post,
+                                        mapping_table = mapping_two,
+                                        map_by = "molecular_id",
+                                        drop_unmapped = TRUE)
+
+combined_pip_by_group_single <- combine_gene_pips(susie_alpha_res_single_post, 
+                                             group_by = "gene_name",
+                                             by = "group",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = F)
+combined_pip_sig_single <- subset(combined_pip_by_group_single, combined_pip > 0.8)
+
+DT::datatable(combined_pip_sig_single,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Genes with PIP > 0.8 in single eQTL analysis, cs filtered'),options = list(pageLength = 10) )
+
+
+z_gene_single <- z_gene_single %>%
+  mutate(molecular_id = sub("\\|.*", "", id)) %>%  # Extract ENSG ID from id
+  left_join(mapping_two %>% dplyr::select(molecular_id, gene_name), by = "molecular_id")
+
+```
+
+
+## Multi-group analysis results
+
+```{r warning=F, message=F}
+
+tissues <- c("Liver","Spleen","Esophagus_Gastroesophageal_Junction","Esophagus_Muscularis","Esophagus_Mucosa")
+
+folder_multi_results <- "/project/xinhe/shengqian/ctwas_GWAS_analysis/results/"
+folder_multi_post <- paste0("/project/xinhe/xsun/multi_group_ctwas/13.post_processing_0103/results_region_merge/",trait,"/")
+
+file_ctwas_result <- get_ctwas_file(trait, tissue = NULL, folder_multi_results)
+
+
+ctwas_res_multi_post <- readRDS(file_ctwas_result)
+
+
+susie_alpha_res_multi_post <- ctwas_res_multi_post$susie_alpha_res
+susie_alpha_res_multi_post <- anno_susie_alpha_res(susie_alpha_res_multi_post,
+                                        mapping_table = mapping_two,
+                                        map_by = "molecular_id",
+                                        drop_unmapped = TRUE)
+
+combined_pip_by_group_multi <- combine_gene_pips(susie_alpha_res_multi_post, 
+                                             group_by = "gene_name",
+                                             by = "group",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = F)
+combined_pip_sig_multi <- subset(combined_pip_by_group_multi, combined_pip > 0.8)
+
+DT::datatable(combined_pip_sig_multi,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Genes with PIP > 0.8 in multi-group analysis, cs filtered'),options = list(pageLength = 10) )
+
+z_gene_multi <- readRDS(paste0(folder_multi_results,"/",trait,"/",trait,".z_gene.RDS"))
+z_gene_multi <- z_gene_multi %>%
+  mutate(molecular_id = sub("\\|.*", "", id)) %>%  # Extract ENSG ID from id
+  left_join(mapping_two %>% dplyr::select(molecular_id, gene_name), by = "molecular_id")
+
+
+```
+
+
+## Comparing with silver standard genes
+
+We followed the analysis in ctwas paper. The silver standard genes for LDL are: 
+
+```{r warning=F, message=F}
+LDL_silver <- readxl::read_excel("/project/xinhe/xsun/multi_group_ctwas/data/LDL_silver.xlsx")
+LDL_silver_known <- LDL_silver[LDL_silver$annotation == "known",]
+LDL_silver_bystand <- LDL_silver[LDL_silver$annotation != "known",]
+
+DT::datatable(LDL_silver,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','The silver standard genes for LDL (from ctwas paper, table S2)'),options = list(pageLength = 10) )
+```
+
+
+```{r warning=F, message=F}
+
+stats <- data.frame(analysis = c("ctwas paper","ctwasV2 - single eQTL","ctwasV2 - multigroup"),
+                    num_gene_pip08 = c(35, nrow(combined_pip_sig_single),nrow(combined_pip_sig_multi)),
+                    num_gene_known_imputable = c("46 of 69 known",sum(LDL_silver_known$genename %in% z_gene_single$gene_name),sum(LDL_silver_known$genename %in% z_gene_multi$gene_name)),
+                    num_gene_known_pip08 = c(6,sum(LDL_silver_known$genename %in% combined_pip_sig_single$gene_name),sum(LDL_silver_known$genename %in% combined_pip_sig_multi$gene_name)),
+                   num_gene_bystander_imputable = c("539 of 539 bystander",sum(LDL_silver_bystand$genename %in% z_gene_single$gene_name),sum(LDL_silver_bystand$genename %in% z_gene_multi$gene_name)),
+                    num_gene_bystander_pip08 = c(2,sum(LDL_silver_bystand$genename %in% combined_pip_sig_single$gene_name),sum(LDL_silver_bystand$genename %in% combined_pip_sig_multi$gene_name)))
+
+
+DT::datatable(stats,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;',''),options = list(pageLength = 10) )
+
+```
+
+
+## PIP partition for the top genes
+
+
+```{r warning=F, message=F, fig.height=20, fig.width=20}
+
+plot_heatmap_bytissue(heatmap_data = combined_pip_sig_multi, main = "PIP partition for genes with PIP > 0.8 from multi-group analysis",tissues = tissues)
+```
+
+
+```{r warning=F, message=F, fig.height=20, fig.width=20}
+plot_heatmap_byomics(heatmap_data = combined_pip_sig_multi, main = "PIP partition for genes with PIP > 0.8 from multi-group analysis")
+```
+
