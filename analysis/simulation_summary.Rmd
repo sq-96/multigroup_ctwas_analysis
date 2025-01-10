@@ -1560,8 +1560,6 @@ fig <- pip_partition_across_tissues(results_dir, runtag, simutags, "UKBBLD", tis
 fig
 ```
 
-
-
 ### Compare to other methods
 ```{r, fig.width= 8, fig.height= 4, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_groups/"
@@ -1632,4 +1630,15 @@ ggbarplot(plot_df,
     legend.text = element_text(size = 23),# Font size for legend text
     legend.title = element_text(size = 23)# Font size for legend title
   )
+```
+
+## Simulation 6: enrichment pvalue
+```{r echo=FALSE}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/one_tissue_simu1-1"
+runtag = "one_tissue"
+simutags <- paste(1, 1:100, sep = "-")
+for(i in simutags){
+  ctwas_parameters <- readRDS(paste0(results_dir, runtag, "_simu",i, "_UKBBLD", ".ctwas_parameters.RDS"))
+  print(ctwas_parameters$group_pvalue)
+}
 ```
