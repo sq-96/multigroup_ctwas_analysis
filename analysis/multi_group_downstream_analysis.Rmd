@@ -1,0 +1,362 @@
+---
+title: "Downstream analysis for multi-group analysis"
+author: "XSun"
+date: "2025-01-07"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+    toc: true
+---
+
+```{r warning=F, message=F}
+library(ctwas)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(gridExtra)
+library(pheatmap)
+ library(VennDiagram)
+
+source("/project/xinhe/xsun/multi_group_ctwas/data/selected_tissues.R")
+source("/project/xinhe/xsun/multi_group_ctwas/data/samplesize.R")
+
+traits <- names(tissues_alltraits)
+traits <- traits[order(traits)]
+
+brain_traits <- c("ASD-ieu-a-1185","BIP-ieu-b-5110","MDD-ieu-b-102","NS-ukb-a-230","PD-ieu-b-7","SCZ-ieu-b-5102")
+
+
+create_bubble_plot <- function(trait, param, gwas_n, tissue_order) {
+
+  ctwas_parameters <- summarize_param(param, gwas_n)
+  
+  # Extract and process PVE data
+  prop_pve <- ctwas_parameters$prop_heritability
+  prop_pve_df <- data.frame(
+    Tissue = sapply(strsplit(names(prop_pve), "\\|"), `[`, 1),
+    QTL = sapply(strsplit(names(prop_pve), "\\|"), `[`, 2),
+    Value = prop_pve
+  )
+  prop_pve_matrix <- as.data.frame(pivot_wider(prop_pve_df, names_from = QTL, values_from = Value))
+  prop_pve_matrix <- prop_pve_matrix[-which(prop_pve_matrix$Tissue == "SNP"),]
+  prop_pve_matrix <- prop_pve_matrix[,-which(colnames(prop_pve_matrix) == "NA")]
+  
+  # Extract and process enrichment data
+  enrich <- ctwas_parameters$enrichment
+  enrich_df <- data.frame(
+    Tissue = sapply(strsplit(names(enrich), "\\|"), `[`, 1),
+    QTL = sapply(strsplit(names(enrich), "\\|"), `[`, 2),
+    Value = enrich
+  )
+  enrich_matrix <- as.data.frame(pivot_wider(enrich_df, names_from = QTL, values_from = Value))
+  
+  # Convert matrices to long format and merge
+  pve_long <- prop_pve_matrix %>%
+    pivot_longer(cols = -Tissue, names_to = "Trait", values_to = "prop_PVE")
+  enrich_long <- enrich_matrix %>%
+    pivot_longer(cols = -Tissue, names_to = "Trait", values_to = "Enrichment")
+  
+  plot_data <- left_join(pve_long, enrich_long, by = c("Tissue", "Trait"))
+  plot_data$Tissue <- gsub(pattern = "_", replacement = " ", x = plot_data$Tissue)
+  plot_data <- plot_data %>%
+    mutate(prop_PVE = prop_PVE * 100)
+  #plot_data$Tissue <- factor(plot_data$Tissue, levels = unique(plot_data$Tissue))
+  plot_data$Tissue <- factor(plot_data$Tissue, levels = rev(unique(plot_data$Tissue)))
+  
+  # Create the bubble plot
+  p <- ggplot(plot_data, aes(x = Trait, y = Tissue, size = prop_PVE, color = Enrichment)) +
+    geom_point(alpha = 0.7) +
+    scale_size(range = c(1, 20), name = "Percentage of Heritability (%)") +
+    scale_color_gradient(low = "lightblue", high = "darkblue", name = "Enrichment") +
+    labs(x = "Modalities", y = "Tissues") +
+    guides(size = guide_legend(override.aes = list(color = "lightblue"))) +
+    ggtitle(trait) +
+    theme_minimal() +
+    theme(
+      axis.text.x = element_text(size = 16, angle = 45, hjust = 1),
+      axis.text.y = element_text(size = 16),
+      axis.title.x = element_text(size = 16),
+      axis.title.y = element_text(size = 16),
+      legend.text = element_text(size = 16),
+      legend.title = element_text(size = 18)
+    )
+  
+  return(p)
+}
+
+plot_heatmap_bytissue <- function(heatmap_data, main, tissues) {
+  
+  rownames(heatmap_data) <- heatmap_data$gene_name
+  heatmap_data <- heatmap_data %>% dplyr::select(-gene_name, -combined_pip)
+  
+  pip_types <- c("|eQTL_pip", "|sQTL_pip", "|stQTL_pip")
+
+  combinations <- expand.grid(pip_types, tissues)
+  order <- paste0(combinations$Var2, combinations$Var1)
+  
+  heatmap_data <- heatmap_data[,order]
+  
+  if(nrow(heatmap_data) ==1){
+    
+    heatmap_data <- rbind(heatmap_data,rep(0,ncol(heatmap_data)))
+    rownames(heatmap_data)[2] <- "fake_gene_for_plotting"
+    
+  }
+  
+  heatmap_matrix <- as.matrix(heatmap_data)
+  
+  p <- pheatmap(heatmap_matrix,
+                cluster_rows = F,   # Cluster the rows (genes)
+                cluster_cols = F,   # Cluster the columns (QTL types)
+                color = colorRampPalette(c("white", "red"))(50), # Color gradient
+                display_numbers = TRUE, # Display numbers in cells
+                main = main,labels_row = rownames(heatmap_data), silent = T)
+  
+  return(p)
+}
+
+plot_heatmap_byomics <- function(heatmap_data, main) {
+
+  rownames(heatmap_data) <- heatmap_data$gene_name
+  heatmap_data <- heatmap_data %>% dplyr::select(-gene_name, -combined_pip)
+
+  if(nrow(heatmap_data) ==1){
+
+    heatmap_data <- rbind(heatmap_data,rep(0,ncol(heatmap_data)))
+    rownames(heatmap_data)[2] <- "fake_gene_for_plotting"
+
+  }
+
+  heatmap_matrix <- as.matrix(heatmap_data)
+
+  p <- pheatmap(heatmap_matrix,
+                cluster_rows = F,   # Cluster the rows (genes)
+                cluster_cols = F,   # Cluster the columns (QTL types)
+                color = colorRampPalette(c("white", "red"))(50), # Color gradient
+                display_numbers = TRUE, # Display numbers in cells
+                main = main,labels_row = rownames(heatmap_data), silent = T)
+
+  return(p)
+}
+
+```
+
+# Genetic architecture of complex traits
+
+Bubble plot: h2g partition across tissues and omics
+
+Tissue order is from: https://sq-96.github.io/multigroup_ctwas_analysis/GWAS_tissue_selection.html
+
+```{r warning=F, message=F, fig.height=25, fig.width=50}
+
+folder_results <- "/project/xinhe/shengqian/ctwas_GWAS_analysis/results/"
+
+p <- list()
+for(trait in traits[!traits %in% brain_traits]){
+
+  param <- readRDS(paste0(folder_results, "/", trait, "/", trait, ".param.RDS"))
+  gwas_n <- samplesize[trait]
+  tissue_order <- tissues_alltraits[[trait]]
+  p[[length(p)+1]] <- create_bubble_plot(trait = trait,param = param,gwas_n = gwas_n, tissue_order = tissue_order)
+
+}
+
+print("Non-psychiatric")
+
+grid.arrange(grobs = p, ncol = 3, nrow = 5)
+```
+
+
+```{r warning=F, message=F, fig.height=10, fig.width=50}
+
+folder_results <- "/project/xinhe/shengqian/ctwas_GWAS_analysis/results/"
+
+p <- list()
+for(trait in brain_traits){
+
+  param <- readRDS(paste0(folder_results, "/", trait, "/", trait, ".param.RDS"))
+  gwas_n <- samplesize[trait]
+  tissue_order <- tissues_alltraits[[trait]]
+  p[[length(p)+1]] <- create_bubble_plot(trait = trait,param = param,gwas_n = gwas_n, tissue_order = tissue_order)
+
+}
+
+print("psychiatric")
+grid.arrange(grobs = p, ncol = 3, nrow = 2)
+```
+
+
+# The power of gene discovery
+
+```{r warning=F, message=F, fig.height=10, fig.width=20}
+
+
+load("/project/xinhe/xsun/multi_group_ctwas/13.post_processing_0103/results_downstream/compare_multi_single_genenum.rdata")
+
+sum <- sum[!sum$trait %in% brain_traits,]
+
+sum$num_multi <- as.numeric(sum$num_multi)
+sum$num_single <- as.numeric(sum$num_single)
+sum$overlap <- as.numeric(sum$overlap)
+#sum$overlap_adj <- as.numeric(sum$overlap) * 1.001   # Adjust the value to slightly offset behind the main bars
+
+data_long <- pivot_longer(sum, cols = c(num_single, num_multi), names_to = "category", values_to = "count")
+
+print("Non-psychiatric")
+
+# Facet by trait, with tissues as the bars
+ggplot(data_long, aes(x = tissue_single, y = count, fill = category)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.8), width = 0.8) +
+  geom_bar(data = sum, aes(x = tissue_single, y = overlap), stat = "identity", position = position_dodge(width = 0.8), fill = "grey", alpha = 0.7, width = 0.8) +
+  facet_wrap(~ trait, nrow = 1, scales = "free_x") +  # Display all facets in one row with free scales on x
+  labs(x = "Tissue", y = "Number of Significant Genes") +
+  scale_fill_manual(values = c("num_single" = "skyblue", "num_multi" = "orange")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(size = 12, angle = 45, vjust = 0.7, hjust = 0.6),  # Adjusted hjust here
+        axis.text.y = element_text(size = 12),
+        axis.title.x = element_text(size = 14),
+        axis.title.y = element_text(size = 14),
+        strip.background = element_blank(),
+        strip.text.x = element_text(size = 12, face = "bold"))
+
+```
+
+```{r warning=F, message=F, fig.height=5, fig.width=10}
+
+load("/project/xinhe/xsun/multi_group_ctwas/13.post_processing_0103/results_downstream/compare_multi_single_genenum.rdata")
+
+sum <- sum[sum$trait %in% brain_traits,]
+
+sum$num_multi <- as.numeric(sum$num_multi)
+sum$num_single <- as.numeric(sum$num_single)
+sum$overlap <- as.numeric(sum$overlap)
+#sum$overlap_adj <- as.numeric(sum$overlap) * 1.001   # Adjust the value to slightly offset behind the main bars
+
+data_long <- pivot_longer(sum, cols = c(num_single, num_multi), names_to = "category", values_to = "count")
+
+print("psychiatric")
+
+# Facet by trait, with tissues as the bars
+ggplot(data_long, aes(x = tissue_single, y = count, fill = category)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.8), width = 0.8) +
+  geom_bar(data = sum, aes(x = tissue_single, y = overlap), stat = "identity", position = position_dodge(width = 0.8), fill = "grey", alpha = 0.7, width = 0.8) +
+  facet_wrap(~ trait, nrow = 1, scales = "free_x") +  # Display all facets in one row with free scales on x
+  labs(x = "Tissue", y = "Number of Significant Genes") +
+  scale_fill_manual(values = c("num_single" = "skyblue", "num_multi" = "orange")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(size = 12, angle = 45, vjust = 0.7, hjust = 0.6),  # Adjusted hjust here
+        axis.text.y = element_text(size = 12),
+        axis.title.x = element_text(size = 14),
+        axis.title.y = element_text(size = 14),
+        strip.background = element_blank(),
+        strip.text.x = element_text(size = 12, face = "bold"))
+
+```
+
+
+# Highlight the causal context and modality
+
+For all: https://drive.google.com/drive/folders/1COItzR1y_Em6UXb_J8XCzqP-PuXIth6J?usp=share_link
+
+## MDD-ieu-b-102
+
+```{r fig.height=10, fig.width=10, message=FALSE, warning=FALSE}
+
+trait <- "MDD-ieu-b-102"
+
+combined_pip_multi <- readRDS(paste0("/project/xinhe/shengqian/ctwas_GWAS_analysis/results/",trait,"/",trait,".combined_pip_bygroup_final.RDS"))
+combined_pip_sig_multi <- combined_pip_multi[combined_pip_multi$combined_pip > 0.8,]
+
+# plot_heatmap_bytissue(heatmap_data = combined_pip_sig_multi, main = "PIP partition for genes with PIP > 0.8 from multi-group analysis",tissues = tissues_alltraits[[trait]])
+
+
+```
+
+```{r warning=F, message=F, fig.height=10, fig.width=20}
+plot_heatmap_byomics(heatmap_data = combined_pip_sig_multi, main = "PIP partition for genes with PIP > 0.8 from multi-group analysis")
+```
+
+
+# Explore allelic heterogeneity (AH)
+
+
+```{r fig.height=10, fig.width=10, message=FALSE, warning=FALSE}
+
+load("/project/xinhe/xsun/multi_group_ctwas/13.post_processing_0103/results_downstream/pip_per_cs_alltraits.rdata")
+DT::datatable(pip_per_cs_alltraits,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','PIP per CS, for genes with AH'),options = list(pageLength = 10) )
+
+```
+
+
+
+# Reduce FP findings
+
+## Silver standard for LDL
+
+https://sq-96.github.io/multigroup_ctwas_analysis/LDL_silver_standard.html
+
+# Enrichment analysis -- fractional model
+
+Methods for enrichment analsis can be found here: https://sq-96.github.io/multigroup_ctwas_analysis/multi_group_6traits_15weights_ess_enrichment_genesymbol.html#Fractional_model
+
+## LDL-ukb-d-30780_irnt
+
+```{r fig.height=5, fig.width=5, message=FALSE, warning=FALSE}
+
+trait <- "LDL-ukb-d-30780_irnt"
+db <- "GO_Biological_Process_2023"
+
+enrich_multi <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/13.post_processing_0103/results_downstream/enrich_fractional/enrichment_fractional_calibrated_blgeneset_summary_multigroup_", trait, "_", db, ".RDS"))
+enrich_single <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/13.post_processing_0103/results_downstream/enrich_fractional/enrichment_fractional_calibrated_blgeneset_summary_singlegroup_", trait, "_", db, ".RDS"))
+
+print("FDR_adjust < 0.05")
+
+enrich_multi_sig <- enrich_multi[enrich_multi$fdr_calibrated < 0.05,]
+enrich_single_sig <- enrich_multi[enrich_single$fdr_calibrated < 0.05,]
+
+venn.plot <- draw.pairwise.venn(
+     area1 = nrow(enrich_multi_sig),          # Size of Group A
+     area2 = nrow(enrich_single_sig),          # Size of Group B
+     cross.area = sum(enrich_multi_sig$GO %in% enrich_single_sig$GO),     # Overlap between Group A and Group B
+     category = c("Multigroup", "Singlegroup"),  # Labels for the groups
+     fill = c("red", "blue"),             # Colors for the groups
+     lty = "blank",                       # Line type for the circles
+     cex = 2,                             # Font size for the numbers
+     cat.cex = 2                          # Font size for the labels
+   )
+
+enrich_multi_unique <- enrich_multi_sig[!enrich_multi_sig$GO %in% enrich_single_sig$GO,]
+
+DT::datatable(enrich_multi_unique,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Enrichment results -- unique GO terms found by multi-group analysis'),options = list(pageLength = 10) )
+
+# enrich_single_unique <- enrich_single_sig[!enrich_single_sig$GO %in% enrich_multi_sig$GO,]
+# DT::datatable(enrich_single_unique,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Enrichment results -- unique GO terms found by single-group analysis, FDR < 0.05'),options = list(pageLength = 10) )
+```
+
+
+
+```{r fig.height=5, fig.width=5, message=FALSE, warning=FALSE}
+print("FDR_adjust < 0.1")
+
+enrich_multi_sig <- enrich_multi[enrich_multi$fdr_calibrated < 0.1,]
+enrich_single_sig <- enrich_multi[enrich_single$fdr_calibrated < 0.1,]
+
+venn.plot <- draw.pairwise.venn(
+     area1 = nrow(enrich_multi_sig),          # Size of Group A
+     area2 = nrow(enrich_single_sig),          # Size of Group B
+     cross.area = sum(enrich_multi_sig$GO %in% enrich_single_sig$GO),     # Overlap between Group A and Group B
+     category = c("Multigroup", "Singlegroup"),  # Labels for the groups
+     fill = c("red", "blue"),             # Colors for the groups
+     lty = "blank",                       # Line type for the circles
+     cex = 2,                             # Font size for the numbers
+     cat.cex = 2                          # Font size for the labels
+   )
+
+enrich_multi_unique <- enrich_multi_sig[!enrich_multi_sig$GO %in% enrich_single_sig$GO,]
+
+DT::datatable(enrich_multi_unique,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Enrichment results -- unique GO terms found by multi-group analysis'),options = list(pageLength = 10) )
+
+# enrich_single_unique <- enrich_single_sig[!enrich_single_sig$GO %in% enrich_multi_sig$GO,]
+# DT::datatable(enrich_single_unique,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Enrichment results -- unique GO terms found by single-group analysis, FDR < 0.1'),options = list(pageLength = 10) )
+```
+
