@@ -14,7 +14,7 @@ editor_options:
 3. Comparing the number of expression and splicing molecular traits identified by coloc (PP4>0.8), single-cTWAS (PIP>0.8) and multi-cTWAS (PIP>0.8)
 - don't include stability traits identified by multi-cTWAS
 
-```{r echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+```{r echo=FALSE, message=FALSE, results='hide', warning=FALSE,include=FALSE}
 library(ggplot2)
 library(ggVennDiagram)
 library(gridExtra)
@@ -77,6 +77,33 @@ make_locusplot(finemap_res_multi,
                panel.heights = c(4, 4, 1, 4))
 dev.off()
 ```
+
+### number of molecular traits identified by each method
+```{r echo=FALSE}
+library(ggplot2) 
+
+gfg <- data.frame(x = c(40,54,58,106,161,209,19,41,33,10,10,8,15,24,15),  
+                  grp = rep(c("LDL","WBC","SBP","SCZ","IBD"),each=3),
+                  subgroup = c("multi-ctwas","single-ctwas","coloc")) 
+
+gfg$subgroup <- factor(gfg$subgroup,levels=c("multi-ctwas","single-ctwas","coloc"))
+
+ggplot(gfg,aes(x = grp, y =x, fill = subgroup)) + 
+  geom_bar(stat = "identity", position = "dodge") 
+```
+
+### number of molecular traits identified by coloc through eQTL and sQTL
+```{r echo=FALSE}
+gfg <- data.frame(x = c(45,13,106,103,15,18,6,2,9,6),  
+                  grp = rep(c("LDL","WBC","SBP","SCZ","IBD"),each=2),
+                  subgroup = c("eQTL","sQTL")) 
+
+gfg$subgroup <- factor(gfg$subgroup,levels=c("eQTL","sQTL"))
+
+ggplot(gfg,aes(x = grp, y =x, fill = subgroup)) + 
+  geom_bar(stat = "identity", position = "dodge") 
+```
+
 
 ### LDL
 ```{r echo=FALSE}
@@ -427,29 +454,5 @@ num_single_ctwas_genes <- dim(ctwas_genes)[1]
 num_coloc_genes <- dim(finemap_res[finemap_res$PP4>0.8,])[1]
 
 hist(as.vector(table(finemap_res[finemap_res$PP4>0.8,]$region_id)), xlab ="number of molecular traits in a locus", main = "")
-```
-
-```{r echo=FALSE}
-library(ggplot2) 
-
-gfg <- data.frame(x = c(40,54,58,106,161,209,19,41,33,10,10,8,15,24,15),  
-                  grp = rep(c("LDL","WBC","SBP","SCZ","IBD"),each=3),
-                  subgroup = c("multi-ctwas","single-ctwas","coloc")) 
-
-gfg$subgroup <- factor(gfg$subgroup,levels=c("multi-ctwas","single-ctwas","coloc"))
-
-ggplot(gfg,aes(x = grp, y =x, fill = subgroup)) + 
-  geom_bar(stat = "identity", position = "dodge") 
-```
-
-```{r echo=FALSE}
-gfg <- data.frame(x = c(45,13,106,103,15,18,6,2,9,6),  
-                  grp = rep(c("LDL","WBC","SBP","SCZ","IBD"),each=2),
-                  subgroup = c("eQTL","sQTL")) 
-
-gfg$subgroup <- factor(gfg$subgroup,levels=c("eQTL","sQTL"))
-
-ggplot(gfg,aes(x = grp, y =x, fill = subgroup)) + 
-  geom_bar(stat = "identity", position = "dodge") 
 ```
 
