@@ -277,6 +277,12 @@ plot_heatmap_byomics(heatmap_data = combined_pip_sig_multi, main = "PIP partitio
 ```
 
 
+Notes from chatgpt
+
+- NEGR1: Known to be associated with neurodevelopmental processes and has been implicated in GWAS studies for depression and related traits.
+- PSEN2: While primarily associated with Alzheimer's disease, some studies suggest its involvement in mood disorders due to its role in neural processes.
+- RAF1: Involved in MAPK/ERK signaling pathways, which can influence stress responses and mood regulation.
+
 # Explore allelic heterogeneity (AH)
 
 
@@ -286,6 +292,18 @@ load("/project/xinhe/xsun/multi_group_ctwas/13.post_processing_0103/results_down
 DT::datatable(pip_per_cs_alltraits,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','PIP per CS, for genes with AH'),options = list(pageLength = 10) )
 
 ```
+
+Notes from chatgpt:
+
+LDL: 
+
+- SNX17 (Sorting Nexin 17):
+  - Function: SNX17 is involved in endocytic recycling and intracellular trafficking.
+  - Relevance to LDL: SNX17 interacts with LDL receptor-related proteins and plays a role in recycling LDL receptors to the cell surface. It has been implicated in maintaining LDL receptor homeostasis, making it relevant to LDL metabolism.
+
+- ABCA1 (ATP Binding Cassette Subfamily A Member 1):
+  - Function: ABCA1 is critical in cholesterol efflux, facilitating the transfer of cholesterol to HDL particles.
+  - Relevance to LDL: ABCA1 indirectly influences LDL levels by regulating cholesterol homeostasis and promoting reverse cholesterol transport. Variants in ABCA1 are strongly associated with lipid metabolism disorders.
 
 
 
@@ -326,14 +344,25 @@ venn.plot <- draw.pairwise.venn(
    )
 
 enrich_multi_unique <- enrich_multi_sig[!enrich_multi_sig$GO %in% enrich_single_sig$GO,]
-
+enrich_multi_unique <- cbind(enrich_multi_unique$GO,enrich_multi_unique[,1:ncol(enrich_multi_unique)-1])
 DT::datatable(enrich_multi_unique,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Enrichment results -- unique GO terms found by multi-group analysis'),options = list(pageLength = 10) )
 
 # enrich_single_unique <- enrich_single_sig[!enrich_single_sig$GO %in% enrich_multi_sig$GO,]
 # DT::datatable(enrich_single_unique,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Enrichment results -- unique GO terms found by single-group analysis, FDR < 0.05'),options = list(pageLength = 10) )
 ```
 
+Notes from chatgpt
 
+unique GO terms found by multi-group analysis: 
+
+-   Strongest Direct Connections:
+    -   Regulation of LDL particle clearance (GO:0010988).
+    -   Negative regulation of lipoprotein clearance (GO:0010985).
+    -   Endocytosis (GO:0006897).
+    -   Sterol/cholesterol biosynthesis and transport (GO:0015918, GO:0016126, GO:0006695).
+-   Indirect Connections via Metabolic Regulation:
+    -   Cellular response to insulin stimulus (GO:0032869).
+    -   VLDL and triglyceride remodeling (GO:0034372, GO:0034370).
 
 ```{r fig.height=5, fig.width=5, message=FALSE, warning=FALSE}
 print("FDR_adjust < 0.1")
@@ -353,6 +382,7 @@ venn.plot <- draw.pairwise.venn(
    )
 
 enrich_multi_unique <- enrich_multi_sig[!enrich_multi_sig$GO %in% enrich_single_sig$GO,]
+enrich_multi_unique <- cbind(enrich_multi_unique$GO,enrich_multi_unique[,1:ncol(enrich_multi_unique)-1])
 
 DT::datatable(enrich_multi_unique,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Enrichment results -- unique GO terms found by multi-group analysis'),options = list(pageLength = 10) )
 
@@ -360,3 +390,17 @@ DT::datatable(enrich_multi_unique,caption = htmltools::tags$caption( style = 'ca
 # DT::datatable(enrich_single_unique,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Enrichment results -- unique GO terms found by single-group analysis, FDR < 0.1'),options = list(pageLength = 10) )
 ```
 
+
+Additional signals from 16 additional GO terms at FDR < 0.1
+
+Notes from chatgpt
+
+-   Directly Relevant GO Terms:
+    -   Intestinal Cholesterol Absorption (GO:0030299).
+    -   Intestinal Lipid Absorption (GO:0098856).
+    -   Regulation of Cholesterol Transport (GO:0032374).
+    -   High-Density Lipoprotein Particle Remodeling (GO:0034375).
+    -   Regulation of Receptor Recycling (GO:0001919).
+-   Indirectly Relevant GO Terms:
+    -   Sphingolipid and Phospholipid Biosynthetic Processes (GO:0030148, GO:0008654).
+    -   Unsaturated Fatty Acid and Phosphatidic Acid Processes (GO:0033559, GO:0006654).
