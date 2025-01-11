@@ -141,6 +141,51 @@ plot_heatmap_byomics <- function(heatmap_data, main) {
 
 ```
 
+# Parameters 
+
+```{r warning=F, message=F, fig.height=25, fig.width=50}
+
+folder_results <- "/project/xinhe/shengqian/ctwas_GWAS_analysis/results/"
+
+all_var <-c()
+for(trait in traits[!traits %in% brain_traits]){
+
+  param <- readRDS(paste0(folder_results, "/", trait, "/", trait, ".param.RDS"))
+  gwas_n <- samplesize[trait]
+
+  ctwas_parameters <- summarize_param(param, gwas_n)
+  
+  var <- cbind(names(ctwas_parameters$group_prior_var),ctwas_parameters$group_prior_var)
+  colnames(var) <- c(paste0(trait,"_tissues"), paste0(trait,"_variance"))
+
+  all_var <- cbind(all_var, var)
+}
+
+rownames(all_var) <- seq(1:nrow(all_var))
+
+DT::datatable(all_var,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Variance for each group, non-psychiatric traits'),options = list(pageLength = 15) )
+
+
+all_var <-c()
+for(trait in brain_traits){
+
+  param <- readRDS(paste0(folder_results, "/", trait, "/", trait, ".param.RDS"))
+  gwas_n <- samplesize[trait]
+
+  ctwas_parameters <- summarize_param(param, gwas_n)
+  
+  var <- cbind(names(ctwas_parameters$group_prior_var),ctwas_parameters$group_prior_var)
+  colnames(var) <- c(paste0(trait,"_tissues"), paste0(trait,"_variance"))
+
+  all_var <- cbind(all_var, var)
+}
+
+rownames(all_var) <- seq(1:nrow(all_var))
+
+DT::datatable(all_var,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Variance for each group, non-psychiatric traits'),options = list(pageLength = 15) )
+```
+
+
 # Genetic architecture of complex traits
 
 Bubble plot: h2g partition across tissues and omics
