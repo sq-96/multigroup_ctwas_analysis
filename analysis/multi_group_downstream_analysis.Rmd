@@ -163,7 +163,7 @@ for(trait in traits[!traits %in% brain_traits]){
 
 rownames(all_var) <- seq(1:nrow(all_var))
 
-DT::datatable(all_var,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Variance for each group, non-psychiatric traits'),options = list(pageLength = 15) )
+DT::datatable(all_var,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Variance for each group, non-psychiatric traits'),options = list(pageLength = 16) )
 
 
 all_var <-c()
@@ -182,7 +182,7 @@ for(trait in brain_traits){
 
 rownames(all_var) <- seq(1:nrow(all_var))
 
-DT::datatable(all_var,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Variance for each group, non-psychiatric traits'),options = list(pageLength = 15) )
+DT::datatable(all_var,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Variance for each group, psychiatric traits'),options = list(pageLength = 16) )
 ```
 
 
@@ -364,6 +364,8 @@ Methods for enrichment analsis can be found here: https://sq-96.github.io/multig
 
 ## LDL-ukb-d-30780_irnt
 
+### Comparing multi-group and single-group results
+
 ```{r fig.height=5, fig.width=5, message=FALSE, warning=FALSE}
 
 trait <- "LDL-ukb-d-30780_irnt"
@@ -449,3 +451,90 @@ Notes from chatgpt
 -   Indirectly Relevant GO Terms:
     -   Sphingolipid and Phospholipid Biosynthetic Processes (GO:0030148, GO:0008654).
     -   Unsaturated Fatty Acid and Phosphatidic Acid Processes (GO:0033559, GO:0006654).
+    
+    
+### Comparing multi-group and magma
+
+
+```{r fig.height=5, fig.width=5, message=FALSE, warning=FALSE}
+
+print("FDR_adjust < 0.05")
+
+enrich_multi_sig <- enrich_multi[enrich_multi$fdr_calibrated < 0.05,]
+enrich_single_sig <- enrich_multi[enrich_single$fdr_calibrated < 0.05,]
+
+magma <- read.table(paste0("/project/xinhe/xsun/multi_group_ctwas/13.post_processing_0103/magma/",trait,"_",db,".gsa.out"), 
+                   header = TRUE,                # The file has a header
+                   sep = "",                     # Use whitespace as the separator
+                   comment.char = "#",           # Ignore lines starting with "#"
+                   fill = TRUE,                  # Fill in missing values
+                   quote = "",                   # Avoid issues with single quotes
+                   check.names = FALSE)          # Keep the original column names
+
+magma$fdr <- p.adjust(as.numeric(magma$P),method = "fdr")
+magma$FULL_NAME <- gsub("_", " ", magma$FULL_NAME)
+magma_sig <- magma[magma$fdr < 0.05,]
+
+venn.plot <- draw.pairwise.venn(
+     area1 = nrow(enrich_multi_sig),          # Size of Group A
+     area2 = nrow(magma_sig),          # Size of Group B
+     cross.area = sum(enrich_multi_sig$GO %in% magma_sig$FULL_NAME),     # Overlap between Group A and Group B
+     category = c("Multigroup", "Magma"),  # Labels for the groups
+     fill = c("red", "blue"),             # Colors for the groups
+     lty = "blank",                       # Line type for the circles
+     cex = 2,                             # Font size for the numbers
+     cat.cex = 2                          # Font size for the labels
+   )
+
+enrich_multi_unique <- enrich_multi_sig[!enrich_multi_sig$GO %in% magma_sig$FULL_NAME,]
+enrich_multi_unique <- cbind(enrich_multi_unique$GO,enrich_multi_unique[,1:ncol(enrich_multi_unique)-1])
+
+DT::datatable(enrich_multi_unique,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Enrichment results -- unique GO terms found by multi-group analysis'),options = list(pageLength = 10) )
+
+magma_unique <- magma_sig[!magma_sig$FULL_NAME %in%enrich_multi_sig$GO,]
+
+DT::datatable(magma_unique,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Enrichment results -- unique GO terms found by MAGMA'),options = list(pageLength = 10) )
+
+
+```
+
+
+```{r fig.height=5, fig.width=5, message=FALSE, warning=FALSE}
+
+print("FDR_adjust < 0.1")
+
+enrich_multi_sig <- enrich_multi[enrich_multi$fdr_calibrated < 0.1,]
+enrich_single_sig <- enrich_multi[enrich_single$fdr_calibrated < 0.1,]
+
+magma <- read.table(paste0("/project/xinhe/xsun/multi_group_ctwas/13.post_processing_0103/magma/",trait,"_",db,".gsa.out"), 
+                   header = TRUE,                # The file has a header
+                   sep = "",                     # Use whitespace as the separator
+                   comment.char = "#",           # Ignore lines starting with "#"
+                   fill = TRUE,                  # Fill in missing values
+                   quote = "",                   # Avoid issues with single quotes
+                   check.names = FALSE)          # Keep the original column names
+
+magma$fdr <- p.adjust(as.numeric(magma$P),method = "fdr")
+magma$FULL_NAME <- gsub("_", " ", magma$FULL_NAME)
+magma_sig <- magma[magma$fdr < 0.1,]
+
+venn.plot <- draw.pairwise.venn(
+     area1 = nrow(enrich_multi_sig),          # Size of Group A
+     area2 = nrow(magma_sig),          # Size of Group B
+     cross.area = sum(enrich_multi_sig$GO %in% magma_sig$FULL_NAME),     # Overlap between Group A and Group B
+     category = c("Multigroup", "Magma"),  # Labels for the groups
+     fill = c("red", "blue"),             # Colors for the groups
+     lty = "blank",                       # Line type for the circles
+     cex = 2,                             # Font size for the numbers
+     cat.cex = 2                          # Font size for the labels
+   )
+
+enrich_multi_unique <- enrich_multi_sig[!enrich_multi_sig$GO %in% magma_sig$FULL_NAME,]
+enrich_multi_unique <- cbind(enrich_multi_unique$GO,enrich_multi_unique[,1:ncol(enrich_multi_unique)-1])
+
+DT::datatable(enrich_multi_unique,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Enrichment results -- unique GO terms found by multi-group analysis'),options = list(pageLength = 10) )
+
+magma_unique <- magma_sig[!magma_sig$FULL_NAME %in%enrich_multi_sig$GO,]
+
+DT::datatable(magma_unique,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Enrichment results -- unique GO terms found by MAGMA'),options = list(pageLength = 10) )
+```
