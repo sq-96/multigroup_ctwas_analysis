@@ -216,6 +216,131 @@ DT::datatable(stats,caption = htmltools::tags$caption( style = 'caption-side: le
 ```
 
 
+
+## Checking why some silver standard genes are missed
+
+```{r warning=F, message=F, fig.height=20, fig.width=20}
+
+LDL_silver_known_sig <- LDL_silver_known[as.numeric(LDL_silver_known$PIP) > 0.8 & LDL_silver_known$PIP !="NA",]
+LDL_silver_known_sig <- LDL_silver_known_sig[,c("genename","cs_index","PIP","z","num_eqtl","region_tag")]
+
+# check z_scores 
+
+z_gene_single <- readRDS(paste0(folder_single_results,"/",trait,"/",trait,"_",tissue,".z_gene.RDS"))
+
+z_gene_single <- z_gene_single %>%
+  mutate(molecular_id = sub("\\|.*", "", id)) %>%  # Extract ENSG ID from id
+  left_join(mapping_two %>% dplyr::select(molecular_id, gene_name), by = "molecular_id")
+z_gene_single <- z_gene_single[,c("gene_name","z")]
+
+z_gene_selected <- z_gene_single[z_gene_single$gene_name %in% LDL_silver_known_sig$genename,]
+
+LDL_silver_known_sig <- merge(LDL_silver_known_sig,z_gene_selected, by.x ="genename", by.y = "gene_name",all.x=T)
+
+
+# check pre-estimated L
+screened_region_L <- readRDS(paste0(folder_single_results,"/",trait,"/",trait,"_",tissue,".screened_region_L.RDS"))
+region_info <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/LD_region_info/region_info.RDS")
+
+LDL_silver_known_sig$tag1 <- unlist(strsplit(LDL_silver_known_sig$region_tag,split = "_"))[seq(1,2*nrow(LDL_silver_known_sig), by =2)]
+LDL_silver_known_sig$tag2 <- unlist(strsplit(LDL_silver_known_sig$region_tag,split = "_"))[seq(2,2*nrow(LDL_silver_known_sig), by =2)]
+LDL_silver_known_sig$regionid <- ctwas:::convert_region_tags_to_region_id(region_info, LDL_silver_known_sig$tag1, LDL_silver_known_sig$tag2)
+LDL_silver_known_sig$screened_region_L_newversion <- screened_region_L[LDL_silver_known_sig$regionid]
+
+combined_pip_by_group_single_nocs <- combine_gene_pips(susie_alpha_res_single_post, 
+                                             group_by = "gene_name",
+                                             by = "group",
+                                             method = "combine_cs",
+                                             filter_cs = F,
+                                             include_cs_id = T)
+
+LDL_silver_known_sig <- merge(LDL_silver_known_sig, combined_pip_by_group_single_nocs, by.x = "genename", by.y = "gene_name", all.x = T)
+
+LDL_silver_known_sig <- LDL_silver_known_sig[,c("genename","cs_index","PIP","z.x","z.y","screened_region_L_newversion","combined_cs_id","combined_pip")]
+colnames(LDL_silver_known_sig) <- c("genename","cs_index_old","PIP_old","z_old","z_new","screened_region_L_new","cs_id_new","PIP_new")
+
+
+DT::datatable(LDL_silver_known_sig,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Comparing the old results and new results for the silver standard genes'),options = list(pageLength = 10) )
+```
+```{r warning=F, message=F, fig.height=8, fig.width=12}
+
+print("ABCG8 weights")
+
+weights_single <- readRDS(paste0(folder_single_results,"/",trait,"/",trait,"_",tissue,".preprocessed.weights.E.RDS"))
+weights_gene <- weights_single[["ENSG00000143921.6"]]
+
+print(weights_gene)
+
+
+
+
+snp_map <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/LD_region_info/snp_map.RDS")
+
+
+
+finemap_res_single <- ctwas_res_single_post$finemap_res
+finemap_res_single <- anno_finemap_res(finemap_res_single,
+                                          snp_map = snp_map,
+                                          mapping_table = mapping_two,
+                                          add_gene_annot = TRUE,
+                                          map_by = "molecular_id",
+                                          drop_unmapped = TRUE,
+                                          add_position = TRUE,
+                                          use_gene_pos = "mid")
+print("PLTP")
+region_id <- "20_44051536_46210417"
+
+make_locusplot(finemap_res_single,
+               region_id = region_id,
+               ens_db = ens_db,
+               weights = weights_single,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = TRUE,
+               filter_cs = TRUE,
+               color_pval_by = "cs",
+               color_pip_by = "cs",panel.heights = c(4,4,1,1))
+
+
+
+```
+
+```{r warning=F, message=F, fig.height=8, fig.width=12}
+
+print("ABCA1")
+region_id <- "9_104819468_106536473"
+
+make_locusplot(finemap_res_single,
+               region_id = region_id,
+               ens_db = ens_db,
+               weights = weights_single,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = TRUE,
+               filter_cs = TRUE,
+               color_pval_by = "cs",
+               color_pip_by = "cs",panel.heights = c(4,4,1,1))
+
+
+
+```
+```{r warning=F, message=F, fig.height=8, fig.width=12}
+
+print("NPC1L1")
+region_id <- "7_43119475_44724229"
+
+make_locusplot(finemap_res_single,
+               region_id = region_id,
+               ens_db = ens_db,
+               weights = weights_single,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = TRUE,
+               filter_cs = TRUE,
+               color_pval_by = "cs",
+               color_pip_by = "cs",panel.heights = c(4,4,1,1))
+
+
+
+```
+
 ## PIP partition for the top genes
 
 
