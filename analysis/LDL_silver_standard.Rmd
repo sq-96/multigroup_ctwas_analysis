@@ -259,6 +259,10 @@ LDL_silver_known_sig <- merge(LDL_silver_known_sig, combined_pip_by_group_single
 LDL_silver_known_sig <- LDL_silver_known_sig[,c("genename","cs_index","PIP","z.x","z.y","screened_region_L_newversion","combined_cs_id","combined_pip")]
 colnames(LDL_silver_known_sig) <- c("genename","cs_index_old","PIP_old","z_old","z_new","screened_region_L_new","cs_id_new","PIP_new")
 
+refinemap <- readRDS("/project/xinhe/xsun/multi_group_ctwas/13.post_processing_0103/results_other/ldl_silver_finemap_region.RDS")
+LDL_silver_known_sig <- merge(LDL_silver_known_sig,refinemap, by.x = "genename", by.y = "gene_name", all.x=T)
+LDL_silver_known_sig <- LDL_silver_known_sig[,1:ncol(LDL_silver_known_sig)-1]
+colnames(LDL_silver_known_sig)[ncol(LDL_silver_known_sig)] <- "PIP_finemap_with_L=5"
 
 DT::datatable(LDL_silver_known_sig,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Comparing the old results and new results for the silver standard genes'),options = list(pageLength = 10) )
 ```
