@@ -145,7 +145,10 @@ plot_heatmap_byomics <- function(heatmap_data, main) {
 
 ```
 
-# Parameters 
+# Setting1: variance shared by the same QTLs
+
+## Parameters 
+
 
 ```{r warning=F, message=F, fig.height=25, fig.width=50}
 
@@ -167,7 +170,7 @@ for(trait in traits[!traits %in% brain_traits]){
 
 rownames(all_var) <- seq(1:nrow(all_var))
 
-DT::datatable(all_var,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Variance for each group, non-psychiatric traits'),options = list(pageLength = 16) )
+DT::datatable(all_var,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Variance for each group, non-psychiatric traits'),options = list(pageLength = 20) )
 
 
 all_var <-c()
@@ -186,11 +189,10 @@ for(trait in brain_traits){
 
 rownames(all_var) <- seq(1:nrow(all_var))
 
-DT::datatable(all_var,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Variance for each group, psychiatric traits'),options = list(pageLength = 16) )
+DT::datatable(all_var,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Variance for each group, psychiatric traits'),options = list(pageLength = 20) )
 ```
 
-
-# Genetic architecture of complex traits
+## Genetic architecture of complex traits
 
 Bubble plot: h2g partition across tissues and omics
 
@@ -235,7 +237,7 @@ grid.arrange(grobs = p, ncol = 3, nrow = 2)
 ```
 
 
-# The power of gene discovery
+## The power of gene discovery
 
 ```{r warning=F, message=F, fig.height=10, fig.width=20}
 
@@ -303,11 +305,11 @@ ggplot(data_long, aes(x = tissue_single, y = count, fill = category)) +
 ```
 
 
-# Highlight the causal context and modality
+## Highlight the causal context and modality
 
 For all: https://drive.google.com/drive/folders/1COItzR1y_Em6UXb_J8XCzqP-PuXIth6J?usp=share_link
 
-## MDD-ieu-b-102
+### MDD-ieu-b-102
 
 ```{r fig.height=10, fig.width=10, message=FALSE, warning=FALSE}
 
@@ -332,7 +334,7 @@ Notes from chatgpt
 - PSEN2: While primarily associated with Alzheimer's disease, some studies suggest its involvement in mood disorders due to its role in neural processes.
 - RAF1: Involved in MAPK/ERK signaling pathways, which can influence stress responses and mood regulation.
 
-# Explore allelic heterogeneity (AH)
+## Explore allelic heterogeneity (AH)
 
 
 ```{r fig.height=10, fig.width=10, message=FALSE, warning=FALSE}
@@ -344,7 +346,7 @@ DT::datatable(pip_per_cs_alltraits,caption = htmltools::tags$caption( style = 'c
 
 Notes from chatgpt:
 
-LDL: 
+LDL:
 
 - SNX17 (Sorting Nexin 17):
   - Function: SNX17 is involved in endocytic recycling and intracellular trafficking.
@@ -356,9 +358,9 @@ LDL:
 
 
 
-# Reduce FP findings
+## Reduce FP findings
 
-## Silver standard for T2D LDL BMI RBC 
+### Silver standard for T2D LDL BMI RBC -- summary
 
 ```{r fig.height=10, fig.width=10, message=FALSE, warning=FALSE}
 
@@ -373,15 +375,15 @@ folder_multi_results <- "/project/xinhe/shengqian/ctwas_GWAS_analysis/results/"
 stats_all <- c()
 stats_all_twas <- c()
 for (i in 1:length(traits_used_in_silver)){
-  
+
 
   known <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/data/silverstandard/known_annotations_",traits_silver[i],".RDS"))
   bystander <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/data/silverstandard/bystanders_",traits_silver[i],".RDS"))
-  
+
   # single group results
-  
+
   tissue <- top_tissues[traits_used_in_silver[i]]
-  
+
   z_gene_single <-readRDS(paste0(folder_single_results,"/",traits_used_in_silver[i],"/",traits_used_in_silver[i],"_",tissue,".z_gene.RDS"))
   z_gene_single <- z_gene_single %>%
                   mutate(molecular_id = sub("\\|.*", "", id)) %>%  # Extract ENSG ID from id
@@ -389,17 +391,17 @@ for (i in 1:length(traits_used_in_silver)){
   z_gene_single$p <- z2p(z_gene_single$z)
   z_gene_single$fdr <- p.adjust(z_gene_single$p, method = "bonferroni")
   z_gene_single_sig <- z_gene_single[z_gene_single$fdr < 0.05,]
-  
-  
+
+
   combined_pip_single <-readRDS(paste0(folder_single_results,"/",traits_used_in_silver[i],"/",traits_used_in_silver[i],"_",tissue,".combined_pip_bygroup_final.RDS"))
   combined_pip_sig_single <- combined_pip_single[combined_pip_single$combined_pip > 0.8,]
-  
-  
+
+
   stats_single <- c(traits_used_in_silver[i],"single-group-ctwaspip0.8",nrow(combined_pip_sig_single),length(known), sum(unique(z_gene_single$gene_name) %in% known),sum(combined_pip_sig_single$gene_name %in% known),length(bystander),sum(unique(z_gene_single$gene_name) %in% bystander) ,sum(combined_pip_sig_single$gene_name %in% bystander))
   stats_single_twas <- c(traits_used_in_silver[i],"single-group-twasbonf0.05",nrow(z_gene_single_sig),length(known),sum(z_gene_single_sig$gene_name %in% known),length(bystander),sum(z_gene_single_sig$gene_name %in% bystander))
-  
-  # multi 
-  
+
+  # multi
+
   z_gene_multi <- readRDS(paste0(folder_multi_results,"/",traits_used_in_silver[i],"/",traits_used_in_silver[i],".z_gene.RDS"))
   z_gene_multi <- z_gene_multi %>%
                   mutate(molecular_id = sub("\\|.*", "", id)) %>%  # Extract ENSG ID from id
@@ -407,20 +409,20 @@ for (i in 1:length(traits_used_in_silver)){
   z_gene_multi$p <- z2p(z_gene_multi$z)
   z_gene_multi$fdr <- p.adjust(z_gene_multi$p, method = "bonferroni")
   z_gene_multi_sig <- z_gene_multi[z_gene_multi$fdr < 0.05,]
-  
+
   combined_pip_multi <-readRDS(paste0(folder_multi_results,"/",traits_used_in_silver[i],"/",traits_used_in_silver[i],".combined_pip_bygroup_final.RDS"))
   combined_pip_sig_multi <- combined_pip_multi[combined_pip_multi$combined_pip > 0.8,]
-  
+
   stats_multi <- c(traits_used_in_silver[i],"multi-group-ctwaspip0.8",nrow(combined_pip_sig_multi),length(known), sum(unique(z_gene_multi$gene_name) %in% known),sum(combined_pip_sig_multi$gene_name %in% known),length(bystander),sum(unique(z_gene_multi$gene_name) %in% bystander) ,sum(combined_pip_sig_multi$gene_name %in% bystander))
   #stats_multi_twas <- c(traits_used_in_silver[i],"multi-group-twasbonf0.05",nrow(z_gene_multi_sig),length(known),sum(z_gene_multi_sig$gene_name %in% known),length(bystander),sum(z_gene_multi_sig$gene_name %in% bystander))
   stats_multi_twas <- c(traits_used_in_silver[i],"multi-group-twasbonf0.05",length(unique(z_gene_multi_sig$gene_name)),length(known),sum(unique(z_gene_multi_sig$gene_name) %in% known),length(bystander),sum(unique(z_gene_multi_sig$gene_name) %in% bystander))
-  
+
   stats_trait <- rbind(stats_single, stats_multi)
   stats_trait_twas <- rbind(stats_single_twas, stats_multi_twas)
-  
+
   stats_all <- rbind(stats_all,stats_trait)
   stats_all_twas <- rbind(stats_all_twas,stats_trait_twas)
-  
+
 }
 
 colnames(stats_all) <- c("trait","analysis","num_gene_pip08","num_gene_known","num_gene_known_imputable","num_gene_known_pip08","num_gene_bystander","num_gene_bystander_imputable","num_gene_bystander_pip08")
@@ -441,17 +443,17 @@ DT::datatable(stats_all_twas,caption = htmltools::tags$caption( style = 'caption
 ```
 
 
-## Silver standard for LDL
+### Silver standard for LDL -- details
 
 https://sq-96.github.io/multigroup_ctwas_analysis/LDL_silver_standard.html
 
-# Enrichment analysis -- fractional model
+## Enrichment analysis -- fractional model
 
 Methods for enrichment analsis can be found here: https://sq-96.github.io/multigroup_ctwas_analysis/multi_group_6traits_15weights_ess_enrichment_genesymbol.html#Fractional_model
 
-## LDL-ukb-d-30780_irnt
+### LDL-ukb-d-30780_irnt
 
-### Comparing multi-group and single-group results
+#### Comparing multi-group and single-group results
 
 ```{r fig.height=5, fig.width=5, message=FALSE, warning=FALSE}
 
@@ -487,7 +489,7 @@ DT::datatable(enrich_multi_unique,caption = htmltools::tags$caption( style = 'ca
 
 Notes from chatgpt
 
-unique GO terms found by multi-group analysis: 
+unique GO terms found by multi-group analysis:
 
 -   Strongest Direct Connections:
     -   Regulation of LDL particle clearance (GO:0010988).
@@ -538,9 +540,9 @@ Notes from chatgpt
 -   Indirectly Relevant GO Terms:
     -   Sphingolipid and Phospholipid Biosynthetic Processes (GO:0030148, GO:0008654).
     -   Unsaturated Fatty Acid and Phosphatidic Acid Processes (GO:0033559, GO:0006654).
-    
-    
-### Comparing multi-group and magma
+
+
+#### Comparing multi-group and magma
 
 
 ```{r fig.height=5, fig.width=5, message=FALSE, warning=FALSE}
@@ -550,7 +552,7 @@ print("FDR_adjust < 0.05")
 enrich_multi_sig <- enrich_multi[enrich_multi$fdr_calibrated < 0.05,]
 enrich_single_sig <- enrich_multi[enrich_single$fdr_calibrated < 0.05,]
 
-magma <- read.table(paste0("/project/xinhe/xsun/multi_group_ctwas/13.post_processing_0103/magma/",trait,"_",db,".gsa.out"), 
+magma <- read.table(paste0("/project/xinhe/xsun/multi_group_ctwas/13.post_processing_0103/magma/",trait,"_",db,".gsa.out"),
                    header = TRUE,                # The file has a header
                    sep = "",                     # Use whitespace as the separator
                    comment.char = "#",           # Ignore lines starting with "#"
@@ -593,7 +595,7 @@ print("FDR_adjust < 0.1")
 enrich_multi_sig <- enrich_multi[enrich_multi$fdr_calibrated < 0.1,]
 enrich_single_sig <- enrich_multi[enrich_single$fdr_calibrated < 0.1,]
 
-magma <- read.table(paste0("/project/xinhe/xsun/multi_group_ctwas/13.post_processing_0103/magma/",trait,"_",db,".gsa.out"), 
+magma <- read.table(paste0("/project/xinhe/xsun/multi_group_ctwas/13.post_processing_0103/magma/",trait,"_",db,".gsa.out"),
                    header = TRUE,                # The file has a header
                    sep = "",                     # Use whitespace as the separator
                    comment.char = "#",           # Ignore lines starting with "#"
@@ -624,4 +626,182 @@ DT::datatable(enrich_multi_unique,caption = htmltools::tags$caption( style = 'ca
 magma_unique <- magma_sig[!magma_sig$FULL_NAME %in%enrich_multi_sig$GO,]
 
 DT::datatable(magma_unique,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Enrichment results -- unique GO terms found by MAGMA'),options = list(pageLength = 10) )
+```
+
+
+# Setting2: variance shared by all
+
+## Parameters
+
+```{r warning=F, message=F, fig.height=25, fig.width=50}
+
+folder_results <- "/project/xinhe/shengqian/ctwas_GWAS_analysis/results_same_variance/"
+
+all_var <-c()
+for(trait in traits[!traits %in% brain_traits]){
+
+  param <- readRDS(paste0(folder_results, "/", trait, "/", trait, ".param.RDS"))
+  gwas_n <- samplesize[trait]
+
+  ctwas_parameters <- summarize_param(param, gwas_n)
+  
+  var <- cbind(names(ctwas_parameters$group_prior_var),ctwas_parameters$group_prior_var)
+  colnames(var) <- c(paste0(trait,"_tissues"), paste0(trait,"_variance"))
+
+  all_var <- cbind(all_var, var)
+}
+
+rownames(all_var) <- seq(1:nrow(all_var))
+
+DT::datatable(all_var,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Variance for each group, non-psychiatric traits'),options = list(pageLength = 20) )
+
+
+all_var <-c()
+for(trait in brain_traits){
+
+  param <- readRDS(paste0(folder_results, "/", trait, "/", trait, ".param.RDS"))
+  gwas_n <- samplesize[trait]
+
+  ctwas_parameters <- summarize_param(param, gwas_n)
+  
+  var <- cbind(names(ctwas_parameters$group_prior_var),ctwas_parameters$group_prior_var)
+  colnames(var) <- c(paste0(trait,"_tissues"), paste0(trait,"_variance"))
+
+  all_var <- cbind(all_var, var)
+}
+
+rownames(all_var) <- seq(1:nrow(all_var))
+
+DT::datatable(all_var,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Variance for each group, psychiatric traits'),options = list(pageLength = 20) )
+```
+
+
+
+## Genetic architecture of complex traits
+
+Bubble plot: h2g partition across tissues and omics
+
+Tissue order is from: https://sq-96.github.io/multigroup_ctwas_analysis/GWAS_tissue_selection.html
+
+```{r warning=F, message=F, fig.height=25, fig.width=50}
+
+folder_results <- "/project/xinhe/shengqian/ctwas_GWAS_analysis/results_same_variance/"
+
+p <- list()
+for(trait in traits[!traits %in% brain_traits]){
+
+  param <- readRDS(paste0(folder_results, "/", trait, "/", trait, ".param.RDS"))
+  gwas_n <- samplesize[trait]
+  tissue_order <- tissues_alltraits[[trait]]
+  p[[length(p)+1]] <- create_bubble_plot(trait = trait,param = param,gwas_n = gwas_n, tissue_order = tissue_order)
+
+}
+
+print("Non-psychiatric")
+
+grid.arrange(grobs = p, ncol = 3, nrow = 5)
+```
+
+
+```{r warning=F, message=F, fig.height=10, fig.width=50}
+
+folder_results <- "/project/xinhe/shengqian/ctwas_GWAS_analysis/results_same_variance/"
+
+p <- list()
+for(trait in brain_traits){
+
+  param <- readRDS(paste0(folder_results, "/", trait, "/", trait, ".param.RDS"))
+  gwas_n <- samplesize[trait]
+  tissue_order <- tissues_alltraits[[trait]]
+  p[[length(p)+1]] <- create_bubble_plot(trait = trait,param = param,gwas_n = gwas_n, tissue_order = tissue_order)
+
+}
+
+print("psychiatric")
+grid.arrange(grobs = p, ncol = 3, nrow = 2)
+```
+
+
+## Reduce FP findings
+
+### Silver standard for T2D LDL BMI RBC
+
+```{r fig.height=10, fig.width=10, message=FALSE, warning=FALSE}
+
+traits_used_in_silver <- c("T2D-panukb","LDL-ukb-d-30780_irnt","BMI-panukb","RBC-panukb")
+traits_silver <- c("T2D","LDL","BMI","RBC")
+top_tissues <- c("Pituitary","Liver","Cells_Cultured_fibroblasts","Skin_Not_Sun_Exposed_Suprapubic")
+names(top_tissues) <- c("T2D-panukb","LDL-ukb-d-30780_irnt","BMI-panukb","RBC-panukb")
+
+#folder_single_results <- "/project/xinhe/shengqian/single_tissue_screen/processed_weights/expression_weights/"
+folder_multi_results <- "/project/xinhe/shengqian/ctwas_GWAS_analysis/results/"
+
+stats_all <- c()
+stats_all_twas <- c()
+for (i in 1:length(traits_used_in_silver)){
+
+
+  known <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/data/silverstandard/known_annotations_",traits_silver[i],".RDS"))
+  bystander <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/data/silverstandard/bystanders_",traits_silver[i],".RDS"))
+
+  # single group results
+
+  tissue <- top_tissues[traits_used_in_silver[i]]
+
+  z_gene_single <-readRDS(paste0(folder_single_results,"/",traits_used_in_silver[i],"/",traits_used_in_silver[i],"_",tissue,".z_gene.RDS"))
+  z_gene_single <- z_gene_single %>%
+                  mutate(molecular_id = sub("\\|.*", "", id)) %>%  # Extract ENSG ID from id
+                  left_join(mapping_two %>% dplyr::select(molecular_id, gene_name), by = "molecular_id")
+  z_gene_single$p <- z2p(z_gene_single$z)
+  z_gene_single$fdr <- p.adjust(z_gene_single$p, method = "bonferroni")
+  z_gene_single_sig <- z_gene_single[z_gene_single$fdr < 0.05,]
+
+
+  combined_pip_single <-readRDS(paste0(folder_single_results,"/",traits_used_in_silver[i],"/",traits_used_in_silver[i],"_",tissue,".combined_pip_bygroup_final.RDS"))
+  combined_pip_sig_single <- combined_pip_single[combined_pip_single$combined_pip > 0.8,]
+
+
+  stats_single <- c(traits_used_in_silver[i],"single-group-ctwaspip0.8",nrow(combined_pip_sig_single),length(known), sum(unique(z_gene_single$gene_name) %in% known),sum(combined_pip_sig_single$gene_name %in% known),length(bystander),sum(unique(z_gene_single$gene_name) %in% bystander) ,sum(combined_pip_sig_single$gene_name %in% bystander))
+  stats_single_twas <- c(traits_used_in_silver[i],"single-group-twasbonf0.05",nrow(z_gene_single_sig),length(known),sum(z_gene_single_sig$gene_name %in% known),length(bystander),sum(z_gene_single_sig$gene_name %in% bystander))
+
+  # multi
+
+  z_gene_multi <- readRDS(paste0(folder_multi_results,"/",traits_used_in_silver[i],"/",traits_used_in_silver[i],".z_gene.RDS"))
+  z_gene_multi <- z_gene_multi %>%
+                  mutate(molecular_id = sub("\\|.*", "", id)) %>%  # Extract ENSG ID from id
+                  left_join(mapping_two %>% dplyr::select(molecular_id, gene_name), by = "molecular_id")
+  z_gene_multi$p <- z2p(z_gene_multi$z)
+  z_gene_multi$fdr <- p.adjust(z_gene_multi$p, method = "bonferroni")
+  z_gene_multi_sig <- z_gene_multi[z_gene_multi$fdr < 0.05,]
+
+  combined_pip_multi <-readRDS(paste0(folder_multi_results,"/",traits_used_in_silver[i],"/",traits_used_in_silver[i],".combined_pip_bygroup_final.RDS"))
+  combined_pip_sig_multi <- combined_pip_multi[combined_pip_multi$combined_pip > 0.8,]
+
+  stats_multi <- c(traits_used_in_silver[i],"multi-group-ctwaspip0.8",nrow(combined_pip_sig_multi),length(known), sum(unique(z_gene_multi$gene_name) %in% known),sum(combined_pip_sig_multi$gene_name %in% known),length(bystander),sum(unique(z_gene_multi$gene_name) %in% bystander) ,sum(combined_pip_sig_multi$gene_name %in% bystander))
+  #stats_multi_twas <- c(traits_used_in_silver[i],"multi-group-twasbonf0.05",nrow(z_gene_multi_sig),length(known),sum(z_gene_multi_sig$gene_name %in% known),length(bystander),sum(z_gene_multi_sig$gene_name %in% bystander))
+  stats_multi_twas <- c(traits_used_in_silver[i],"multi-group-twasbonf0.05",length(unique(z_gene_multi_sig$gene_name)),length(known),sum(unique(z_gene_multi_sig$gene_name) %in% known),length(bystander),sum(unique(z_gene_multi_sig$gene_name) %in% bystander))
+
+  stats_trait <- rbind(stats_single, stats_multi)
+  stats_trait_twas <- rbind(stats_single_twas, stats_multi_twas)
+
+  stats_all <- rbind(stats_all,stats_trait)
+  stats_all_twas <- rbind(stats_all_twas,stats_trait_twas)
+
+}
+
+colnames(stats_all) <- c("trait","analysis","num_gene_pip08","num_gene_known","num_gene_known_imputable","num_gene_known_pip08","num_gene_bystander","num_gene_bystander_imputable","num_gene_bystander_pip08")
+rownames(stats_all) <- seq(1:nrow(stats_all))
+stats_all <- as.data.frame(stats_all)
+
+stats_all$TP_rate <- as.numeric(stats_all$num_gene_known_pip08) / (as.numeric(stats_all$num_gene_known_pip08) + as.numeric(stats_all$num_gene_bystander_pip08))
+
+DT::datatable(stats_all,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Comparing cTWAS results with silver standard genes'),options = list(pageLength = 10) )
+
+colnames(stats_all_twas) <- c("trait","analysis","num_gene_bonf0.05","num_gene_known","num_gene_known_bonf0.05","num_gene_bystander","num_gene_bystander_bonf0.05")
+rownames(stats_all_twas) <- seq(1:nrow(stats_all_twas))
+stats_all_twas <- as.data.frame(stats_all_twas)
+
+stats_all_twas$TP_rate <- as.numeric(stats_all_twas$num_gene_known_bonf0.05) / (as.numeric(stats_all_twas$num_gene_known_bonf0.05) + as.numeric(stats_all_twas$num_gene_bystander_bonf0.05))
+
+DT::datatable(stats_all_twas,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Comparing TWAS results with silver standard genes'),options = list(pageLength = 10) )
 ```
