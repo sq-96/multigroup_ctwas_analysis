@@ -18,6 +18,7 @@ library(ctwas)
 library(dplyr)
 library(EnsDb.Hsapiens.v86)
 library(pheatmap)
+library(ggplot2)
 ens_db <- EnsDb.Hsapiens.v86
 
 mapping_predictdb <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
@@ -145,6 +146,7 @@ z_gene_single <- z_gene_single %>%
   mutate(molecular_id = sub("\\|.*", "", id)) %>%  # Extract ENSG ID from id
   left_join(mapping_two %>% dplyr::select(molecular_id, gene_name), by = "molecular_id")
 
+
 ```
 
 
@@ -196,7 +198,6 @@ z_gene_single_L5 <- z_gene_single_L5 %>%
 tissues <- c("Liver","Spleen","Esophagus_Gastroesophageal_Junction","Esophagus_Muscularis","Esophagus_Mucosa")
 
 folder_multi_results <- "/project/xinhe/shengqian/ctwas_GWAS_analysis/results/"
-folder_multi_post <- paste0("/project/xinhe/xsun/multi_group_ctwas/13.post_processing_0103/results_region_merge/",trait,"/")
 
 file_ctwas_result <- get_ctwas_file(trait, tissue = NULL, folder_multi_results)
 
@@ -237,7 +238,7 @@ z_gene_multi <- z_gene_multi %>%
 tissues <- c("Liver","Spleen","Esophagus_Gastroesophageal_Junction","Esophagus_Muscularis","Esophagus_Mucosa")
 
 folder_multi_results_samevar <- "/project/xinhe/shengqian/ctwas_GWAS_analysis/results_same_variance/"
-folder_multi_post_samevar <- paste0("/project/xinhe/xsun/multi_group_ctwas/13.post_processing_0103/results_region_merge/",trait,"/")
+
 
 file_ctwas_result_samevar <- get_ctwas_file(trait, tissue = NULL, folder_multi_results_samevar)
 
@@ -280,7 +281,6 @@ z_gene_multi_samevar <- z_gene_multi_samevar %>%
 tissues <- c("Liver","Spleen","Esophagus_Gastroesophageal_Junction","Esophagus_Muscularis","Esophagus_Mucosa")
 
 folder_multi_results_L5 <- "/project/xinhe/shengqian/ctwas_GWAS_analysis/results_same_variance_L5/"
-folder_multi_post_L5 <- paste0("/project/xinhe/xsun/multi_group_ctwas/13.post_processing_0103/results_region_merge/",trait,"/")
 
 file_ctwas_result_L5 <- get_ctwas_file(trait, tissue = NULL, folder_multi_results_L5)
 
@@ -419,6 +419,7 @@ finemap_res_single <- anno_finemap_res(finemap_res_single,
                                           drop_unmapped = TRUE,
                                           add_position = TRUE,
                                           use_gene_pos = "mid")
+
 print("PLTP")
 region_id <- "20_44051536_46210417"
 
@@ -472,7 +473,6 @@ make_locusplot(finemap_res_single,
 
 
 ```
-
 
 ## Checking why some silver standard genes are missed -- single eQTL, L=5
 
@@ -648,3 +648,173 @@ make_locusplot(finemap_res_single,
 
 
 ```
+
+
+
+## Comparing z-score and pip 
+
+
+```{r warning=F, message=F, fig.height=5, fig.width=5}
+finemap_res_single_gene <- finemap_res_single[finemap_res_single$type !="SNP",]
+ggplot(finemap_res_single_gene, aes(y = susie_pip, x = abs(z))) +
+  geom_point(alpha = 0.5, size = 0.5) +  # Adjust alpha and size for better visualization
+  labs(x ="|Z|" , y = "SuSiE PIP", title = "single eqtl, pre-estimate L") +
+  theme_minimal()
+```
+
+
+```{r warning=F, message=F, fig.height=5, fig.width=5}
+
+finemap_res_single_gene_L5 <- finemap_res_single_L5[finemap_res_single_L5$type !="SNP",]
+
+ggplot(finemap_res_single_gene_L5, aes(y = susie_pip, x = abs(z))) +
+  geom_point(alpha = 0.5, size = 0.5) +  # Adjust alpha and size for better visualization
+  labs(x ="|Z|" , y = "SuSiE PIP", title = "single eqtl, L=5") +
+  theme_minimal()
+```
+```{r warning=F, message=F, fig.height=5, fig.width=5}
+
+finemap_res_multi <- ctwas_res_multi_post$finemap_res
+finemap_res_multi <- anno_finemap_res(finemap_res_multi,
+                                          snp_map = snp_map,
+                                          mapping_table = mapping_two,
+                                          add_gene_annot = TRUE,
+                                          map_by = "molecular_id",
+                                          drop_unmapped = TRUE,
+                                          add_position = TRUE,
+                                          use_gene_pos = "mid")
+
+finemap_res_multi_gene <- finemap_res_multi[finemap_res_multi$type !="SNP",]
+ggplot(finemap_res_multi_gene, aes(y = susie_pip, x = abs(z))) +
+  geom_point(alpha = 0.5, size = 0.5) +  # Adjust alpha and size for better visualization
+  labs(x ="|Z|" , y = "SuSiE PIP", title = "multigroup, QTL share variance ,pre-estimate L") +
+  theme_minimal()
+```
+
+```{r warning=F, message=F, fig.height=8, fig.width=12}
+
+print(finemap_res_multi_gene[finemap_res_multi_gene$susie_pip>0.75 & abs(finemap_res_multi_gene$z) < 3,])
+
+weights_multi <- readRDS(paste0(folder_multi_results,"/",trait,"/",trait,".preprocessed.weights.RDS"))
+
+region_id <- "11_116512631_117876395"
+
+make_locusplot(finemap_res_multi,
+               region_id = region_id,
+               ens_db = ens_db,
+               weights = weights_multi,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = TRUE,
+               filter_cs = TRUE,
+               color_pval_by = "cs",
+               color_pip_by = "cs",panel.heights = c(4,4,1,1))
+
+
+
+```
+
+```{r warning=F, message=F, fig.height=8, fig.width=12}
+
+region_id <- "21_39110976_40017600"
+
+make_locusplot(finemap_res_multi,
+               region_id = region_id,
+               ens_db = ens_db,
+               weights = weights_multi,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = TRUE,
+               filter_cs = TRUE,
+               color_pval_by = "cs",
+               color_pip_by = "cs",panel.heights = c(4,4,1,1))
+
+
+
+```
+
+No LD mismatch issue detected for the 2 genes above.
+
+```{r warning=F, message=F, fig.height=5, fig.width=5}
+
+finemap_res_multi_samevar <- ctwas_res_multi_post_samevar$finemap_res
+finemap_res_multi_samevar <- anno_finemap_res(finemap_res_multi_samevar,
+                                          snp_map = snp_map,
+                                          mapping_table = mapping_two,
+                                          add_gene_annot = TRUE,
+                                          map_by = "molecular_id",
+                                          drop_unmapped = TRUE,
+                                          add_position = TRUE,
+                                          use_gene_pos = "mid")
+
+finemap_res_multi_samevar_gene <- finemap_res_multi_samevar[finemap_res_multi_samevar$type !="SNP",]
+ggplot(finemap_res_multi_samevar_gene, aes(y = susie_pip, x = abs(z))) +
+  geom_point(alpha = 0.5, size = 0.5) +  # Adjust alpha and size for better visualization
+  labs(x ="|Z|" , y = "SuSiE PIP", title = "multigroup, all groups share variance, pre-estimate L") +
+  theme_minimal()
+```
+
+
+
+
+```{r warning=F, message=F, fig.height=5, fig.width=5}
+
+finemap_res_multi_L5 <- ctwas_res_multi_post_L5$finemap_res
+finemap_res_multi_L5 <- anno_finemap_res(finemap_res_multi_L5,
+                                          snp_map = snp_map,
+                                          mapping_table = mapping_two,
+                                          add_gene_annot = TRUE,
+                                          map_by = "molecular_id",
+                                          drop_unmapped = TRUE,
+                                          add_position = TRUE,
+                                          use_gene_pos = "mid")
+
+finemap_res_multi_L5_gene <- finemap_res_multi_L5[finemap_res_multi_L5$type !="SNP",]
+ggplot(finemap_res_multi_L5_gene, aes(y = susie_pip, x = abs(z))) +
+  geom_point(alpha = 0.5, size = 0.5) +  # Adjust alpha and size for better visualization
+  labs(x ="|Z|" , y = "SuSiE PIP", title = "multigroup, all groups share variance, L = 5") +
+  theme_minimal()
+```
+
+
+```{r warning=F, message=F, fig.height=8, fig.width=12}
+
+print(finemap_res_multi_L5_gene[finemap_res_multi_L5_gene$susie_pip>0.75 & abs(finemap_res_multi_L5_gene$z) < 3,])
+
+weights_multi_L5 <- readRDS(paste0(folder_multi_results_L5,"/",trait,"/",trait,".preprocessed.weights.RDS"))
+
+region_id <- "2_117609890_120546207"
+
+make_locusplot(finemap_res_multi_L5,
+               region_id = region_id,
+               ens_db = ens_db,
+               weights = weights_multi_L5,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = TRUE,
+               filter_cs = TRUE,
+               color_pval_by = "cs",
+               color_pip_by = "cs",panel.heights = c(4,4,1,1))
+
+
+
+```
+
+
+```{r warning=F, message=F, fig.height=8, fig.width=12}
+
+print(finemap_res_multi_L5_gene[finemap_res_multi_L5_gene$susie_pip>0.75 & abs(finemap_res_multi_L5_gene$z) < 3,])
+
+weights_multi_L5 <- readRDS(paste0(folder_multi_results_L5,"/",trait,"/",trait,".preprocessed.weights.RDS"))
+
+region_id <- "11_116512631_117876395"
+
+make_locusplot(finemap_res_multi_L5,
+               region_id = region_id,
+               ens_db = ens_db,
+               weights = weights_multi_L5,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = TRUE,
+               filter_cs = TRUE,
+               color_pval_by = "cs",
+               color_pip_by = "cs",panel.heights = c(4,4,1,1))
+
+```
+LD mismatch checked, no LD mismatch issue for these two genes.
