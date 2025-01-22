@@ -441,7 +441,10 @@ for (i in 1:length(traits_used_in_silver)){
     x = "Combined PIP",
     y = "Frequency"
   ) +
-  xlim(-0.1, 1.1) + scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +  # Ensure integer y-axis labels
+  xlim(-0.1, 1.1) + 
+  scale_y_continuous(
+    breaks = function(x) seq(ceiling(min(x, na.rm = TRUE)), floor(max(x, na.rm = TRUE)))
+  ) +  # Generate integer breaks dynamically
   theme_minimal()
 }
 
@@ -828,7 +831,10 @@ for (i in 1:length(traits_used_in_silver)){
     x = "Combined PIP",
     y = "Frequency"
   ) +
-  xlim(-0.1, 1.1) + scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +  # Ensure integer y-axis labels
+  xlim(-0.1, 1.1) + 
+  scale_y_continuous(
+    breaks = function(x) seq(ceiling(min(x, na.rm = TRUE)), floor(max(x, na.rm = TRUE)))
+  ) +  # Generate integer breaks dynamically
   theme_minimal()
 }
 
@@ -856,7 +862,7 @@ For BMI, the bystander genes with PIP > 0.8 are : "ERI1"   "MTMR9"  "CCND3"  "ZB
 
 
 
-# Setting2: variance shared by all -- L=5
+# Setting3: variance shared by all -- L=5
 
 ## Reduce FP findings
 
@@ -941,7 +947,10 @@ for (i in 1:length(traits_used_in_silver)){
     x = "Combined PIP",
     y = "Frequency"
   ) +
-  xlim(-0.1, 1.1) + scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +  # Ensure integer y-axis labels
+  xlim(-0.1, 1.1) + 
+  scale_y_continuous(
+    breaks = function(x) seq(ceiling(min(x, na.rm = TRUE)), floor(max(x, na.rm = TRUE)))
+  ) +  # Generate integer breaks dynamically
   theme_minimal()
 
 }
