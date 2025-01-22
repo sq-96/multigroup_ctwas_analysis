@@ -360,20 +360,21 @@ LDL:
 
 ## Reduce FP findings
 
-### Silver standard for T2D LDL BMI RBC -- summary
+### Silver standard for T2D LDL BMI RBC IBD -- summary
 
-```{r fig.height=10, fig.width=10, message=FALSE, warning=FALSE}
+```{r fig.height=10, fig.width=15, message=FALSE, warning=FALSE}
 
-traits_used_in_silver <- c("T2D-panukb","LDL-ukb-d-30780_irnt","BMI-panukb","RBC-panukb")
-traits_silver <- c("T2D","LDL","BMI","RBC")
-top_tissues <- c("Pituitary","Liver","Cells_Cultured_fibroblasts","Skin_Not_Sun_Exposed_Suprapubic")
-names(top_tissues) <- c("T2D-panukb","LDL-ukb-d-30780_irnt","BMI-panukb","RBC-panukb")
+traits_used_in_silver <- c("T2D-panukb","LDL-ukb-d-30780_irnt","BMI-panukb","RBC-panukb","IBD-ebi-a-GCST004131")
+traits_silver <- c("T2D","LDL","BMI","RBC","IBD")
+top_tissues <- c("Pituitary","Liver","Cells_Cultured_fibroblasts","Skin_Not_Sun_Exposed_Suprapubic","Whole_Blood")
+names(top_tissues) <- c("T2D-panukb","LDL-ukb-d-30780_irnt","BMI-panukb","RBC-panukb","IBD-ebi-a-GCST004131")
 
 folder_single_results <- "/project/xinhe/shengqian/single_tissue_screen/processed_weights/expression_weights/"
 folder_multi_results <- "/project/xinhe/shengqian/ctwas_GWAS_analysis/results/"
 
 stats_all <- c()
 stats_all_twas <- c()
+p <- list()
 for (i in 1:length(traits_used_in_silver)){
 
 
@@ -423,6 +424,25 @@ for (i in 1:length(traits_used_in_silver)){
   stats_all <- rbind(stats_all,stats_trait)
   stats_all_twas <- rbind(stats_all_twas,stats_trait_twas)
 
+    known_pip <- combined_pip_multi[combined_pip_multi$gene_name %in% known,]
+  
+  p[[i]] <- ggplot(data = known_pip, aes(x = combined_pip)) +
+  geom_histogram(binwidth = 0.05, color = "black", fill = "blue") +
+  geom_vline(xintercept = 0.8, color = "red", linetype = "dashed", size = 1) +
+  annotate(
+    "text",
+    x = 0.8, 
+    y = max(table(cut(known_pip$combined_pip, breaks = seq(0, 1, 0.05)))), 
+    label = "PIP = 0.8",
+    color = "red", hjust = -0.1, vjust = 1, size = 5
+  ) +
+  labs(
+    title = traits_used_in_silver[i],
+    x = "Combined PIP",
+    y = "Frequency"
+  ) +
+  xlim(-0.1, 1.1) + scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +  # Ensure integer y-axis labels
+  theme_minimal()
 }
 
 colnames(stats_all) <- c("trait","analysis","num_gene_pip08","num_gene_known","num_gene_known_imputable","num_gene_known_pip08","num_gene_bystander","num_gene_bystander_imputable","num_gene_bystander_pip08")
@@ -440,6 +460,8 @@ stats_all_twas <- as.data.frame(stats_all_twas)
 stats_all_twas$TP_rate <- as.numeric(stats_all_twas$num_gene_known_bonf0.05) / (as.numeric(stats_all_twas$num_gene_known_bonf0.05) + as.numeric(stats_all_twas$num_gene_bystander_bonf0.05))
 
 DT::datatable(stats_all_twas,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Comparing TWAS results with silver standard genes'),options = list(pageLength = 10) )
+
+grid.arrange(grobs = p, ncol = 3)
 ```
 
 
@@ -724,22 +746,23 @@ grid.arrange(grobs = p, ncol = 3, nrow = 2)
 
 ## Reduce FP findings
 
-### Silver standard for T2D LDL BMI RBC
+### Silver standard for T2D LDL BMI RBC IBD
 
-```{r fig.height=10, fig.width=10, message=FALSE, warning=FALSE}
+```{r fig.height=10, fig.width=15, message=FALSE, warning=FALSE}
 
-traits_used_in_silver <- c("T2D-panukb","LDL-ukb-d-30780_irnt","BMI-panukb","RBC-panukb")
-traits_silver <- c("T2D","LDL","BMI","RBC")
-top_tissues <- c("Pituitary","Liver","Cells_Cultured_fibroblasts","Skin_Not_Sun_Exposed_Suprapubic")
-names(top_tissues) <- c("T2D-panukb","LDL-ukb-d-30780_irnt","BMI-panukb","RBC-panukb")
+traits_used_in_silver <- c("T2D-panukb","LDL-ukb-d-30780_irnt","BMI-panukb","RBC-panukb","IBD-ebi-a-GCST004131")
+traits_silver <- c("T2D","LDL","BMI","RBC","IBD")
+top_tissues <- c("Pituitary","Liver","Cells_Cultured_fibroblasts","Skin_Not_Sun_Exposed_Suprapubic","Whole_Blood")
+names(top_tissues) <- c("T2D-panukb","LDL-ukb-d-30780_irnt","BMI-panukb","RBC-panukb","IBD-ebi-a-GCST004131")
 
 #folder_single_results <- "/project/xinhe/shengqian/single_tissue_screen/processed_weights/expression_weights/"
 folder_multi_results <- "/project/xinhe/shengqian/ctwas_GWAS_analysis/results_same_variance/"
 
 stats_all <- c()
 stats_all_twas <- c()
+p <- list()
 for (i in 1:length(traits_used_in_silver)){
-
+#for (i in c(2)){
   known <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/data/silverstandard/known_annotations_",traits_silver[i],".RDS"))
   bystander <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/data/silverstandard/bystanders_",traits_silver[i],".RDS"))
 
@@ -788,6 +811,25 @@ for (i in 1:length(traits_used_in_silver)){
   stats_all <- rbind(stats_all,stats_trait)
   stats_all_twas <- rbind(stats_all_twas,stats_trait_twas)
 
+  known_pip <- combined_pip_multi[combined_pip_multi$gene_name %in% known,]
+  
+  p[[i]] <- ggplot(data = known_pip, aes(x = combined_pip)) +
+  geom_histogram(binwidth = 0.05, color = "black", fill = "blue") +
+  geom_vline(xintercept = 0.8, color = "red", linetype = "dashed", size = 1) +
+  annotate(
+    "text",
+    x = 0.8, 
+    y = max(table(cut(known_pip$combined_pip, breaks = seq(0, 1, 0.05)))), 
+    label = "PIP = 0.8",
+    color = "red", hjust = -0.1, vjust = 1, size = 5
+  ) +
+  labs(
+    title = traits_used_in_silver[i],
+    x = "Combined PIP",
+    y = "Frequency"
+  ) +
+  xlim(-0.1, 1.1) + scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +  # Ensure integer y-axis labels
+  theme_minimal()
 }
 
 colnames(stats_all) <- c("trait","analysis","num_gene_pip08","num_gene_known","num_gene_known_imputable","num_gene_known_pip08","num_gene_bystander","num_gene_bystander_imputable","num_gene_bystander_pip08")
@@ -805,6 +847,123 @@ stats_all_twas <- as.data.frame(stats_all_twas)
 stats_all_twas$TP_rate <- as.numeric(stats_all_twas$num_gene_known_bonf0.05) / (as.numeric(stats_all_twas$num_gene_known_bonf0.05) + as.numeric(stats_all_twas$num_gene_bystander_bonf0.05))
 
 DT::datatable(stats_all_twas,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Comparing TWAS results with silver standard genes'),options = list(pageLength = 10) )
+
+grid.arrange(grobs = p, ncol = 3)
+```
+
+
+For BMI, the bystander genes with PIP > 0.8 are : "ERI1"   "MTMR9"  "CCND3"  "ZBTB7A" "KCNH3" . No one is related to BMI
+
+
+
+# Setting2: variance shared by all -- L=5
+
+## Reduce FP findings
+
+### Silver standard for T2D LDL BMI RBC IBD
+
+```{r fig.height=10, fig.width=15, message=FALSE, warning=FALSE}
+
+traits_used_in_silver <- c("T2D-panukb","LDL-ukb-d-30780_irnt","BMI-panukb","RBC-panukb","IBD-ebi-a-GCST004131")
+traits_silver <- c("T2D","LDL","BMI","RBC","IBD")
+top_tissues <- c("Pituitary","Liver","Cells_Cultured_fibroblasts","Skin_Not_Sun_Exposed_Suprapubic","Whole_Blood")
+names(top_tissues) <- c("T2D-panukb","LDL-ukb-d-30780_irnt","BMI-panukb","RBC-panukb","IBD-ebi-a-GCST004131")
+
+folder_multi_results <- "/project/xinhe/shengqian/ctwas_GWAS_analysis/results_same_variance_L5/"
+
+stats_all <- c()
+stats_all_twas <- c()
+p <- list()
+for (i in 1:length(traits_used_in_silver)){
+#for (i in c(2)){
+  known <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/data/silverstandard/known_annotations_",traits_silver[i],".RDS"))
+  bystander <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/data/silverstandard/bystanders_",traits_silver[i],".RDS"))
+
+  # single group results
+
+  # tissue <- top_tissues[traits_used_in_silver[i]]
+  # 
+  # z_gene_single <-readRDS(paste0(folder_single_results,"/",traits_used_in_silver[i],"/",traits_used_in_silver[i],"_",tissue,".z_gene.RDS"))
+  # z_gene_single <- z_gene_single %>%
+  #                 mutate(molecular_id = sub("\\|.*", "", id)) %>%  # Extract ENSG ID from id
+  #                 left_join(mapping_two %>% dplyr::select(molecular_id, gene_name), by = "molecular_id")
+  # z_gene_single$p <- z2p(z_gene_single$z)
+  # z_gene_single$fdr <- p.adjust(z_gene_single$p, method = "bonferroni")
+  # z_gene_single_sig <- z_gene_single[z_gene_single$fdr < 0.05,]
+  # 
+  # 
+  # combined_pip_single <-readRDS(paste0(folder_single_results,"/",traits_used_in_silver[i],"/",traits_used_in_silver[i],"_",tissue,".combined_pip_bygroup_final.RDS"))
+  # combined_pip_sig_single <- combined_pip_single[combined_pip_single$combined_pip > 0.8,]
+  # 
+  # 
+  # stats_single <- c(traits_used_in_silver[i],"single-group-ctwaspip0.8",nrow(combined_pip_sig_single),length(known), sum(unique(z_gene_single$gene_name) %in% known),sum(combined_pip_sig_single$gene_name %in% known),length(bystander),sum(unique(z_gene_single$gene_name) %in% bystander) ,sum(combined_pip_sig_single$gene_name %in% bystander))
+  # stats_single_twas <- c(traits_used_in_silver[i],"single-group-twasbonf0.05",nrow(z_gene_single_sig),length(known),sum(z_gene_single_sig$gene_name %in% known),length(bystander),sum(z_gene_single_sig$gene_name %in% bystander))
+
+  # multi
+
+  z_gene_multi <- readRDS(paste0(folder_multi_results,"/",traits_used_in_silver[i],"/",traits_used_in_silver[i],".z_gene.RDS"))
+  z_gene_multi <- z_gene_multi %>%
+                  mutate(molecular_id = sub("\\|.*", "", id)) %>%  # Extract ENSG ID from id
+                  left_join(mapping_two %>% dplyr::select(molecular_id, gene_name), by = "molecular_id")
+  z_gene_multi$p <- z2p(z_gene_multi$z)
+  z_gene_multi$fdr <- p.adjust(z_gene_multi$p, method = "bonferroni")
+  z_gene_multi_sig <- z_gene_multi[z_gene_multi$fdr < 0.05,]
+
+  combined_pip_multi <-readRDS(paste0(folder_multi_results,"/",traits_used_in_silver[i],"/",traits_used_in_silver[i],".combined_pip_bygroup_final.RDS"))
+  combined_pip_sig_multi <- combined_pip_multi[combined_pip_multi$combined_pip > 0.8,]
+
+  stats_multi <- c(traits_used_in_silver[i],"multi-group-ctwaspip0.8",nrow(combined_pip_sig_multi),length(known), sum(unique(z_gene_multi$gene_name) %in% known),sum(combined_pip_sig_multi$gene_name %in% known),length(bystander),sum(unique(z_gene_multi$gene_name) %in% bystander) ,sum(combined_pip_sig_multi$gene_name %in% bystander))
+  #stats_multi_twas <- c(traits_used_in_silver[i],"multi-group-twasbonf0.05",nrow(z_gene_multi_sig),length(known),sum(z_gene_multi_sig$gene_name %in% known),length(bystander),sum(z_gene_multi_sig$gene_name %in% bystander))
+  stats_multi_twas <- c(traits_used_in_silver[i],"multi-group-twasbonf0.05",length(unique(z_gene_multi_sig$gene_name)),length(known),sum(unique(z_gene_multi_sig$gene_name) %in% known),length(bystander),sum(unique(z_gene_multi_sig$gene_name) %in% bystander))
+
+  #stats_trait <- rbind(stats_single, stats_multi)
+  stats_trait <- stats_multi
+  stats_trait_twas <- stats_multi_twas
+  #stats_trait_twas <- rbind(stats_single_twas, stats_multi_twas)
+
+  stats_all <- rbind(stats_all,stats_trait)
+  stats_all_twas <- rbind(stats_all_twas,stats_trait_twas)
+  
+  known_pip <- combined_pip_multi[combined_pip_multi$gene_name %in% known,]
+  
+  p[[i]] <- ggplot(data = known_pip, aes(x = combined_pip)) +
+  geom_histogram(binwidth = 0.05, color = "black", fill = "blue") +
+  geom_vline(xintercept = 0.8, color = "red", linetype = "dashed", size = 1) +
+  annotate(
+    "text",
+    x = 0.8, 
+    y = max(table(cut(known_pip$combined_pip, breaks = seq(0, 1, 0.05)))), 
+    label = "PIP = 0.8",
+    color = "red", hjust = -0.1, vjust = 1, size = 5
+  ) +
+  labs(
+    title = traits_used_in_silver[i],
+    x = "Combined PIP",
+    y = "Frequency"
+  ) +
+  xlim(-0.1, 1.1) + scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +  # Ensure integer y-axis labels
+  theme_minimal()
+
+}
+
+colnames(stats_all) <- c("trait","analysis","num_gene_pip08","num_gene_known","num_gene_known_imputable","num_gene_known_pip08","num_gene_bystander","num_gene_bystander_imputable","num_gene_bystander_pip08")
+rownames(stats_all) <- seq(1:nrow(stats_all))
+stats_all <- as.data.frame(stats_all)
+
+stats_all$TP_rate <- as.numeric(stats_all$num_gene_known_pip08) / (as.numeric(stats_all$num_gene_known_pip08) + as.numeric(stats_all$num_gene_bystander_pip08))
+
+DT::datatable(stats_all,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Comparing cTWAS results with silver standard genes'),options = list(pageLength = 10) )
+
+colnames(stats_all_twas) <- c("trait","analysis","num_gene_bonf0.05","num_gene_known","num_gene_known_bonf0.05","num_gene_bystander","num_gene_bystander_bonf0.05")
+rownames(stats_all_twas) <- seq(1:nrow(stats_all_twas))
+stats_all_twas <- as.data.frame(stats_all_twas)
+
+stats_all_twas$TP_rate <- as.numeric(stats_all_twas$num_gene_known_bonf0.05) / (as.numeric(stats_all_twas$num_gene_known_bonf0.05) + as.numeric(stats_all_twas$num_gene_bystander_bonf0.05))
+
+DT::datatable(stats_all_twas,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Comparing TWAS results with silver standard genes'),options = list(pageLength = 10) )
+
+
+grid.arrange(grobs = p, ncol = 3)
 ```
 
 
