@@ -304,6 +304,45 @@ ggplot(data_long, aes(x = tissue_single, y = count, fill = category)) +
 
 ```
 
+### SCZ-ieu-b-5102
+
+```{r warning=F, message=F, fig.height=10, fig.width=10}
+
+trait <- "SCZ-ieu-b-5102"
+
+folder_results_multi <- "/project/xinhe/shengqian/ctwas_GWAS_analysis/results/"
+folder_results_single <- "/project/xinhe/shengqian/single_tissue_screen/processed_weights/expression_weights/"
+tissue_single <- "Brain_Hippocampus"
+
+combined_pip_by_group_multi <- readRDS(paste0(folder_results_multi,trait,"/",trait,".combined_pip_bygroup_final.RDS"))
+combined_pip_by_group_single <- readRDS(paste0(folder_results_single,trait,"/",trait,"_",tissue_single,".combined_pip_bygroup_final.RDS"))
+
+combined_pip_by_group_sig_multi <- combined_pip_by_group_multi[combined_pip_by_group_multi$combined_pip > 0.8,]
+combined_pip_by_group_sig_single <- combined_pip_by_group_single[combined_pip_by_group_single$combined_pip > 0.8,]
+
+overlap <- combined_pip_by_group_sig_multi[combined_pip_by_group_sig_multi$gene_name %in% combined_pip_by_group_sig_single$gene_name,]
+
+sprintf("# of unique genes from multi-group analysis = %s", nrow(combined_pip_by_group_sig_multi))
+sprintf("# of unique genes from single-group analysis = %s", nrow(combined_pip_by_group_sig_single))
+sprintf("# of overlapped genes = %s", nrow(overlap))
+
+plot_heatmap_byomics(heatmap_data = combined_pip_by_group_sig_multi[!combined_pip_by_group_sig_multi$gene_name %in% combined_pip_by_group_sig_single$gene_name,], main = "PIP partition for unique genes with PIP > 0.8 from multi-group analysis")
+```
+
+```{r warning=F, message=F, fig.height=10, fig.width=10}
+plot_heatmap_byomics(heatmap_data = combined_pip_by_group_sig_multi[combined_pip_by_group_sig_multi$gene_name %in% combined_pip_by_group_sig_single$gene_name,], main = "PIP partition for overlapped genes ")
+```
+
+```{r warning=F, message=F, fig.height=10, fig.width=10}
+DT::datatable(combined_pip_by_group_sig_single[!combined_pip_by_group_sig_single$gene_name %in% combined_pip_by_group_sig_multi$gene_name,],caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Unique genes from single eqtl analysis'),options = list(pageLength = 10) )
+
+```
+
+
+
+- Among the single eQTL unique genes, HIST1H2BN and HLA-DMB may relate to SCZ
+- Among the multi-group unique genes, NT5C2, DRD2,SDCCAG8 may relate to SCZ
+- Among the overlapped genes, RERE may relate to SCZ
 
 ## Highlight the causal context and modality
 
@@ -654,7 +693,7 @@ DT::datatable(magma_unique,caption = htmltools::tags$caption( style = 'caption-s
 ```
 
 
-# Setting2: variance shared by all
+# Setting2: variance shared by all -- pre-estimate L
 
 ## Parameters
 
@@ -864,6 +903,47 @@ For BMI, the bystander genes with PIP > 0.8 are : "ERI1"   "MTMR9"  "CCND3"  "ZB
 
 # Setting3: variance shared by all -- L=5
 
+## The power of gene discovery
+
+### SCZ-ieu-b-5102
+
+```{r warning=F, message=F, fig.height=10, fig.width=10}
+
+trait <- "SCZ-ieu-b-5102"
+
+folder_results_multi <- "/project/xinhe/shengqian/ctwas_GWAS_analysis/results_same_variance_L5/"
+folder_results_single <- "/project/xinhe/shengqian/single_tissue_screen/processed_weights_L5/expression_weights/"
+tissue_single <- "Brain_Hippocampus"
+
+combined_pip_by_group_multi <- readRDS(paste0(folder_results_multi,trait,"/",trait,".combined_pip_bygroup_final.RDS"))
+combined_pip_by_group_single <- readRDS(paste0(folder_results_single,trait,"/",trait,"_",tissue_single,".combined_pip_bygroup_final.RDS"))
+
+combined_pip_by_group_sig_multi <- combined_pip_by_group_multi[combined_pip_by_group_multi$combined_pip > 0.8,]
+combined_pip_by_group_sig_single <- combined_pip_by_group_single[combined_pip_by_group_single$combined_pip > 0.8,]
+
+overlap <- combined_pip_by_group_sig_multi[combined_pip_by_group_sig_multi$gene_name %in% combined_pip_by_group_sig_single$gene_name,]
+
+sprintf("# of unique genes from multi-group analysis = %s", nrow(combined_pip_by_group_sig_multi))
+sprintf("# of unique genes from single-group analysis = %s", nrow(combined_pip_by_group_sig_single))
+sprintf("# of overlapped genes = %s", nrow(overlap))
+
+plot_heatmap_byomics(heatmap_data = combined_pip_by_group_sig_multi[!combined_pip_by_group_sig_multi$gene_name %in% combined_pip_by_group_sig_single$gene_name,], main = "PIP partition for unique genes with PIP > 0.8 from multi-group analysis")
+```
+
+```{r warning=F, message=F, fig.height=10, fig.width=10}
+plot_heatmap_byomics(heatmap_data = combined_pip_by_group_sig_multi[combined_pip_by_group_sig_multi$gene_name %in% combined_pip_by_group_sig_single$gene_name,], main = "PIP partition for overlapped genes ")
+```
+
+```{r warning=F, message=F, fig.height=10, fig.width=10}
+DT::datatable(combined_pip_by_group_sig_single[!combined_pip_by_group_sig_single$gene_name %in% combined_pip_by_group_sig_multi$gene_name,],caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Unique genes from single eqtl analysis'),options = list(pageLength = 10) )
+
+```
+
+- Among the single eQTL unique genes, HIST1H2BN, HLA-DMB, and PPP1R16B may relate to SCZ
+- Among the multi-group unique genes, NT5C2, DRD2, SDCCAG8 and ZKSCAN3 may relate to SCZ
+- Among the overlapped genes, RERE, TMEM222 and TRPV4 may relate to SCZ
+
+
 ## Reduce FP findings
 
 ### Silver standard for T2D LDL BMI RBC IBD
@@ -975,5 +1055,12 @@ DT::datatable(stats_all_twas,caption = htmltools::tags$caption( style = 'caption
 grid.arrange(grobs = p, ncol = 3)
 ```
 
+Bystander genes identified by cTWAS: 
 
+Notes from Perplexity
 
+- T1D: "MAP2K7" "ZMIZ2".  
+- LDL: "TRIM39"   "SLC39A8"  "NPC1L1"   "CYP2A6"   "HMGCR"    "PRKD2"    "CTSB"     "ADH1B"    "ACVR1C"   "ABHD6"    "SLC22A18" "MYPOP"    "CCDC57"   "GABBR1"   "ADRB1"    "APOC1"    "DDX56"   : NPC1L1 and HMGCR may relate to LDL
+- BMI: "ADH1B"   "NDUFA13" "TP53"    "HLTF"    "CASP7"   "ETV5"    "DMWD"    "BAIAP2"  "MTIF3"   "YWHAQ"  : ADH1B may relate to BMI
+- RBC: "FDFT1"   "CDC37L1" "COL4A3"  "DUSP14"  "OSER1"   "ADH1B" : ADH1B may relate to RBC
+- IBD: "LSP1": may relate to IBD
