@@ -14,7 +14,7 @@ editor_options:
 3. Comparing the number of expression and splicing molecular traits identified by coloc (PP4>0.8), single-cTWAS (PIP>0.8) and multi-cTWAS (PIP>0.8)
 - don't include stability traits identified by multi-cTWAS
 
-```{r echo=FALSE, message=FALSE, results='hide', warning=FALSE,include=FALSE}
+```{r echo=FALSE, message=FALSE, results='hide', warning=FALSE, include=FALSE}
 library(ggplot2)
 library(ggVennDiagram)
 library(gridExtra)
@@ -26,6 +26,9 @@ library(RSQLite)
 library(dplyr)
 library(magrittr)
 library(pheatmap)
+
+library(EnsDb.Hsapiens.v86)
+ens_db <- EnsDb.Hsapiens.v86
 
 GWAS_tissues <- list("WBC-ieu-b-30" = c("Whole_Blood","Cells_Cultured_fibroblasts","Esophagus_Muscularis","Pancreas","Nerve_Tibial"),
                     "SBP-ukb-a-360" = c("Artery_Aorta","Brain_Cortex","Artery_Tibial","Cells_Cultured_fibroblasts","Brain_Cerebellar_Hemisphere"),
@@ -92,8 +95,6 @@ get_results <- function(gwas_id,gwas_name){
   coloc_mts <- coloc_mts[coloc_mts$PP4>0.8,]
   num_coloc_gene <- length(unique(coloc_mts$gene_name))
   
-  library(EnsDb.Hsapiens.v86)
-  ens_db <- EnsDb.Hsapiens.v86
   weights <- readRDS("/project/xinhe/shengqian/ctwas_GWAS_analysis/results_ES/SBP-ukb-a-360/SBP-ukb-a-360.preprocessed.weights.RDS")
   mapping_predictdb <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_E_S_M_mapping.RDS")
   finemap_res <- readRDS(paste0("/project/xinhe/shengqian/ctwas_GWAS_analysis/results_ES/",gwas_id,"/",gwas_id,".finemap_regions_res.RDS"))
