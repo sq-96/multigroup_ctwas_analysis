@@ -410,7 +410,7 @@ aria-hidden="true"></span> </a>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2025-01-22
+<strong>Last updated:</strong> 2025-01-24
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -544,15 +544,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree0189bd3bc100acc84c9fd4132c9ce8cfae816144targetblank0189bd3a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistreea20c713fcce4b431f826661e8e4a847432163d8dtargetblanka20c713a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/0189bd3bc100acc84c9fd4132c9ce8cfae816144" target="_blank">0189bd3</a>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/a20c713fcce4b431f826661e8e4a847432163d8d" target="_blank">a20c713</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree0189bd3bc100acc84c9fd4132c9ce8cfae816144targetblank0189bd3a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistreea20c713fcce4b431f826661e8e4a847432163d8dtargetblanka20c713a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -562,7 +562,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/0189bd3bc100acc84c9fd4132c9ce8cfae816144" target="_blank">0189bd3</a>.
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/a20c713fcce4b431f826661e8e4a847432163d8d" target="_blank">a20c713</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -626,6 +626,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/6c7c5cbb6da0ec06f2209303cf0b1fb7ba53dc65/analysis/LDL_silver_standard.Rmd" target="_blank">6c7c5cb</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-01-22
+</td>
+<td>
+update
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/sq-96/multigroup_ctwas_analysis/6c7c5cbb6da0ec06f2209303cf0b1fb7ba53dc65/docs/LDL_silver_standard.html" target="_blank">6c7c5cb</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-01-22
+</td>
+<td>
+update
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -867,9 +901,11 @@ get_ctwas_file &lt;- function(trait, tissue = NULL, folder_results) {
 </div>
 <div id="results" class="section level1">
 <h1>Results</h1>
+<div id="fine-mapping-results" class="section level2">
+<h2>Fine-mapping results</h2>
 <div id="single-eqtl-analysis-results-pre-estimate-l"
-class="section level2">
-<h2>Single eQTL analysis results – pre-estimate L</h2>
+class="section level3">
+<h3>Single eQTL analysis results – pre-estimate L</h3>
 <pre class="r"><code>trait &lt;- &quot;LDL-ukb-d-30780_irnt&quot;
 tissue &lt;- &quot;Liver&quot;
 
@@ -886,8 +922,8 @@ susie_alpha_res_single_post &lt;- anno_susie_alpha_res(susie_alpha_res_single_po
                                         mapping_table = mapping_two,
                                         map_by = &quot;molecular_id&quot;,
                                         drop_unmapped = TRUE)</code></pre>
-<pre><code>2025-01-22 16:21:47 INFO::Annotating susie alpha result ...
-2025-01-22 16:21:47 INFO::Map molecular traits to genes</code></pre>
+<pre><code>2025-01-24 15:17:03 INFO::Annotating susie alpha result ...
+2025-01-24 15:17:03 INFO::Map molecular traits to genes</code></pre>
 <pre class="r"><code>combined_pip_by_group_single &lt;- combine_gene_pips(susie_alpha_res_single_post, 
                                              group_by = &quot;gene_name&quot;,
                                              by = &quot;group&quot;,
@@ -903,8 +939,8 @@ DT::datatable(combined_pip_sig_single,caption = htmltools::tags$caption( style =
   mutate(molecular_id = sub(&quot;\\|.*&quot;, &quot;&quot;, id)) %&gt;%  # Extract ENSG ID from id
   left_join(mapping_two %&gt;% dplyr::select(molecular_id, gene_name), by = &quot;molecular_id&quot;)</code></pre>
 </div>
-<div id="single-eqtl-analysis-results-l5" class="section level2">
-<h2>Single eQTL analysis results – L=5</h2>
+<div id="single-eqtl-analysis-results-l5" class="section level3">
+<h3>Single eQTL analysis results – L=5</h3>
 <pre class="r"><code>trait &lt;- &quot;LDL-ukb-d-30780_irnt&quot;
 tissue &lt;- &quot;Liver&quot;
 
@@ -921,8 +957,8 @@ susie_alpha_res_single_post_L5 &lt;- anno_susie_alpha_res(susie_alpha_res_single
                                         mapping_table = mapping_two,
                                         map_by = &quot;molecular_id&quot;,
                                         drop_unmapped = TRUE)</code></pre>
-<pre><code>2025-01-22 16:21:53 INFO::Annotating susie alpha result ...
-2025-01-22 16:21:53 INFO::Map molecular traits to genes</code></pre>
+<pre><code>2025-01-24 15:17:08 INFO::Annotating susie alpha result ...
+2025-01-24 15:17:08 INFO::Map molecular traits to genes</code></pre>
 <pre class="r"><code>combined_pip_by_group_single_L5 &lt;- combine_gene_pips(susie_alpha_res_single_post_L5, 
                                              group_by = &quot;gene_name&quot;,
                                              by = &quot;group&quot;,
@@ -940,9 +976,9 @@ DT::datatable(combined_pip_sig_single_L5,caption = htmltools::tags$caption( styl
 </div>
 <div
 id="multi-group-analysis-results-same-qtl-share-variance-pre-estimate-l"
-class="section level2">
-<h2>Multi-group analysis results – same QTL share variance, pre-estimate
-L</h2>
+class="section level3">
+<h3>Multi-group analysis results – same QTL share variance, pre-estimate
+L</h3>
 <pre class="r"><code>tissues &lt;- c(&quot;Liver&quot;,&quot;Spleen&quot;,&quot;Esophagus_Gastroesophageal_Junction&quot;,&quot;Esophagus_Muscularis&quot;,&quot;Esophagus_Mucosa&quot;)
 
 folder_multi_results &lt;- &quot;/project/xinhe/shengqian/ctwas_GWAS_analysis/results/&quot;
@@ -958,9 +994,9 @@ susie_alpha_res_multi_post &lt;- anno_susie_alpha_res(susie_alpha_res_multi_post
                                         mapping_table = mapping_two,
                                         map_by = &quot;molecular_id&quot;,
                                         drop_unmapped = TRUE)</code></pre>
-<pre><code>2025-01-22 16:21:59 INFO::Annotating susie alpha result ...
-2025-01-22 16:21:59 INFO::Map molecular traits to genes
-2025-01-22 16:22:02 INFO::Split PIPs for molecular traits mapped to multiple genes</code></pre>
+<pre><code>2025-01-24 15:17:14 INFO::Annotating susie alpha result ...
+2025-01-24 15:17:14 INFO::Map molecular traits to genes
+2025-01-24 15:17:16 INFO::Split PIPs for molecular traits mapped to multiple genes</code></pre>
 <pre class="r"><code>combined_pip_by_group_multi &lt;- combine_gene_pips(susie_alpha_res_multi_post, 
                                              group_by = &quot;gene_name&quot;,
                                              by = &quot;group&quot;,
@@ -979,9 +1015,9 @@ z_gene_multi &lt;- z_gene_multi %&gt;%
 </div>
 <div
 id="multi-group-analysis-results-all-group-share-variance-pre-estimate-l"
-class="section level2">
-<h2>Multi-group analysis results – all group share variance,
-pre-estimate L</h2>
+class="section level3">
+<h3>Multi-group analysis results – all group share variance,
+pre-estimate L</h3>
 <pre class="r"><code>tissues &lt;- c(&quot;Liver&quot;,&quot;Spleen&quot;,&quot;Esophagus_Gastroesophageal_Junction&quot;,&quot;Esophagus_Muscularis&quot;,&quot;Esophagus_Mucosa&quot;)
 
 folder_multi_results_samevar &lt;- &quot;/project/xinhe/shengqian/ctwas_GWAS_analysis/results_same_variance/&quot;
@@ -998,9 +1034,9 @@ susie_alpha_res_multi_post_samevar &lt;- anno_susie_alpha_res(susie_alpha_res_mu
                                         mapping_table = mapping_two,
                                         map_by = &quot;molecular_id&quot;,
                                         drop_unmapped = TRUE)</code></pre>
-<pre><code>2025-01-22 16:22:12 INFO::Annotating susie alpha result ...
-2025-01-22 16:22:12 INFO::Map molecular traits to genes
-2025-01-22 16:22:14 INFO::Split PIPs for molecular traits mapped to multiple genes</code></pre>
+<pre><code>2025-01-24 15:17:26 INFO::Annotating susie alpha result ...
+2025-01-24 15:17:26 INFO::Map molecular traits to genes
+2025-01-24 15:17:28 INFO::Split PIPs for molecular traits mapped to multiple genes</code></pre>
 <pre class="r"><code>combined_pip_by_group_multi_samevar &lt;- combine_gene_pips(susie_alpha_res_multi_post_samevar, 
                                              group_by = &quot;gene_name&quot;,
                                              by = &quot;group&quot;,
@@ -1018,8 +1054,8 @@ z_gene_multi_samevar &lt;- z_gene_multi_samevar %&gt;%
   left_join(mapping_two %&gt;% dplyr::select(molecular_id, gene_name), by = &quot;molecular_id&quot;)</code></pre>
 </div>
 <div id="multi-group-analysis-results-all-group-share-variance-l-5"
-class="section level2">
-<h2>Multi-group analysis results – all group share variance, L = 5</h2>
+class="section level3">
+<h3>Multi-group analysis results – all group share variance, L = 5</h3>
 <pre class="r"><code>tissues &lt;- c(&quot;Liver&quot;,&quot;Spleen&quot;,&quot;Esophagus_Gastroesophageal_Junction&quot;,&quot;Esophagus_Muscularis&quot;,&quot;Esophagus_Mucosa&quot;)
 
 folder_multi_results_L5 &lt;- &quot;/project/xinhe/shengqian/ctwas_GWAS_analysis/results_same_variance_L5/&quot;
@@ -1035,9 +1071,9 @@ susie_alpha_res_multi_post_L5 &lt;- anno_susie_alpha_res(susie_alpha_res_multi_p
                                         mapping_table = mapping_two,
                                         map_by = &quot;molecular_id&quot;,
                                         drop_unmapped = TRUE)</code></pre>
-<pre><code>2025-01-22 16:22:24 INFO::Annotating susie alpha result ...
-2025-01-22 16:22:24 INFO::Map molecular traits to genes
-2025-01-22 16:22:26 INFO::Split PIPs for molecular traits mapped to multiple genes</code></pre>
+<pre><code>2025-01-24 15:17:38 INFO::Annotating susie alpha result ...
+2025-01-24 15:17:38 INFO::Map molecular traits to genes
+2025-01-24 15:17:40 INFO::Split PIPs for molecular traits mapped to multiple genes</code></pre>
 <pre class="r"><code>combined_pip_by_group_multi_L5 &lt;- combine_gene_pips(susie_alpha_res_multi_post_L5, 
                                              group_by = &quot;gene_name&quot;,
                                              by = &quot;group&quot;,
@@ -1053,6 +1089,7 @@ DT::datatable(combined_pip_sig_multi_L5,caption = htmltools::tags$caption( style
 z_gene_multi_L5 &lt;- z_gene_multi_L5 %&gt;%
   mutate(molecular_id = sub(&quot;\\|.*&quot;, &quot;&quot;, id)) %&gt;%  # Extract ENSG ID from id
   left_join(mapping_two %&gt;% dplyr::select(molecular_id, gene_name), by = &quot;molecular_id&quot;)</code></pre>
+</div>
 </div>
 <div id="comparing-with-silver-standard-genes" class="section level2">
 <h2>Comparing with silver standard genes</h2>
@@ -1079,12 +1116,11 @@ stats$TP &lt;- stats$num_gene_known_pip08 / (stats$num_gene_known_pip08 + stats$
 DT::datatable(stats,caption = htmltools::tags$caption( style = &#39;caption-side: left; text-align: left; color:black;  font-size:150% ;&#39;,&#39;&#39;),options = list(pageLength = 10) )</code></pre>
 <div id="htmlwidget-99e959167faff8d1fc37" style="width:100%;height:auto;" class="datatables html-widget"></div>
 <script type="application/json" data-for="htmlwidget-99e959167faff8d1fc37">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\"><\/caption>","data":[["1","2","3","4","5","6"],["ctwas paper","ctwasV2 - single eQTL, preL","ctwasV2 - single eQTL - L=5","ctwasV2 - multigroup - QTL share variance, preL","ctwasV2 - multigroup - all share variance, preL","ctwasV2 - multigroup - all share variance, L=5"],[35,27,33,72,76,89],["46 of 69 known","38","38","68","68","68"],[6,2,4,11,11,12],["539 of 539 bystander","474","474","537","537","537"],[2,2,1,4,3,3],[0.75,0.5,0.8,0.733333333333333,0.785714285714286,0.8]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>analysis<\/th>\n      <th>num_gene_pip08<\/th>\n      <th>num_gene_known_imputable<\/th>\n      <th>num_gene_known_pip08<\/th>\n      <th>num_gene_bystander_imputable<\/th>\n      <th>num_gene_bystander_pip08<\/th>\n      <th>TP<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[2,4,6,7]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
-</div>
 <div
 id="checking-why-some-silver-standard-genes-are-missed-single-eqtl-pre-estimate-l"
-class="section level2">
-<h2>Checking why some silver standard genes are missed – single eQTL,
-pre-estimate L</h2>
+class="section level3">
+<h3>Checking why some silver standard genes are missed – single eQTL,
+pre-estimate L</h3>
 <pre class="r"><code>LDL_silver_known_sig &lt;- LDL_silver_known[as.numeric(LDL_silver_known$PIP) &gt; 0.8 &amp; LDL_silver_known$PIP !=&quot;NA&quot;,]
 LDL_silver_known_sig &lt;- LDL_silver_known_sig[,c(&quot;genename&quot;,&quot;cs_index&quot;,&quot;PIP&quot;,&quot;z&quot;,&quot;num_eqtl&quot;,&quot;region_tag&quot;)]
 
@@ -1151,10 +1187,10 @@ finemap_res_single &lt;- anno_finemap_res(finemap_res_single,
                                           drop_unmapped = TRUE,
                                           add_position = TRUE,
                                           use_gene_pos = &quot;mid&quot;)</code></pre>
-<pre><code>2025-01-22 16:23:08 INFO::Annotating fine-mapping result ...
-2025-01-22 16:23:08 INFO::Map molecular traits to genes
-2025-01-22 16:23:15 INFO::Add gene positions
-2025-01-22 16:23:15 INFO::Add SNP positions</code></pre>
+<pre><code>2025-01-24 15:18:13 INFO::Annotating fine-mapping result ...
+2025-01-24 15:18:13 INFO::Map molecular traits to genes
+2025-01-24 15:18:20 INFO::Add gene positions
+2025-01-24 15:18:21 INFO::Add SNP positions</code></pre>
 <pre class="r"><code>print(&quot;PLTP&quot;)</code></pre>
 <pre><code>[1] &quot;PLTP&quot;</code></pre>
 <pre class="r"><code>region_id &lt;- &quot;20_44051536_46210417&quot;
@@ -1168,12 +1204,12 @@ make_locusplot(finemap_res_single,
                filter_cs = TRUE,
                color_pval_by = &quot;cs&quot;,
                color_pip_by = &quot;cs&quot;,panel.heights = c(4,4,1,1))</code></pre>
-<pre><code>2025-01-22 16:23:29 INFO::Limit to protein coding genes
-2025-01-22 16:23:29 INFO::focal id: ENSG00000100979.14|Liver_eQTL
-2025-01-22 16:23:29 INFO::focal molecular trait: PLTP Liver eQTL
-2025-01-22 16:23:29 INFO::Range of locus: chr20:44052014-46210287
-2025-01-22 16:23:29 INFO::focal molecular trait QTL positions: 45906012
-2025-01-22 16:23:29 INFO::Limit PIPs to credible sets</code></pre>
+<pre><code>2025-01-24 15:18:33 INFO::Limit to protein coding genes
+2025-01-24 15:18:33 INFO::focal id: ENSG00000100979.14|Liver_eQTL
+2025-01-24 15:18:33 INFO::focal molecular trait: PLTP Liver eQTL
+2025-01-24 15:18:33 INFO::Range of locus: chr20:44052014-46210287
+2025-01-24 15:18:37 INFO::focal molecular trait QTL positions: 45906012
+2025-01-24 15:18:37 INFO::Limit PIPs to credible sets</code></pre>
 <p><img src="figure/LDL_silver_standard.Rmd/unnamed-chunk-10-1.png" width="1152" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-10-1">
@@ -1236,12 +1272,12 @@ make_locusplot(finemap_res_single,
                filter_cs = TRUE,
                color_pval_by = &quot;cs&quot;,
                color_pip_by = &quot;cs&quot;,panel.heights = c(4,4,1,1))</code></pre>
-<pre><code>2025-01-22 16:23:32 INFO::Limit to protein coding genes
-2025-01-22 16:23:32 INFO::focal id: ENSG00000165029.15|Liver_eQTL
-2025-01-22 16:23:32 INFO::focal molecular trait: ABCA1 Liver eQTL
-2025-01-22 16:23:32 INFO::Range of locus: chr9:104819368-106535859
-2025-01-22 16:23:32 INFO::focal molecular trait QTL positions: 104906792
-2025-01-22 16:23:33 INFO::Limit PIPs to credible sets</code></pre>
+<pre><code>2025-01-24 15:18:57 INFO::Limit to protein coding genes
+2025-01-24 15:18:57 INFO::focal id: ENSG00000165029.15|Liver_eQTL
+2025-01-24 15:18:57 INFO::focal molecular trait: ABCA1 Liver eQTL
+2025-01-24 15:18:57 INFO::Range of locus: chr9:104819368-106535859
+2025-01-24 15:18:58 INFO::focal molecular trait QTL positions: 104906792
+2025-01-24 15:18:58 INFO::Limit PIPs to credible sets</code></pre>
 <p><img src="figure/LDL_silver_standard.Rmd/unnamed-chunk-11-1.png" width="1152" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-11-1">
@@ -1304,12 +1340,12 @@ make_locusplot(finemap_res_single,
                filter_cs = TRUE,
                color_pval_by = &quot;cs&quot;,
                color_pip_by = &quot;cs&quot;,panel.heights = c(4,4,1,1))</code></pre>
-<pre><code>2025-01-22 16:23:35 INFO::Limit to protein coding genes
-2025-01-22 16:23:35 INFO::focal id: ENSG00000136271.10|Liver_eQTL
-2025-01-22 16:23:35 INFO::focal molecular trait: DDX56 Liver eQTL
-2025-01-22 16:23:35 INFO::Range of locus: chr7:43119604-44723797
-2025-01-22 16:23:35 INFO::focal molecular trait QTL positions: 44575121,44575587
-2025-01-22 16:23:35 INFO::Limit PIPs to credible sets</code></pre>
+<pre><code>2025-01-24 15:19:06 INFO::Limit to protein coding genes
+2025-01-24 15:19:06 INFO::focal id: ENSG00000136271.10|Liver_eQTL
+2025-01-24 15:19:06 INFO::focal molecular trait: DDX56 Liver eQTL
+2025-01-24 15:19:06 INFO::Range of locus: chr7:43119604-44723797
+2025-01-24 15:19:08 INFO::focal molecular trait QTL positions: 44575121,44575587
+2025-01-24 15:19:08 INFO::Limit PIPs to credible sets</code></pre>
 <p><img src="figure/LDL_silver_standard.Rmd/unnamed-chunk-12-1.png" width="1152" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-12-1">
@@ -1351,9 +1387,9 @@ XSun
 </div>
 <div
 id="checking-why-some-silver-standard-genes-are-missed-single-eqtl-l5"
-class="section level2">
-<h2>Checking why some silver standard genes are missed – single eQTL,
-L=5</h2>
+class="section level3">
+<h3>Checking why some silver standard genes are missed – single eQTL,
+L=5</h3>
 <pre class="r"><code>LDL_silver_known_sig &lt;- LDL_silver_known[as.numeric(LDL_silver_known$PIP) &gt; 0.8 &amp; LDL_silver_known$PIP !=&quot;NA&quot;,]
 LDL_silver_known_sig &lt;- LDL_silver_known_sig[,c(&quot;genename&quot;,&quot;cs_index&quot;,&quot;PIP&quot;,&quot;z&quot;,&quot;num_eqtl&quot;,&quot;region_tag&quot;)]
 
@@ -1407,10 +1443,10 @@ finemap_res_single_L5 &lt;- anno_finemap_res(finemap_res_single_L5,
                                           drop_unmapped = TRUE,
                                           add_position = TRUE,
                                           use_gene_pos = &quot;mid&quot;)</code></pre>
-<pre><code>2025-01-22 16:23:54 INFO::Annotating fine-mapping result ...
-2025-01-22 16:23:54 INFO::Map molecular traits to genes
-2025-01-22 16:23:57 INFO::Add gene positions
-2025-01-22 16:23:57 INFO::Add SNP positions</code></pre>
+<pre><code>2025-01-24 15:19:32 INFO::Annotating fine-mapping result ...
+2025-01-24 15:19:32 INFO::Map molecular traits to genes
+2025-01-24 15:19:35 INFO::Add gene positions
+2025-01-24 15:19:39 INFO::Add SNP positions</code></pre>
 <pre class="r"><code>print(&quot;NPC1L1&quot;)</code></pre>
 <pre><code>[1] &quot;NPC1L1&quot;</code></pre>
 <pre class="r"><code>region_id &lt;- &quot;7_43119475_44724229&quot;
@@ -1424,12 +1460,12 @@ make_locusplot(finemap_res_single_L5,
                filter_cs = TRUE,
                color_pval_by = &quot;cs&quot;,
                color_pip_by = &quot;cs&quot;,panel.heights = c(4,4,1,1))</code></pre>
-<pre><code>2025-01-22 16:24:08 INFO::Limit to protein coding genes
-2025-01-22 16:24:08 INFO::focal id: ENSG00000136271.10|Liver_eQTL
-2025-01-22 16:24:08 INFO::focal molecular trait: DDX56 Liver eQTL
-2025-01-22 16:24:08 INFO::Range of locus: chr7:43119604-44723797
-2025-01-22 16:24:08 INFO::focal molecular trait QTL positions: 44575121,44575587
-2025-01-22 16:24:08 INFO::Limit PIPs to credible sets</code></pre>
+<pre><code>2025-01-24 15:19:42 INFO::Limit to protein coding genes
+2025-01-24 15:19:42 INFO::focal id: ENSG00000136271.10|Liver_eQTL
+2025-01-24 15:19:42 INFO::focal molecular trait: DDX56 Liver eQTL
+2025-01-24 15:19:42 INFO::Range of locus: chr7:43119604-44723797
+2025-01-24 15:19:42 INFO::focal molecular trait QTL positions: 44575121,44575587
+2025-01-24 15:19:42 INFO::Limit PIPs to credible sets</code></pre>
 <p><img src="figure/LDL_silver_standard.Rmd/unnamed-chunk-15-1.png" width="1152" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-15-1">
@@ -1476,9 +1512,12 @@ XSun
 <!-- plot_heatmap_byomics(heatmap_data = combined_pip_sig_multi, main = "PIP partition for genes with PIP > 0.8 from multi-group analysis") -->
 <!-- ``` -->
 </div>
+</div>
+<div id="comparing-with-bystander-genes" class="section level2">
+<h2>Comparing with bystander genes</h2>
 <div id="checking-the-bystander-genes-single-eqtl-l5"
-class="section level2">
-<h2>Checking the bystander genes – single eQTL, L=5</h2>
+class="section level3">
+<h3>Checking the bystander genes – single eQTL, L=5</h3>
 <pre class="r"><code>LDL_silver_bystand_sig &lt;- LDL_silver_bystand[as.numeric(LDL_silver_bystand$PIP) &gt; 0.8 &amp; LDL_silver_bystand$PIP !=&quot;NA&quot;,]
 LDL_silver_bystand_sig &lt;- LDL_silver_bystand_sig[,c(&quot;genename&quot;,&quot;cs_index&quot;,&quot;PIP&quot;,&quot;z&quot;,&quot;num_eqtl&quot;)]
 
@@ -1505,12 +1544,12 @@ make_locusplot(finemap_res_single_L5,
                filter_cs = TRUE,
                color_pval_by = &quot;cs&quot;,
                color_pip_by = &quot;cs&quot;,panel.heights = c(4,4,1,1))</code></pre>
-<pre><code>2025-01-22 16:24:10 INFO::Limit to protein coding genes
-2025-01-22 16:24:10 INFO::focal id: ENSG00000162607.12|Liver_eQTL
-2025-01-22 16:24:10 INFO::focal molecular trait: USP1 Liver eQTL
-2025-01-22 16:24:10 INFO::Range of locus: chr1:61459304-62989160
-2025-01-22 16:24:10 INFO::focal molecular trait QTL positions: 62436136
-2025-01-22 16:24:10 INFO::Limit PIPs to credible sets</code></pre>
+<pre><code>2025-01-24 15:19:51 INFO::Limit to protein coding genes
+2025-01-24 15:19:51 INFO::focal id: ENSG00000162607.12|Liver_eQTL
+2025-01-24 15:19:51 INFO::focal molecular trait: USP1 Liver eQTL
+2025-01-24 15:19:51 INFO::Range of locus: chr1:61459304-62989160
+2025-01-24 15:19:52 INFO::focal molecular trait QTL positions: 62436136
+2025-01-24 15:19:52 INFO::Limit PIPs to credible sets</code></pre>
 <p><img src="figure/LDL_silver_standard.Rmd/unnamed-chunk-17-1.png" width="1152" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-17-1">
@@ -1551,8 +1590,8 @@ XSun
 </div>
 </div>
 <div id="checking-the-bystander-genes-single-eqtl-pre-estimate-l"
-class="section level2">
-<h2>Checking the bystander genes – single eQTL, pre-estimate L</h2>
+class="section level3">
+<h3>Checking the bystander genes – single eQTL, pre-estimate L</h3>
 <pre class="r"><code>LDL_silver_bystand_sig &lt;- LDL_silver_bystand[as.numeric(LDL_silver_bystand$PIP) &gt; 0.8 &amp; LDL_silver_bystand$PIP !=&quot;NA&quot;,]
 LDL_silver_bystand_sig &lt;- LDL_silver_bystand_sig[,c(&quot;genename&quot;,&quot;cs_index&quot;,&quot;PIP&quot;,&quot;z&quot;,&quot;num_eqtl&quot;)]
 
@@ -1579,12 +1618,12 @@ make_locusplot(finemap_res_single,
                filter_cs = TRUE,
                color_pval_by = &quot;cs&quot;,
                color_pip_by = &quot;cs&quot;,panel.heights = c(4,4,1,1))</code></pre>
-<pre><code>2025-01-22 16:24:13 INFO::Limit to protein coding genes
-2025-01-22 16:24:13 INFO::focal id: ENSG00000162607.12|Liver_eQTL
-2025-01-22 16:24:13 INFO::focal molecular trait: USP1 Liver eQTL
-2025-01-22 16:24:13 INFO::Range of locus: chr1:61459304-62989160
-2025-01-22 16:24:13 INFO::focal molecular trait QTL positions: 62436136
-2025-01-22 16:24:13 INFO::Limit PIPs to credible sets</code></pre>
+<pre><code>2025-01-24 15:20:01 INFO::Limit to protein coding genes
+2025-01-24 15:20:01 INFO::focal id: ENSG00000162607.12|Liver_eQTL
+2025-01-24 15:20:01 INFO::focal molecular trait: USP1 Liver eQTL
+2025-01-24 15:20:01 INFO::Range of locus: chr1:61459304-62989160
+2025-01-24 15:20:01 INFO::focal molecular trait QTL positions: 62436136
+2025-01-24 15:20:01 INFO::Limit PIPs to credible sets</code></pre>
 <p><img src="figure/LDL_silver_standard.Rmd/unnamed-chunk-19-1.png" width="1152" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-19-1">
@@ -1624,6 +1663,7 @@ XSun
 </div>
 </div>
 </div>
+</div>
 <div id="comparing-z-score-and-pip" class="section level2">
 <h2>Comparing z-score and pip</h2>
 <pre class="r"><code>finemap_res_single_gene &lt;- finemap_res_single[finemap_res_single$type !=&quot;SNP&quot;,]
@@ -1632,6 +1672,43 @@ ggplot(finemap_res_single_gene, aes(y = susie_pip, x = abs(z))) +
   labs(x =&quot;|Z|&quot; , y = &quot;SuSiE PIP&quot;, title = &quot;single eqtl, pre-estimate L&quot;) +
   theme_minimal()</code></pre>
 <p><img src="figure/LDL_silver_standard.Rmd/unnamed-chunk-20-1.png" width="480" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-20-1">
+Past versions of unnamed-chunk-20-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-20-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/6c7c5cbb6da0ec06f2209303cf0b1fb7ba53dc65/docs/figure/LDL_silver_standard.Rmd/unnamed-chunk-20-1.png" target="_blank">6c7c5cb</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-01-22
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>finemap_res_single_gene_L5 &lt;- finemap_res_single_L5[finemap_res_single_L5$type !=&quot;SNP&quot;,]
 
 ggplot(finemap_res_single_gene_L5, aes(y = susie_pip, x = abs(z))) +
@@ -1639,6 +1716,43 @@ ggplot(finemap_res_single_gene_L5, aes(y = susie_pip, x = abs(z))) +
   labs(x =&quot;|Z|&quot; , y = &quot;SuSiE PIP&quot;, title = &quot;single eqtl, L=5&quot;) +
   theme_minimal()</code></pre>
 <p><img src="figure/LDL_silver_standard.Rmd/unnamed-chunk-21-1.png" width="480" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-21-1">
+Past versions of unnamed-chunk-21-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-21-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/6c7c5cbb6da0ec06f2209303cf0b1fb7ba53dc65/docs/figure/LDL_silver_standard.Rmd/unnamed-chunk-21-1.png" target="_blank">6c7c5cb</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-01-22
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>finemap_res_multi &lt;- ctwas_res_multi_post$finemap_res
 finemap_res_multi &lt;- anno_finemap_res(finemap_res_multi,
                                           snp_map = snp_map,
@@ -1648,17 +1762,54 @@ finemap_res_multi &lt;- anno_finemap_res(finemap_res_multi,
                                           drop_unmapped = TRUE,
                                           add_position = TRUE,
                                           use_gene_pos = &quot;mid&quot;)</code></pre>
-<pre><code>2025-01-22 16:24:15 INFO::Annotating fine-mapping result ...
-2025-01-22 16:24:15 INFO::Map molecular traits to genes
-2025-01-22 16:24:16 INFO::Split PIPs for molecular traits mapped to multiple genes
-2025-01-22 16:24:21 INFO::Add gene positions
-2025-01-22 16:24:21 INFO::Add SNP positions</code></pre>
+<pre><code>2025-01-24 15:20:25 INFO::Annotating fine-mapping result ...
+2025-01-24 15:20:25 INFO::Map molecular traits to genes
+2025-01-24 15:20:26 INFO::Split PIPs for molecular traits mapped to multiple genes
+2025-01-24 15:20:30 INFO::Add gene positions
+2025-01-24 15:20:31 INFO::Add SNP positions</code></pre>
 <pre class="r"><code>finemap_res_multi_gene &lt;- finemap_res_multi[finemap_res_multi$type !=&quot;SNP&quot;,]
 ggplot(finemap_res_multi_gene, aes(y = susie_pip, x = abs(z))) +
   geom_point(alpha = 0.5, size = 0.5) +  # Adjust alpha and size for better visualization
   labs(x =&quot;|Z|&quot; , y = &quot;SuSiE PIP&quot;, title = &quot;multigroup, QTL share variance ,pre-estimate L&quot;) +
   theme_minimal()</code></pre>
 <p><img src="figure/LDL_silver_standard.Rmd/unnamed-chunk-22-1.png" width="480" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-22-1">
+Past versions of unnamed-chunk-22-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-22-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/6c7c5cbb6da0ec06f2209303cf0b1fb7ba53dc65/docs/figure/LDL_silver_standard.Rmd/unnamed-chunk-22-1.png" target="_blank">6c7c5cb</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-01-22
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>print(finemap_res_multi_gene[finemap_res_multi_gene$susie_pip&gt;0.75 &amp; abs(finemap_res_multi_gene$z) &lt; 3,])</code></pre>
 <pre><code>                                                               id
 30466 ENSG00000137656.11|Esophagus_Gastroesophageal_Junction_eQTL
@@ -1688,13 +1839,50 @@ make_locusplot(finemap_res_multi,
                filter_cs = TRUE,
                color_pval_by = &quot;cs&quot;,
                color_pip_by = &quot;cs&quot;,panel.heights = c(4,4,1,1))</code></pre>
-<pre><code>2025-01-22 16:24:37 INFO::Limit to protein coding genes
-2025-01-22 16:24:37 INFO::focal id: ENSG00000137656.11|Esophagus_Gastroesophageal_Junction_eQTL
-2025-01-22 16:24:37 INFO::focal molecular trait: BUD13 Esophagus_Gastroesophageal_Junction eQTL
-2025-01-22 16:24:37 INFO::Range of locus: chr11:116512531-117876126
-2025-01-22 16:24:37 INFO::focal molecular trait QTL positions: 116772295
-2025-01-22 16:24:37 INFO::Limit PIPs to credible sets</code></pre>
+<pre><code>2025-01-24 15:20:54 INFO::Limit to protein coding genes
+2025-01-24 15:20:54 INFO::focal id: ENSG00000137656.11|Esophagus_Gastroesophageal_Junction_eQTL
+2025-01-24 15:20:54 INFO::focal molecular trait: BUD13 Esophagus_Gastroesophageal_Junction eQTL
+2025-01-24 15:20:54 INFO::Range of locus: chr11:116512531-117876126
+2025-01-24 15:20:54 INFO::focal molecular trait QTL positions: 116772295
+2025-01-24 15:20:54 INFO::Limit PIPs to credible sets</code></pre>
 <p><img src="figure/LDL_silver_standard.Rmd/unnamed-chunk-23-1.png" width="1152" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-23-1">
+Past versions of unnamed-chunk-23-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-23-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/6c7c5cbb6da0ec06f2209303cf0b1fb7ba53dc65/docs/figure/LDL_silver_standard.Rmd/unnamed-chunk-23-1.png" target="_blank">6c7c5cb</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-01-22
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>region_id &lt;- &quot;21_39110976_40017600&quot;
 
 make_locusplot(finemap_res_multi,
@@ -1706,13 +1894,50 @@ make_locusplot(finemap_res_multi,
                filter_cs = TRUE,
                color_pval_by = &quot;cs&quot;,
                color_pip_by = &quot;cs&quot;,panel.heights = c(4,4,1,1))</code></pre>
-<pre><code>2025-01-22 16:24:40 INFO::Limit to protein coding genes
-2025-01-22 16:24:40 INFO::focal id: ENSG00000183527.11|Liver_eQTL
-2025-01-22 16:24:40 INFO::focal molecular trait: PSMG1 Liver eQTL
-2025-01-22 16:24:40 INFO::Range of locus: chr21:39111098-40017263
-2025-01-22 16:24:40 INFO::focal molecular trait QTL positions: 39183566
-2025-01-22 16:24:40 INFO::Limit PIPs to credible sets</code></pre>
+<pre><code>2025-01-24 15:21:07 INFO::Limit to protein coding genes
+2025-01-24 15:21:07 INFO::focal id: ENSG00000183527.11|Liver_eQTL
+2025-01-24 15:21:07 INFO::focal molecular trait: PSMG1 Liver eQTL
+2025-01-24 15:21:07 INFO::Range of locus: chr21:39111098-40017263
+2025-01-24 15:21:07 INFO::focal molecular trait QTL positions: 39183566
+2025-01-24 15:21:07 INFO::Limit PIPs to credible sets</code></pre>
 <p><img src="figure/LDL_silver_standard.Rmd/unnamed-chunk-24-1.png" width="1152" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-24-1">
+Past versions of unnamed-chunk-24-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-24-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/6c7c5cbb6da0ec06f2209303cf0b1fb7ba53dc65/docs/figure/LDL_silver_standard.Rmd/unnamed-chunk-24-1.png" target="_blank">6c7c5cb</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-01-22
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>No LD mismatch issue detected for the 2 genes above.</p>
 <pre class="r"><code>finemap_res_multi_samevar &lt;- ctwas_res_multi_post_samevar$finemap_res
 finemap_res_multi_samevar &lt;- anno_finemap_res(finemap_res_multi_samevar,
@@ -1723,17 +1948,54 @@ finemap_res_multi_samevar &lt;- anno_finemap_res(finemap_res_multi_samevar,
                                           drop_unmapped = TRUE,
                                           add_position = TRUE,
                                           use_gene_pos = &quot;mid&quot;)</code></pre>
-<pre><code>2025-01-22 16:24:44 INFO::Annotating fine-mapping result ...
-2025-01-22 16:24:45 INFO::Map molecular traits to genes
-2025-01-22 16:24:45 INFO::Split PIPs for molecular traits mapped to multiple genes
-2025-01-22 16:24:53 INFO::Add gene positions
-2025-01-22 16:24:53 INFO::Add SNP positions</code></pre>
+<pre><code>2025-01-24 15:21:22 INFO::Annotating fine-mapping result ...
+2025-01-24 15:21:22 INFO::Map molecular traits to genes
+2025-01-24 15:21:22 INFO::Split PIPs for molecular traits mapped to multiple genes
+2025-01-24 15:21:26 INFO::Add gene positions
+2025-01-24 15:21:26 INFO::Add SNP positions</code></pre>
 <pre class="r"><code>finemap_res_multi_samevar_gene &lt;- finemap_res_multi_samevar[finemap_res_multi_samevar$type !=&quot;SNP&quot;,]
 ggplot(finemap_res_multi_samevar_gene, aes(y = susie_pip, x = abs(z))) +
   geom_point(alpha = 0.5, size = 0.5) +  # Adjust alpha and size for better visualization
   labs(x =&quot;|Z|&quot; , y = &quot;SuSiE PIP&quot;, title = &quot;multigroup, all groups share variance, pre-estimate L&quot;) +
   theme_minimal()</code></pre>
 <p><img src="figure/LDL_silver_standard.Rmd/unnamed-chunk-25-1.png" width="480" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-25-1">
+Past versions of unnamed-chunk-25-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-25-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/6c7c5cbb6da0ec06f2209303cf0b1fb7ba53dc65/docs/figure/LDL_silver_standard.Rmd/unnamed-chunk-25-1.png" target="_blank">6c7c5cb</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-01-22
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>finemap_res_multi_L5 &lt;- ctwas_res_multi_post_L5$finemap_res
 finemap_res_multi_L5 &lt;- anno_finemap_res(finemap_res_multi_L5,
                                           snp_map = snp_map,
@@ -1743,17 +2005,54 @@ finemap_res_multi_L5 &lt;- anno_finemap_res(finemap_res_multi_L5,
                                           drop_unmapped = TRUE,
                                           add_position = TRUE,
                                           use_gene_pos = &quot;mid&quot;)</code></pre>
-<pre><code>2025-01-22 16:25:02 INFO::Annotating fine-mapping result ...
-2025-01-22 16:25:02 INFO::Map molecular traits to genes
-2025-01-22 16:25:02 INFO::Split PIPs for molecular traits mapped to multiple genes
-2025-01-22 16:25:07 INFO::Add gene positions
-2025-01-22 16:25:07 INFO::Add SNP positions</code></pre>
+<pre><code>2025-01-24 15:21:46 INFO::Annotating fine-mapping result ...
+2025-01-24 15:21:46 INFO::Map molecular traits to genes
+2025-01-24 15:21:46 INFO::Split PIPs for molecular traits mapped to multiple genes
+2025-01-24 15:21:50 INFO::Add gene positions
+2025-01-24 15:21:50 INFO::Add SNP positions</code></pre>
 <pre class="r"><code>finemap_res_multi_L5_gene &lt;- finemap_res_multi_L5[finemap_res_multi_L5$type !=&quot;SNP&quot;,]
 ggplot(finemap_res_multi_L5_gene, aes(y = susie_pip, x = abs(z))) +
   geom_point(alpha = 0.5, size = 0.5) +  # Adjust alpha and size for better visualization
   labs(x =&quot;|Z|&quot; , y = &quot;SuSiE PIP&quot;, title = &quot;multigroup, all groups share variance, L = 5&quot;) +
   theme_minimal()</code></pre>
 <p><img src="figure/LDL_silver_standard.Rmd/unnamed-chunk-26-1.png" width="480" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-26-1">
+Past versions of unnamed-chunk-26-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-26-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/6c7c5cbb6da0ec06f2209303cf0b1fb7ba53dc65/docs/figure/LDL_silver_standard.Rmd/unnamed-chunk-26-1.png" target="_blank">6c7c5cb</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-01-22
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>print(finemap_res_multi_L5_gene[finemap_res_multi_L5_gene$susie_pip&gt;0.75 &amp; abs(finemap_res_multi_L5_gene$z) &lt; 3,])</code></pre>
 <pre><code>                                                               id
 6085                       ENSG00000125633|Esophagus_Mucosa_stQTL
@@ -1783,13 +2082,50 @@ make_locusplot(finemap_res_multi_L5,
                filter_cs = TRUE,
                color_pval_by = &quot;cs&quot;,
                color_pip_by = &quot;cs&quot;,panel.heights = c(4,4,1,1))</code></pre>
-<pre><code>2025-01-22 16:25:20 INFO::Limit to protein coding genes
-2025-01-22 16:25:20 INFO::focal id: ENSG00000125629.14|Liver_eQTL
-2025-01-22 16:25:20 INFO::focal molecular trait: INSIG2 Liver eQTL
-2025-01-22 16:25:20 INFO::Range of locus: chr2:117610088-120545764
-2025-01-22 16:25:20 INFO::focal molecular trait QTL positions: 118088372,118089309,118089394
-2025-01-22 16:25:20 INFO::Limit PIPs to credible sets</code></pre>
+<pre><code>2025-01-24 15:22:06 INFO::Limit to protein coding genes
+2025-01-24 15:22:06 INFO::focal id: ENSG00000125629.14|Liver_eQTL
+2025-01-24 15:22:06 INFO::focal molecular trait: INSIG2 Liver eQTL
+2025-01-24 15:22:06 INFO::Range of locus: chr2:117610088-120545764
+2025-01-24 15:22:06 INFO::focal molecular trait QTL positions: 118088372,118089309,118089394
+2025-01-24 15:22:07 INFO::Limit PIPs to credible sets</code></pre>
 <p><img src="figure/LDL_silver_standard.Rmd/unnamed-chunk-27-1.png" width="1152" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-27-1">
+Past versions of unnamed-chunk-27-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-27-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/6c7c5cbb6da0ec06f2209303cf0b1fb7ba53dc65/docs/figure/LDL_silver_standard.Rmd/unnamed-chunk-27-1.png" target="_blank">6c7c5cb</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-01-22
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>print(finemap_res_multi_L5_gene[finemap_res_multi_L5_gene$susie_pip&gt;0.75 &amp; abs(finemap_res_multi_L5_gene$z) &lt; 3,])</code></pre>
 <pre><code>                                                               id
 6085                       ENSG00000125633|Esophagus_Mucosa_stQTL
@@ -1819,14 +2155,51 @@ make_locusplot(finemap_res_multi_L5,
                filter_cs = TRUE,
                color_pval_by = &quot;cs&quot;,
                color_pip_by = &quot;cs&quot;,panel.heights = c(4,4,1,1))</code></pre>
-<pre><code>2025-01-22 16:25:27 INFO::Limit to protein coding genes
-2025-01-22 16:25:27 INFO::focal id: ENSG00000137656.11|Esophagus_Gastroesophageal_Junction_eQTL
-2025-01-22 16:25:27 INFO::focal molecular trait: BUD13 Esophagus_Gastroesophageal_Junction eQTL
-2025-01-22 16:25:27 INFO::Range of locus: chr11:116512531-117876126
-2025-01-22 16:25:27 INFO::focal molecular trait QTL positions: 116772295
-2025-01-22 16:25:27 INFO::Limit PIPs to credible sets</code></pre>
-<p><img src="figure/LDL_silver_standard.Rmd/unnamed-chunk-28-1.png" width="1152" style="display: block; margin: auto;" />
-LD mismatch checked, no LD mismatch issue for these two genes.</p>
+<pre><code>2025-01-24 15:22:11 INFO::Limit to protein coding genes
+2025-01-24 15:22:11 INFO::focal id: ENSG00000137656.11|Esophagus_Gastroesophageal_Junction_eQTL
+2025-01-24 15:22:11 INFO::focal molecular trait: BUD13 Esophagus_Gastroesophageal_Junction eQTL
+2025-01-24 15:22:11 INFO::Range of locus: chr11:116512531-117876126
+2025-01-24 15:22:11 INFO::focal molecular trait QTL positions: 116772295
+2025-01-24 15:22:11 INFO::Limit PIPs to credible sets</code></pre>
+<p><img src="figure/LDL_silver_standard.Rmd/unnamed-chunk-28-1.png" width="1152" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-28-1">
+Past versions of unnamed-chunk-28-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-28-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/6c7c5cbb6da0ec06f2209303cf0b1fb7ba53dc65/docs/figure/LDL_silver_standard.Rmd/unnamed-chunk-28-1.png" target="_blank">6c7c5cb</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-01-22
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>LD mismatch checked, no LD mismatch issue for these two genes.</p>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
