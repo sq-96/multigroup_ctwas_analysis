@@ -61,12 +61,6 @@ get_top_mts_coloc <- function(colocf,group){
   return(coloc_res)
 }
 
-get_top_genes_coloc <- function(colocf){
-  coloc_res <- readRDS(colocf)
-  rownames(coloc_res) <- NULL
-  return(coloc_res)
-}
-
 get_top_mts_ctwas <- function(ctwasf,regions){
   finemap_res <- readRDS(ctwasf)
   finemap_res <- finemap_res$finemap_res
@@ -95,7 +89,7 @@ get_results <- function(gwas_id,gwas_name){
   coloc_mts <- coloc_mts[coloc_mts$PP4>0.8,]
   num_coloc_gene <- length(unique(coloc_mts$gene_name))
   
-  weights <- readRDS("/project/xinhe/shengqian/ctwas_GWAS_analysis/results_ES/SBP-ukb-a-360/SBP-ukb-a-360.preprocessed.weights.RDS")
+  weights <- readRDS(paste0("/project/xinhe/shengqian/ctwas_GWAS_analysis/results_ES/",gwas_id,"/",gwas_id,".preprocessed.weights.RDS"))
   mapping_predictdb <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_E_S_M_mapping.RDS")
   finemap_res <- readRDS(paste0("/project/xinhe/shengqian/ctwas_GWAS_analysis/results_ES/",gwas_id,"/",gwas_id,".finemap_regions_res.RDS"))
   finemap_res <- finemap_res$susie_alpha_res
@@ -120,7 +114,7 @@ get_results <- function(gwas_id,gwas_name){
   num_coloc_ctwas_gene <- length(unique(coloc_mts[coloc_mts$region_id %in% region_singals, ]$gene_name))
   
   coloc_data <- as.vector(table(unique(coloc_mts[,c("gene_name","region_id")])$region_id))
-  multictwas_data <- as.vector(table(unique(combined_pip$region_id)))
+  multictwas_data <- as.vector(table(combined_pip$region_id))
   
   # Combine data into a data frame
   df <- data.frame(
@@ -209,6 +203,125 @@ SCZ_results$p2
 IBD_results$p2
 ```
 
+
+```{r echo=FALSE}
+get_results_mts <- function(gwas_id,gwas_name){
+  tissues <- GWAS_tissues[[gwas_id]]
+  outputdir = paste0("/project/xinhe/shengqian/coloc_GWAS_analysis/data_test/",gwas_name,"_coloc/")
+  weight_tags <- paste0("weight",1:10)
+  colocfs <- paste0(outputdir, gwas_name, "_",weight_tags, ".coloc_res.RDS")
+  
+  coloc_mts <- rbind(get_top_mts_coloc(colocfs[1], paste0(tissues[1],"_eQTL")),
+                     get_top_mts_coloc(colocfs[2], paste0(tissues[1],"_sQTL")),
+                     get_top_mts_coloc(colocfs[3], paste0(tissues[2],"_eQTL")),
+                     get_top_mts_coloc(colocfs[4], paste0(tissues[2],"_sQTL")),
+                     get_top_mts_coloc(colocfs[5], paste0(tissues[3],"_eQTL")),
+                     get_top_mts_coloc(colocfs[6], paste0(tissues[3],"_sQTL")),
+                     get_top_mts_coloc(colocfs[7], paste0(tissues[4],"_eQTL")),
+                     get_top_mts_coloc(colocfs[8], paste0(tissues[4],"_sQTL")),
+                     get_top_mts_coloc(colocfs[9], paste0(tissues[5],"_eQTL")),
+                     get_top_mts_coloc(colocfs[10],paste0(tissues[5],"_sQTL")))
+  
+  coloc_mts <- coloc_mts[coloc_mts$PP4>0.8,]
+  num_coloc_mts <- length(unique(coloc_mts$id))
+  
+  finemap_res <- readRDS(paste0("/project/xinhe/shengqian/ctwas_GWAS_analysis/results_ES/",gwas_id,"/",gwas_id,".finemap_regions_res.RDS"))
+  finemap_res <- finemap_res$finemap_res
+  finemap_res <- finemap_res[finemap_res$susie_pip>0.8,]
+  
+  num_multi_ctwas_mts <- length(unique(finemap_res$id))
+  
+  region_singals <- unique(finemap_res$region_id)
+  num_coloc_ctwas_mts <- length(unique(coloc_mts[coloc_mts$region_id %in% region_singals, ]$id))
+  
+  coloc_data <- as.vector(table(unique(coloc_mts[,c("id","region_id")])$region_id))
+  multictwas_data <- as.vector(table(finemap_res$region_id))
+  
+  # Combine data into a data frame
+  df <- data.frame(
+    value = c(coloc_data, multictwas_data),
+    group = c(rep("Coloc",length(coloc_data)),rep("Multi-cTWAS",length(multictwas_data)))
+  )
+  
+  p1 <- ggplot(df, aes(x = value, fill = group)) +
+    geom_histogram(position = "identity", alpha = 0.5, bins = max(coloc_data)) +
+    scale_fill_manual(values = c("blue", "red")) +
+    labs(title = gwas_id, x = "Value", y = "Frequency", fill = "Dataset") + theme_minimal()
+  
+  ctwas_coloc_data <- coloc_mts[coloc_mts$region_id %in% region_singals, ]
+  ctwas_coloc_data <- as.vector(table(unique(ctwas_coloc_data[,c("id","region_id")])$region_id))
+  # Combine data into a data frame
+  df <- data.frame(
+    value = c(ctwas_coloc_data, multictwas_data),
+    group = c(rep("Coloc",length(ctwas_coloc_data)),rep("Multi-cTWAS",length(multictwas_data)))
+  )
+  
+  p2 <- ggplot(df, aes(x = value, fill = group)) +
+    geom_histogram(position = "identity", alpha = 0.5, bins = max(coloc_data)) +
+    scale_fill_manual(values = c("blue", "red")) +
+    labs(title = gwas_id, x = "Value", y = "Frequency", fill = "Dataset") + theme_minimal()
+  
+  return(list("num_coloc_mts" = num_coloc_mts,
+              "num_coloc_ctwas_mts" = num_coloc_ctwas_mts,
+              "num_multi_ctwas_mts" = num_multi_ctwas_mts,
+              "p1" = p1,
+              "p2" = p2))
+}
+```
+
+```{r, message=FALSE, echo=FALSE}
+LDL_results <- get_results_mts("LDL-ukb-d-30780_irnt","LDL")
+WBC_results <- get_results_mts("WBC-ieu-b-30","WBC")
+SBP_results <- get_results_mts("SBP-ukb-a-360","SBP")
+SCZ_results <- get_results_mts("SCZ-ieu-b-5102","SCZ")
+IBD_results <- get_results_mts("IBD-ebi-a-GCST004131","IBD")
+```
+
+### number of molecular traits identified by each method
+```{r echo=FALSE}
+library(ggplot2) 
+
+gfg <- data.frame(x = c(LDL_results$num_multi_ctwas_mts,
+                        LDL_results$num_coloc_mts,
+                        LDL_results$num_coloc_ctwas_mts,
+                        WBC_results$num_multi_ctwas_mts,
+                        WBC_results$num_coloc_mts,
+                        WBC_results$num_coloc_ctwas_mts,
+                        SBP_results$num_multi_ctwas_mts,
+                        SBP_results$num_coloc_mts,
+                        SBP_results$num_coloc_ctwas_mts,
+                        SCZ_results$num_multi_ctwas_mts,
+                        SCZ_results$num_coloc_mts,
+                        SCZ_results$num_coloc_ctwas_mts,
+                        IBD_results$num_multi_ctwas_mts,
+                        IBD_results$num_coloc_mts,
+                        IBD_results$num_coloc_ctwas_mts),  
+                  grp = rep(c("LDL","WBC","SBP","SCZ","IBD"),each=3),
+                  subgroup = c("multi-ctwas","coloc","coloc-ctwas-locus")) 
+
+gfg$subgroup <- factor(gfg$subgroup,levels=c("multi-ctwas","coloc","coloc-ctwas-locus"))
+
+ggplot(gfg,aes(x = grp, y =x, fill = subgroup)) + 
+  geom_bar(stat = "identity", position = "dodge") 
+```
+
+### compare number of molecular traits per locus
+```{r echo=FALSE}
+LDL_results$p1
+WBC_results$p1
+SBP_results$p1
+SCZ_results$p1
+IBD_results$p1
+```
+
+### compare number of molecular traits per locus (locus with multi-ctwas signals)
+```{r echo=FALSE}
+LDL_results$p2
+WBC_results$p2
+SBP_results$p2
+SCZ_results$p2
+IBD_results$p2
+```
 
 ```{r, echo=FALSE, eval=FALSE}
 library(EnsDb.Hsapiens.v86)
