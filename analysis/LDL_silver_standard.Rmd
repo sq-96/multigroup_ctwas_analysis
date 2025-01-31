@@ -151,9 +151,7 @@ z_gene_single <- z_gene_single %>%
 
 ```
 
-
-
-### Single eQTL analysis results -- L=5
+### Single eQTL analysis results -- L=5 -- eQTL, SNP different variance
 
 ```{r warning=F, message=F}
 
@@ -190,6 +188,48 @@ z_gene_single_L5 <- z_gene_single_L5 %>%
   left_join(mapping_two %>% dplyr::select(molecular_id, gene_name), by = "molecular_id")
 
 ```
+
+
+
+
+### Single eQTL analysis results -- L=5 -- same variance
+
+```{r warning=F, message=F}
+
+trait <- "LDL-ukb-d-30780_irnt"
+tissue <- "Liver"
+
+folder_single_results_sharedvar_L5 <- "/project/xinhe/shengqian/single_tissue_screen/processed_weights_samevariance_L5/expression_weights/"
+
+file_ctwas_result_sharedvar_L5 <- get_ctwas_file(trait, tissue, folder_single_results_sharedvar_L5)
+
+ctwas_res_single_post_sharedvar_L5 <- readRDS(file_ctwas_result_sharedvar_L5)
+
+z_gene_single_sharedvar_L5 <-readRDS(paste0(folder_single_results_sharedvar_L5,"/",trait,"/",trait,"_",tissue,".z_gene.RDS"))
+
+susie_alpha_res_single_post_sharedvar_L5 <- ctwas_res_single_post_sharedvar_L5$susie_alpha_res
+susie_alpha_res_single_post_sharedvar_L5 <- anno_susie_alpha_res(susie_alpha_res_single_post_sharedvar_L5,
+                                        mapping_table = mapping_two,
+                                        map_by = "molecular_id",
+                                        drop_unmapped = TRUE)
+
+combined_pip_by_group_single_sharedvar_L5 <- combine_gene_pips(susie_alpha_res_single_post_sharedvar_L5, 
+                                             group_by = "gene_name",
+                                             by = "group",
+                                             method = "combine_cs",
+                                             filter_cs = TRUE,
+                                             include_cs_id = F)
+combined_pip_sig_single_sharedvar_L5 <- subset(combined_pip_by_group_single_sharedvar_L5, combined_pip > 0.8)
+
+DT::datatable(combined_pip_sig_single_sharedvar_L5,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Genes with PIP > 0.8 in single eQTL analysis, cs filtered'),options = list(pageLength = 5) )
+
+
+z_gene_single_sharedvar_L5 <- z_gene_single_sharedvar_L5 %>%
+  mutate(molecular_id = sub("\\|.*", "", id)) %>%  # Extract ENSG ID from id
+  left_join(mapping_two %>% dplyr::select(molecular_id, gene_name), by = "molecular_id")
+
+```
+
 
 
 
@@ -333,12 +373,12 @@ DT::datatable(LDL_silver,caption = htmltools::tags$caption( style = 'caption-sid
 ```{r warning=F, message=F}
 
 stats <- data.frame(
-                    analysis = c("ctwas paper","ctwasV2 - single eQTL, preL","ctwasV2 - single eQTL - L=5","ctwasV2 - multigroup - QTL share variance, preL","ctwasV2 - multigroup - all share variance, preL","ctwasV2 - multigroup - all share variance, L=5"),
-                    num_gene_pip08 = c(35, nrow(combined_pip_sig_single),nrow(combined_pip_sig_single_L5),nrow(combined_pip_sig_multi),nrow(combined_pip_sig_multi_samevar),nrow(combined_pip_sig_multi_L5)),
-                    num_gene_known_imputable = c("46 of 69 known",sum(LDL_silver_known$genename %in% z_gene_single$gene_name),sum(LDL_silver_known$genename %in% z_gene_single_L5$gene_name),sum(LDL_silver_known$genename %in% z_gene_multi$gene_name),sum(LDL_silver_known$genename %in% z_gene_multi_samevar$gene_name),sum(LDL_silver_known$genename %in% z_gene_multi_L5$gene_name)),
-                    num_gene_known_pip08 = c(6,sum(LDL_silver_known$genename %in% combined_pip_sig_single$gene_name),sum(LDL_silver_known$genename %in% combined_pip_sig_single_L5$gene_name),sum(LDL_silver_known$genename %in% combined_pip_sig_multi$gene_name),sum(LDL_silver_known$genename %in% combined_pip_sig_multi_samevar$gene_name),sum(LDL_silver_known$genename %in% combined_pip_sig_multi_L5$gene_name)),
-                   num_gene_bystander_imputable = c("539 of 539 bystander",sum(LDL_silver_bystand$genename %in% z_gene_single$gene_name),sum(LDL_silver_bystand$genename %in% z_gene_single_L5$gene_name),sum(LDL_silver_bystand$genename %in% z_gene_multi$gene_name),sum(LDL_silver_bystand$genename %in% z_gene_multi_samevar$gene_name),sum(LDL_silver_bystand$genename %in% z_gene_multi_L5$gene_name)),
-                    num_gene_bystander_pip08 = c(2,sum(LDL_silver_bystand$genename %in% combined_pip_sig_single$gene_name),sum(LDL_silver_bystand$genename %in% combined_pip_sig_single_L5$gene_name),sum(LDL_silver_bystand$genename %in% combined_pip_sig_multi$gene_name),sum(LDL_silver_bystand$genename %in% combined_pip_sig_multi_samevar$gene_name),sum(LDL_silver_bystand$genename %in% combined_pip_sig_multi_L5$gene_name))
+                    analysis = c("ctwas paper","ctwasV2 - single eQTL - eQTL,SNP different variance, preL","ctwasV2 - single eQTL - eQTL,SNP different variance - L=5","ctwasV2 - single eQTL - eQTL,SNP share variance - L=5","ctwasV2 - multigroup - QTL share variance, preL","ctwasV2 - multigroup - all share variance, preL","ctwasV2 - multigroup - all share variance, L=5"),
+                    num_gene_pip08 = c(35, nrow(combined_pip_sig_single),nrow(combined_pip_sig_single_L5),nrow(combined_pip_sig_single_sharedvar_L5),nrow(combined_pip_sig_multi),nrow(combined_pip_sig_multi_samevar),nrow(combined_pip_sig_multi_L5)),
+                    num_gene_known_imputable = c("46 of 69 known",sum(LDL_silver_known$genename %in% z_gene_single$gene_name),sum(LDL_silver_known$genename %in% z_gene_single_L5$gene_name),sum(LDL_silver_known$genename %in% z_gene_single_sharedvar_L5$gene_name),sum(LDL_silver_known$genename %in% z_gene_multi$gene_name),sum(LDL_silver_known$genename %in% z_gene_multi_samevar$gene_name),sum(LDL_silver_known$genename %in% z_gene_multi_L5$gene_name)),
+                    num_gene_known_pip08 = c(6,sum(LDL_silver_known$genename %in% combined_pip_sig_single$gene_name),sum(LDL_silver_known$genename %in% combined_pip_sig_single_L5$gene_name), sum(LDL_silver_known$genename %in% combined_pip_sig_single_sharedvar_L5$gene_name),sum(LDL_silver_known$genename %in% combined_pip_sig_multi$gene_name),sum(LDL_silver_known$genename %in% combined_pip_sig_multi_samevar$gene_name),sum(LDL_silver_known$genename %in% combined_pip_sig_multi_L5$gene_name)),
+                   num_gene_bystander_imputable = c("539 of 539 bystander",sum(LDL_silver_bystand$genename %in% z_gene_single$gene_name),sum(LDL_silver_bystand$genename %in% z_gene_single_L5$gene_name),sum(LDL_silver_bystand$genename %in% z_gene_single_sharedvar_L5$gene_name),sum(LDL_silver_bystand$genename %in% z_gene_multi$gene_name),sum(LDL_silver_bystand$genename %in% z_gene_multi_samevar$gene_name),sum(LDL_silver_bystand$genename %in% z_gene_multi_L5$gene_name)),
+                    num_gene_bystander_pip08 = c(2,sum(LDL_silver_bystand$genename %in% combined_pip_sig_single$gene_name),sum(LDL_silver_bystand$genename %in% combined_pip_sig_single_L5$gene_name),sum(LDL_silver_bystand$genename %in% combined_pip_sig_single_sharedvar_L5$gene_name),sum(LDL_silver_bystand$genename %in% combined_pip_sig_multi$gene_name),sum(LDL_silver_bystand$genename %in% combined_pip_sig_multi_samevar$gene_name),sum(LDL_silver_bystand$genename %in% combined_pip_sig_multi_L5$gene_name))
                    )
 
 stats$TP <- stats$num_gene_known_pip08 / (stats$num_gene_known_pip08 + stats$num_gene_bystander_pip08)
@@ -486,14 +526,14 @@ LDL_silver_known_sig <- LDL_silver_known_sig[,c("genename","cs_index","PIP","z",
 
 # check z_scores 
 
-z_gene_single_L5 <- readRDS(paste0(folder_single_results_L5,"/",trait,"/",trait,"_",tissue,".z_gene.RDS"))
+z_gene_single_sharedvar_L5 <- readRDS(paste0(folder_single_results_L5,"/",trait,"/",trait,"_",tissue,".z_gene.RDS"))
 
-z_gene_single_L5 <- z_gene_single_L5 %>%
+z_gene_single_sharedvar_L5 <- z_gene_single_sharedvar_L5 %>%
   mutate(molecular_id = sub("\\|.*", "", id)) %>%  # Extract ENSG ID from id
   left_join(mapping_two %>% dplyr::select(molecular_id, gene_name), by = "molecular_id")
-z_gene_single_L5 <- z_gene_single_L5[,c("gene_name","z")]
+z_gene_single_sharedvar_L5 <- z_gene_single_sharedvar_L5[,c("gene_name","z")]
 
-z_gene_selected_L5 <- z_gene_single_L5[z_gene_single_L5$gene_name %in% LDL_silver_known_sig$genename,]
+z_gene_selected_L5 <- z_gene_single_sharedvar_L5[z_gene_single_sharedvar_L5$gene_name %in% LDL_silver_known_sig$genename,]
 
 LDL_silver_known_sig <- merge(LDL_silver_known_sig,z_gene_selected_L5, by.x ="genename", by.y = "gene_name",all.x=T)
 
@@ -519,8 +559,8 @@ DT::datatable(LDL_silver_known_sig,caption = htmltools::tags$caption( style = 'c
 
 print("ABCG8 weights")
 
-weights_single_L5 <- readRDS(paste0(folder_single_results_L5,"/",trait,"/",trait,"_",tissue,".preprocessed.weights.E.RDS"))
-weights_gene_L5 <- weights_single_L5[["ENSG00000143921.6"]]
+weights_single_sharedvar_L5 <- readRDS(paste0(folder_single_results_L5,"/",trait,"/",trait,"_",tissue,".preprocessed.weights.E.RDS"))
+weights_gene_L5 <- weights_single_sharedvar_L5[["ENSG00000143921.6"]]
 
 print(weights_gene_L5)
 
@@ -531,8 +571,8 @@ snp_map <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/LD_region_info/
 
 
 
-finemap_res_single_L5 <- ctwas_res_single_post_L5$finemap_res
-finemap_res_single_L5 <- anno_finemap_res(finemap_res_single_L5,
+finemap_res_single_sharedvar_L5 <- ctwas_res_single_post_L5$finemap_res
+finemap_res_single_sharedvar_L5 <- anno_finemap_res(finemap_res_single_sharedvar_L5,
                                           snp_map = snp_map,
                                           mapping_table = mapping_two,
                                           add_gene_annot = TRUE,
@@ -548,10 +588,10 @@ finemap_res_single_L5 <- anno_finemap_res(finemap_res_single_L5,
 print("NPC1L1")
 region_id <- "7_43119475_44724229"
 
-make_locusplot(finemap_res_single_L5,
+make_locusplot(finemap_res_single_sharedvar_L5,
                region_id = region_id,
                ens_db = ens_db,
-               weights = weights_single_L5,
+               weights = weights_single_sharedvar_L5,
                highlight_pip = 0.8,
                filter_protein_coding_genes = TRUE,
                filter_cs = TRUE,
@@ -590,7 +630,7 @@ make_locusplot(finemap_res_single_L5,
 LDL_silver_bystand_sig <- LDL_silver_bystand[as.numeric(LDL_silver_bystand$PIP) > 0.8 & LDL_silver_bystand$PIP !="NA",]
 LDL_silver_bystand_sig <- LDL_silver_bystand_sig[,c("genename","cs_index","PIP","z","num_eqtl")]
 
-LDL_silver_bystand_sig <- merge(LDL_silver_bystand_sig,z_gene_single_L5, by.x ="genename", by.y = "gene_name",all.x=T)
+LDL_silver_bystand_sig <- merge(LDL_silver_bystand_sig,z_gene_single_sharedvar_L5, by.x ="genename", by.y = "gene_name",all.x=T)
 
 LDL_silver_bystand_sig <- merge(LDL_silver_bystand_sig, combined_pip_by_group_single_nocs_L5, by.x = "genename", by.y = "gene_name", all.x = T)
 
@@ -605,10 +645,10 @@ DT::datatable(LDL_silver_bystand_sig,caption = htmltools::tags$caption( style = 
 print("USP1")
 region_id <- "1_61456693_62989418"
 
-make_locusplot(finemap_res_single_L5,
+make_locusplot(finemap_res_single_sharedvar_L5,
                region_id = region_id,
                ens_db = ens_db,
-               weights = weights_single_L5,
+               weights = weights_single_sharedvar_L5,
                highlight_pip = 0.8,
                filter_protein_coding_genes = TRUE,
                filter_cs = TRUE,
@@ -671,7 +711,7 @@ ggplot(finemap_res_single_gene, aes(y = susie_pip, x = abs(z))) +
 
 ```{r warning=F, message=F, fig.height=5, fig.width=5}
 
-finemap_res_single_gene_L5 <- finemap_res_single_L5[finemap_res_single_L5$type !="SNP",]
+finemap_res_single_gene_L5 <- finemap_res_single_sharedvar_L5[finemap_res_single_sharedvar_L5$type !="SNP",]
 
 ggplot(finemap_res_single_gene_L5, aes(y = susie_pip, x = abs(z))) +
   geom_point(alpha = 0.5, size = 0.5) +  # Adjust alpha and size for better visualization
