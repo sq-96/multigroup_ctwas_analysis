@@ -1,0 +1,315 @@
+---
+title: "simulation_summary"
+output: html_document
+date: '2024-10-02'
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+library(ctwas)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+
+get_parameter <- function(results_dir,runtag,simutags,null_weight_method,parameter){
+  param_vec <- c()
+  for(i in simutags){
+    param <- readRDS(paste0(results_dir, "/",runtag,"_","simu",i,"_UKBBLD.thin1.",null_weight_method,"_null.parameters.RDS"))
+    param <- param[[parameter]][1]
+    param_vec <- c(param_vec,param)
+  }
+  return(param_vec)
+}
+
+get_parameter_allregion <- function(results_dir,runtag,simutags,null_weight_method,parameter){
+  param_vec <- c()
+  for(i in simutags){
+    param <- readRDS(paste0(results_dir, "/",runtag,"_","simu",i,"_UKBBLD.thin1.allregion.",null_weight_method,"_null.parameters.RDS"))
+    param <- param[[parameter]][1]
+    param_vec <- c(param_vec,param)
+  }
+  return(param_vec)
+}
+
+get_plot <- function(ctwas_param,susie_param,true_value,title_name){
+  data <- data.frame(ctwas_null_weight = ctwas_param, susie_null_weight = susie_param)
+  data_long <- data %>% pivot_longer(cols = everything(), names_to = "group", values_to = "value")
+  ggplot(data_long, aes(x = group, y = value, color = group)) +
+  geom_point(size = 4, alpha = 0.7) +  # Add points
+  geom_hline(yintercept = true_value, linetype = "dashed", color = "red") +  # Add horizontal line at y = 1
+  labs(
+    x = "Group",
+    y = title_name,
+  ) +
+  theme_minimal() +  # Use a minimal theme
+  theme(legend.position = "none")  # Hide the legend
+}
+```
+
+
+### Parameter estimation on selected regions (min_gene=1, min_p_single_effect=0.8, min_var=2)
+#### Enrichment = 1
+```{r echo=FALSE}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(1, 1:10, sep = "-")
+
+ctwas_param <- get_parameter_allregion(results_dir,runtag,simutags,"ctwas","enrichment")
+susie_param <- get_parameter_allregion(results_dir,runtag,simutags,"susie","enrichment")
+get_plot(ctwas_param,susie_param,1,"Enrichment")
+```
+
+#### Enrichment = 10
+```{r echo=FALSE}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(2, 1:10, sep = "-")
+
+ctwas_param <- get_parameter_allregion(results_dir,runtag,simutags,"ctwas","enrichment")
+susie_param <- get_parameter_allregion(results_dir,runtag,simutags,"susie","enrichment")
+get_plot(ctwas_param,susie_param,10,"Enrichment")
+```
+
+#### Enrichment = 40
+```{r echo=FALSE}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(3, 1:10, sep = "-")
+
+ctwas_param <- get_parameter_allregion(results_dir,runtag,simutags,"ctwas","enrichment")
+susie_param <- get_parameter_allregion(results_dir,runtag,simutags,"susie","enrichment")
+get_plot(ctwas_param,susie_param,40,"Enrichment")
+```
+
+#### Enrichment = 80
+```{r echo=FALSE}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(4, 1:10, sep = "-")
+
+ctwas_param <- get_parameter_allregion(results_dir,runtag,simutags,"ctwas","enrichment")
+susie_param <- get_parameter_allregion(results_dir,runtag,simutags,"susie","enrichment")
+get_plot(ctwas_param,susie_param,80,"Enrichment")
+```
+
+#### Gene Prior = 0.00025
+```{r echo=FALSE}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(1, 1:10, sep = "-")
+
+ctwas_param <- get_parameter_allregion(results_dir,runtag,simutags,"ctwas","group_prior")
+susie_param <- get_parameter_allregion(results_dir,runtag,simutags,"susie","group_prior")
+get_plot(ctwas_param,susie_param,0.00025,"Gene Prior")
+```
+
+#### Gene Prior = 0.0025
+```{r echo=FALSE}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(2, 1:10, sep = "-")
+
+ctwas_param <- get_parameter_allregion(results_dir,runtag,simutags,"ctwas","group_prior")
+susie_param <- get_parameter_allregion(results_dir,runtag,simutags,"susie","group_prior")
+get_plot(ctwas_param,susie_param,0.0025,"Gene Prior")
+```
+
+#### Gene Prior = 0.01
+```{r echo=FALSE}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(3, 1:10, sep = "-")
+
+ctwas_param <- get_parameter_allregion(results_dir,runtag,simutags,"ctwas","group_prior")
+susie_param <- get_parameter_allregion(results_dir,runtag,simutags,"susie","group_prior")
+get_plot(ctwas_param,susie_param,0.01,"Gene Prior")
+```
+
+#### Gene Prior = 0.02
+```{r echo=FALSE}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(4, 1:10, sep = "-")
+
+ctwas_param <- get_parameter_allregion(results_dir,runtag,simutags,"ctwas","group_prior")
+susie_param <- get_parameter_allregion(results_dir,runtag,simutags,"susie","group_prior")
+get_plot(ctwas_param,susie_param,0.02,"Gene Prior")
+```
+
+#### Gene Variance = 10.2
+```{r echo=FALSE}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(1, 1:10, sep = "-")
+
+ctwas_param <- get_parameter_allregion(results_dir,runtag,simutags,"ctwas","group_prior_var")
+susie_param <- get_parameter_allregion(results_dir,runtag,simutags,"susie","group_prior_var")
+get_plot(ctwas_param,susie_param,10.2,"Gene Prior")
+```
+
+#### Gene Variance = 10.2
+```{r echo=FALSE}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(2, 1:10, sep = "-")
+
+ctwas_param <- get_parameter_allregion(results_dir,runtag,simutags,"ctwas","group_prior_var")
+susie_param <- get_parameter_allregion(results_dir,runtag,simutags,"susie","group_prior_var")
+get_plot(ctwas_param,susie_param,10.2,"Gene Prior")
+```
+
+#### Gene Variance = 10.2
+```{r echo=FALSE}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(3, 1:10, sep = "-")
+
+ctwas_param <- get_parameter_allregion(results_dir,runtag,simutags,"ctwas","group_prior_var")
+susie_param <- get_parameter_allregion(results_dir,runtag,simutags,"susie","group_prior_var")
+get_plot(ctwas_param,susie_param,10.2,"Gene Prior")
+```
+
+#### Gene Variance = 10.2
+```{r echo=FALSE}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(4, 1:10, sep = "-")
+
+ctwas_param <- get_parameter_allregion(results_dir,runtag,simutags,"ctwas","group_prior_var")
+susie_param <- get_parameter_allregion(results_dir,runtag,simutags,"susie","group_prior_var")
+get_plot(ctwas_param,susie_param,10.2,"Gene Prior")
+```
+
+### Parameter estimation on all regions (min_gene=0, min_p_single_effect=0, min_var=1)
+#### Enrichment = 1
+```{r echo=FALSE}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(1, 1:10, sep = "-")
+
+ctwas_param <- get_parameter(results_dir,runtag,simutags,"ctwas","enrichment")
+susie_param <- get_parameter(results_dir,runtag,simutags,"susie","enrichment")
+get_plot(ctwas_param,susie_param,1,"Enrichment")
+```
+
+#### Enrichment = 10
+```{r echo=FALSE}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(2, 1:10, sep = "-")
+
+ctwas_param <- get_parameter(results_dir,runtag,simutags,"ctwas","enrichment")
+susie_param <- get_parameter(results_dir,runtag,simutags,"susie","enrichment")
+get_plot(ctwas_param,susie_param,10,"Enrichment")
+```
+
+#### Enrichment = 40
+```{r echo=FALSE}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(3, 1:10, sep = "-")
+
+ctwas_param <- get_parameter(results_dir,runtag,simutags,"ctwas","enrichment")
+susie_param <- get_parameter(results_dir,runtag,simutags,"susie","enrichment")
+get_plot(ctwas_param,susie_param,40,"Enrichment")
+```
+
+#### Enrichment = 80
+```{r echo=FALSE}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(4, 1:10, sep = "-")
+
+ctwas_param <- get_parameter(results_dir,runtag,simutags,"ctwas","enrichment")
+susie_param <- get_parameter(results_dir,runtag,simutags,"susie","enrichment")
+get_plot(ctwas_param,susie_param,80,"Enrichment")
+```
+
+#### Gene Prior = 0.00025
+```{r echo=FALSE}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(1, 1:10, sep = "-")
+
+ctwas_param <- get_parameter(results_dir,runtag,simutags,"ctwas","group_prior")
+susie_param <- get_parameter(results_dir,runtag,simutags,"susie","group_prior")
+get_plot(ctwas_param,susie_param,0.00025,"Gene Prior")
+```
+
+#### Gene Prior = 0.0025
+```{r echo=FALSE}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(2, 1:10, sep = "-")
+
+ctwas_param <- get_parameter(results_dir,runtag,simutags,"ctwas","group_prior")
+susie_param <- get_parameter(results_dir,runtag,simutags,"susie","group_prior")
+get_plot(ctwas_param,susie_param,0.0025,"Gene Prior")
+```
+
+#### Gene Prior = 0.01
+```{r echo=FALSE}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(3, 1:10, sep = "-")
+
+ctwas_param <- get_parameter(results_dir,runtag,simutags,"ctwas","group_prior")
+susie_param <- get_parameter(results_dir,runtag,simutags,"susie","group_prior")
+get_plot(ctwas_param,susie_param,0.01,"Gene Prior")
+```
+
+#### Gene Prior = 0.02
+```{r echo=FALSE}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(4, 1:10, sep = "-")
+
+ctwas_param <- get_parameter(results_dir,runtag,simutags,"ctwas","group_prior")
+susie_param <- get_parameter(results_dir,runtag,simutags,"susie","group_prior")
+get_plot(ctwas_param,susie_param,0.02,"Gene Prior")
+```
+
+#### Gene Variance = 10.2
+```{r echo=FALSE}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(1, 1:10, sep = "-")
+
+ctwas_param <- get_parameter(results_dir,runtag,simutags,"ctwas","group_prior_var")
+susie_param <- get_parameter(results_dir,runtag,simutags,"susie","group_prior_var")
+get_plot(ctwas_param,susie_param,10.2,"Gene Prior")
+```
+
+#### Gene Variance = 10.2
+```{r echo=FALSE}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(2, 1:10, sep = "-")
+
+ctwas_param <- get_parameter(results_dir,runtag,simutags,"ctwas","group_prior_var")
+susie_param <- get_parameter(results_dir,runtag,simutags,"susie","group_prior_var")
+get_plot(ctwas_param,susie_param,10.2,"Gene Prior")
+```
+
+#### Gene Variance = 10.2
+```{r echo=FALSE}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(3, 1:10, sep = "-")
+
+ctwas_param <- get_parameter(results_dir,runtag,simutags,"ctwas","group_prior_var")
+susie_param <- get_parameter(results_dir,runtag,simutags,"susie","group_prior_var")
+get_plot(ctwas_param,susie_param,10.2,"Gene Prior")
+```
+
+#### Gene Variance = 10.2
+```{r echo=FALSE}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(4, 1:10, sep = "-")
+
+ctwas_param <- get_parameter(results_dir,runtag,simutags,"ctwas","group_prior_var")
+susie_param <- get_parameter(results_dir,runtag,simutags,"susie","group_prior_var")
+get_plot(ctwas_param,susie_param,10.2,"Gene Prior")
+```
