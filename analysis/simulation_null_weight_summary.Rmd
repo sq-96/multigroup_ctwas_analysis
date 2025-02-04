@@ -11,6 +11,12 @@ library(ctwas)
 library(tidyr)
 library(dplyr)
 library(ggplot2)
+library(data.table)
+library(ggbreak) 
+library(ggpubr)
+source("/project/xinhe/shengqian/cTWAS_simulation/code/simulation_help_functions.R")
+source("/project/xinhe/shengqian/cTWAS_simulation/code/summarize_basic_plots.R")
+source("/project/xinhe/shengqian/cTWAS_simulation/code/summarize_ctwas_plots.R")
 
 get_parameter <- function(results_dir,runtag,simutags,null_weight_method,parameter){
   param_vec <- c()
@@ -44,6 +50,20 @@ get_plot <- function(ctwas_param,susie_param,true_value,title_name){
   ) +
   theme_minimal() +  # Use a minimal theme
   theme(legend.position = "none")  # Hide the legend
+}
+
+plot_PIP_ctwas <- function(results_dir, runtag,  simutags, ...){
+  phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
+  susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_UKBBLD.true_parameter.","ctwas_null.finemap_regions_res.RDS")
+  f1 <- caliPIP_plot_csindex(phenofs, susieIfs, ...) 
+  return(f1)
+}
+
+plot_PIP_susie <- function(results_dir, runtag,  simutags, ...){
+  phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
+  susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_UKBBLD.true_parameter.","susie_null.finemap_regions_res.RDS")
+  f1 <- caliPIP_plot_csindex(phenofs, susieIfs, ...) 
+  return(f1)
 }
 ```
 
@@ -311,4 +331,50 @@ simutags <- paste(4, 1:10, sep = "-")
 ctwas_param <- get_parameter(results_dir,runtag,simutags,"ctwas","group_prior_var")
 susie_param <- get_parameter(results_dir,runtag,simutags,"susie","group_prior_var")
 get_plot(ctwas_param,susie_param,10.2,"Gene Prior Variance")
+```
+
+### PIP calibration (cs index filter)
+
+### Enrichment=1
+```{r echo=FALSE}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(1, 1:10, sep = "-")
+
+f1 <- plot_PIP_ctwas(results_dir, runtag, simutags, main = "ctwas null weight")
+f2 <- plot_PIP_susie(results_dir, runtag, simutags, main = "susie null weight")
+gridExtra::grid.arrange(f1, f2, ncol = 2)
+```
+
+### Enrichment=10
+```{r echo=FALSE}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(2, 1:10, sep = "-")
+
+f1 <- plot_PIP_ctwas(results_dir, runtag, simutags, main = "ctwas null weight")
+f2 <- plot_PIP_susie(results_dir, runtag, simutags, main = "susie null weight")
+gridExtra::grid.arrange(f1, f2, ncol = 2)
+```
+
+### Enrichment=40
+```{r echo=FALSE}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(3, 1:10, sep = "-")
+
+f1 <- plot_PIP_ctwas(results_dir, runtag, simutags, main = "ctwas null weight")
+f2 <- plot_PIP_susie(results_dir, runtag, simutags, main = "susie null weight")
+gridExtra::grid.arrange(f1, f2, ncol = 2)
+```
+
+### Enrichment=80
+```{r echo=FALSE}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(4, 1:10, sep = "-")
+
+f1 <- plot_PIP_ctwas(results_dir, runtag, simutags, main = "ctwas null weight")
+f2 <- plot_PIP_susie(results_dir, runtag, simutags, main = "susie null weight")
+gridExtra::grid.arrange(f1, f2, ncol = 2)
 ```
