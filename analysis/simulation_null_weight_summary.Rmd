@@ -55,11 +55,25 @@ get_plot <- function(ctwas_param,susie_param,true_value,title_name){
 plot_PIP_ctwas <- function(results_dir, runtag,  simutags, ...){
   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_UKBBLD.true_parameter.","ctwas_null.finemap_regions_res.RDS")
-  f1 <- caliPIP_plot_csindex(phenofs, susieIfs, ...) 
+  f1 <- caliPIP_plot(phenofs, susieIfs, ...) 
   return(f1)
 }
 
 plot_PIP_susie <- function(results_dir, runtag,  simutags, ...){
+  phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
+  susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_UKBBLD.true_parameter.","susie_null.finemap_regions_res.RDS")
+  f1 <- caliPIP_plot(phenofs, susieIfs, ...) 
+  return(f1)
+}
+
+plot_PIP_ctwas_csindex <- function(results_dir, runtag,  simutags, ...){
+  phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
+  susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_UKBBLD.true_parameter.","ctwas_null.finemap_regions_res.RDS")
+  f1 <- caliPIP_plot_csindex(phenofs, susieIfs, ...) 
+  return(f1)
+}
+
+plot_PIP_susie_csindex <- function(results_dir, runtag,  simutags, ...){
   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, "_UKBBLD.true_parameter.","susie_null.finemap_regions_res.RDS")
   f1 <- caliPIP_plot_csindex(phenofs, susieIfs, ...) 
@@ -335,8 +349,8 @@ get_plot(ctwas_param,susie_param,10.2,"Gene Prior Variance")
 
 ### PIP calibration (cs index filter)
 
-### Enrichment=1
-```{r echo=FALSE}
+### Enrichment=1 (without cs index filter)
+```{r, echo=FALSE, fig.width= 8, fig.height= 4}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
 runtag = "one_tissue"
 simutags <- paste(1, 1:10, sep = "-")
@@ -346,8 +360,19 @@ f2 <- plot_PIP_susie(results_dir, runtag, simutags, main = "susie null weight")
 gridExtra::grid.arrange(f1, f2, ncol = 2)
 ```
 
-### Enrichment=10
-```{r echo=FALSE}
+### Enrichment=1 (with cs index filter)
+```{r, echo=FALSE, fig.width= 8, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(1, 1:10, sep = "-")
+
+f1 <- plot_PIP_ctwas_csindex(results_dir, runtag, simutags, main = "ctwas null weight")
+f2 <- plot_PIP_susie_csindex(results_dir, runtag, simutags, main = "susie null weight")
+gridExtra::grid.arrange(f1, f2, ncol = 2)
+```
+
+### Enrichment=10 (without cs index filter)
+```{r, echo=FALSE, fig.width= 8, fig.height= 4}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
 runtag = "one_tissue"
 simutags <- paste(2, 1:10, sep = "-")
@@ -357,8 +382,19 @@ f2 <- plot_PIP_susie(results_dir, runtag, simutags, main = "susie null weight")
 gridExtra::grid.arrange(f1, f2, ncol = 2)
 ```
 
-### Enrichment=40
-```{r echo=FALSE}
+### Enrichment=10 (with cs index filter)
+```{r, echo=FALSE, fig.width= 8, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(2, 1:10, sep = "-")
+
+f1 <- plot_PIP_ctwas_csindex(results_dir, runtag, simutags, main = "ctwas null weight")
+f2 <- plot_PIP_susie_csindex(results_dir, runtag, simutags, main = "susie null weight")
+gridExtra::grid.arrange(f1, f2, ncol = 2)
+```
+
+### Enrichment=40 (without cs index filter)
+```{r, echo=FALSE, fig.width= 8, fig.height= 4}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
 runtag = "one_tissue"
 simutags <- paste(3, 1:10, sep = "-")
@@ -368,13 +404,35 @@ f2 <- plot_PIP_susie(results_dir, runtag, simutags, main = "susie null weight")
 gridExtra::grid.arrange(f1, f2, ncol = 2)
 ```
 
-### Enrichment=80
-```{r echo=FALSE}
+### Enrichment=40 (with cs index filter)
+```{r, echo=FALSE, fig.width= 8, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(3, 1:10, sep = "-")
+
+f1 <- plot_PIP_ctwas_csindex(results_dir, runtag, simutags, main = "ctwas null weight")
+f2 <- plot_PIP_susie_csindex(results_dir, runtag, simutags, main = "susie null weight")
+gridExtra::grid.arrange(f1, f2, ncol = 2)
+```
+
+### Enrichment=80 (without cs index filter)
+```{r, echo=FALSE, fig.width= 8, fig.height= 4}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
 runtag = "one_tissue"
 simutags <- paste(4, 1:10, sep = "-")
 
 f1 <- plot_PIP_ctwas(results_dir, runtag, simutags, main = "ctwas null weight")
 f2 <- plot_PIP_susie(results_dir, runtag, simutags, main = "susie null weight")
+gridExtra::grid.arrange(f1, f2, ncol = 2)
+```
+
+### Enrichment=80 (with cs index filter)
+```{r, echo=FALSE, fig.width= 8, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(4, 1:10, sep = "-")
+
+f1 <- plot_PIP_ctwas_csindex(results_dir, runtag, simutags, main = "ctwas null weight")
+f2 <- plot_PIP_susie_csindex(results_dir, runtag, simutags, main = "susie null weight")
 gridExtra::grid.arrange(f1, f2, ncol = 2)
 ```
