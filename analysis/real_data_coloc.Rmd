@@ -7,14 +7,14 @@ editor_options:
 ---
 
 ### Method
-1. For each trait, select regions with at lease high PIP expression/splicing trait (PIP>0.8)
+1. For each trait, select regions with at lease one high PIP expression/splicing trait (PIP>0.8)
 - based on multi-cTWAS results with three molecular traits (eQTL,sQTL,stQTL) from five tissues.
 2. Run coloc with eQTL and sQTL full summary statistics from five tissues
 - no stQTL full summary statistics
-3. Comparing the number of expression and splicing molecular traits identified by coloc (PP4>0.8) and multi-cTWAS (PIP>0.8)
+3. Comparing the number of expression and splicing molecular traits identified by coloc (PP4>0.8), single-cTWAS (PIP>0.8) and multi-cTWAS (PIP>0.8)
 - don't include stability traits identified by multi-cTWAS
 
-```{r echo=FALSE, message=FALSE, results='hide', warning=FALSE}
+```{r echo=FALSE, message=FALSE, results='hide', warning=FALSE, include=FALSE}
 library(ggplot2)
 library(ggVennDiagram)
 library(gridExtra)
@@ -27,119 +27,331 @@ library(dplyr)
 library(magrittr)
 library(pheatmap)
 
-get_top_genes_coloc <- function(colocf){
+library(EnsDb.Hsapiens.v86)
+ens_db <- EnsDb.Hsapiens.v86
+
+GWAS_tissues <- list("WBC-ieu-b-30" = c("Whole_Blood","Cells_Cultured_fibroblasts","Esophagus_Muscularis","Pancreas","Nerve_Tibial"),
+                    "SBP-ukb-a-360" = c("Artery_Aorta","Brain_Cortex","Artery_Tibial","Cells_Cultured_fibroblasts","Brain_Cerebellar_Hemisphere"),
+                    "LDL-ukb-d-30780_irnt" = c("Liver","Spleen","Esophagus_Gastroesophageal_Junction","Esophagus_Muscularis","Esophagus_Mucosa"),
+                    "aFib-ebi-a-GCST006414" = c("Heart_Atrial_Appendage","Muscle_Skeletal","Heart_Left_Ventricle","Thyroid","Cells_EBV-transformed_lymphocytes"),
+                    "IBD-ebi-a-GCST004131" = c("Whole_Blood","Colon_Transverse","Esophagus_Muscularis","Artery_Coronary","Brain_Nucleus_accumbens_basal_ganglia"),
+                    "SCZ-ieu-b-5102" = c("Brain_Hippocampus","Brain_Cerebellum","Brain_Cerebellar_Hemisphere","Brain_Nucleus_accumbens_basal_ganglia","Brain_Cortex"),
+                    "BMI-panukb" = 419163,
+                    "Height-panukb" = 419596,
+                    "PLT-panukb" = 407992,
+                    "RBC-panukb" = 407995,
+                    "HB-panukb" =  407994,
+                    "HTN-panukb" = 420473,
+                    "RA-panukb" =  376792,
+                    "T1D-GCST90014023" = 520580,
+                    "ATH_gtexukb" = 337119,
+                    "T2D-panukb" = 418949,
+                    "MDD-ieu-b-102" = 500199,
+                    "BIP-ieu-b-5110" = 413466,
+                    "ADHD-ieu-a-1183" = 55374,
+                    "ASD-ieu-a-1185" = 46351,
+                    "PD-ieu-b-7" = 482730,
+                    "NS-ukb-a-230" = 274108)
+
+get_top_mts_coloc <- function(colocf,group){
   coloc_res <- readRDS(colocf)
-  coloc_res <- coloc_res[coloc_res$PP4>0.8,]
-  return(coloc_res$id)
+  #coloc_res <- coloc_res[coloc_res$PP4>0.8,]
+  coloc_res$id <- paste0(coloc_res$id,"|",group)
+  rownames(coloc_res) <- NULL
+  return(coloc_res)
+}
+
+get_top_mts_ctwas <- function(ctwasf,regions){
+  finemap_res <- readRDS(ctwasf)
+  finemap_res <- finemap_res$finemap_res
+  finemap_res <- finemap_res[finemap_res$region_id %in% regions,]
+  finemap_res <- finemap_res[(finemap_res$susie_pip>0.8) & (finemap_res$type!="SNP") & !is.na((finemap_res$cs)),]
+  return(finemap_res)
+}
+
+get_results <- function(gwas_id,gwas_name){
+  tissues <- GWAS_tissues[[gwas_id]]
+  outputdir = paste0("/project/xinhe/shengqian/coloc_GWAS_analysis/data_test/",gwas_name,"_coloc/")
+  weight_tags <- paste0("weight",1:10)
+  colocfs <- paste0(outputdir, gwas_name, "_",weight_tags, ".coloc_res.RDS")
+  
+  coloc_mts <- rbind(get_top_mts_coloc(colocfs[1], paste0(tissues[1],"_eQTL")),
+                     get_top_mts_coloc(colocfs[2], paste0(tissues[1],"_sQTL")),
+                     get_top_mts_coloc(colocfs[3], paste0(tissues[2],"_eQTL")),
+                     get_top_mts_coloc(colocfs[4], paste0(tissues[2],"_sQTL")),
+                     get_top_mts_coloc(colocfs[5], paste0(tissues[3],"_eQTL")),
+                     get_top_mts_coloc(colocfs[6], paste0(tissues[3],"_sQTL")),
+                     get_top_mts_coloc(colocfs[7], paste0(tissues[4],"_eQTL")),
+                     get_top_mts_coloc(colocfs[8], paste0(tissues[4],"_sQTL")),
+                     get_top_mts_coloc(colocfs[9], paste0(tissues[5],"_eQTL")),
+                     get_top_mts_coloc(colocfs[10],paste0(tissues[5],"_sQTL")))
+  
+  coloc_mts <- coloc_mts[coloc_mts$PP4>0.8,]
+  num_coloc_gene <- length(unique(coloc_mts$gene_name))
+  
+  weights <- readRDS(paste0("/project/xinhe/shengqian/ctwas_GWAS_analysis/results_ES/",gwas_id,"/",gwas_id,".preprocessed.weights.RDS"))
+  mapping_predictdb <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_E_S_M_mapping.RDS")
+  finemap_res <- readRDS(paste0("/project/xinhe/shengqian/ctwas_GWAS_analysis/results_ES/",gwas_id,"/",gwas_id,".finemap_regions_res.RDS"))
+  finemap_res <- finemap_res$susie_alpha_res
+  finemap_res <- anno_susie_alpha_res(finemap_res,
+                                      mapping_table = mapping_predictdb,
+                                      map_by = "molecular_id",
+                                      drop_unmapped = TRUE)
+  
+  combined_pip <- combine_gene_pips(finemap_res,
+                                    group_by = "gene_name",
+                                    by = "type",
+                                    method = "combine_cs",
+                                    filter_cs = TRUE,
+                                    include_cs_id = TRUE)
+  
+  combined_pip$region_id <- sapply(combined_pip$combined_cs_id,function(x){unlist(strsplit(x,"[.]"))[1]})
+  combined_pip <- combined_pip[combined_pip$combined_pip>0.8,]
+  
+  num_multi_ctwas_gene <- length(combined_pip$gene_name)
+  
+  region_singals <- unique(combined_pip$region_id)
+  num_coloc_ctwas_gene <- length(unique(coloc_mts[coloc_mts$region_id %in% region_singals, ]$gene_name))
+  
+  coloc_data <- as.vector(table(unique(coloc_mts[,c("gene_name","region_id")])$region_id))
+  multictwas_data <- as.vector(table(combined_pip$region_id))
+  
+  # Combine data into a data frame
+  df <- data.frame(
+    value = c(coloc_data, multictwas_data),
+    group = c(rep("Coloc",length(coloc_data)),rep("Multi-cTWAS",length(multictwas_data)))
+  )
+  
+  p1 <- ggplot(df, aes(x = value, fill = group)) +
+    geom_histogram(position = "identity", alpha = 0.5, bins = max(coloc_data)) +
+    scale_fill_manual(values = c("blue", "red")) +
+    labs(title = gwas_id, x = "Value", y = "Frequency", fill = "Dataset") + theme_minimal()
+  
+  ctwas_coloc_data <- coloc_mts[coloc_mts$region_id %in% region_singals, ]
+  ctwas_coloc_data <- as.vector(table(unique(ctwas_coloc_data[,c("gene_name","region_id")])$region_id))
+  # Combine data into a data frame
+  df <- data.frame(
+    value = c(ctwas_coloc_data, multictwas_data),
+    group = c(rep("Coloc",length(ctwas_coloc_data)),rep("Multi-cTWAS",length(multictwas_data)))
+  )
+  
+  p2 <- ggplot(df, aes(x = value, fill = group)) +
+    geom_histogram(position = "identity", alpha = 0.5, bins = max(coloc_data)) +
+    scale_fill_manual(values = c("blue", "red")) +
+    labs(title = gwas_id, x = "Value", y = "Frequency", fill = "Dataset") + theme_minimal()
+  
+  return(list("num_coloc_gene" = num_coloc_gene,
+              "num_coloc_ctwas_gene" = num_coloc_ctwas_gene,
+              "num_multi_ctwas_gene" = num_multi_ctwas_gene,
+              "p1" = p1,
+              "p2" = p2))
 }
 ```
 
-### LDL
-```{r echo=FALSE, message=FALSE, results='hide', warning=FALSE}
-finemap_res <- readRDS("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/results/LDL-ukb-d-30780_irnt/LDL-ukb-d-30780_irnt.ctwas.res.RDS")
-z_gene <- finemap_res$z_gene
-finemap_res <- finemap_res$finemap_res
-alpha <- 0.05
-sig_thresh <- qnorm(1-(alpha/nrow(z_gene)/2), lower=T)
-twas_genes <- z_gene$id[(abs(z_gene$z)>sig_thresh) & (z_gene$type!="stQTL")]
-region_singals <- unique(finemap_res[(finemap_res$susie_pip>0.8) & (finemap_res$type!="SNP") & !is.na((finemap_res$cs)) & (finemap_res$type!="stQTL"),]$region_id)
-#length(intersect(twas_genes,finemap_res[finemap_res$region_id %in% region_singals,]$id))
-#dim(finemap_res[(finemap_res$susie_pip>0.8) & (finemap_res$type!="SNP") & !is.na((finemap_res$cs)) & (finemap_res$type!="stQTL"),])
 
-runtag = "LDL"
-outputdir = "/project/xinhe/shengqian/cTWAS_analysis/data/LDL_coloc/"
-weight_tags <- paste0("weight",1:10)
-colocfs <- paste0(outputdir, runtag, "_",weight_tags, ".coloc_res.RDS")
-
-coloc_genes <- c(get_top_genes_coloc(colocfs[1]),
-                 get_top_genes_coloc(colocfs[2]),
-                 get_top_genes_coloc(colocfs[3]),
-                 get_top_genes_coloc(colocfs[4]),
-                 get_top_genes_coloc(colocfs[5]),
-                 get_top_genes_coloc(colocfs[6]),
-                 get_top_genes_coloc(colocfs[7]),
-                 get_top_genes_coloc(colocfs[8]),
-                 get_top_genes_coloc(colocfs[9]),
-                 get_top_genes_coloc(colocfs[10]))
-
-#length(coloc_genes)
-num_ctwas <- dim(finemap_res[(finemap_res$susie_pip>0.8) & (finemap_res$type!="SNP") & !is.na((finemap_res$cs)) & (finemap_res$type!="stQTL"),])[1]
-num_coloc <- length(coloc_genes)
-plot_data <- c(num_coloc,num_ctwas)
-names(plot_data) <- c("coloc","multi-cTWAS")
-barplot(plot_data,col = c("#ffff99","#fb8072"),width = 0.5)
+```{r, message=FALSE, echo=FALSE}
+LDL_results <- get_results("LDL-ukb-d-30780_irnt","LDL")
+WBC_results <- get_results("WBC-ieu-b-30","WBC")
+SBP_results <- get_results("SBP-ukb-a-360","SBP")
+SCZ_results <- get_results("SCZ-ieu-b-5102","SCZ")
+IBD_results <- get_results("IBD-ebi-a-GCST004131","IBD")
 ```
 
-### SBP
-```{r echo=FALSE, message=FALSE, results='hide', warning=FALSE}
-finemap_res <- readRDS("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/results/SBP-ukb-a-360/SBP-ukb-a-360.ctwas.res.RDS")
-z_gene <- finemap_res$z_gene
-finemap_res <- finemap_res$finemap_res
-alpha <- 0.05
-sig_thresh <- qnorm(1-(alpha/nrow(z_gene)/2), lower=T)
-twas_genes <- z_gene$id[(abs(z_gene$z)>sig_thresh) & (z_gene$type!="stQTL")]
-region_singals <- unique(finemap_res[(finemap_res$susie_pip>0.8) & (finemap_res$type!="SNP") & !is.na((finemap_res$cs)) & (finemap_res$type!="stQTL"),]$region_id)
-#length(intersect(twas_genes,finemap_res[finemap_res$region_id %in% region_singals,]$id))
-#dim(finemap_res[(finemap_res$susie_pip>0.8) & (finemap_res$type!="SNP") & !is.na((finemap_res$cs)) & (finemap_res$type!="stQTL"),])
+### number of genes identified by each method
+```{r echo=FALSE}
+library(ggplot2) 
 
-runtag = "SBP"
-outputdir = "/project/xinhe/shengqian/cTWAS_analysis/data/SBP_coloc/"
-weight_tags <- paste0("weight",1:10)
-colocfs <- paste0(outputdir, runtag, "_",weight_tags, ".coloc_res.RDS")
+gfg <- data.frame(x = c(LDL_results$num_multi_ctwas_gene,
+                        LDL_results$num_coloc_gene,
+                        LDL_results$num_coloc_ctwas_gene,
+                        WBC_results$num_multi_ctwas_gene,
+                        WBC_results$num_coloc_gene,
+                        WBC_results$num_coloc_ctwas_gene,
+                        SBP_results$num_multi_ctwas_gene,
+                        SBP_results$num_coloc_gene,
+                        SBP_results$num_coloc_ctwas_gene,
+                        SCZ_results$num_multi_ctwas_gene,
+                        SCZ_results$num_coloc_gene,
+                        SCZ_results$num_coloc_ctwas_gene,
+                        IBD_results$num_multi_ctwas_gene,
+                        IBD_results$num_coloc_gene,
+                        IBD_results$num_coloc_ctwas_gene),  
+                  grp = rep(c("LDL","WBC","SBP","SCZ","IBD"),each=3),
+                  subgroup = c("multi-ctwas","coloc","coloc-ctwas-locus")) 
 
-coloc_genes <- c(get_top_genes_coloc(colocfs[1]),
-                 get_top_genes_coloc(colocfs[2]),
-                 get_top_genes_coloc(colocfs[3]),
-                 get_top_genes_coloc(colocfs[4]),
-                 get_top_genes_coloc(colocfs[5]),
-                 get_top_genes_coloc(colocfs[6]),
-                 get_top_genes_coloc(colocfs[7]),
-                 get_top_genes_coloc(colocfs[8]),
-                 get_top_genes_coloc(colocfs[9]),
-                 get_top_genes_coloc(colocfs[10]))
+gfg$subgroup <- factor(gfg$subgroup,levels=c("multi-ctwas","coloc","coloc-ctwas-locus"))
 
-num_ctwas <- dim(finemap_res[(finemap_res$susie_pip>0.8) & (finemap_res$type!="SNP") & !is.na((finemap_res$cs)) & (finemap_res$type!="stQTL"),])[1]
-num_coloc <- length(coloc_genes)
-plot_data <- c(num_coloc,num_ctwas)
-names(plot_data) <- c("coloc","multi-cTWAS")
-barplot(plot_data,col = c("#ffff99","#fb8072"),width = 0.5)
+ggplot(gfg,aes(x = grp, y =x, fill = subgroup)) + 
+  geom_bar(stat = "identity", position = "dodge") 
 ```
 
-### IBD
-```{r echo=FALSE, message=FALSE, results='hide', warning=FALSE}
-finemap_res <- readRDS("/project/xinhe/xsun/multi_group_ctwas/11.multi_group_1008/results/IBD-ebi-a-GCST004131/IBD-ebi-a-GCST004131.ctwas.res.RDS")
-z_gene <- finemap_res$z_gene
-finemap_res <- finemap_res$finemap_res
-alpha <- 0.05
-sig_thresh <- qnorm(1-(alpha/nrow(z_gene)/2), lower=T)
-twas_genes <- z_gene$id[(abs(z_gene$z)>sig_thresh) & (z_gene$type!="stQTL")]
-region_singals <- unique(finemap_res[(finemap_res$susie_pip>0.8) & (finemap_res$type!="SNP") & !is.na((finemap_res$cs)) & (finemap_res$type!="stQTL"),]$region_id)
-#length(intersect(twas_genes,finemap_res[finemap_res$region_id %in% region_singals,]$id))
-#dim(finemap_res[(finemap_res$susie_pip>0.8) & (finemap_res$type!="SNP") & !is.na((finemap_res$cs)) & (finemap_res$type!="stQTL"),])
+### compare number of genes per locus
+```{r echo=FALSE}
+LDL_results$p1
+WBC_results$p1
+SBP_results$p1
+SCZ_results$p1
+IBD_results$p1
+```
 
-runtag = "IBD"
-outputdir = "/project/xinhe/shengqian/cTWAS_analysis/data/IBD_coloc/"
-weight_tags <- paste0("weight",1:10)
-colocfs <- paste0(outputdir, runtag, "_",weight_tags, ".coloc_res.RDS")
-
-coloc_genes <- c(get_top_genes_coloc(colocfs[1]),
-                 get_top_genes_coloc(colocfs[2]),
-                 get_top_genes_coloc(colocfs[3]),
-                 get_top_genes_coloc(colocfs[4]),
-                 get_top_genes_coloc(colocfs[5]),
-                 get_top_genes_coloc(colocfs[6]),
-                 get_top_genes_coloc(colocfs[7]),
-                 get_top_genes_coloc(colocfs[8]),
-                 get_top_genes_coloc(colocfs[9]),
-                 get_top_genes_coloc(colocfs[10]))
-
-num_ctwas <- dim(finemap_res[(finemap_res$susie_pip>0.8) & (finemap_res$type!="SNP") & !is.na((finemap_res$cs)) & (finemap_res$type!="stQTL"),])[1]
-num_coloc <- length(coloc_genes)
-plot_data <- c(num_coloc,num_ctwas)
-names(plot_data) <- c("coloc","multi-cTWAS")
-barplot(plot_data,col = c("#ffff99","#fb8072"),width = 0.5)
+### compare number of genes per locus (locus with multi-ctwas signals)
+```{r echo=FALSE}
+LDL_results$p2
+WBC_results$p2
+SBP_results$p2
+SCZ_results$p2
+IBD_results$p2
 ```
 
 
+```{r echo=FALSE}
+get_results_mts <- function(gwas_id,gwas_name){
+  tissues <- GWAS_tissues[[gwas_id]]
+  outputdir = paste0("/project/xinhe/shengqian/coloc_GWAS_analysis/data_test/",gwas_name,"_coloc/")
+  weight_tags <- paste0("weight",1:10)
+  colocfs <- paste0(outputdir, gwas_name, "_",weight_tags, ".coloc_res.RDS")
+  
+  coloc_mts <- rbind(get_top_mts_coloc(colocfs[1], paste0(tissues[1],"_eQTL")),
+                     get_top_mts_coloc(colocfs[2], paste0(tissues[1],"_sQTL")),
+                     get_top_mts_coloc(colocfs[3], paste0(tissues[2],"_eQTL")),
+                     get_top_mts_coloc(colocfs[4], paste0(tissues[2],"_sQTL")),
+                     get_top_mts_coloc(colocfs[5], paste0(tissues[3],"_eQTL")),
+                     get_top_mts_coloc(colocfs[6], paste0(tissues[3],"_sQTL")),
+                     get_top_mts_coloc(colocfs[7], paste0(tissues[4],"_eQTL")),
+                     get_top_mts_coloc(colocfs[8], paste0(tissues[4],"_sQTL")),
+                     get_top_mts_coloc(colocfs[9], paste0(tissues[5],"_eQTL")),
+                     get_top_mts_coloc(colocfs[10],paste0(tissues[5],"_sQTL")))
+  
+  coloc_mts <- coloc_mts[coloc_mts$PP4>0.8,]
+  num_coloc_mts <- length(unique(coloc_mts$id))
+  
+  finemap_res <- readRDS(paste0("/project/xinhe/shengqian/ctwas_GWAS_analysis/results_ES/",gwas_id,"/",gwas_id,".finemap_regions_res.RDS"))
+  finemap_res <- finemap_res$finemap_res
+  finemap_res <- finemap_res[finemap_res$susie_pip>0.8,]
+  
+  num_multi_ctwas_mts <- length(unique(finemap_res$id))
+  
+  region_singals <- unique(finemap_res$region_id)
+  num_coloc_ctwas_mts <- length(unique(coloc_mts[coloc_mts$region_id %in% region_singals, ]$id))
+  
+  coloc_data <- as.vector(table(unique(coloc_mts[,c("id","region_id")])$region_id))
+  multictwas_data <- as.vector(table(finemap_res$region_id))
+  
+  # Combine data into a data frame
+  df <- data.frame(
+    value = c(coloc_data, multictwas_data),
+    group = c(rep("Coloc",length(coloc_data)),rep("Multi-cTWAS",length(multictwas_data)))
+  )
+  
+  p1 <- ggplot(df, aes(x = value, fill = group)) +
+    geom_histogram(position = "identity", alpha = 0.5, bins = max(coloc_data)) +
+    scale_fill_manual(values = c("blue", "red")) +
+    labs(title = gwas_id, x = "Value", y = "Frequency", fill = "Dataset") + theme_minimal()
+  
+  ctwas_coloc_data <- coloc_mts[coloc_mts$region_id %in% region_singals, ]
+  ctwas_coloc_data <- as.vector(table(unique(ctwas_coloc_data[,c("id","region_id")])$region_id))
+  # Combine data into a data frame
+  df <- data.frame(
+    value = c(ctwas_coloc_data, multictwas_data),
+    group = c(rep("Coloc",length(ctwas_coloc_data)),rep("Multi-cTWAS",length(multictwas_data)))
+  )
+  
+  p2 <- ggplot(df, aes(x = value, fill = group)) +
+    geom_histogram(position = "identity", alpha = 0.5, bins = max(coloc_data)) +
+    scale_fill_manual(values = c("blue", "red")) +
+    labs(title = gwas_id, x = "Value", y = "Frequency", fill = "Dataset") + theme_minimal()
+  
+  return(list("num_coloc_mts" = num_coloc_mts,
+              "num_coloc_ctwas_mts" = num_coloc_ctwas_mts,
+              "num_multi_ctwas_mts" = num_multi_ctwas_mts,
+              "p1" = p1,
+              "p2" = p2))
+}
+```
 
+```{r, message=FALSE, echo=FALSE}
+LDL_results <- get_results_mts("LDL-ukb-d-30780_irnt","LDL")
+WBC_results <- get_results_mts("WBC-ieu-b-30","WBC")
+SBP_results <- get_results_mts("SBP-ukb-a-360","SBP")
+SCZ_results <- get_results_mts("SCZ-ieu-b-5102","SCZ")
+IBD_results <- get_results_mts("IBD-ebi-a-GCST004131","IBD")
+```
 
+### number of molecular traits identified by each method
+```{r echo=FALSE}
+library(ggplot2) 
+
+gfg <- data.frame(x = c(LDL_results$num_multi_ctwas_mts,
+                        LDL_results$num_coloc_mts,
+                        LDL_results$num_coloc_ctwas_mts,
+                        WBC_results$num_multi_ctwas_mts,
+                        WBC_results$num_coloc_mts,
+                        WBC_results$num_coloc_ctwas_mts,
+                        SBP_results$num_multi_ctwas_mts,
+                        SBP_results$num_coloc_mts,
+                        SBP_results$num_coloc_ctwas_mts,
+                        SCZ_results$num_multi_ctwas_mts,
+                        SCZ_results$num_coloc_mts,
+                        SCZ_results$num_coloc_ctwas_mts,
+                        IBD_results$num_multi_ctwas_mts,
+                        IBD_results$num_coloc_mts,
+                        IBD_results$num_coloc_ctwas_mts),  
+                  grp = rep(c("LDL","WBC","SBP","SCZ","IBD"),each=3),
+                  subgroup = c("multi-ctwas","coloc","coloc-ctwas-locus")) 
+
+gfg$subgroup <- factor(gfg$subgroup,levels=c("multi-ctwas","coloc","coloc-ctwas-locus"))
+
+ggplot(gfg,aes(x = grp, y =x, fill = subgroup)) + 
+  geom_bar(stat = "identity", position = "dodge") 
+```
+
+### compare number of molecular traits per locus
+```{r echo=FALSE}
+LDL_results$p1
+WBC_results$p1
+SBP_results$p1
+SCZ_results$p1
+IBD_results$p1
+```
+
+### compare number of molecular traits per locus (locus with multi-ctwas signals)
+```{r echo=FALSE}
+LDL_results$p2
+WBC_results$p2
+SBP_results$p2
+SCZ_results$p2
+IBD_results$p2
+```
+
+```{r, echo=FALSE, eval=FALSE}
+library(EnsDb.Hsapiens.v86)
+ens_db <- EnsDb.Hsapiens.v86
+weights <- readRDS("/project/xinhe/shengqian/ctwas_GWAS_analysis/results/LDL-ukb-d-30780_irnt/LDL-ukb-d-30780_irnt.preprocessed.weights.RDS")
+mapping_predictdb <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_E_S_M_mapping.RDS")
+finemap_res <- readRDS("/project/xinhe/shengqian/ctwas_GWAS_analysis/results/LDL-ukb-d-30780_irnt/LDL-ukb-d-30780_irnt.finemap_regions_res.RDS")
+finemap_res <- finemap_res$finemap_res
+snp_map <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/LD_region_info/snp_map.RDS")
+finemap_res_multi <- anno_finemap_res(finemap_res,
+                                      snp_map = snp_map,
+                                      mapping_table = mapping_predictdb,
+                                      add_gene_annot = TRUE,
+                                      map_by = "molecular_id",
+                                      drop_unmapped = TRUE,
+                                      add_position = TRUE,
+                                      use_gene_pos = "mid")
+```
+
+```{r, echo=FALSE, eval=FALSE}
+pdf(file = "/project/xinhe/shengqian/test.pdf",width = 12,height = 10)
+make_locusplot(finemap_res_multi,
+               region_id = "9_127293231_129403191",
+               ens_db = ens_db,
+               weights = weights,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = TRUE,
+               filter_cs = TRUE,
+               color_pval_by = "cs",
+               color_pip_by = "cs",
+               panel.heights = c(4, 4, 1, 4))
+dev.off()
+```
