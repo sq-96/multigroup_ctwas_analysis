@@ -5,6 +5,7 @@ date: '2024-12-25'
 ---
 
 ```{r, results='asis', echo = FALSE}
+library(ctwas)
 sample_size <- list("WBC-ieu-b-30" = 563946,
                     "SBP-ukb-a-360" = 317754,
                     "LDL-ukb-d-30780_irnt" = 343621,
@@ -30,21 +31,130 @@ sample_size <- list("WBC-ieu-b-30" = 563946,
 DT::datatable(matrix())
 ```
 
-
-```{r test, results='asis', echo = FALSE}
-for(i in names(sample_size)){
-  param <- readRDS(paste0("/project/xinhe/shengqian/all_tissues_screen/results_E/",i,"/",i,".param.RDS"))
+## Thin=1, shared_all
+```{r, results='asis', echo = FALSE}
+for(i in names(sample_size)[2]){
+  param <- readRDS(paste0("/project/xinhe/shengqian/all_tissues_screen/results_E_thin1_shared_all/",i,"/",i,".thin1.shared_all.ctwas_null.param.RDS"))
+  region_data <- readRDS(paste0("/project/xinhe/shengqian/all_tissues_screen/results_E_thin1_shared_all/",i,"/",i,".region_data.thin1.RDS"))
   ctwas_parameters <- ctwas:::summarize_param(param,sample_size[[i]])
-  prop_h2g <- as.data.frame(cbind(names(ctwas_parameters$prop_heritability),ctwas_parameters$prop_heritability,ctwas_parameters$group_pve, c(ctwas_parameters$enrichment,1), param$group_pvalue))
+  group_prior <- ctwas_parameters$group_prior
+  group_prior_var <- ctwas_parameters$group_prior_var
+  
+  p_single_effect <- param$p_single_effect
+  selected_region_ids <- p_single_effect[which(p_single_effect$p_single_effect >= 0.8),"region_id"]
+  selected_region_data <- region_data[selected_region_ids]
+  
+  enrichment_G_res <- get_enrichment_se_Gtest(selected_region_data, 
+                                              group_prior, group_prior_var, 
+                                              null_method = "ctwas")
+  
+  prop_h2g <- as.data.frame(cbind(names(ctwas_parameters$prop_heritability),ctwas_parameters$prop_heritability,ctwas_parameters$group_pve, c(enrichment_G_res$enrichment,1), c(enrichment_G_res$p.value,1)))
   prop_h2g$V2 <- round(as.numeric(prop_h2g$V2),4)
   prop_h2g$V3 <- round(as.numeric(prop_h2g$V3),4)
   prop_h2g$V4 <- round(as.numeric(prop_h2g$V4),4)
+  prop_h2g$V5 <- round(as.numeric(prop_h2g$V5),6)
   rownames(prop_h2g) <- NULL
   prop_h2g <- prop_h2g[order(-prop_h2g$V2),]
-  colnames(prop_h2g) <- c("group","%h2g","h2g","enrichment","pvalue")
+  colnames(prop_h2g) <- c("group","%h2g","h2g","enrichment_Gtest","pvalue_Gtest")
   prop_h2g <- prop_h2g[prop_h2g$group!="SNP",]
   cat("\n\n")
   cat(knitr::knit_print(DT::datatable(prop_h2g, caption = htmltools::tags$caption( style = 'font-size: 40px; caption-side: topleft; text-align = left; color:black;',i),options = list(pageLength = 5))))
   cat("\n\n")
 }
 ```
+## Thin=1, shared_type
+```{r, results='asis', echo = FALSE}
+for(i in names(sample_size)[2]){
+  param <- readRDS(paste0("/project/xinhe/shengqian/all_tissues_screen/results_E_thin1_shared_type/",i,"/",i,".thin1.shared_type.ctwas_null.param.RDS"))
+  region_data <- readRDS(paste0("/project/xinhe/shengqian/all_tissues_screen/results_E_thin1_shared_type/",i,"/",i,".region_data.thin1.RDS"))
+  ctwas_parameters <- ctwas:::summarize_param(param,sample_size[[i]])
+  group_prior <- ctwas_parameters$group_prior
+  group_prior_var <- ctwas_parameters$group_prior_var
+  
+  p_single_effect <- param$p_single_effect
+  selected_region_ids <- p_single_effect[which(p_single_effect$p_single_effect >= 0.8),"region_id"]
+  selected_region_data <- region_data[selected_region_ids]
+  
+  enrichment_G_res <- get_enrichment_se_Gtest(selected_region_data, 
+                                              group_prior, group_prior_var, 
+                                              null_method = "ctwas")
+  
+  prop_h2g <- as.data.frame(cbind(names(ctwas_parameters$prop_heritability),ctwas_parameters$prop_heritability,ctwas_parameters$group_pve, c(enrichment_G_res$enrichment,1), c(enrichment_G_res$p.value,1)))
+  prop_h2g$V2 <- round(as.numeric(prop_h2g$V2),4)
+  prop_h2g$V3 <- round(as.numeric(prop_h2g$V3),4)
+  prop_h2g$V4 <- round(as.numeric(prop_h2g$V4),4)
+  prop_h2g$V5 <- round(as.numeric(prop_h2g$V5),6)
+  rownames(prop_h2g) <- NULL
+  prop_h2g <- prop_h2g[order(-prop_h2g$V2),]
+  colnames(prop_h2g) <- c("group","%h2g","h2g","enrichment_Gtest","pvalue_Gtest")
+  prop_h2g <- prop_h2g[prop_h2g$group!="SNP",]
+  cat("\n\n")
+  cat(knitr::knit_print(DT::datatable(prop_h2g, caption = htmltools::tags$caption( style = 'font-size: 40px; caption-side: topleft; text-align = left; color:black;',i),options = list(pageLength = 5))))
+  cat("\n\n")
+}
+```
+
+## Thin=0.1, shared_all
+```{r, results='asis', echo = FALSE}
+for(i in names(sample_size)[2]){
+  param <- readRDS(paste0("/project/xinhe/shengqian/all_tissues_screen/results_E_thin0.1_shared_all/",i,"/",i,".thin0.1.shared_all.ctwas_null.param.RDS"))
+  region_data <- readRDS(paste0("/project/xinhe/shengqian/all_tissues_screen/results_E_thin0.1_shared_all/",i,"/",i,".region_data.thin0.1.RDS"))
+  ctwas_parameters <- ctwas:::summarize_param(param,sample_size[[i]])
+  group_prior <- ctwas_parameters$group_prior
+  group_prior_var <- ctwas_parameters$group_prior_var
+  
+  p_single_effect <- param$p_single_effect
+  selected_region_ids <- p_single_effect[which(p_single_effect$p_single_effect >= 0.8),"region_id"]
+  selected_region_data <- region_data[selected_region_ids]
+  
+  enrichment_G_res <- get_enrichment_se_Gtest(selected_region_data, 
+                                              group_prior, group_prior_var, 
+                                              null_method = "ctwas")
+  
+  prop_h2g <- as.data.frame(cbind(names(ctwas_parameters$prop_heritability),ctwas_parameters$prop_heritability,ctwas_parameters$group_pve, c(enrichment_G_res$enrichment,1), c(enrichment_G_res$p.value,1)))
+  prop_h2g$V2 <- round(as.numeric(prop_h2g$V2),4)
+  prop_h2g$V3 <- round(as.numeric(prop_h2g$V3),4)
+  prop_h2g$V4 <- round(as.numeric(prop_h2g$V4),4)
+  prop_h2g$V5 <- round(as.numeric(prop_h2g$V5),6)
+  rownames(prop_h2g) <- NULL
+  prop_h2g <- prop_h2g[order(-prop_h2g$V2),]
+  colnames(prop_h2g) <- c("group","%h2g","h2g","enrichment_Gtest","pvalue_Gtest")
+  prop_h2g <- prop_h2g[prop_h2g$group!="SNP",]
+  cat("\n\n")
+  cat(knitr::knit_print(DT::datatable(prop_h2g, caption = htmltools::tags$caption( style = 'font-size: 40px; caption-side: topleft; text-align = left; color:black;',i),options = list(pageLength = 5))))
+  cat("\n\n")
+}
+```
+
+## Thin=0.1, shared_type
+```{r, results='asis', echo = FALSE}
+for(i in names(sample_size)[2]){
+  param <- readRDS(paste0("/project/xinhe/shengqian/all_tissues_screen/results_E_thin0.1_shared_type/",i,"/",i,".thin0.1.shared_type.ctwas_null.param.RDS"))
+  region_data <- readRDS(paste0("/project/xinhe/shengqian/all_tissues_screen/results_E_thin0.1_shared_type/",i,"/",i,".region_data.thin0.1.RDS"))
+  ctwas_parameters <- ctwas:::summarize_param(param,sample_size[[i]])
+  group_prior <- ctwas_parameters$group_prior
+  group_prior_var <- ctwas_parameters$group_prior_var
+  
+  p_single_effect <- param$p_single_effect
+  selected_region_ids <- p_single_effect[which(p_single_effect$p_single_effect >= 0.8),"region_id"]
+  selected_region_data <- region_data[selected_region_ids]
+  
+  enrichment_G_res <- get_enrichment_se_Gtest(selected_region_data, 
+                                              group_prior, group_prior_var, 
+                                              null_method = "ctwas")
+  
+  prop_h2g <- as.data.frame(cbind(names(ctwas_parameters$prop_heritability),ctwas_parameters$prop_heritability,ctwas_parameters$group_pve, c(enrichment_G_res$enrichment,1), c(enrichment_G_res$p.value,1)))
+  prop_h2g$V2 <- round(as.numeric(prop_h2g$V2),4)
+  prop_h2g$V3 <- round(as.numeric(prop_h2g$V3),4)
+  prop_h2g$V4 <- round(as.numeric(prop_h2g$V4),4)
+  prop_h2g$V5 <- round(as.numeric(prop_h2g$V5),6)
+  rownames(prop_h2g) <- NULL
+  prop_h2g <- prop_h2g[order(-prop_h2g$V2),]
+  colnames(prop_h2g) <- c("group","%h2g","h2g","enrichment_Gtest","pvalue_Gtest")
+  prop_h2g <- prop_h2g[prop_h2g$group!="SNP",]
+  cat("\n\n")
+  cat(knitr::knit_print(DT::datatable(prop_h2g, caption = htmltools::tags$caption( style = 'font-size: 40px; caption-side: topleft; text-align = left; color:black;',i),options = list(pageLength = 5))))
+  cat("\n\n")
+}
+```
+
