@@ -31,7 +31,6 @@ sample_size <- list("WBC-ieu-b-30" = 563946,
 DT::datatable(matrix())
 ```
 
-## Thin=1, shared_all
 ```{r, results='asis', echo = FALSE}
 for(i in names(sample_size)){
   param <- readRDS(paste0("/project/xinhe/shengqian/all_tissues_screen/results_E_thin1_shared_all/",i,"/",i,".thin1.shared_all.ctwas_null.param.RDS"))
@@ -55,16 +54,9 @@ for(i in names(sample_size)){
   prop_h2g$V5 <- round(as.numeric(prop_h2g$V5),6)
   rownames(prop_h2g) <- NULL
   prop_h2g <- prop_h2g[order(-prop_h2g$V2),]
-  colnames(prop_h2g) <- c("group","%h2g","h2g","enrichment_Gtest","pvalue_Gtest")
-  prop_h2g <- prop_h2g[prop_h2g$group!="SNP",]
-  cat("\n\n")
-  cat(knitr::knit_print(DT::datatable(prop_h2g, caption = htmltools::tags$caption( style = 'font-size: 40px; caption-side: topleft; text-align = left; color:black;',i),options = list(pageLength = 5))))
-  cat("\n\n")
-}
-```
-## Thin=1, shared_type
-```{r, results='asis', echo = FALSE}
-for(i in names(sample_size)){
+  colnames(prop_h2g) <- c("group_thin1_all","%h2g_thin1_all","h2g_thin1_all","enrichment_thin1_all","pvalue_thin1_all")
+  prop_h2g_thin1_all <- prop_h2g[prop_h2g$group!="SNP",]
+  ############
   param <- readRDS(paste0("/project/xinhe/shengqian/all_tissues_screen/results_E_thin1_shared_type/",i,"/",i,".thin1.shared_type.ctwas_null.param.RDS"))
   region_data <- readRDS(paste0("/project/xinhe/shengqian/all_tissues_screen/results_E_thin1_shared_type/",i,"/",i,".region_data.thin1.RDS"))
   ctwas_parameters <- ctwas:::summarize_param(param,sample_size[[i]])
@@ -86,17 +78,9 @@ for(i in names(sample_size)){
   prop_h2g$V5 <- round(as.numeric(prop_h2g$V5),6)
   rownames(prop_h2g) <- NULL
   prop_h2g <- prop_h2g[order(-prop_h2g$V2),]
-  colnames(prop_h2g) <- c("group","%h2g","h2g","enrichment_Gtest","pvalue_Gtest")
-  prop_h2g <- prop_h2g[prop_h2g$group!="SNP",]
-  cat("\n\n")
-  cat(knitr::knit_print(DT::datatable(prop_h2g, caption = htmltools::tags$caption( style = 'font-size: 40px; caption-side: topleft; text-align = left; color:black;',i),options = list(pageLength = 5))))
-  cat("\n\n")
-}
-```
-
-## Thin=0.1, shared_all
-```{r, results='asis', echo = FALSE}
-for(i in names(sample_size)){
+  colnames(prop_h2g) <- c("group_thin1_type","%h2g_thin1_type","h2g_thin1_type","enrichment_thin1_type","pvalue_thin1_type")
+  prop_h2g_thin1_type <- prop_h2g[prop_h2g$group!="SNP",]
+  #########
   param <- readRDS(paste0("/project/xinhe/shengqian/all_tissues_screen/results_E_thin0.1_shared_all/",i,"/",i,".thin0.1.shared_all.ctwas_null.param.RDS"))
   region_data <- readRDS(paste0("/project/xinhe/shengqian/all_tissues_screen/results_E_thin0.1_shared_all/",i,"/",i,".region_data.thin0.1.RDS"))
   ctwas_parameters <- ctwas:::summarize_param(param,sample_size[[i]])
@@ -118,17 +102,9 @@ for(i in names(sample_size)){
   prop_h2g$V5 <- round(as.numeric(prop_h2g$V5),6)
   rownames(prop_h2g) <- NULL
   prop_h2g <- prop_h2g[order(-prop_h2g$V2),]
-  colnames(prop_h2g) <- c("group","%h2g","h2g","enrichment_Gtest","pvalue_Gtest")
-  prop_h2g <- prop_h2g[prop_h2g$group!="SNP",]
-  cat("\n\n")
-  cat(knitr::knit_print(DT::datatable(prop_h2g, caption = htmltools::tags$caption( style = 'font-size: 40px; caption-side: topleft; text-align = left; color:black;',i),options = list(pageLength = 5))))
-  cat("\n\n")
-}
-```
-
-## Thin=0.1, shared_type
-```{r, results='asis', echo = FALSE}
-for(i in names(sample_size)){
+  colnames(prop_h2g) <- c("group_thin0.1_all","%h2g_thin0.1_all","h2g_thin0.1_all","enrichment_thin0.1_all","pvalue_thin0.1_all")
+  prop_h2g_thin0.1_all <- prop_h2g[prop_h2g$group!="SNP",]
+  #################
   param <- readRDS(paste0("/project/xinhe/shengqian/all_tissues_screen/results_E_thin0.1_shared_type/",i,"/",i,".thin0.1.shared_type.ctwas_null.param.RDS"))
   region_data <- readRDS(paste0("/project/xinhe/shengqian/all_tissues_screen/results_E_thin0.1_shared_type/",i,"/",i,".region_data.thin0.1.RDS"))
   ctwas_parameters <- ctwas:::summarize_param(param,sample_size[[i]])
@@ -150,8 +126,10 @@ for(i in names(sample_size)){
   prop_h2g$V5 <- round(as.numeric(prop_h2g$V5),6)
   rownames(prop_h2g) <- NULL
   prop_h2g <- prop_h2g[order(-prop_h2g$V2),]
-  colnames(prop_h2g) <- c("group","%h2g","h2g","enrichment_Gtest","pvalue_Gtest")
-  prop_h2g <- prop_h2g[prop_h2g$group!="SNP",]
+  colnames(prop_h2g) <- c("group_thin0.1_type","%h2g_thin0.1_type","h2g_thin0.1_type","enrichment_thin0.1_type","pvalue_thin0.1_type")
+  prop_h2g_thin0.1_type <- prop_h2g[prop_h2g$group!="SNP",]
+  ########
+  prop_h2g <- cbind(prop_h2g_thin1_all,prop_h2g_thin1_type,prop_h2g_thin0.1_all,prop_h2g_thin1_type)
   cat("\n\n")
   cat(knitr::knit_print(DT::datatable(prop_h2g, caption = htmltools::tags$caption( style = 'font-size: 40px; caption-side: topleft; text-align = left; color:black;',i),options = list(pageLength = 5))))
   cat("\n\n")
