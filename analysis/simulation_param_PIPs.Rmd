@@ -30,7 +30,7 @@ plot_prior_inclusion <- function(results_dir,runtag,thins,group_prior_var_struct
         y4 <- param_df$`prior_Stomach|eQTL`
         truth <- rbind(c(1,true_value),c(2,true_value),c(3,0),c(4,0))
         est <- rbind(cbind(1,y1),cbind(2,y2), cbind(3,y3), cbind(4,y4))
-        plot_par_4(truth,est,xlabels = c("Liver", "Adipose", "Lung", "Stomach"),ylim=c(0,max(est[,2])),ylab="Prior inclusion", main=paste0("thin",thin,",",group_prior_var_structure,",",null_method))
+        plot_par_4(truth,est,xlabels = c("Liver", "Adipose", "Lung", "Stomach"),ylim=c(0,max(est[,2],truth[,2])),ylab="Prior inclusion", main=paste0("thin",thin,",",group_prior_var_structure,",",null_method))
       }
     }
   }
