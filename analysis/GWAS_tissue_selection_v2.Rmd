@@ -1,0 +1,95 @@
+---
+title: "GWAS_tissue_selection"
+author: "XSun"
+date: "2025-02-13"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+    toc: true
+---
+
+```{r}
+library(ctwas)
+library(ggplot2)
+library(gridExtra)
+
+sample_size <- list("WBC-ieu-b-30" = 563946,
+                    "SBP-ukb-a-360" = 317754,
+                    "LDL-ukb-d-30780_irnt" = 343621,
+                    "aFib-ebi-a-GCST006414" = 1030826,
+                    "IBD-ebi-a-GCST004131" = 59957,
+                    "SCZ-ieu-b-5102" = 127906,
+                    "BMI-panukb" = 419163,
+                    "Height-panukb" = 419596,
+                    "PLT-panukb" = 407992,
+                    "RBC-panukb" = 407995,
+                    "HB-panukb" =  407994,
+                    "HTN-panukb" = 420473,
+                    "RA-panukb" =  376792,
+                    "T1D-GCST90014023" = 520580,
+                    "ATH_gtexukb" = 337119,
+                    "T2D-panukb" = 418949,
+                    "MDD-ieu-b-102" = 500199,
+                    "BIP-ieu-b-5110" = 413466,
+                    "ADHD-ieu-a-1183" = 55374,
+                    "ASD-ieu-a-1185" = 46351,
+                    "PD-ieu-b-7" = 482730,
+                    "NS-ukb-a-230" = 274108)
+
+DT::datatable(matrix())
+```
+
+```{r results='asis', fig.height=15, fig.width=10}
+
+for(trait in names(sample_size)){
+  
+  load(paste0("/project/xinhe/xsun/multi_group_ctwas/12.tissue_selection/results/para_summary/",trait,".para.rdata"))
+  
+  cat("\n\n")
+  cat(knitr::knit_print(DT::datatable(prop_h2g, caption = htmltools::tags$caption( style = 'font-size: 40px; caption-side: topleft; text-align = left; color:black;',trait),options = list(pageLength = 5))))
+  cat("\n\n")
+  
+  p1 <- ggplot(prop_h2g_mergetissue, aes(x = enrichment_thin1_all, y = enrichment_thin0.1_all)) +
+      geom_point() +
+      geom_abline(slope = 1, intercept = 0, col = "red") + 
+      labs(x = "log-Enrichment (thin1 shared_all)", y = "log-Enrichment (thin0.1 shared_all)", title = "Enrichment, comparing thin1 and thin0.1") +
+      theme_minimal()
+  
+  p2 <- ggplot(prop_h2g_mergetissue, aes(x = enrichment_thin1_all, y = enrichment_thin1_type)) +
+      geom_point() +
+      geom_abline(slope = 1, intercept = 0, col = "red") + 
+      labs(x = "log-Enrichment (thin1 shared_all)", y = "log-Enrichment (thin1 shared_type)", title = "Enrichment, comparing shared_all and shared_type") +
+      theme_minimal()
+
+  
+  p3 <- ggplot(prop_h2g_mergetissue, aes(x = `%h2g_thin1_all`, y = `%h2g_thin0.1_all`)) +
+      geom_point() +
+      geom_abline(slope = 1, intercept = 0, col = "red") + 
+      labs(x = "%h2g (thin1 shared_all)", y = "%h2g (thin0.1 shared_all)", title = "%h2g, comparing thin1 and thin0.1") +
+      theme_minimal()
+
+
+  p4 <- ggplot(prop_h2g_mergetissue, aes(x = `%h2g_thin1_all`, y = `%h2g_thin1_type`)) +
+      geom_point() +
+      geom_abline(slope = 1, intercept = 0, col = "red") + 
+      labs(x = "%h2g (thin1 shared_all)", y = "%h2g (thin1 shared_type)", title = "%h2g, comparing shared_all and shared_type") +
+      theme_minimal()
+  
+  
+  p5 <- ggplot(prop_h2g_mergetissue, aes(x = h2g_thin1_all, y = h2g_thin0.1_all)) +
+      geom_point() +
+      geom_abline(slope = 1, intercept = 0, col = "red") + 
+      labs(x = "h2g (thin1 shared_all)", y = "h2g (thin0.1 shared_all)", title = "h2g, comparing thin1 and thin0.1") +
+      theme_minimal()
+
+
+  p6 <- ggplot(prop_h2g_mergetissue, aes(x = h2g_thin1_all, y = h2g_thin1_type)) +
+      geom_point() +
+      geom_abline(slope = 1, intercept = 0, col = "red") + 
+      labs(x = "h2g (thin1 shared_all)", y = "h2g (thin1 shared_type)", title = "h2g, comparing shared_all and shared_type") +
+      theme_minimal()
+  
+  print(grid.arrange(p1, p2, p3, p4, p5, p6, nrow = 3, ncol = 2))
+}
+
+```
