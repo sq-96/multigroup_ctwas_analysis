@@ -1,0 +1,136 @@
+---
+title: "simulation_summary"
+output: html_document
+date: '2024-2-13'
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r, echo=FALSE, message=FALSE}
+library(ctwas)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+library(data.table)
+library(ggbreak) 
+library(ggpubr)
+source("/project/xinhe/shengqian/cTWAS_simulation/code/simulation_help_functions.R")
+source("/project/xinhe/shengqian/cTWAS_simulation/code/summarize_basic_plots.R")
+source("/project/xinhe/shengqian/cTWAS_simulation/code/summarize_ctwas_plots.R")
+
+plot_prior_inclusion <- function(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value){
+  par(mfrow = c(2, 4))
+  for(null_method in null_methods){
+    for(group_prior_var_structure in group_prior_var_structures){
+      for(thin in thins){
+        param_df <- load_parameters(results_dir, runtag, simutags, thin, group_prior_var_structure, null_method)
+        y1 <- param_df$`prior_Liver|eQTL`
+        y2 <- param_df$`prior_Adipose_Subcutaneous|eQTL`
+        y3 <- param_df$`prior_Lung|eQTL`
+        y4 <- param_df$`prior_Stomach|eQTL`
+        truth <- rbind(c(1,true_value),c(2,true_value),c(3,0),c(4,0))
+        est <- rbind(cbind(1,y1),cbind(2,y2), cbind(3,y3), cbind(4,y4))
+        plot_par_4(truth,est,xlabels = c("Liver", "Adipose", "Lung", "Stomach"),ylim=c(0,true_value*2),ylab="Prior inclusion", main=paste0("thin",thin,",",group_prior_var_structure,",",null_method))
+      }
+    }
+  }
+}
+
+plot_prior_variance <- function(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value){
+  par(mfrow = c(2, 4))
+  for(null_method in null_methods){
+    for(group_prior_var_structure in group_prior_var_structures){
+      for(thin in thins){
+        param_df <- load_parameters(results_dir, runtag, simutags, thin, group_prior_var_structure, null_method)
+        y1 <- param_df$`prior_var_Liver|eQTL`
+        y2 <- param_df$`prior_var_Adipose_Subcutaneous|eQTL`
+        y3 <- param_df$`prior_var_Lung|eQTL`
+        y4 <- param_df$`prior_var_Stomach|eQTL`
+        truth <- rbind(c(1,true_value),c(2,true_value),c(3,0),c(4,0))
+        est <- rbind(cbind(1,y1),cbind(2,y2), cbind(3,y3), cbind(4,y4))
+        plot_par_4(truth,est,xlabels = c("Liver", "Adipose", "Lung", "Stomach"),ylim=c(0,true_value*2),ylab="Prior variance", main=paste0("thin",thin,",",group_prior_var_structure,",",null_method))
+      }
+    }
+  }
+}
+
+plot_pve <- function(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value){
+  par(mfrow = c(2, 4))
+  for(null_method in null_methods){
+    for(group_prior_var_structure in group_prior_var_structures){
+      for(thin in thins){
+        param_df <- load_parameters(results_dir, runtag, simutags, thin, group_prior_var_structure, null_method)
+        y1 <- param_df$`pve_Liver|eQTL`
+        y2 <- param_df$`pve_Adipose_Subcutaneous|eQTL`
+        y3 <- param_df$`pve_Lung|eQTL`
+        y4 <- param_df$`pve_Stomach|eQTL`
+        truth <- rbind(c(1,true_value),c(2,true_value),c(3,0),c(4,0))
+        est <- rbind(cbind(1,y1),cbind(2,y2), cbind(3,y3), cbind(4,y4))
+        plot_par_4(truth,est,xlabels = c("Liver", "Adipose", "Lung", "Stomach"),ylim=c(0,true_value*2),ylab="PVE", main=paste0("thin",thin,",",group_prior_var_structure,",",null_method))
+      }
+    }
+  }
+}
+
+plot_enrichment <- function(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value){
+  par(mfrow = c(2, 4))
+  for(null_method in null_methods){
+    for(group_prior_var_structure in group_prior_var_structures){
+      for(thin in thins){
+        param_df <- load_parameters(results_dir, runtag, simutags, thin, group_prior_var_structure, null_method)
+        y1 <- param_df$`enrichment_Liver|eQTL`
+        y2 <- param_df$`enrichment_Adipose_Subcutaneous|eQTL`
+        y3 <- param_df$`enrichment_Lung|eQTL`
+        y4 <- param_df$`enrichment_Stomach|eQTL`
+        truth <- rbind(c(1,true_value),c(2,true_value),c(3,0),c(4,0))
+        est <- rbind(cbind(1,y1),cbind(2,y2), cbind(3,y3), cbind(4,y4))
+        plot_par_4(truth,est,xlabels = c("Liver", "Adipose", "Lung", "Stomach"),ylim=c(0,true_value*2),ylab="Enrichment", main=paste0("thin",thin,",",group_prior_var_structure,",",null_method))
+      }
+    }
+  }
+}
+```
+
+```{r,echo=FALSE,fig.width= 16, fig.height= 8}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_four_tissues_expression/"
+runtag = "four_tissues"
+simutags <- paste(2, 1:5, sep = "-")
+thins <- c(0.1,1)
+group_prior_var_structures <- c("shared_all","shared_type")
+null_methods <- c("ctwas","susie")
+true_value <- 0.01
+plot_prior_inclusion(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value)
+```
+
+```{r,echo=FALSE,fig.width= 16, fig.height= 8}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_four_tissues_expression/"
+runtag = "four_tissues"
+simutags <- paste(2, 1:5, sep = "-")
+thins <- c(0.1,1)
+group_prior_var_structures <- c("shared_all","shared_type")
+null_methods <- c("ctwas","susie")
+true_value <- 10
+plot_prior_variance(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value)
+```
+
+```{r,echo=FALSE,fig.width= 16, fig.height= 8}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_four_tissues_expression/"
+runtag = "four_tissues"
+simutags <- paste(2, 1:5, sep = "-")
+thins <- c(0.1,1)
+group_prior_var_structures <- c("shared_all","shared_type")
+null_methods <- c("ctwas","susie")
+true_value <- 0.02
+plot_pve(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value)
+```
+
+```{r,echo=FALSE,fig.width= 16, fig.height= 8}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_four_tissues_expression/"
+runtag = "four_tissues"
+simutags <- paste(2, 1:5, sep = "-")
+thins <- c(0.1,1)
+group_prior_var_structures <- c("shared_all","shared_type")
+null_methods <- c("ctwas","susie")
+true_value <- 40
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value)
+```
