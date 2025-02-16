@@ -49,6 +49,8 @@ for(trait in names(sample_size)){
   cat(knitr::knit_print(DT::datatable(prop_h2g, caption = htmltools::tags$caption( style = 'font-size: 40px; caption-side: topleft; text-align = left; color:black;',trait),options = list(pageLength = 5))))
   cat("\n\n")
   
+  colnames(prop_h2g_mergetissue) <- make.unique(names(prop_h2g_mergetissue))
+  
   p1 <- ggplot(prop_h2g_mergetissue, aes(x = enrichment_thin1_all, y = enrichment_thin0.1_all)) +
       geom_point() +
       geom_abline(slope = 1, intercept = 0, col = "red") + 
