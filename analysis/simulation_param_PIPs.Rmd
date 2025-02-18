@@ -6,6 +6,668 @@ editor_options:
   chunk_output_type: console
 ---
 
+## One tissue simulation
+```{r}
+library(ctwas)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+library(data.table)
+library(ggbreak) 
+library(ggpubr)
+library(gridExtra)
+source("/project/xinhe/shengqian/cTWAS_simulation/code/simulation_help_functions.R")
+source("/project/xinhe/shengqian/cTWAS_simulation/code/summarize_basic_plots.R")
+source("/project/xinhe/shengqian/cTWAS_simulation/code/summarize_ctwas_plots.R")
+
+plot_prior_inclusion <- function(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene,true_value_SNP){
+  par(mfrow = c(1, 2))
+  for(group_prior_var_structure in group_prior_var_structures){
+    for(thin in thins){
+      param_df_ctwas <- load_parameters(results_dir, runtag, simutags, thin, group_prior_var_structure, "ctwas")
+      y1 <- param_df_ctwas$`prior_Liver|expression`
+      y2 <- param_df_ctwas$prior_SNP
+      param_df_susie <- load_parameters(results_dir, runtag, simutags, thin, group_prior_var_structure, "susie")
+      y3 <- param_df_susie$`prior_Liver|expression`
+      y4 <- param_df_susie$prior_SNP
+      truth <- rbind(c(1,true_value_gene),c(2,true_value_gene),c(3,true_value_gene),c(4,true_value_SNP))
+      est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4))
+      plot_par_4(truth,est,xlabels = c("Liver (ctwas)", "SNP (ctwas)", "Liver (susie)","SNP (susie)"),ylim=c(0,max(est[,2],truth[,2])),ylab="Prior inclusion", main=group_prior_var_structure)
+    }
+  }
+}
+
+plot_prior_variance <- function(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene,true_value_SNP){
+  par(mfrow = c(1, 2))
+  for(group_prior_var_structure in group_prior_var_structures){
+    for(thin in thins){
+      param_df_ctwas <- load_parameters(results_dir, runtag, simutags, thin, group_prior_var_structure, "ctwas")
+      y1 <- param_df_ctwas$`prior_var_Liver|expression`
+      y2 <- param_df_ctwas$prior_var_SNP
+      param_df_susie <- load_parameters(results_dir, runtag, simutags, thin, group_prior_var_structure, "susie")
+      y3 <- param_df_susie$`prior_var_Liver|expression`
+      y4 <- param_df_susie$prior_var_SNP
+      truth <- rbind(c(1,true_value_gene),c(2,true_value_SNP),c(3,true_value_gene),c(4,true_value_SNP))
+      est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4))
+      plot_par_4(truth,est,xlabels = c("Liver (ctwas)", "SNP (ctwas)", "Liver (susie)","SNP (susie)"),ylim=c(0,max(est[,2],truth[,2])),ylab="Prior variance", main=group_prior_var_structure)
+    }
+  }
+}
+
+plot_pve <- function(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene, true_value_SNP){
+  par(mfrow = c(1, 2))
+  for(group_prior_var_structure in group_prior_var_structures){
+    for(thin in thins){
+      param_df_ctwas <- load_parameters(results_dir, runtag, simutags, thin, group_prior_var_structure, "ctwas")
+      y1 <- param_df_ctwas$`pve_Liver|expression`
+      y2 <- param_df_ctwas$pve_SNP
+      param_df_susie <- load_parameters(results_dir, runtag, simutags, thin, group_prior_var_structure, "susie")
+      y3 <- param_df_susie$`pve_Liver|expression`
+      y4 <- param_df_susie$pve_SNP
+      truth <- rbind(c(1,true_value_gene),c(2,true_value_SNP),c(3,true_value_gene),c(4,true_value_SNP))
+      est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4))
+      plot_par_4(truth,est,xlabels = c("Liver (ctwas)", "SNP (ctwas)", "Liver (susie)","SNP (susie)"),ylim=c(0,max(est[,2],truth[,2])),ylab="PVE", main=group_prior_var_structure)
+    }
+  }
+}
+
+plot_enrichment <- function(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene){
+  par(mfrow = c(1, 2))
+  for(group_prior_var_structure in group_prior_var_structures){
+    for(thin in thins){
+      param_df_ctwas <- load_parameters(results_dir, runtag, simutags, thin, group_prior_var_structure, "ctwas")
+      y1 <- param_df_ctwas$`enrichment_Liver|expression`
+      param_df_susie <- load_parameters(results_dir, runtag, simutags, thin, group_prior_var_structure, "susie")
+      y2 <- param_df_susie$`enrichment_Liver|expression`
+      truth <- rbind(c(1,log2(true_value_gene)),c(2,log2(true_value_gene)))
+      est <- rbind(cbind(1,y1),cbind(2,y2))
+      plot_par_2(truth,est,xlabels = c("Liver (ctwas)","Liver (susie)"),ylim=c(min(est[,2],truth[,2]),max(est[,2],truth[,2])),ylab="log(Enrichment)", main=group_prior_var_structure)
+    }
+  }
+}
+
+plot_enrichment <- function(results_dir,runtag,thins,group_prior_var_structures,null_methods,enrichment_true){
+  par(mfrow = c(1, 2))
+  for(group_prior_var_structure in group_prior_var_structures){
+    for(thin in thins){
+      param_df_ctwas <- load_parameters(results_dir, runtag, simutags, thin, group_prior_var_structure, "ctwas")
+      param_df_susie <- load_parameters(results_dir, runtag, simutags, thin, group_prior_var_structure, "susie")
+      df <- data.frame(null_method = rep(c("ctwas", "susie"), each = 10),
+                       pos = c(rep(1, 10), rep(2, 10)),
+                       enrichment = c(param_df_ctwas$`enrichment_Liver|expression`, param_df_susie$`enrichment_Liver|expression`),
+                       se = c(param_df_ctwas$`enrichment_se_Liver|expression`, param_df_ctwas$`enrichment_se_Liver|expression`))
+      df$pos <- jitter(df$pos, amount = 0.2)
+      ggplot(df, aes(x=pos, y=enrichment, group = null_method, color=null_method)) + 
+      geom_point()+
+      geom_errorbar(aes(ymin=enrichment-1.96*se, ymax=enrichment+1.96*se), width=0.01) + 
+      geom_hline(yintercept=enrichment_true, linetype="dashed", color = "blue") + 
+      ylim(min(c(y1,y2))-1, max(c(y1,y2))+1) +
+      labs(x = "", y = "log(Enrichment)", title = "Enrichment") +
+      scale_x_continuous(breaks = c(1:2), 
+                     labels = c("Liver (ctwas)","Liver (susie)")) +theme_minimal()
+    }
+  }
+}
+
+
+plot_enrichment <- function(results_dir, runtag, thins, group_prior_var_structures, null_methods, enrichment_true) {
+  plots <- list()  # Store plots in a list
+  plot_idx <- 1
+  
+  for (group_prior_var_structure in group_prior_var_structures) {
+    for (thin in thins) {
+      param_df_ctwas <- load_parameters(results_dir, runtag, simutags, thin, group_prior_var_structure, "ctwas")
+      param_df_susie <- load_parameters(results_dir, runtag, simutags, thin, group_prior_var_structure, "susie")
+
+      df <- data.frame(null_method = rep(c("ctwas", "susie"), each = 10),
+                       pos = c(rep(1, 10), rep(2, 10)),
+                       enrichment = c(param_df_ctwas$`enrichment_Liver|expression`, param_df_susie$`enrichment_Liver|expression`),
+                       se = c(param_df_ctwas$`enrichment_se_Liver|expression`, param_df_susie$`enrichment_se_Liver|expression`))  # Fix repeated `se` values
+      
+      df$pos <- jitter(df$pos, amount = 0.2)
+      
+      p <- ggplot(df, aes(x = pos, y = enrichment, group = null_method, color = null_method)) +
+        geom_point() +
+        geom_errorbar(aes(ymin = enrichment - 1.96 * se, ymax = enrichment + 1.96 * se), width = 0.01) +
+        geom_hline(yintercept = enrichment_true, linetype = "dashed", color = "blue") +
+        labs(x = "", y = "log(Enrichment)", title = paste("Enrichment -", group_prior_var_structure, "Thin =", thin)) +
+        scale_x_continuous(breaks = c(1, 2), labels = c("Liver (ctwas)", "Liver (susie)")) +
+        theme_minimal()
+      
+      plots[[plot_idx]] <- p  # Store plot in the list
+      plot_idx <- plot_idx + 1
+    }
+  }
+  
+  # Arrange plots side by side
+  if (length(plots) > 1) {
+    grid.arrange(grobs = plots, ncol = length(plots))  # Using gridExtra
+    # print(plots[[1]] + plots[[2]])  # Alternative using patchwork (uncomment if using patchwork)
+  } else {
+    print(plots[[1]])  # Just print a single plot if there's only one
+  }
+}
+```
+
+## Enrichment=1 (same variance=10)
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(1, 1:10, sep = "-")
+thins <- c(1)
+group_prior_var_structures <- c("shared_all","shared_type")
+null_methods <- c("ctwas","susie")
+```
+
+### Prior Inclusion Probability
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 0.0025
+true_value_SNP <- 0.0025
+plot_prior_inclusion(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene,true_value_SNP)
+```
+
+### Prior Variance
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 20
+true_value_SNP <- 20
+plot_prior_variance(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene,true_value_SNP)
+```
+
+### PVE
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 0.00042
+true_value_SNP <- 0.3
+plot_pve(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene, true_value_SNP)
+```
+
+### Enrichment
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 1
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene)
+```
+
+## Enrichment=1 (same variance=20)
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(10, 1:10, sep = "-")
+thins <- c(1)
+group_prior_var_structures <- c("shared_all","shared_type")
+null_methods <- c("ctwas","susie")
+```
+
+### Prior Inclusion Probability
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 0.000125
+true_value_SNP <- 0.000125
+plot_prior_inclusion(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene,true_value_SNP)
+```
+
+### Prior Variance
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 10
+true_value_SNP <- 10
+plot_prior_variance(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene,true_value_SNP)
+```
+
+### PVE
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 0.00042
+true_value_SNP <- 0.3
+plot_pve(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene, true_value_SNP)
+```
+
+### Enrichment
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 1
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene)
+```
+
+## Enrichment=1 (same variance=40)
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(11, 1:10, sep = "-")
+thins <- c(1)
+group_prior_var_structures <- c("shared_all","shared_type")
+null_methods <- c("ctwas","susie")
+```
+
+### Prior Inclusion Probability
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 0.0000625
+true_value_SNP <- 0.0000625
+plot_prior_inclusion(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene,true_value_SNP)
+```
+
+### Prior Variance
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 40
+true_value_SNP <- 40
+plot_prior_variance(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene,true_value_SNP)
+```
+
+### PVE
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 0.00042
+true_value_SNP <- 0.3
+plot_pve(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene, true_value_SNP)
+```
+
+### Enrichment
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 1
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene)
+```
+
+## Enrichment=1 (gene variance=20, snp variance=10)
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(12, 1:10, sep = "-")
+thins <- c(1)
+group_prior_var_structures <- c("shared_all","shared_type")
+null_methods <- c("ctwas","susie")
+```
+
+### Prior Inclusion Probability
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 0.00025
+true_value_SNP <- 0.00025
+plot_prior_inclusion(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene,true_value_SNP)
+```
+
+### Prior Variance
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 20
+true_value_SNP <- 10
+plot_prior_variance(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene,true_value_SNP)
+```
+
+### PVE
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 0.00084
+true_value_SNP <- 0.3
+plot_pve(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene, true_value_SNP)
+```
+
+### Enrichment
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 1
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene)
+```
+
+## Enrichment=1 (gene variance=40, snp variance=10)
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(13, 1:10, sep = "-")
+thins <- c(1)
+group_prior_var_structures <- c("shared_all","shared_type")
+null_methods <- c("ctwas","susie")
+```
+
+### Prior Inclusion Probability
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 0.00025
+true_value_SNP <- 0.00025
+plot_prior_inclusion(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene,true_value_SNP)
+```
+
+### Prior Variance
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 40
+true_value_SNP <- 10
+plot_prior_variance(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene,true_value_SNP)
+```
+
+### PVE
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 0.00168
+true_value_SNP <- 0.3
+plot_pve(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene, true_value_SNP)
+```
+
+### Enrichment
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 1
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene)
+```
+
+## Enrichment=1 (gene variance=80, snp variance=10)
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(14, 1:10, sep = "-")
+thins <- c(1)
+group_prior_var_structures <- c("shared_all","shared_type")
+null_methods <- c("ctwas","susie")
+```
+
+### Prior Inclusion Probability
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 0.00025
+true_value_SNP <- 0.00025
+plot_prior_inclusion(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene,true_value_SNP)
+```
+
+### Prior Variance
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 80
+true_value_SNP <- 10
+plot_prior_variance(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene,true_value_SNP)
+```
+
+### PVE
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 0.00336
+true_value_SNP <- 0.3
+plot_pve(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene, true_value_SNP)
+```
+
+### Enrichment
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 1
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene)
+```
+
+## Enrichment=10 (same variance=10)
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(2, 1:10, sep = "-")
+thins <- c(1)
+group_prior_var_structures <- c("shared_all","shared_type")
+null_methods <- c("ctwas","susie")
+```
+
+### Prior Inclusion Probability
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 0.0025
+true_value_SNP <- 0.00025
+plot_prior_inclusion(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene,true_value_SNP)
+```
+
+### Prior Variance
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 10
+true_value_SNP <- 10
+plot_prior_variance(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene,true_value_SNP)
+```
+
+### PVE
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 0.0042
+true_value_SNP <- 0.3
+plot_pve(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene, true_value_SNP)
+```
+
+### Enrichment
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 10
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene)
+```
+
+## Enrichment=40 (same variance=10)
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(3, 1:10, sep = "-")
+thins <- c(1)
+group_prior_var_structures <- c("shared_all","shared_type")
+null_methods <- c("ctwas","susie")
+```
+
+### Prior Inclusion Probability
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 0.01
+true_value_SNP <- 0.00025
+plot_prior_inclusion(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene,true_value_SNP)
+```
+
+### Prior Variance
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 10
+true_value_SNP <- 10
+plot_prior_variance(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene,true_value_SNP)
+```
+
+### PVE
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 0.0168
+true_value_SNP <- 0.3
+plot_pve(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene, true_value_SNP)
+```
+
+### Enrichment
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 40
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene)
+```
+
+## Enrichment=40 (same variance=20)
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(5, 1:10, sep = "-")
+thins <- c(1)
+group_prior_var_structures <- c("shared_all","shared_type")
+null_methods <- c("ctwas","susie")
+```
+
+### Prior Inclusion Probability
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 0.005
+true_value_SNP <- 0.000125
+plot_prior_inclusion(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene,true_value_SNP)
+```
+
+### Prior Variance
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 20
+true_value_SNP <- 20
+plot_prior_variance(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene,true_value_SNP)
+```
+
+### PVE
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 0.0168
+true_value_SNP <- 0.3
+plot_pve(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene, true_value_SNP)
+```
+
+### Enrichment
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 40
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene)
+```
+
+## Enrichment=40 (same variance=40)
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(6, 1:10, sep = "-")
+thins <- c(1)
+group_prior_var_structures <- c("shared_all","shared_type")
+null_methods <- c("ctwas","susie")
+```
+
+### Prior Inclusion Probability
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 0.0025
+true_value_SNP <- 0.0000625
+plot_prior_inclusion(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene,true_value_SNP)
+```
+
+### Prior Variance
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 40
+true_value_SNP <- 40
+plot_prior_variance(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene,true_value_SNP)
+```
+
+### PVE
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 0.0168
+true_value_SNP <- 0.3
+plot_pve(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene, true_value_SNP)
+```
+
+### Enrichment
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 40
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene)
+```
+
+## Enrichment=40 (gene variance=20,snp variance=10)
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(7, 1:10, sep = "-")
+thins <- c(1)
+group_prior_var_structures <- c("shared_all","shared_type")
+null_methods <- c("ctwas","susie")
+```
+
+### Prior Inclusion Probability
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 0.01
+true_value_SNP <- 0.00025
+plot_prior_inclusion(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene,true_value_SNP)
+```
+
+### Prior Variance
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 20
+true_value_SNP <- 10
+plot_prior_variance(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene,true_value_SNP)
+```
+
+### PVE
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 0.0336
+true_value_SNP <- 0.3
+plot_pve(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene, true_value_SNP)
+```
+
+### Enrichment
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 40
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene)
+```
+
+## Enrichment=40 (gene variance=40, snp variance=10)
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(8, 1:10, sep = "-")
+thins <- c(1)
+group_prior_var_structures <- c("shared_all","shared_type")
+null_methods <- c("ctwas","susie")
+```
+
+### Prior Inclusion Probability
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 0.01
+true_value_SNP <- 0.00025
+plot_prior_inclusion(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene,true_value_SNP)
+```
+
+### Prior Variance
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 40
+true_value_SNP <- 10
+plot_prior_variance(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene,true_value_SNP)
+```
+
+### PVE
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 0.0672
+true_value_SNP <- 0.3
+plot_pve(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene, true_value_SNP)
+```
+
+### Enrichment
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 40
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene)
+```
+
+## Enrichment=40 (gene variance=80, snp variance=10)
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(9, 1:10, sep = "-")
+thins <- c(1)
+group_prior_var_structures <- c("shared_all","shared_type")
+null_methods <- c("ctwas","susie")
+```
+
+### Prior Inclusion Probability
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 0.01
+true_value_SNP <- 0.00025
+plot_prior_inclusion(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene,true_value_SNP)
+```
+
+### Prior Variance
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 80
+true_value_SNP <- 10
+plot_prior_variance(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene,true_value_SNP)
+```
+
+### PVE
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 0.1344
+true_value_SNP <- 0.3
+plot_pve(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene, true_value_SNP)
+```
+
+### Enrichment
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 40
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene)
+```
+
+## Enrichment=80 (same variance=10)
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(4, 1:10, sep = "-")
+thins <- c(1)
+group_prior_var_structures <- c("shared_all","shared_type")
+null_methods <- c("ctwas","susie")
+```
+
+### Prior Inclusion Probability
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 0.02
+true_value_SNP <- 0.00025
+plot_prior_inclusion(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene,true_value_SNP)
+```
+
+### Prior Variance
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 10
+true_value_SNP <- 10
+plot_prior_variance(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene,true_value_SNP)
+```
+
+### PVE
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 0.0336
+true_value_SNP <- 0.3
+plot_pve(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene, true_value_SNP)
+```
+
+### Enrichment
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 80
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene)
+```
+
+
 ```{r, echo=FALSE, message=FALSE}
 library(ctwas)
 library(tidyr)
@@ -18,8 +680,8 @@ source("/project/xinhe/shengqian/cTWAS_simulation/code/simulation_help_functions
 source("/project/xinhe/shengqian/cTWAS_simulation/code/summarize_basic_plots.R")
 source("/project/xinhe/shengqian/cTWAS_simulation/code/summarize_ctwas_plots.R")
 
-plot_prior_inclusion <- function(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value){
-  par(mfrow = c(2, 4))
+plot_prior_inclusion <- function(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene,true_value_SNP){
+  par(mfrow = c(2, 2))
   for(null_method in null_methods){
     for(group_prior_var_structure in group_prior_var_structures){
       for(thin in thins){
@@ -28,16 +690,17 @@ plot_prior_inclusion <- function(results_dir,runtag,thins,group_prior_var_struct
         y2 <- param_df$`prior_Adipose_Subcutaneous|eQTL`
         y3 <- param_df$`prior_Lung|eQTL`
         y4 <- param_df$`prior_Stomach|eQTL`
-        truth <- rbind(c(1,true_value),c(2,true_value),c(3,0),c(4,0))
-        est <- rbind(cbind(1,y1),cbind(2,y2), cbind(3,y3), cbind(4,y4))
-        plot_par_4(truth,est,xlabels = c("Liver", "Adipose", "Lung", "Stomach"),ylim=c(0,max(est[,2],truth[,2])),ylab="Prior inclusion", main=paste0("thin",thin,",",group_prior_var_structure,",",null_method))
+        y5 <- param_df$prior_SNP
+        truth <- rbind(c(1,true_value_gene),c(2,true_value_gene),c(3,0),c(4,0),c(5,true_value_SNP))
+        est <- rbind(cbind(1,y1),cbind(2,y2), cbind(3,y3), cbind(4,y4), cbind(5,y5))
+        plot_par_5(truth,est,xlabels = c("Liver", "Adipose", "Lung", "Stomach", "SNP"),ylim=c(0,max(est[,2],truth[,2])),ylab="Prior inclusion", main=paste0("thin",thin,",",group_prior_var_structure,",",null_method))
       }
     }
   }
 }
 
 plot_prior_variance <- function(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value){
-  par(mfrow = c(2, 4))
+  par(mfrow = c(2, 2))
   for(null_method in null_methods){
     for(group_prior_var_structure in group_prior_var_structures){
       for(thin in thins){
@@ -55,7 +718,7 @@ plot_prior_variance <- function(results_dir,runtag,thins,group_prior_var_structu
 }
 
 plot_pve <- function(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value){
-  par(mfrow = c(2, 4))
+  par(mfrow = c(2, 2))
   for(null_method in null_methods){
     for(group_prior_var_structure in group_prior_var_structures){
       for(thin in thins){
@@ -73,7 +736,7 @@ plot_pve <- function(results_dir,runtag,thins,group_prior_var_structures,null_me
 }
 
 plot_enrichment <- function(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value){
-  par(mfrow = c(2, 4))
+  par(mfrow = c(2, 2))
   for(null_method in null_methods){
     for(group_prior_var_structure in group_prior_var_structures){
       for(thin in thins){
@@ -92,40 +755,41 @@ plot_enrichment <- function(results_dir,runtag,thins,group_prior_var_structures,
 ```
 
 ## Enrichment=10
-```{r,echo=FALSE,fig.width= 16, fig.height= 8}
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_four_tissues_expression/"
 runtag = "four_tissues"
 simutags <- paste(1, 1:5, sep = "-")
-thins <- c(0.1,1)
+thins <- c(1)
 group_prior_var_structures <- c("shared_all","shared_type")
 null_methods <- c("ctwas","susie")
 ```
 ### Prior Inclusion Probability
-```{r,echo=FALSE,fig.width= 16, fig.height= 8}
-true_value <- 0.0025
-plot_prior_inclusion(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value)
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value_gene <- 0.0025
+true_value_SNP <- 0.00025
+plot_prior_inclusion(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene,true_value_SNP)
 ```
 
 ### Prior Variance
-```{r,echo=FALSE,fig.width= 16, fig.height= 8}
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
 true_value <- 10
 plot_prior_variance(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value)
 ```
 
 ### PVE
-```{r,echo=FALSE,fig.width= 16, fig.height= 8}
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
 true_value <- 0.005
 plot_pve(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value)
 ```
 
 ### Enrichment
-```{r,echo=FALSE,fig.width= 16, fig.height= 8}
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
 true_value <- 10
 plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value)
 ```
 
 ## Enrichment=40
-```{r,echo=FALSE,fig.width= 16, fig.height= 8}
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_four_tissues_expression/"
 runtag = "four_tissues"
 simutags <- paste(2, 1:5, sep = "-")
@@ -134,31 +798,31 @@ group_prior_var_structures <- c("shared_all","shared_type")
 null_methods <- c("ctwas","susie")
 ```
 ### Prior Inclusion Probability
-```{r,echo=FALSE,fig.width= 16, fig.height= 8}
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
 true_value <- 0.01
 plot_prior_inclusion(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value)
 ```
 
 ### Prior Variance
-```{r,echo=FALSE,fig.width= 16, fig.height= 8}
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
 true_value <- 10
 plot_prior_variance(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value)
 ```
 
 ### PVE
-```{r,echo=FALSE,fig.width= 16, fig.height= 8}
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
 true_value <- 0.02
 plot_pve(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value)
 ```
 
 ### Enrichment
-```{r,echo=FALSE,fig.width= 16, fig.height= 8}
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
 true_value <- 40
 plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value)
 ```
 
 ## Enrichment=80
-```{r,echo=FALSE,fig.width= 16, fig.height= 8}
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_four_tissues_expression/"
 runtag = "four_tissues"
 simutags <- paste(3, 1:5, sep = "-")
@@ -167,25 +831,124 @@ group_prior_var_structures <- c("shared_all","shared_type")
 null_methods <- c("ctwas","susie")
 ```
 ### Prior Inclusion Probability
-```{r,echo=FALSE,fig.width= 16, fig.height= 8}
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
 true_value <- 0.02
 plot_prior_inclusion(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value)
 ```
 
 ### Prior Variance
-```{r,echo=FALSE,fig.width= 16, fig.height= 8}
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
 true_value <- 10
 plot_prior_variance(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value)
 ```
 
 ### PVE
-```{r,echo=FALSE,fig.width= 16, fig.height= 8}
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
 true_value <- 0.04
 plot_pve(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value)
 ```
 
 ### Enrichment
-```{r,echo=FALSE,fig.width= 16, fig.height= 8}
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value <- 80
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value)
+```
+
+## Enrichment=80
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_four_tissues_expression/"
+runtag = "four_tissues"
+simutags <- paste(4, 1:5, sep = "-")
+thins <- c(0.1,1)
+group_prior_var_structures <- c("shared_all","shared_type")
+null_methods <- c("ctwas","susie")
+```
+### Prior Inclusion Probability
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value <- 0.01
+plot_prior_inclusion(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value)
+```
+
+### Prior Variance
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value <- 20
+plot_prior_variance(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value)
+```
+
+### PVE
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value <- 0.04
+plot_pve(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value)
+```
+
+### Enrichment
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value <- 80
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value)
+```
+
+## Enrichment=40 (gene variance 20, snp variance 10)
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_four_tissues_expression/"
+runtag = "four_tissues"
+simutags <- paste(5, 1:5, sep = "-")
+thins <- c(0.1,1)
+group_prior_var_structures <- c("shared_all","shared_type")
+null_methods <- c("ctwas","susie")
+```
+### Prior Inclusion Probability
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value <- 0.01
+plot_prior_inclusion(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value)
+```
+
+### Prior Variance
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value <- 20
+plot_prior_variance(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value)
+```
+
+### PVE
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value <- 0.04
+plot_pve(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value)
+```
+
+### Enrichment
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value <- 40
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value)
+```
+
+## Enrichment=40 (gene variance 30, snp variance 10)
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_four_tissues_expression/"
+runtag = "four_tissues"
+simutags <- paste(6, 1:5, sep = "-")
+thins <- c(0.1,1)
+group_prior_var_structures <- c("shared_all","shared_type")
+null_methods <- c("ctwas","susie")
+```
+### Prior Inclusion Probability
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value <- 0.01
+plot_prior_inclusion(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value)
+```
+
+### Prior Variance
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value <- 30
+plot_prior_variance(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value)
+```
+
+### PVE
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
+true_value <- 0.04
+plot_pve(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value)
+```
+
+### Enrichment
+```{r,echo=FALSE,fig.width= 8, fig.height= 8}
 true_value <- 80
 plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value)
 ```
