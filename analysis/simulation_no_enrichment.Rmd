@@ -71,6 +71,21 @@ plot_pve <- function(results_dir,runtag,thins,group_prior_var_structures,null_me
   }
 }
 
+plot_enrichment_z <- function(results_dir,runtag,thins,group_prior_var_structures,null_methods,enrichment_true){
+  par(mfrow = c(1, 2))
+  for(group_prior_var_structure in group_prior_var_structures){
+    for(thin in thins){
+      param_df_ctwas <- load_parameters(results_dir, runtag, simutags, thin, group_prior_var_structure, "ctwas")
+      param_df_susie <- load_parameters(results_dir, runtag, simutags, thin, group_prior_var_structure, "susie")
+      y1 <- param_df_ctwas$`enrichment_Liver|expression`/param_df_ctwas$`enrichment_se_Liver|expression`
+      y2 <- param_df_susie$`enrichment_Liver|expression`/param_df_susie$`enrichment_se_Liver|expression`
+      truth <- rbind(c(1,true_value_gene),c(2,true_value_gene))
+      est <- rbind(cbind(1,y1),cbind(2,y2))
+      plot_par_2(truth,est,xlabels = c("Liver (ctwas)", "Liver (susie)"),ylim=c(min(est[,2],truth[,2]),max(est[,2],truth[,2])),ylab="PVE", main=group_prior_var_structure)
+    }
+  }
+}
+
 plot_enrichment <- function(results_dir, runtag, thins, group_prior_var_structures, null_methods, enrichment_true) {
   plots <- list()  # Store plots in a list
   plot_idx <- 1
@@ -149,6 +164,12 @@ true_value_gene <- 1
 plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene)
 ```
 
+### Enrichment Zscore
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+true_value_gene <- 0
+plot_enrichment_z(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene)
+```
+
 ## Enrichment=1 (same variance=20)
 gene prior = 1.25e-4, snp prior = 1.25e-4, gene variance = 20, snp variance = 20, gene pve=4.2e-10, snp pve=0.3
 ```{r,echo=FALSE,fig.width= 8, fig.height= 4}
@@ -187,6 +208,12 @@ true_value_gene <- 1
 plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene)
 ```
 
+### Enrichment Zscore
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+true_value_gene <- 0
+plot_enrichment_z(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene)
+```
+
 ## Enrichment=1 (same variance=40)
 gene prior = 6.25e-5, snp prior = 6.25e-5, gene variance = 40, snp variance = 40, gene pve=4.2e-10, snp pve=0.3
 ```{r,echo=FALSE,fig.width= 8, fig.height= 4}
@@ -223,6 +250,12 @@ plot_pve(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_v
 ```{r,echo=FALSE,fig.width= 8, fig.height= 4}
 true_value_gene <- 1
 plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene)
+```
+
+### Enrichment Zscore
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+true_value_gene <- 0
+plot_enrichment_z(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene)
 ```
 
 ## Enrichment=1 (gene variance=20, snp variance=10)
@@ -274,6 +307,12 @@ group_prior_var_structures <- c("shared_all","shared_type")
 null_methods <- c("ctwas","susie")
 ```
 
+### Enrichment Zscore
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+true_value_gene <- 0
+plot_enrichment_z(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene)
+```
+
 ### Prior Inclusion Probability
 ```{r,echo=FALSE,fig.width= 8, fig.height= 4}
 true_value_gene <- 0.00025
@@ -299,6 +338,12 @@ plot_pve(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_v
 ```{r,echo=FALSE,fig.width= 8, fig.height= 4}
 true_value_gene <- 1
 plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene)
+```
+
+### Enrichment Zscore
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+true_value_gene <- 0
+plot_enrichment_z(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene)
 ```
 
 ## Enrichment=1 (gene variance=80, snp variance=10)
@@ -337,4 +382,10 @@ plot_pve(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_v
 ```{r,echo=FALSE,fig.width= 8, fig.height= 4}
 true_value_gene <- 1
 plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene)
+```
+
+### Enrichment Zscore
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+true_value_gene <- 0
+plot_enrichment_z(results_dir,runtag,thins,group_prior_var_structures,null_methods,true_value_gene)
 ```
