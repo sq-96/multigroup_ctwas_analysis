@@ -1,0 +1,294 @@
+---
+title: "simulation_pip_calibration"
+output: html_document
+date: '2024-2-13'
+editor_options: 
+  chunk_output_type: console
+---
+
+## One tissue simulation
+```{r echo=FALSE}
+library(ctwas)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+library(data.table)
+library(ggbreak) 
+library(ggpubr)
+library(gridExtra)
+source("/project/xinhe/shengqian/cTWAS_simulation/code/simulation_help_functions.R")
+source("/project/xinhe/shengqian/cTWAS_simulation/code/summarize_basic_plots.R")
+source("/project/xinhe/shengqian/cTWAS_simulation/code/summarize_ctwas_plots.R")
+
+plot_PIP_shared_all_ctwas <- function(results_dir, runtag,  simutags, ...){
+  phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
+  susieIfs <- paste0(results_dir, runtag, "_simu",simutags, ".thin1.shared_all.ctwas.estimated_parameter.finemap_regions_res.RDS")
+  f1 <- caliPIP_plot(phenofs, susieIfs, ...) 
+  return(f1)
+}
+
+plot_PIP_shared_type_ctwas <- function(results_dir, runtag,  simutags, ...){
+  phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
+  susieIfs <- paste0(results_dir, runtag, "_simu",simutags, ".thin1.shared_type.ctwas.estimated_parameter.finemap_regions_res.RDS")
+  f1 <- caliPIP_plot(phenofs, susieIfs, ...) 
+  return(f1)
+}
+
+plot_PIP_shared_all_susie <- function(results_dir, runtag,  simutags, ...){
+  phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
+  susieIfs <- paste0(results_dir, runtag, "_simu",simutags, ".thin1.shared_all.susie.estimated_parameter.finemap_regions_res.RDS")
+  f1 <- caliPIP_plot(phenofs, susieIfs, ...) 
+  return(f1)
+}
+
+plot_PIP_shared_type_susie <- function(results_dir, runtag,  simutags, ...){
+  phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
+  susieIfs <- paste0(results_dir, runtag, "_simu",simutags, ".thin1.shared_type.susie.estimated_parameter.finemap_regions_res.RDS")
+  f1 <- caliPIP_plot(phenofs, susieIfs, ...) 
+  return(f1)
+}
+
+plot_power <- function(results_dir,runtag,simutags){
+  pipfs_all_ctwas <- paste0(results_dir, runtag, "_simu",simutags, ".thin1.shared_all.ctwas.estimated_parameter.finemap_regions_res.RDS")
+  pipfs_type_ctwas <- paste0(results_dir, runtag, "_simu",simutags, ".thin1.shared_type.ctwas.estimated_parameter.finemap_regions_res.RDS")
+  pipfs_all_susie <- paste0(results_dir, runtag, "_simu",simutags, ".thin1.shared_all.susie.estimated_parameter.finemap_regions_res.RDS")
+  pipfs_type_susie <- paste0(results_dir, runtag, "_simu",simutags, ".thin1.shared_type.susie.estimated_parameter.finemap_regions_res.RDS")
+  phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
+
+  cau <- lapply(phenofs, function(x) {load(x);get_causal_id(phenores)})
+  df_all_ctwas <- NULL
+  for (i in 1:length(pipfs_all_ctwas)) {
+    res <- readRDS(pipfs_all_ctwas[i])
+    res <- res$finemap_res
+    res <- data.frame(res[res$type!="SNP", ])
+    res$runtag <- i
+    res$ifcausal <- ifelse(res$id %in% cau[[i]], 1, 0)
+    df_all_ctwas <- rbind(df_all_ctwas, res)
+  }
+
+  df_type_ctwas <- NULL
+  for (i in 1:length(pipfs_type_ctwas)) {
+    res <- readRDS(pipfs_type_ctwas[i])
+    res <- res$finemap_res
+    res <- data.frame(res[res$type!="SNP", ])
+    res$runtag <- i
+    res$ifcausal <- ifelse(res$id %in% cau[[i]], 1, 0)
+    df_type_ctwas <- rbind(df_type_ctwas, res)
+  }
+
+  df_all_susie <- NULL
+  for (i in 1:length(pipfs_all_susie)) {
+    res <- readRDS(pipfs_all_susie[i])
+    res <- res$finemap_res
+    res <- data.frame(res[res$type!="SNP", ])
+    res$runtag <- i
+    res$ifcausal <- ifelse(res$id %in% cau[[i]], 1, 0)
+    df_all_susie <- rbind(df_all_susie, res)
+  }
+
+  df_type_susie <- NULL
+  for (i in 1:length(pipfs_type_susie)) {
+    res <- readRDS(pipfs_type_susie[i])
+    res <- res$finemap_res
+    res <- data.frame(res[res$type!="SNP", ])
+    res$runtag <- i
+    res$ifcausal <- ifelse(res$id %in% cau[[i]], 1, 0)
+    df_type_susie <- rbind(df_type_susie, res)
+  }
+
+  breaks_ranges = rbind(c(0.5, 1), c(0.8,1))
+  power_df <- data.frame()
+  for(i in 1:nrow(breaks_ranges)){
+    breaks = breaks_ranges[i,]
+    n_all_ctwas = length(which(df_all_ctwas$susie_pip >= breaks[1] & df_all_ctwas$susie_pip < breaks[2]))
+    n_all_ctwas_causal = length(which(df_all_ctwas$susie_pip >= breaks[1] & df_all_ctwas$susie_pip < breaks[2] & df_all_ctwas$ifcausal > 0))
+    n_type_ctwas = length(which(df_type_ctwas$susie_pip >= breaks[1] & df_type_ctwas$susie_pip < breaks[2]))
+    n_type_ctwas_causal = length(which(df_type_ctwas$susie_pip >= breaks[1] & df_type_ctwas$susie_pip < breaks[2] & df_type_ctwas$ifcausal > 0))
+    n_all_susie = length(which(df_all_susie$susie_pip >= breaks[1] & df_all_susie$susie_pip < breaks[2]))
+    n_all_susie_causal = length(which(df_all_susie$susie_pip >= breaks[1] & df_all_susie$susie_pip < breaks[2] & df_all_susie$ifcausal > 0))
+    n_type_susie = length(which(df_type_susie$susie_pip >= breaks[1] & df_type_susie$susie_pip < breaks[2]))
+    n_type_susie_causal = length(which(df_type_susie$susie_pip >= breaks[1] & df_type_susie$susie_pip < breaks[2] & df_type_susie$ifcausal > 0))
+    tmp_df <- data.frame(
+      "pip_bin" = paste0("PIP: ", breaks[1], "-", breaks[2]),
+      "method" = rep(c("ctwas shared all","ctwas shared type","susie shared all","susie shared type"), 2),
+      "group" = rep(c("total", "causal"), each = 4),
+      "n_var" = c(n_all_ctwas,n_type_ctwas,n_all_susie,n_type_susie,n_all_ctwas_causal,n_type_ctwas_causal,n_all_susie_causal,n_type_susie_causal)     )
+    power_df <- rbind(power_df, tmp_df)
+  }
+  power_df$method <- factor(power_df$method, levels = c("ctwas shared all","ctwas shared type","susie shared all","susie shared type"))
+  ggplot(power_df) +
+  geom_bar(aes(x = method, y = n_var, fill = group),
+           position = "identity", stat = "identity", alpha=0.5, width=0.5) +
+  facet_grid(~ pip_bin) +
+  labs(x = "", y = "number of variables") +
+  theme_cowplot()
+}
+```
+
+## Enrichment=1 (same variance=10)
+gene prior = 2.5e-4, snp prior = 2.5e-4, gene variance = 10, snp variance = 10, gene pve=4.2e-4, snp pve=0.3
+
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(1, 1:10, sep = "-")
+```
+
+```{r, echo=FALSE, fig.width= 8, fig.height= 8}
+f1 <- plot_PIP_shared_all_ctwas(results_dir, runtag, simutags, main = "ctwas shared all")
+f2 <- plot_PIP_shared_type_ctwas(results_dir, runtag, simutags, main = "ctwas shared type")
+f3 <- plot_PIP_shared_all_susie(results_dir, runtag, simutags, main = "susie shared all")
+f4 <- plot_PIP_shared_type_susie(results_dir, runtag, simutags, main = "susie shared type")
+gridExtra::grid.arrange(f1, f2, f3, f4, ncol = 2)
+```
+
+```{r, echo=FALSE, fig.width= 8, fig.height= 4}
+plot_power(results_dir, runtag, simutags)
+```
+
+## Enrichment=10 (same variance=10)
+gene prior = 2.5e-3, snp prior = 2.5e-4, gene variance = 10, snp variance = 10, gene pve=4.2e-3, snp pve=0.3
+
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(2, 1:10, sep = "-")
+```
+
+```{r, echo=FALSE, fig.width= 8, fig.height= 8}
+f1 <- plot_PIP_shared_all_ctwas(results_dir, runtag, simutags, main = "ctwas shared all")
+f2 <- plot_PIP_shared_type_ctwas(results_dir, runtag, simutags, main = "ctwas shared type")
+f3 <- plot_PIP_shared_all_susie(results_dir, runtag, simutags, main = "susie shared all")
+f4 <- plot_PIP_shared_type_susie(results_dir, runtag, simutags, main = "susie shared type")
+gridExtra::grid.arrange(f1, f2, f3, f4, ncol = 2)
+```
+
+```{r, echo=FALSE, fig.width= 8, fig.height= 4}
+plot_power(results_dir, runtag, simutags)
+```
+
+## Enrichment=40 (same variance=10)
+gene prior = 0.01, snp prior = 2.5e-4, gene variance = 10, snp variance = 10, gene pve=0.0168, snp pve=0.3
+
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(3, 1:10, sep = "-")
+```
+
+```{r, echo=FALSE, fig.width= 8, fig.height= 8}
+f1 <- plot_PIP_shared_all_ctwas(results_dir, runtag, simutags, main = "ctwas shared all")
+f2 <- plot_PIP_shared_type_ctwas(results_dir, runtag, simutags, main = "ctwas shared type")
+f3 <- plot_PIP_shared_all_susie(results_dir, runtag, simutags, main = "susie shared all")
+f4 <- plot_PIP_shared_type_susie(results_dir, runtag, simutags, main = "susie shared type")
+gridExtra::grid.arrange(f1, f2, f3, f4, ncol = 2)
+```
+
+```{r, echo=FALSE, fig.width= 8, fig.height= 4}
+plot_power(results_dir, runtag, simutags)
+```
+
+## Enrichment=40 (same variance=20)
+gene prior = 0.005, snp prior = 1.25e-4, gene variance = 20, snp variance = 20, gene pve=0.0168, snp pve=0.3
+
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(5, 1:10, sep = "-")
+```
+
+```{r, echo=FALSE, fig.width= 8, fig.height= 8}
+f1 <- plot_PIP_shared_all_ctwas(results_dir, runtag, simutags, main = "ctwas shared all")
+f2 <- plot_PIP_shared_type_ctwas(results_dir, runtag, simutags, main = "ctwas shared type")
+f3 <- plot_PIP_shared_all_susie(results_dir, runtag, simutags, main = "susie shared all")
+f4 <- plot_PIP_shared_type_susie(results_dir, runtag, simutags, main = "susie shared type")
+gridExtra::grid.arrange(f1, f2, f3, f4, ncol = 2)
+```
+
+```{r, echo=FALSE, fig.width= 8, fig.height= 4}
+plot_power(results_dir, runtag, simutags)
+```
+
+## Enrichment=40 (same variance=40)
+gene prior = 0.0025, snp prior = 6.25e-5, gene variance = 40, snp variance = 40, gene pve=0.0168, snp pve=0.3
+
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(6, 1:10, sep = "-")
+```
+
+```{r, echo=FALSE, fig.width= 8, fig.height= 8}
+f1 <- plot_PIP_shared_all_ctwas(results_dir, runtag, simutags, main = "ctwas shared all")
+f2 <- plot_PIP_shared_type_ctwas(results_dir, runtag, simutags, main = "ctwas shared type")
+f3 <- plot_PIP_shared_all_susie(results_dir, runtag, simutags, main = "susie shared all")
+f4 <- plot_PIP_shared_type_susie(results_dir, runtag, simutags, main = "susie shared type")
+gridExtra::grid.arrange(f1, f2, f3, f4, ncol = 2)
+```
+
+```{r, echo=FALSE, fig.width= 8, fig.height= 4}
+plot_power(results_dir, runtag, simutags)
+```
+
+## Enrichment=40 (gene variance=20, snp variance=10)
+gene prior = 0.01, snp prior = 2.5e-4, gene variance = 20, snp variance = 10, gene pve=0.0336, snp pve=0.3
+
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(7, 1:10, sep = "-")
+```
+
+```{r, echo=FALSE, fig.width= 8, fig.height= 8}
+f1 <- plot_PIP_shared_all_ctwas(results_dir, runtag, simutags, main = "ctwas shared all")
+f2 <- plot_PIP_shared_type_ctwas(results_dir, runtag, simutags, main = "ctwas shared type")
+f3 <- plot_PIP_shared_all_susie(results_dir, runtag, simutags, main = "susie shared all")
+f4 <- plot_PIP_shared_type_susie(results_dir, runtag, simutags, main = "susie shared type")
+gridExtra::grid.arrange(f1, f2, f3, f4, ncol = 2)
+```
+
+```{r, echo=FALSE, fig.width= 8, fig.height= 4}
+plot_power(results_dir, runtag, simutags)
+```
+
+## Enrichment=40 (gene variance=40, snp variance=10)
+gene prior = 0.01, snp prior = 2.5e-4, gene variance = 40, snp variance = 10, gene pve=0.0672, snp pve=0.3
+
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(8, 1:10, sep = "-")
+```
+
+```{r, echo=FALSE, fig.width= 8, fig.height= 8}
+f1 <- plot_PIP_shared_all_ctwas(results_dir, runtag, simutags, main = "ctwas shared all")
+f2 <- plot_PIP_shared_type_ctwas(results_dir, runtag, simutags, main = "ctwas shared type")
+f3 <- plot_PIP_shared_all_susie(results_dir, runtag, simutags, main = "susie shared all")
+f4 <- plot_PIP_shared_type_susie(results_dir, runtag, simutags, main = "susie shared type")
+gridExtra::grid.arrange(f1, f2, f3, f4, ncol = 2)
+```
+
+```{r, echo=FALSE, fig.width= 8, fig.height= 4}
+plot_power(results_dir, runtag, simutags)
+```
+
+## Enrichment=80 (same variance=10)
+gene prior = 0.02, snp prior = 2.5e-4, gene variance = 10, snp variance = 10, gene pve=0.0336, snp pve=0.3
+
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(4, 1:10, sep = "-")
+```
+
+```{r, echo=FALSE, fig.width= 8, fig.height= 8}
+f1 <- plot_PIP_shared_all_ctwas(results_dir, runtag, simutags, main = "ctwas shared all")
+f2 <- plot_PIP_shared_type_ctwas(results_dir, runtag, simutags, main = "ctwas shared type")
+f3 <- plot_PIP_shared_all_susie(results_dir, runtag, simutags, main = "susie shared all")
+f4 <- plot_PIP_shared_type_susie(results_dir, runtag, simutags, main = "susie shared type")
+gridExtra::grid.arrange(f1, f2, f3, f4, ncol = 2)
+```
+
+```{r, echo=FALSE, fig.width= 8, fig.height= 4}
+plot_power(results_dir, runtag, simutags)
+```
