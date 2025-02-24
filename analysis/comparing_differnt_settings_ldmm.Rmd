@@ -1,0 +1,90 @@
+---
+title: "Comparing ld-mismatch setting"
+author: "XSun"
+date: "2025-02-21"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+# Introduction
+
+We compare different ld - mismatch settings 
+
+- remove the ld-mismatched snp, recompute the z-scores and re-do the finemapping
+- re-finemap without LD
+
+# shared_type, pre-estimate L
+
+
+```{r}
+traits <- c("aFib-ebi-a-GCST006414","IBD-ebi-a-GCST004131","SCZ-ieu-b-5102","T1D-GCST90014023","MDD-ieu-b-102","BIP-ieu-b-5110","ASD-ieu-a-1185","PD-ieu-b-7","WBC-ieu-b-30")
+
+print("The traits need to do LD-mismatch diagnosis:")
+print(traits)
+```
+
+
+```{r}
+
+folder_results <- "/project/xinhe/shengqian/ctwas_GWAS_analysis/results/"
+
+traits_all <-c()
+gene_pip_snpremoved_all <- c()
+gene_pip_noLD_all <- c()
+gene_id_all <- c()
+genes_names_all <- c()
+for(trait in traits){
+  
+  file_problematic_gene <- paste0(folder_results,trait,"/",trait,".ldmismatch_problematic_genes.RDS")
+  if(file.exists(file_problematic_gene)){
+    
+    problematic_gene <- readRDS(file_problematic_gene)
+    
+    ctwas_res_snpremoved <- readRDS(paste0(folder_results,trait,"/",trait,".ldmismatch_finemap_regions_res.RDS"))
+    ctwas_res_noLD <- readRDS(paste0(folder_results,trait,"/",trait,".ldmismatch_noLD_finemap_regions_res.RDS"))
+    
+    gene_pip_snpremoved <- c()
+    for(i in 1:length(problematic_gene)){
+      
+      gene_pip_snpremoved_tmp <- ctwas_res_snpremoved$finemap_res$susie_pip[ctwas_res_snpremoved$finemap_res$id %in% problematic_gene[i]]
+      if (length(gene_pip_snpremoved_tmp) == 0) {
+        gene_pip_snpremoved <- c(gene_pip_snpremoved,-1)
+      }else{
+        gene_pip_snpremoved <-c(gene_pip_snpremoved,gene_pip_snpremoved_tmp)
+      }
+      
+    }
+  
+    gene_pip_noLD <- ctwas_res_noLD$finemap_res$susie_pip[ctwas_res_noLD$finemap_res$id %in% problematic_gene]
+    
+    problematic_gene_cleaned <- sub("\\|.*", "", problematic_gene)  # Extract part before '|'
+
+    mapped_gene_names <- mapping_two %>%
+      dplyr::filter(molecular_id %in% problematic_gene_cleaned) %>%
+      dplyr::select(molecular_id, gene_name)
+
+    traits_all <- c(traits_all, rep(trait, length(problematic_gene)))
+    gene_pip_snpremoved_all <- c(gene_pip_snpremoved_all,gene_pip_snpremoved)
+    gene_pip_noLD_all <- c(gene_pip_noLD_all, gene_pip_noLD)
+    gene_id_all <- c(gene_id_all, problematic_gene)
+    genes_names_all <- c(genes_names_all, mapped_gene_names$gene_name)
+    
+  }
+  
+  
+}
+
+df <- data.frame(trait = traits_all,
+                 gene_name = genes_names_all,
+                 gene_id = gene_id_all,
+                 gene_pip_noLD = round(gene_pip_noLD_all,digits = 4),
+                 gene_pip_snpremoved_all = round(gene_pip_snpremoved_all,digits = 4))
+
+
+```
+
+
+
+
+
