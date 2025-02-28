@@ -215,6 +215,42 @@ if(max(as.numeric(df$num_bystander_pip08)) != 0){
 DT::datatable(df,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;',trait),options = list(pageLength = 10) )
 ```
 
+```{r warning=F, message=FALSE, fig.height=5, fig.width=15}
+
+db <- "GO_Biological_Process_2023"
+
+num_go_adj005 <- c()
+setting_names <- c()
+for (st in sts) {
+  for (thin in thins) {
+    for (var_struc in var_strucs) {
+      for (L in Ls) {
+
+        setting_names <- c(setting_names, paste0(st,"_thin",thin,"_",var_struc,"_L",L))
+        
+        file_enrich <- paste0(folder_results,trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L, ".enrichr_",db,".RDS")
+        if(file.exists(file_enrich)) {
+          
+          enrich_results <- readRDS(file_enrich)
+          num_go_adj005 <- c(num_go_adj005,nrow(enrich_results))
+        }else{
+          num_go_adj005 <- c(num_go_adj005,0)
+        }
+        
+        
+        
+      }
+    }
+  }
+}
+
+
+df <- data.frame(setting = setting_names, num_go_adj005 = num_go_adj005)
+create_summary_plot(df,x_order = setting_names, 
+                    columns_to_plot = c("num_go_adj005"), title = "Number of enriched GO terms, adj_p < 0.05")
+```
+
+
 
 # IBD-ebi-a-GCST004131
 
@@ -307,6 +343,40 @@ if(max(as.numeric(df$num_bystander_pip08)) != 0){
 DT::datatable(df,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;',trait),options = list(pageLength = 10) )
 ```
 
+```{r warning=F, message=FALSE, fig.height=5, fig.width=15}
+
+db <- "GO_Biological_Process_2023"
+
+num_go_adj005 <- c()
+setting_names <- c()
+for (st in sts) {
+  for (thin in thins) {
+    for (var_struc in var_strucs) {
+      for (L in Ls) {
+
+        setting_names <- c(setting_names, paste0(st,"_thin",thin,"_",var_struc,"_L",L))
+        
+        file_enrich <- paste0(folder_results,trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L, ".enrichr_",db,".RDS")
+        if(file.exists(file_enrich)) {
+          
+          enrich_results <- readRDS(file_enrich)
+          num_go_adj005 <- c(num_go_adj005,nrow(enrich_results))
+        }else{
+          num_go_adj005 <- c(num_go_adj005,0)
+        }
+        
+        
+        
+      }
+    }
+  }
+}
+
+
+df <- data.frame(setting = setting_names, num_go_adj005 = num_go_adj005)
+create_summary_plot(df,x_order = setting_names, 
+                    columns_to_plot = c("num_go_adj005"), title = "Number of enriched GO terms, adj_p < 0.05")
+```
 
 # T2D-panukb
 
@@ -399,6 +469,40 @@ if(max(as.numeric(df$num_bystander_pip08)) != 0){
 DT::datatable(df,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;',trait),options = list(pageLength = 10) )
 ```
 
+```{r warning=F, message=FALSE, fig.height=5, fig.width=15}
+
+db <- "GO_Biological_Process_2023"
+
+num_go_adj005 <- c()
+setting_names <- c()
+for (st in sts) {
+  for (thin in thins) {
+    for (var_struc in var_strucs) {
+      for (L in Ls) {
+
+        setting_names <- c(setting_names, paste0(st,"_thin",thin,"_",var_struc,"_L",L))
+        
+        file_enrich <- paste0(folder_results,trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L, ".enrichr_",db,".RDS")
+        if(file.exists(file_enrich)) {
+          
+          enrich_results <- readRDS(file_enrich)
+          num_go_adj005 <- c(num_go_adj005,nrow(enrich_results))
+        }else{
+          num_go_adj005 <- c(num_go_adj005,0)
+        }
+        
+        
+        
+      }
+    }
+  }
+}
+
+
+df <- data.frame(setting = setting_names, num_go_adj005 = num_go_adj005)
+create_summary_plot(df,x_order = setting_names, 
+                    columns_to_plot = c("num_go_adj005"), title = "Number of enriched GO terms, adj_p < 0.05")
+```
 
 # BMI-panukb
 
@@ -491,6 +595,40 @@ if(max(as.numeric(df$num_bystander_pip08)) != 0){
 DT::datatable(df,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;',trait),options = list(pageLength = 10) )
 ```
 
+```{r warning=F, message=FALSE, fig.height=5, fig.width=15}
+
+db <- "GO_Biological_Process_2023"
+
+num_go_adj005 <- c()
+setting_names <- c()
+for (st in sts) {
+  for (thin in thins) {
+    for (var_struc in var_strucs) {
+      for (L in Ls) {
+
+        setting_names <- c(setting_names, paste0(st,"_thin",thin,"_",var_struc,"_L",L))
+        
+        file_enrich <- paste0(folder_results,trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L, ".enrichr_",db,".RDS")
+        if(file.exists(file_enrich)) {
+          
+          enrich_results <- readRDS(file_enrich)
+          num_go_adj005 <- c(num_go_adj005,nrow(enrich_results))
+        }else{
+          num_go_adj005 <- c(num_go_adj005,0)
+        }
+        
+        
+        
+      }
+    }
+  }
+}
+
+
+df <- data.frame(setting = setting_names, num_go_adj005 = num_go_adj005)
+create_summary_plot(df,x_order = setting_names, 
+                    columns_to_plot = c("num_go_adj005"), title = "Number of enriched GO terms, adj_p < 0.05")
+```
 
 # RBC-panukb
 
@@ -584,7 +722,40 @@ DT::datatable(df,caption = htmltools::tags$caption( style = 'caption-side: left;
 ```
 
 
+```{r warning=F, message=FALSE, fig.height=5, fig.width=15}
 
+db <- "GO_Biological_Process_2023"
+
+num_go_adj005 <- c()
+setting_names <- c()
+for (st in sts) {
+  for (thin in thins) {
+    for (var_struc in var_strucs) {
+      for (L in Ls) {
+
+        setting_names <- c(setting_names, paste0(st,"_thin",thin,"_",var_struc,"_L",L))
+        
+        file_enrich <- paste0(folder_results,trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L, ".enrichr_",db,".RDS")
+        if(file.exists(file_enrich)) {
+          
+          enrich_results <- readRDS(file_enrich)
+          num_go_adj005 <- c(num_go_adj005,nrow(enrich_results))
+        }else{
+          num_go_adj005 <- c(num_go_adj005,0)
+        }
+        
+        
+        
+      }
+    }
+  }
+}
+
+
+df <- data.frame(setting = setting_names, num_go_adj005 = num_go_adj005)
+create_summary_plot(df,x_order = setting_names, 
+                    columns_to_plot = c("num_go_adj005"), title = "Number of enriched GO terms, adj_p < 0.05")
+```
 
 
 
