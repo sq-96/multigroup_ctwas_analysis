@@ -74,7 +74,8 @@ create_summary_plot_withTP <- function(df, columns_to_plot, x_var = "setting", x
   
   # Create plot
   ggplot(df_long, aes(x = .data[[x_var]], y = scaled_value, color = variable, shape = variable)) +
-    geom_point(size = 3, position = position_jitter(width = 0.2)) +
+    #geom_point(size = 3, position = position_jitter(width = 0.2)) +
+    geom_point(size = 3) + 
     scale_y_continuous(
       name = "Count",
       sec.axis = sec_axis(~ . * (max_tp_rate / max_main), name = "TP Rate")
@@ -107,7 +108,8 @@ create_summary_plot <- function(df, columns_to_plot, x_var = "setting", x_order 
   
   # Create plot
   ggplot(df_long, aes(x = .data[[x_var]], y = value, color = variable)) +
-    geom_point(size = 3, position = position_jitter(width = 0.2)) +
+    #geom_point(size = 3, position = position_jitter(width = 0.2)) +
+    geom_point(size = 3) + 
     labs(x = "Settings", y = "Count/Value", title = title) +
     theme_minimal() +
     theme(
