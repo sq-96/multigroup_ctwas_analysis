@@ -1,0 +1,327 @@
+---
+title: "simulation_no_enrichment"
+output: html_document
+date: '2024-2-13'
+editor_options: 
+  chunk_output_type: console
+---
+
+## One tissue simulation
+```{r echo=FALSE}
+library(ctwas)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+library(data.table)
+library(ggbreak) 
+library(ggpubr)
+library(gridExtra)
+source("/project/xinhe/shengqian/cTWAS_simulation/code/simulation_help_functions.R")
+source("/project/xinhe/shengqian/cTWAS_simulation/code/summarize_basic_plots.R")
+source("/project/xinhe/shengqian/cTWAS_simulation/code/summarize_ctwas_plots.R")
+
+plot_enrichment <- function(results_dir, runtag, thins, group_prior_var_structures, null_methods, file_name, enrichment_true) {
+  plots <- list()  # Store plots in a list
+  plot_idx <- 1
+  
+  for (group_prior_var_structure in group_prior_var_structures) {
+    for (thin in thins) {
+      param_df_ctwas <- load_parameters(results_dir, runtag, simutags, thin, group_prior_var_structure, "ctwas", file_name)
+      param_df_susie <- load_parameters(results_dir, runtag, simutags, thin, group_prior_var_structure, "susie", file_name)
+
+      df <- data.frame(null_method = rep(c("ctwas", "susie"), each = 10),
+                       pos = c(rep(1, 10), rep(2, 10)),
+                       enrichment = c(param_df_ctwas$`enrichment_combined_tissue|expression`, param_df_susie$`enrichment_combined_tissue|expression`),
+                       se = c(param_df_ctwas$`enrichment_se_combined_tissue|expression`, param_df_susie$`enrichment_se_combined_tissue|expression`))  # Fix repeated `se` values
+      
+      df$pos <- jitter(df$pos, amount = 0.2)
+      
+      p <- ggplot(df, aes(x = pos, y = enrichment, group = null_method, color = null_method)) +
+        geom_point() +
+        geom_errorbar(aes(ymin = enrichment - 1.96 * se, ymax = enrichment + 1.96 * se), width = 0.01) +
+        geom_hline(yintercept = enrichment_true, linetype = "dashed", color = "blue") +
+        labs(x = "", y = "log(Enrichment)", title = paste("Enrichment -", group_prior_var_structure, "Thin =", thin)) +
+        scale_x_continuous(breaks = c(1, 2), labels = c("Gene (ctwas)", "Gene (susie)")) +
+        ylim(c(-5,5)) +
+        theme_minimal()
+      
+      plots[[plot_idx]] <- p  # Store plot in the list
+      plot_idx <- plot_idx + 1
+    }
+  }
+  
+  # Arrange plots side by side
+  if (length(plots) > 1) {
+    grid.arrange(grobs = plots, ncol = length(plots))  # Using gridExtra
+    # print(plots[[1]] + plots[[2]])  # Alternative using patchwork (uncomment if using patchwork)
+  } else {
+    print(plots[[1]])  # Just print a single plot if there's only one
+  }
+}
+```
+
+## Enrichment=1 (same variance=10)
+gene prior = 2.5e-4, snp prior = 2.5e-4, gene variance = 10, snp variance = 10, gene pve=0.001974, snp pve=0.3
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_four_tissues_combined/"
+runtag = "one_tissue"
+simutags <- paste(1, 1:10, sep = "-")
+thins <- c(1)
+group_prior_var_structures <- c("shared_all","shared_type")
+null_methods <- c("ctwas","susie")
+```
+
+### Enrichment (G-test,min_p=0.8,min_gene=1)
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+true_value_gene <- 0
+file_name <- ".parameters.RDS"
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene)
+```
+
+### Enrichment (F-test,min_p=0.8,min_gene=1)
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+true_value_gene <- 0
+file_name <- ".fisher.parameters.RDS"
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene)
+```
+
+### Enrichment (G-test,min_p=0,min_gene=1)
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+true_value_gene <- 0
+file_name <- ".minp0.parameters.RDS"
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene)
+```
+
+### Enrichment (F-test,min_p=0,min_gene=1)
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+true_value_gene <- 0
+file_name <- ".fisher.minp0.parameters.RDS"
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene)
+```
+
+### Enrichment (G-test,min_p=0,min_gene=0)
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+true_value_gene <- 0
+file_name <- ".minp0.mingene0.parameters.RDS"
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene)
+```
+
+### Enrichment (F-test,min_p=0,min_gene=0)
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+true_value_gene <- 0
+file_name <- ".fisher.minp0.mingene0.parameters.RDS"
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene)
+```
+
+
+## Enrichment=1 (same variance=40)
+gene prior = 2.5e-4, snp prior = 2.5e-4, gene variance = 10, snp variance = 10, gene pve=0.007896, snp pve=0.3
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_four_tissues_combined/"
+runtag = "one_tissue"
+simutags <- paste(3, 1:10, sep = "-")
+thins <- c(1)
+group_prior_var_structures <- c("shared_all","shared_type")
+null_methods <- c("ctwas","susie")
+```
+
+### Enrichment (G-test,min_p=0.8,min_gene=1)
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+true_value_gene <- 0
+file_name <- ".parameters.RDS"
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene)
+```
+
+### Enrichment (F-test,min_p=0.8,min_gene=1)
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+true_value_gene <- 0
+file_name <- ".fisher.parameters.RDS"
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene)
+```
+
+### Enrichment (G-test,min_p=0,min_gene=1)
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+true_value_gene <- 0
+file_name <- ".minp0.parameters.RDS"
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene)
+```
+
+### Enrichment (F-test,min_p=0,min_gene=1)
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+true_value_gene <- 0
+file_name <- ".fisher.minp0.parameters.RDS"
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene)
+```
+
+### Enrichment (G-test,min_p=0,min_gene=0)
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+true_value_gene <- 0
+file_name <- ".minp0.mingene0.parameters.RDS"
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene)
+```
+
+### Enrichment (F-test,min_p=0,min_gene=0)
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+true_value_gene <- 0
+file_name <- ".fisher.minp0.mingene0.parameters.RDS"
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene)
+```
+
+## Enrichment=1 (same variance=20)
+gene prior = 2.5e-4, snp prior = 2.5e-4, gene variance = 10, snp variance = 10, gene pve=0.003948, snp pve=0.3
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_four_tissues_combined/"
+runtag = "one_tissue"
+simutags <- paste(2, 1:10, sep = "-")
+thins <- c(1)
+group_prior_var_structures <- c("shared_all","shared_type")
+null_methods <- c("ctwas","susie")
+```
+
+### Enrichment (G-test,min_p=0.8,min_gene=1)
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+true_value_gene <- 0
+file_name <- ".parameters.RDS"
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene)
+```
+
+### Enrichment (F-test,min_p=0.8,min_gene=1)
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+true_value_gene <- 0
+file_name <- ".fisher.parameters.RDS"
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene)
+```
+
+### Enrichment (G-test,min_p=0,min_gene=1)
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+true_value_gene <- 0
+file_name <- ".minp0.parameters.RDS"
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene)
+```
+
+### Enrichment (F-test,min_p=0,min_gene=1)
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+true_value_gene <- 0
+file_name <- ".fisher.minp0.parameters.RDS"
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene)
+```
+
+### Enrichment (G-test,min_p=0,min_gene=0)
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+true_value_gene <- 0
+file_name <- ".minp0.mingene0.parameters.RDS"
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene)
+```
+
+### Enrichment (F-test,min_p=0,min_gene=0)
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+true_value_gene <- 0
+file_name <- ".fisher.minp0.mingene0.parameters.RDS"
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene)
+```
+
+## Enrichment=1 (same variance=40)
+gene prior = 2.5e-4, snp prior = 2.5e-4, gene variance = 10, snp variance = 10, gene pve=0.007896, snp pve=0.3
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_four_tissues_combined/"
+runtag = "one_tissue"
+simutags <- paste(3, 1:10, sep = "-")
+thins <- c(1)
+group_prior_var_structures <- c("shared_all","shared_type")
+null_methods <- c("ctwas","susie")
+```
+
+### Enrichment (G-test,min_p=0.8,min_gene=1)
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+true_value_gene <- 0
+file_name <- ".parameters.RDS"
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene)
+```
+
+### Enrichment (F-test,min_p=0.8,min_gene=1)
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+true_value_gene <- 0
+file_name <- ".fisher.parameters.RDS"
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene)
+```
+
+### Enrichment (G-test,min_p=0,min_gene=1)
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+true_value_gene <- 0
+file_name <- ".minp0.parameters.RDS"
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene)
+```
+
+### Enrichment (F-test,min_p=0,min_gene=1)
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+true_value_gene <- 0
+file_name <- ".fisher.minp0.parameters.RDS"
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene)
+```
+
+### Enrichment (G-test,min_p=0,min_gene=0)
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+true_value_gene <- 0
+file_name <- ".minp0.mingene0.parameters.RDS"
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene)
+```
+
+### Enrichment (F-test,min_p=0,min_gene=0)
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+true_value_gene <- 0
+file_name <- ".fisher.minp0.mingene0.parameters.RDS"
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene)
+```
+
+## Enrichment=1 (same variance=80)
+gene prior = 2.5e-4, snp prior = 2.5e-4, gene variance = 10, snp variance = 10, gene pve=0.015792, snp pve=0.3
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_four_tissues_combined/"
+runtag = "one_tissue"
+simutags <- paste(2, 1:10, sep = "-")
+thins <- c(1)
+group_prior_var_structures <- c("shared_all","shared_type")
+null_methods <- c("ctwas","susie")
+```
+
+### Enrichment (G-test,min_p=0.8,min_gene=1)
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+true_value_gene <- 0
+file_name <- ".parameters.RDS"
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene)
+```
+
+### Enrichment (F-test,min_p=0.8,min_gene=1)
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+true_value_gene <- 0
+file_name <- ".fisher.parameters.RDS"
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene)
+```
+
+### Enrichment (G-test,min_p=0,min_gene=1)
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+true_value_gene <- 0
+file_name <- ".minp0.parameters.RDS"
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene)
+```
+
+### Enrichment (F-test,min_p=0,min_gene=1)
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+true_value_gene <- 0
+file_name <- ".fisher.minp0.parameters.RDS"
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene)
+```
+
+### Enrichment (G-test,min_p=0,min_gene=0)
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+true_value_gene <- 0
+file_name <- ".minp0.mingene0.parameters.RDS"
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene)
+```
+
+### Enrichment (F-test,min_p=0,min_gene=0)
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+true_value_gene <- 0
+file_name <- ".fisher.minp0.mingene0.parameters.RDS"
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene)
+```
