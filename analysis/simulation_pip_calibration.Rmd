@@ -22,37 +22,37 @@ source("/project/xinhe/shengqian/cTWAS_simulation/code/summarize_ctwas_plots.R")
 
 plot_PIP_shared_all_ctwas <- function(results_dir, runtag,  simutags, ...){
   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
-  susieIfs <- paste0(results_dir, runtag, "_simu",simutags, ".thin1.shared_all.ctwas.estimated_parameter.finemap_regions_res.RDS")
+  susieIfs <- paste0(results_dir, runtag, "_simu",simutags, ".thin1.shared_all.ctwas.true_parameter.finemap_regions_res.RDS")
   f1 <- caliPIP_plot(phenofs, susieIfs, ...) 
   return(f1)
 }
 
 plot_PIP_shared_type_ctwas <- function(results_dir, runtag,  simutags, ...){
   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
-  susieIfs <- paste0(results_dir, runtag, "_simu",simutags, ".thin1.shared_type.ctwas.estimated_parameter.finemap_regions_res.RDS")
+  susieIfs <- paste0(results_dir, runtag, "_simu",simutags, ".thin1.shared_type.ctwas.true_parameter.finemap_regions_res.RDS")
   f1 <- caliPIP_plot(phenofs, susieIfs, ...) 
   return(f1)
 }
 
 plot_PIP_shared_all_susie <- function(results_dir, runtag,  simutags, ...){
   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
-  susieIfs <- paste0(results_dir, runtag, "_simu",simutags, ".thin1.shared_all.susie.estimated_parameter.finemap_regions_res.RDS")
+  susieIfs <- paste0(results_dir, runtag, "_simu",simutags, ".thin1.shared_all.susie.true_parameter.finemap_regions_res.RDS")
   f1 <- caliPIP_plot(phenofs, susieIfs, ...) 
   return(f1)
 }
 
 plot_PIP_shared_type_susie <- function(results_dir, runtag,  simutags, ...){
   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
-  susieIfs <- paste0(results_dir, runtag, "_simu",simutags, ".thin1.shared_type.susie.estimated_parameter.finemap_regions_res.RDS")
+  susieIfs <- paste0(results_dir, runtag, "_simu",simutags, ".thin1.shared_type.susie.true_parameter.finemap_regions_res.RDS")
   f1 <- caliPIP_plot(phenofs, susieIfs, ...) 
   return(f1)
 }
 
 plot_power <- function(results_dir,runtag,simutags){
-  pipfs_all_ctwas <- paste0(results_dir, runtag, "_simu",simutags, ".thin1.shared_all.ctwas.estimated_parameter.finemap_regions_res.RDS")
-  pipfs_type_ctwas <- paste0(results_dir, runtag, "_simu",simutags, ".thin1.shared_type.ctwas.estimated_parameter.finemap_regions_res.RDS")
-  pipfs_all_susie <- paste0(results_dir, runtag, "_simu",simutags, ".thin1.shared_all.susie.estimated_parameter.finemap_regions_res.RDS")
-  pipfs_type_susie <- paste0(results_dir, runtag, "_simu",simutags, ".thin1.shared_type.susie.estimated_parameter.finemap_regions_res.RDS")
+  pipfs_all_ctwas <- paste0(results_dir, runtag, "_simu",simutags, ".thin1.shared_all.ctwas.true_parameter.finemap_regions_res.RDS")
+  pipfs_type_ctwas <- paste0(results_dir, runtag, "_simu",simutags, ".thin1.shared_type.ctwas.true_parameter.finemap_regions_res.RDS")
+  pipfs_all_susie <- paste0(results_dir, runtag, "_simu",simutags, ".thin1.shared_all.susie.true_parameter.finemap_regions_res.RDS")
+  pipfs_type_susie <- paste0(results_dir, runtag, "_simu",simutags, ".thin1.shared_type.susie.true_parameter.finemap_regions_res.RDS")
   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
 
   cau <- lapply(phenofs, function(x) {load(x);get_causal_id(phenores)})
@@ -127,6 +127,25 @@ plot_power <- function(results_dir,runtag,simutags){
 
 ## Enrichment=1 (same variance=10)
 gene prior = 2.5e-4, snp prior = 2.5e-4, gene variance = 10, snp variance = 10, gene pve=4.2e-4, snp pve=0.3
+
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
+runtag = "one_tissue"
+simutags <- paste(1, 1:10, sep = "-")
+```
+
+```{r, echo=FALSE, fig.width= 8, fig.height= 8}
+f1 <- plot_PIP_shared_all_ctwas(results_dir, runtag, simutags, main = "ctwas shared all")
+f2 <- plot_PIP_shared_type_ctwas(results_dir, runtag, simutags, main = "ctwas shared type")
+f3 <- plot_PIP_shared_all_susie(results_dir, runtag, simutags, main = "susie shared all")
+f4 <- plot_PIP_shared_type_susie(results_dir, runtag, simutags, main = "susie shared type")
+gridExtra::grid.arrange(f1, f2, f3, f4, ncol = 2)
+```
+
+```{r, echo=FALSE, fig.width= 8, fig.height= 4}
+plot_power(results_dir, runtag, simutags)
+```
+
 
 ```{r,echo=FALSE,fig.width= 8, fig.height= 4}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue/"
