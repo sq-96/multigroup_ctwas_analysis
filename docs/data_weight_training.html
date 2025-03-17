@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="XSun" />
+
+<meta name="date" content="2025-03-14" />
+
+<title>Training stability weights using munro’s RNA data</title>
+
+<script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/htmlwidgets-1.5.4/htmlwidgets.js"></script>
+<link href="site_libs/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet" />
+<script src="site_libs/datatables-binding-0.22/datatables.js"></script>
+<link href="site_libs/dt-core-1.11.3/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="site_libs/dt-core-1.11.3/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="site_libs/dt-core-1.11.3/js/jquery.dataTables.min.js"></script>
+<link href="site_libs/crosstalk-1.2.0/css/crosstalk.min.css" rel="stylesheet" />
+<script src="site_libs/crosstalk-1.2.0/js/crosstalk.min.js"></script>
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">multigroup_ctwas_analysis</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/sq-96/multigroup_ctwas_analysis">
+    <span class="fab fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Training stability weights using munro’s
+RNA data</h1>
+<h4 class="author">XSun</h4>
+<h4 class="date">2025-03-14</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span
+class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2025-03-17
+</p>
+<p>
+<strong>Checks:</strong> <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> 1
+</p>
+<p>
+<strong>Knit directory:</strong> <code>multigroup_ctwas_analysis/</code>
+<span class="glyphicon glyphicon-question-sign" aria-hidden="true"
+title="This is the local directory in which the code in this file was executed.">
+</span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version
+1.7.0). The <em>Checks</em> tab describes the reproducibility checks
+that were applied when the results were created. The <em>Past
+versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges">
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted
+changes </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguncommittedchanges"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The R Markdown is untracked by Git. To know which version of the R
+Markdown file created these results, you’ll want to first commit it to
+the Git repo. If you’re still working on the analysis, you can ignore
+this warning. When you’re finished, you can run
+<code>wflow_publish</code> to commit the R Markdown file and build the
+HTML.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the
+global environment can affect the analysis in your R Markdown file in
+unknown ways. For reproduciblity it’s best to always run the code in an
+empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20231112code">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Seed:</strong>
+<code>set.seed(20231112)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20231112code"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20231112)</code> was run prior to running
+the code in the R Markdown file. Setting a seed ensures that any results
+that rely on randomness, e.g. subsampling or permutations, are
+reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Session information:</strong>
+recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package
+versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be
+confident that you successfully produced the results during this
+run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr
+project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree7d48d53b37b0cfd942766a2aea2d0eaa548f253etargetblank7d48d53a">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/7d48d53b37b0cfd942766a2aea2d0eaa548f253e" target="_blank">7d48d53</a>
+</a>
+</p>
+</div>
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree7d48d53b37b0cfd942766a2aea2d0eaa548f253etargetblank7d48d53a"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development
+and connecting the code version to the results is critical for
+reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/7d48d53b37b0cfd942766a2aea2d0eaa548f253e" target="_blank">7d48d53</a>.
+See the <em>Past versions</em> tab to see a history of the changes made
+to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for
+the analysis have been committed to Git prior to generating the results
+(you can use <code>wflow_publish</code> or
+<code>wflow_git_commit</code>). workflowr only checks the R Markdown
+file, but you know if there are other scripts or data files that it
+depends on. Below is the status of the Git repository when the results
+were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .Rhistory
+    Ignored:    analysis/figure/
+    Ignored:    cv/
+
+Untracked files:
+    Untracked:  analysis/data_weight_training.Rmd
+
+Unstaged changes:
+    Modified:   analysis/index.Rmd
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not
+included in this status report because it is ok for generated content to
+have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+<p>
+There are no past versions. Publish this analysis with
+<code>wflow_publish()</code> to start tracking its development.
+</p>
+<hr>
+</div>
+</div>
+</div>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<div id="data-source" class="section level2">
+<h2>Data source</h2>
+<p>Normalized RNA phenotype were shared by Munro et al</p>
+<p>Covariates are downloaded from <a href="https://pantry.pejlab.org/"
+class="uri">https://pantry.pejlab.org/</a></p>
+<p>Genotype are from gtex v8, we imputed the missing genotype using
+<code>beagle</code></p>
+</div>
+<div id="workflow" class="section level2">
+<h2>Workflow</h2>
+<div id="cross-validation" class="section level3">
+<h3>Cross validation</h3>
+<p>For each RNA phenotype in each tissue, we partitioned the available
+samples into training (80%) and testing (20%) datasets.</p>
+<ul>
+<li>Training Phase</li>
+</ul>
+<p>For each RNA molecular, we performed the following steps:</p>
+<ol style="list-style-type: decimal">
+<li><p><strong>Variant Selection:</strong> We defined a ±50 kb window
+around the transcription start site (TSS) of each gene, following Munro
+et al. Variants located within this window were selected for
+analysis.<br />
+</p></li>
+<li><p><strong>Preprocessing:</strong> Covariates were regressed out
+from both the RNA phenotype and the genotype matrix containing the
+selected variants. The residuals from this regression were used as
+inputs for subsequent analysis. (as susie tutorial described)</p></li>
+<li><p><strong>Fine-Mapping with SuSiE:</strong> We applied SuSiE with
+<code>L = 1</code> and <code>L = 5</code> to the residualized data and
+identified the top variants from the credible sets.<br />
+</p></li>
+<li><p><strong>Effect Size Estimation:</strong> For the selected
+variants, we re-fitted a multiple linear regression model:</p>
+<pre><code>model &lt;- lm(scaled_RNA_phenotype ~ SNPs_centered + covariates_scaled)
+effect_sizes &lt;- coef(model)</code></pre>
+<p>where <code>scaled_RNA_phenotype</code> represents the scaled RNA
+phenotype, <code>SNPs_centered</code> denotes the centered SNP genotype
+matrix, and <code>covariates_scaled</code> represents scaled covariates.
+The estimated coefficients from this model were used as effect sizes for
+the selected SNPs.</p></li>
+</ol>
+<ul>
+<li>Testing Phase</li>
+</ul>
+<p>Using the trained effect sizes, we predicted RNA phenotypes in the
+testing dataset and evaluated model performance.</p>
+<ul>
+<li>Evaluation</li>
+</ul>
+<p>We used MSE, r2 to evaluate the performance of the prediction
+model</p>
+<p>r2</p>
+<p><span class="math display">\[ R^2 = 1 - \frac{\sum (y_{\text{test}} -
+y_{\text{pred}})^2}{\sum (y_{\text{test}} - \bar{y}_{\text{test}})^2}
+\]</span></p>
+<ul>
+<li><span class="math inline">\(y_{\text{test}}\)</span>: Observed
+values in the test set,</li>
+<li><span class="math inline">\(y_{\text{pred}}\)</span>: Predicted
+values,</li>
+<li><span class="math inline">\(\bar{y}_{\text{test}}\)</span>: Mean of
+the test set observed values.</li>
+</ul>
+<p>MSE</p>
+<p><span class="math display">\[ \text{MSE} = \frac{1}{n} \sum_{i=1}^n
+(y_i - \hat{y}_i)^2 \]</span></p>
+<ul>
+<li><span class="math inline">\(y_i\)</span>: Observed value for the
+<span class="math inline">\(i\)</span>-th sample,</li>
+<li><span class="math inline">\(\hat{y}_i\)</span>: Predicted value for
+the <span class="math inline">\(i\)</span>-th sample,</li>
+<li><span class="math inline">\(n\)</span>: Total number of
+samples.</li>
+</ul>
+<pre class="r"><code>library(RSQLite)
+library(ggplot2)
+library(gridExtra)
+
+name_mapping &lt;- read.table(&quot;/project2/xinhe/shared_data/multigroup_ctwas/weights/files_Munro/Munro_name_mapping.txt&quot;)
+colnames(name_mapping) &lt;- c(&quot;Munro_name&quot;,&quot;gtex_name&quot;)</code></pre>
+</div>
+</div>
+</div>
+<div id="results" class="section level1">
+<h1>Results</h1>
+<div id="comparing-l1-and-l5" class="section level2">
+<h2>Comparing L=1 and L=5</h2>
+<div id="rna-stability" class="section level3">
+<h3>RNA stability</h3>
+<pre class="r"><code>qtl = &quot;stability&quot;
+
+L=1
+folder_pred_L1 &lt;- paste0(&quot;/project/xinhe/xsun/weights_training/cv/prediction_refitwcovar/&quot;,qtl,&quot;/L&quot;,L,&quot;/&quot;)
+folder_weights_L1&lt;- paste0(&quot;/project/xinhe/xsun/weights_training/cv/weights_train_refitwcovar/&quot;,qtl,&quot;/L&quot;,L,&quot;/&quot;)
+folder_sample_L1&lt;- paste0(&quot;/project/xinhe/xsun/weights_training/cv/samples/&quot;,qtl,&quot;/&quot;)
+
+L=5
+folder_pred_L5 &lt;- paste0(&quot;/project/xinhe/xsun/weights_training/cv/prediction_refitwcovar/&quot;,qtl,&quot;/L&quot;,L,&quot;/&quot;)
+folder_weights_L5&lt;- paste0(&quot;/project/xinhe/xsun/weights_training/cv/weights_train_refitwcovar/&quot;,qtl,&quot;/L&quot;,L,&quot;/&quot;)
+folder_sample_L5&lt;- paste0(&quot;/project/xinhe/xsun/weights_training/cv/samples/&quot;,qtl,&quot;/&quot;)</code></pre>
+<pre class="r"><code>sum &lt;- c()
+p &lt;- list()
+for (tissue in name_mapping$Munro_name) {
+  
+  tissue_gtex &lt;- name_mapping$gtex_name[which(name_mapping$Munro_name == tissue)]
+  
+  ## sample size 
+  sample_test &lt;- nrow(read.table(paste0(folder_sample_L1,tissue,&quot;_sample_test.txt&quot;)))
+  sample_train &lt;- nrow(read.table(paste0(folder_sample_L1,tissue,&quot;_sample_training.txt&quot;)))
+  sample_total &lt;- sample_test + sample_train
+  
+  ## L=1
+  rsq_L1 &lt;- readRDS(paste0(folder_pred_L1, tissue, &quot;_rsq_all_fusion.RDS&quot;))
+  n_withcs_L1 &lt;- length(rsq_L1)
+  n_posrsq_L1 &lt;- sum(rsq_L1&gt;0,na.rm = T)
+  
+  ## L=5
+  rsq_L5 &lt;- readRDS(paste0(folder_pred_L5, tissue, &quot;_rsq_all_fusion.RDS&quot;))
+  n_withcs_L5 &lt;- length(rsq_L5)
+  n_posrsq_L5 &lt;- sum(rsq_L5&gt;0,na.rm = T)
+  
+  n_overlap_withcs &lt;- sum(names(rsq_L1) %in% names(rsq_L5))
+  n_overlap_posrsq &lt;- sum(names(rsq_L1[rsq_L1 &gt; 0]) %in% names(rsq_L5[rsq_L5 &gt; 0]))
+  
+  ## total rna &amp; average qtl
+  weights &lt;- readRDS(paste0(folder_weights_L5, tissue, &quot;_training_effectsizes.RDS&quot;))
+  n_rna &lt;- length(weights)
+  
+  weights_nonnull &lt;- Filter(Negate(is.null), weights)
+  avg_qtl &lt;- mean(unlist(lapply(weights_nonnull,length)),na.rm = T)
+  
+  tmp_tissue &lt;- c(tissue_gtex,sample_total, n_rna, n_withcs_L1, n_withcs_L5, round(avg_qtl,digits = 4), n_overlap_withcs, n_posrsq_L1, n_posrsq_L5, n_overlap_posrsq)
+  sum &lt;- rbind(sum, tmp_tissue)
+  
+  rsq_L1 &lt;- data.frame(id = names(rsq_L1), rsq_L1 = rsq_L1)
+  rsq_L5 &lt;- data.frame(id = names(rsq_L5), rsq_L5 = rsq_L5)
+  
+  rsq_merge &lt;- merge(rsq_L1, rsq_L5 , by = &quot;id&quot;)
+  
+   p[[tissue_gtex]] &lt;-  ggplot(rsq_merge, aes(x=rsq_L1, y=rsq_L5)) + 
+    geom_point() +
+    labs(x = &quot;rsq-L1&quot;, y=&quot;rsq-L5&quot;) +
+    geom_abline(slope = 1, intercept = 0, col=&quot;red&quot;) + 
+    ggtitle(tissue_gtex) + 
+    theme_minimal()
+  
+}
+
+sum &lt;- as.data.frame(sum)
+rownames(sum) &lt;- NULL
+colnames(sum) &lt;- c(&quot;tissue&quot;,&quot;sample_size_total&quot;, &quot;n_rna_total&quot;, &quot;n_rna_withcs_L1&quot;, &quot;n_rna_withcs_L5&quot;, &quot;avg_qtl_L5&quot;,&quot;n_overlap_withcs&quot;, &quot;n_rna_rsq+_L1&quot;, &quot;n_rna_rsq+_L5&quot;, &quot;n_overlap_rsq+&quot;)
+sum &lt;- sum[order(as.numeric(sum$sample_size_total),decreasing = T),]
+
+grid.arrange(grobs = p, ncol = 4)</code></pre>
+<p><img src="figure/data_weight_training.Rmd/unnamed-chunk-3-1.png" width="960" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>DT::datatable(sum,caption = htmltools::tags$caption( style = &#39;caption-side: left; text-align: left; color:black;  font-size:150% ;&#39;,&#39;Comparing L=1 &amp; L=5&#39;),options = list(pageLength = 10) )</code></pre>
+<div id="htmlwidget-4de263013227ca78a293" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-4de263013227ca78a293">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">Comparing L=1 &amp; L=5<\/caption>","data":[["12","21","4","7","5","2","3","6","10","9","8","13","11","16","15","25","22","14","17","27","1","20","26","23","28","18","31","35","19","41","29","30","32","24","33","34","36","40","38","43","37","39","42","44","46","47","45","48","49"],["Muscle_Skeletal","Whole_Blood","Skin_Sun_Exposed_Lower_leg","Artery_Tibial","Adipose_Subcutaneous","Thyroid","Nerve_Tibial","Skin_Not_Sun_Exposed_Suprapubic","Lung","Esophagus_Mucosa","Cells_Cultured_fibroblasts","Adipose_Visceral_Omentum","Esophagus_Muscularis","Breast_Mammary_Tissue","Artery_Aorta","Heart_Left_Ventricle","Heart_Atrial_Appendage","Colon_Transverse","Esophagus_Gastroesophageal_Junction","Stomach","Testis","Colon_Sigmoid","Pancreas","Pituitary","Adrenal_Gland","Spleen","Prostate","Artery_Coronary","Brain_Cerebellum","Liver","Brain_Cortex","Brain_Nucleus_accumbens_basal_ganglia","Brain_Caudate_basal_ganglia","Brain_Cerebellar_Hemisphere","Brain_Frontal_Cortex_BA9","Small_Intestine_Terminal_Ileum","Brain_Putamen_basal_ganglia","Brain_Hypothalamus","Ovary","Brain_Hippocampus","Cells_EBV-transformed_lymphocytes","Brain_Anterior_cingulate_cortex_BA24","Minor_Salivary_Gland","Vagina","Uterus","Brain_Amygdala","Brain_Spinal_cord_cervical_c-1","Brain_Substantia_nigra","Kidney_Cortex"],["702","670","602","584","581","574","532","517","510","493","483","469","461","394","387","382","372","368","330","324","322","318","305","237","233","227","218","213","209","208","205","202","194","175","175","174","170","170","167","165","147","147","144","141","129","129","126","114","73"],["9729","10082","12599","10357","11012","12543","11324","12524","11615","11085","10137","11122","10815","11354","10679","10201","10837","11497","10892","12340","14276","11003","10558","11807","10935","12408","11552","10898","11186","9363","11400","11214","11203","11072","11220","12953","10895","11321","10935","10960","10054","11075","12710","12594","12209","10829","10877","10841","11277"],["2264","1815","2943","2487","2681","3184","3013","2399","2055","2243","3269","1828","2292","1903","1810","1398","1533","1900","1795","1611","3454","1661","1565","1406","1298","1719","1128","936","1556","806","1210","1058","1068","1368","1024","1105","838","712","854","712","1377","799","993","756","854","589","638","561","731"],["2497","1971","3259","2748","2958","3533","3344","2667","2258","2490","3597","2038","2531","2090","2039","1579","1696","2124","1993","1807","3826","1840","1743","1517","1415","1955","1225","1044","1648","963","1321","1126","1134","1462","1084","1199","884","746","900","737","1494","833","1054","789","882","607","670","583","619"],["1.1842","1.17","1.189","1.1903","1.192","1.2247","1.2126","1.1515","1.1488","1.1655","1.2419","1.1369","1.1723","1.1383","1.1398","1.1127","1.1108","1.1323","1.1269","1.1162","1.1649","1.1266","1.1165","1.0897","1.1067","1.111","1.0849","1.0738","1.088","1.1038","1.0848","1.071","1.06","1.0821","1.059","1.0926","1.0441","1.0536","1.0633","1.0299","1.093","1.0396","1.0588","1.0469","1.0374","1.0329","1.0537","1.048","1.0275"],["2259","1805","2926","2472","2666","3172","2999","2379","2044","2232","3239","1821","2281","1895","1797","1390","1527","1888","1790","1605","3438","1653","1559","1401","1293","1714","1122","935","1553","771","1205","1057","1063","1366","1020","1100","838","711","851","708","1374","797","992","756","847","589","638","560","595"],["1675","1202","2139","1824","1938","2262","2255","1602","1435","1524","2105","1157","1465","1281","1104","953","918","1320","1167","1067","2437","1044","1052","843","828","1122","636","552","1048","454","778","674","639","806","627","681","499","420","494","397","738","461","528","403","455","287","386","288","185"],["1623","1178","2122","1779","1901","2190","2178","1604","1416","1514","1947","1164","1435","1275","1118","975","938","1336","1152","1078","2410","1057","1053","848","841","1176","631","567","1042","479","791","674","638","804","631","677","501","423","503","398","734","459","528","397","448","287","393","285","168"],["1502","1085","1942","1633","1742","2006","2003","1467","1308","1392","1792","1060","1319","1183","1003","890","863","1217","1073","993","2207","965","977","800","785","1058","598","526","992","417","734","644","610","758","608","647","483","407","475","385","696","443","506","387","439","280","375","280","163"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>tissue<\/th>\n      <th>sample_size_total<\/th>\n      <th>n_rna_total<\/th>\n      <th>n_rna_withcs_L1<\/th>\n      <th>n_rna_withcs_L5<\/th>\n      <th>avg_qtl_L5<\/th>\n      <th>n_overlap_withcs<\/th>\n      <th>n_rna_rsq+_L1<\/th>\n      <th>n_rna_rsq+_L5<\/th>\n      <th>n_overlap_rsq+<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="alt_polya" class="section level3">
+<h3>alt_polyA</h3>
+<pre class="r"><code>qtl = &quot;alt_polyA&quot;
+
+L=1
+folder_pred_L1 &lt;- paste0(&quot;/project/xinhe/xsun/weights_training/cv/prediction_refitwcovar/&quot;,qtl,&quot;/L&quot;,L,&quot;/&quot;)
+folder_weights_L1&lt;- paste0(&quot;/project/xinhe/xsun/weights_training/cv/weights_train_refitwcovar/&quot;,qtl,&quot;/L&quot;,L,&quot;/&quot;)
+folder_sample_L1&lt;- paste0(&quot;/project/xinhe/xsun/weights_training/cv/samples/&quot;,qtl,&quot;/&quot;)
+
+L=5
+folder_pred_L5 &lt;- paste0(&quot;/project/xinhe/xsun/weights_training/cv/prediction_refitwcovar/&quot;,qtl,&quot;/L&quot;,L,&quot;/&quot;)
+folder_weights_L5&lt;- paste0(&quot;/project/xinhe/xsun/weights_training/cv/weights_train_refitwcovar/&quot;,qtl,&quot;/L&quot;,L,&quot;/&quot;)
+folder_sample_L5&lt;- paste0(&quot;/project/xinhe/xsun/weights_training/cv/samples/&quot;,qtl,&quot;/&quot;)</code></pre>
+<pre class="r"><code>sum &lt;- c()
+p &lt;- list()
+for (tissue in name_mapping$Munro_name) {
+  
+
+  
+  tissue_gtex &lt;- name_mapping$gtex_name[which(name_mapping$Munro_name == tissue)]
+  
+  ## sample size 
+  sample_test &lt;- nrow(read.table(paste0(folder_sample_L1,tissue,&quot;_sample_test.txt&quot;)))
+  sample_train &lt;- nrow(read.table(paste0(folder_sample_L1,tissue,&quot;_sample_training.txt&quot;)))
+  sample_total &lt;- sample_test + sample_train
+  
+  ## L=1
+  rsq_L1 &lt;- readRDS(paste0(folder_pred_L1, tissue, &quot;_rsq_all_fusion.RDS&quot;))
+  n_withcs_L1 &lt;- length(rsq_L1)
+  n_posrsq_L1 &lt;- sum(rsq_L1&gt;0,na.rm = T)
+  
+  ## L=5
+  rsq_L5 &lt;- readRDS(paste0(folder_pred_L5, tissue, &quot;_rsq_all_fusion.RDS&quot;))
+  n_withcs_L5 &lt;- length(rsq_L5)
+  n_posrsq_L5 &lt;- sum(rsq_L5&gt;0,na.rm = T)
+  
+  n_overlap_withcs &lt;- sum(names(rsq_L1) %in% names(rsq_L5))
+  n_overlap_posrsq &lt;- sum(names(rsq_L1[rsq_L1 &gt; 0]) %in% names(rsq_L5[rsq_L5 &gt; 0]))
+  
+  ## total rna &amp; average qtl
+  weights &lt;- readRDS(paste0(folder_weights_L5, tissue, &quot;_training_effectsizes.RDS&quot;))
+  n_rna &lt;- length(weights)
+  
+  weights_nonnull &lt;- Filter(Negate(is.null), weights)
+  avg_qtl &lt;- mean(unlist(lapply(weights_nonnull,length)),na.rm = T)
+  
+  tmp_tissue &lt;- c(tissue_gtex,sample_total, n_rna, n_withcs_L1, n_withcs_L5, round(avg_qtl,digits = 4), n_overlap_withcs, n_posrsq_L1, n_posrsq_L5, n_overlap_posrsq)
+  sum &lt;- rbind(sum, tmp_tissue)
+  
+  rsq_L1 &lt;- data.frame(id = names(rsq_L1), rsq_L1 = rsq_L1)
+  rsq_L5 &lt;- data.frame(id = names(rsq_L5), rsq_L5 = rsq_L5)
+  
+  rsq_merge &lt;- merge(rsq_L1, rsq_L5 , by = &quot;id&quot;)
+  
+   p[[tissue_gtex]] &lt;-  ggplot(rsq_merge, aes(x=rsq_L1, y=rsq_L5)) + 
+    geom_point() +
+    labs(x = &quot;rsq-L1&quot;, y=&quot;rsq-L5&quot;) +
+    geom_abline(slope = 1, intercept = 0, col=&quot;red&quot;) + 
+    ggtitle(tissue_gtex) + 
+    theme_minimal()
+  
+}
+
+sum &lt;- as.data.frame(sum)
+rownames(sum) &lt;- NULL
+colnames(sum) &lt;- c(&quot;tissue&quot;,&quot;sample_size_total&quot;, &quot;n_rna_total&quot;, &quot;n_rna_withcs_L1&quot;, &quot;n_rna_withcs_L5&quot;, &quot;avg_qtl_L5&quot;,&quot;n_overlap_withcs&quot;, &quot;n_rna_rsq+_L1&quot;, &quot;n_rna_rsq+_L5&quot;, &quot;n_overlap_rsq+&quot;)
+sum &lt;- sum[order(as.numeric(sum$sample_size_total),decreasing = T),]
+
+grid.arrange(grobs = p, ncol = 4)</code></pre>
+<p><img src="figure/data_weight_training.Rmd/unnamed-chunk-5-1.png" width="960" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>DT::datatable(sum,caption = htmltools::tags$caption( style = &#39;caption-side: left; text-align: left; color:black;  font-size:150% ;&#39;,&#39;Comparing L=1 &amp; L=5&#39;),options = list(pageLength = 10) )</code></pre>
+<div id="htmlwidget-20575149739a71fc930f" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-20575149739a71fc930f">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">Comparing L=1 &amp; L=5<\/caption>","data":[["12","21","4","7","5","2","3","6","10","9","8","13","11","16","15","25","22","14","17","27","1","20","26","23","28","18","31","35","19","41","29","30","32","24","33","34","36","40","38","43","37","39","42","44","46","47","45","48","49"],["Muscle_Skeletal","Whole_Blood","Skin_Sun_Exposed_Lower_leg","Artery_Tibial","Adipose_Subcutaneous","Thyroid","Nerve_Tibial","Skin_Not_Sun_Exposed_Suprapubic","Lung","Esophagus_Mucosa","Cells_Cultured_fibroblasts","Adipose_Visceral_Omentum","Esophagus_Muscularis","Breast_Mammary_Tissue","Artery_Aorta","Heart_Left_Ventricle","Heart_Atrial_Appendage","Colon_Transverse","Esophagus_Gastroesophageal_Junction","Stomach","Testis","Colon_Sigmoid","Pancreas","Pituitary","Adrenal_Gland","Spleen","Prostate","Artery_Coronary","Brain_Cerebellum","Liver","Brain_Cortex","Brain_Nucleus_accumbens_basal_ganglia","Brain_Caudate_basal_ganglia","Brain_Cerebellar_Hemisphere","Brain_Frontal_Cortex_BA9","Small_Intestine_Terminal_Ileum","Brain_Putamen_basal_ganglia","Brain_Hypothalamus","Ovary","Brain_Hippocampus","Cells_EBV-transformed_lymphocytes","Brain_Anterior_cingulate_cortex_BA24","Minor_Salivary_Gland","Vagina","Uterus","Brain_Amygdala","Brain_Spinal_cord_cervical_c-1","Brain_Substantia_nigra","Kidney_Cortex"],["702","670","602","584","581","574","532","517","510","493","483","469","461","394","387","382","372","368","330","324","322","318","305","237","233","227","218","213","209","208","205","202","194","175","175","174","170","170","167","165","147","147","144","141","129","129","126","114","73"],["34676","33041","34620","34816","34653","33943","33819","34425","35294","35047","37570","34840","33721","35265","34532","32823","34493","34313","33447","34450","37541","33459","34410","32401","34170","31526","32544","34361","31050","31015","30516","30151","29946","30685","30065","34705","28718","29795","34731","29444","37378","29388","36234","35358","34607","29071","31080","29587","32572"],["4822","3725","5906","5485","5768","6617","6354","5371","5172","4887","5590","4738","5107","4594","4356","3173","3836","4367","4050","3538","6357","3978","3253","3376","2982","3603","3052","2617","3208","2405","2703","2380","2398","2846","2395","2573","2051","1856","2299","1821","2545","1830","2110","1876","2023","1511","1643","1648","2416"],["5214","4050","6423","5954","6241","7169","6923","5815","5625","5385","6124","5169","5625","4995","4795","3501","4221","4843","4518","3920","7015","4385","3616","3553","3317","3960","3311","2891","3442","2927","2861","2558","2537","3057","2557","2779","2162","1928","2480","1900","2715","1911","2275","1958","2186","1559","1690","1744","2139"],["1.1904","1.1672","1.2307","1.2199","1.2381","1.255","1.2486","1.2077","1.1803","1.2052","1.2028","1.1762","1.2068","1.1686","1.1698","1.1417","1.1547","1.1689","1.174","1.1349","1.1792","1.1587","1.1253","1.1022","1.1046","1.1449","1.1148","1.0951","1.1177","1.1172","1.1105","1.1001","1.0926","1.0873","1.0774","1.0864","1.0786","1.0612","1.0863","1.0721","1.0796","1.067","1.0818","1.0531","1.0613","1.0436","1.0444","1.0602","1.0318"],["4778","3695","5870","5455","5719","6576","6299","5332","5147","4850","5557","4707","5079","4565","4328","3162","3818","4354","4021","3520","6337","3957","3234","3364","2971","3591","3032","2601","3198","2391","2699","2375","2391","2842","2388","2565","2048","1850","2295","1813","2543","1826","2108","1875","2021","1508","1640","1647","2058"],["3709","2602","4503","4188","4306","4914","4706","3660","3596","3515","3968","3248","3352","3360","3129","2136","2595","2945","2859","2446","4693","2704","2300","2489","1934","2279","2044","1709","2261","1174","1898","1498","1633","1870","1537","1644","1341","1245","1476","1116","1577","1177","1263","1093","1114","928","924","863","638"],["3533","2516","4270","4025","4003","4548","4379","3420","3441","3351","3805","3113","3156","3276","3038","2119","2505","2916","2795","2412","4575","2651","2304","2436","1942","2213","2015","1727","2237","1198","1863","1474","1595","1884","1537","1638","1332","1231","1480","1078","1564","1165","1251","1073","1141","912","919","858","615"],["3311","2346","3965","3732","3747","4241","4063","3226","3196","3098","3517","2906","2934","3065","2820","1958","2332","2671","2571","2230","4259","2481","2114","2341","1804","2057","1901","1605","2116","1055","1779","1400","1546","1787","1470","1561","1289","1194","1397","1044","1495","1125","1191","1045","1086","896","900","833","594"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>tissue<\/th>\n      <th>sample_size_total<\/th>\n      <th>n_rna_total<\/th>\n      <th>n_rna_withcs_L1<\/th>\n      <th>n_rna_withcs_L5<\/th>\n      <th>avg_qtl_L5<\/th>\n      <th>n_overlap_withcs<\/th>\n      <th>n_rna_rsq+_L1<\/th>\n      <th>n_rna_rsq+_L5<\/th>\n      <th>n_overlap_rsq+<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<div id="comparing-with-munros-prediction-model" class="section level2">
+<h2>Comparing with Munro’s prediction model</h2>
+<div id="rna-stability-l1" class="section level3">
+<h3>RNA stability – L=1</h3>
+<pre class="r"><code>qtl = &quot;stability&quot;
+L=1</code></pre>
+<pre class="r"><code>folder_pred &lt;- paste0(&quot;/project/xinhe/xsun/weights_training/cv/prediction_refitwcovar/&quot;,qtl,&quot;/L&quot;,L,&quot;/&quot;)
+folder_weights&lt;- paste0(&quot;/project/xinhe/xsun/weights_training/cv/weights_train_refitwcovar/&quot;,qtl,&quot;/L&quot;,L,&quot;/&quot;)
+folder_sample&lt;- paste0(&quot;/project/xinhe/xsun/weights_training/cv/samples/&quot;,qtl,&quot;/&quot;)
+
+sum &lt;- c()
+for (tissue in name_mapping$Munro_name) {
+  
+  tissue_gtex &lt;- name_mapping$gtex_name[which(name_mapping$Munro_name == tissue)]
+  
+  ### our weights
+  
+  weights &lt;- readRDS(paste0(folder_weights, tissue, &quot;_training_effectsizes.RDS&quot;))
+  n_rna &lt;- length(weights)
+  
+  mse &lt;- readRDS(paste0(folder_pred, tissue, &quot;_mse_rna.RDS&quot;))
+  rsq &lt;- readRDS(paste0(folder_pred, tissue, &quot;_rsq_all_fusion.RDS&quot;))
+  n_withcs &lt;- length(mse)
+  n_posrsq &lt;- sum(rsq&gt;0,na.rm = T)
+  
+  ### sample size 
+  sample_test &lt;- nrow(read.table(paste0(folder_sample,tissue,&quot;_sample_test.txt&quot;)))
+  sample_train &lt;- nrow(read.table(paste0(folder_sample,tissue,&quot;_sample_training.txt&quot;)))
+  sample_total &lt;- sample_test + sample_train
+  
+  ### Munro&#39;s weights
+  df_munro &lt;- read.table(paste0(&quot;/project/xinhe/xsun/weights_training/data/weights_munro/&quot;,qtl,&quot;/&quot;,tissue,&quot;.&quot;,qtl,&quot;.twas_weights.profile&quot;), header = T)
+  n_rna_withweights_munro &lt;- nrow(df_munro)
+  ### overlap
+  n_overlap_withcs &lt;- sum(names(rsq) %in% df_munro$id)
+  n_overlap_posrsq &lt;- sum(names(rsq[rsq &gt; 0]) %in% df_munro$id,na.rm=T)
+
+  tmp_tissue &lt;- c(tissue_gtex,sample_total,n_rna,n_rna_withweights_munro, n_withcs,n_overlap_withcs,n_posrsq,n_overlap_posrsq)
+  
+  sum &lt;- rbind(sum, tmp_tissue)
+}
+
+sum &lt;- as.data.frame(sum)
+rownames(sum) &lt;- NULL
+colnames(sum) &lt;- c(&quot;tissue&quot;,&quot;sample_size_total&quot;,&quot;n_rna_total&quot;,&quot;n_munro_weights&quot;,&quot;n_rna_withsusie_cs&quot;,&quot;overlap_cs_munro&quot;,&quot;n_rna_rsq+&quot;,&quot;overlap_rsq+_munro&quot;)
+
+sum &lt;- sum[order(as.numeric(sum$sample_size_total),decreasing = T),]
+
+DT::datatable(sum,caption = htmltools::tags$caption( style = &#39;caption-side: left; text-align: left; color:black;  font-size:150% ;&#39;,&#39;Summary for the prediction models&#39;),options = list(pageLength = 10) )</code></pre>
+<div id="htmlwidget-a23c348805048a1f64c7" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-a23c348805048a1f64c7">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">Summary for the prediction models<\/caption>","data":[["12","21","4","7","5","2","3","6","10","9","8","13","11","16","15","25","22","14","17","27","1","20","26","23","28","18","31","35","19","41","29","30","32","24","33","34","36","40","38","43","37","39","42","44","46","47","45","48","49"],["Muscle_Skeletal","Whole_Blood","Skin_Sun_Exposed_Lower_leg","Artery_Tibial","Adipose_Subcutaneous","Thyroid","Nerve_Tibial","Skin_Not_Sun_Exposed_Suprapubic","Lung","Esophagus_Mucosa","Cells_Cultured_fibroblasts","Adipose_Visceral_Omentum","Esophagus_Muscularis","Breast_Mammary_Tissue","Artery_Aorta","Heart_Left_Ventricle","Heart_Atrial_Appendage","Colon_Transverse","Esophagus_Gastroesophageal_Junction","Stomach","Testis","Colon_Sigmoid","Pancreas","Pituitary","Adrenal_Gland","Spleen","Prostate","Artery_Coronary","Brain_Cerebellum","Liver","Brain_Cortex","Brain_Nucleus_accumbens_basal_ganglia","Brain_Caudate_basal_ganglia","Brain_Cerebellar_Hemisphere","Brain_Frontal_Cortex_BA9","Small_Intestine_Terminal_Ileum","Brain_Putamen_basal_ganglia","Brain_Hypothalamus","Ovary","Brain_Hippocampus","Cells_EBV-transformed_lymphocytes","Brain_Anterior_cingulate_cortex_BA24","Minor_Salivary_Gland","Vagina","Uterus","Brain_Amygdala","Brain_Spinal_cord_cervical_c-1","Brain_Substantia_nigra","Kidney_Cortex"],["702","670","602","584","581","574","532","517","510","493","483","469","461","394","387","382","372","368","330","324","322","318","305","237","233","227","218","213","209","208","205","202","194","175","175","174","170","170","167","165","147","147","144","141","129","129","126","114","73"],["9742","10100","12617","10385","11035","12563","11354","12543","11630","11105","10169","11132","10831","11365","10689","10208","10845","11507","10897","12347","14300","11009","10567","11810","10942","12412","11555","10901","11186","9757","11401","11214","11209","11074","11220","12955","10895","11322","10935","10961","10058","11077","12712","12594","12210","10829","10877","10841","11277"],["3408","2720","4377","3615","3877","4547","4272","3610","3128","3312","4282","2781","3286","2764","2742","2135","2298","2811","2599","2414","4964","2458","2319","2246","1959","2566","1821","1512","2555","1224","2075","1814","1790","2223","1668","1771","1479","1388","1363","1232","1981","1383","1563","1195","1194","949","1057","848","492"],["2264","1815","2943","2487","2681","3184","3013","2399","2055","2243","3269","1828","2292","1903","1810","1398","1533","1900","1795","1611","3454","1661","1565","1406","1298","1719","1128","936","1556","806","1210","1058","1068","1368","1024","1105","838","712","854","712","1377","799","993","756","854","589","638","561","731"],["2005","1571","2623","2188","2362","2823","2680","2082","1767","1952","2890","1546","1993","1616","1547","1161","1275","1601","1527","1333","3092","1375","1306","1203","1075","1403","930","746","1374","583","1008","886","882","1150","822","879","684","592","666","557","1097","619","763","561","587","447","482","378","202"],["1675","1202","2139","1824","1938","2262","2255","1602","1435","1524","2105","1157","1465","1281","1104","953","918","1320","1167","1067","2437","1044","1052","843","828","1122","636","552","1048","454","778","674","639","806","627","681","499","420","494","397","738","461","528","403","455","287","386","288","185"],["1524","1073","1971","1659","1765","2090","2067","1457","1279","1376","1922","1030","1334","1150","1014","843","802","1172","1041","954","2230","925","922","747","728","984","569","482","949","369","694","604","571","730","542","574","437","371","423","352","646","396","440","349","357","234","334","229","102"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>tissue<\/th>\n      <th>sample_size_total<\/th>\n      <th>n_rna_total<\/th>\n      <th>n_munro_weights<\/th>\n      <th>n_rna_withsusie_cs<\/th>\n      <th>overlap_cs_munro<\/th>\n      <th>n_rna_rsq+<\/th>\n      <th>overlap_rsq+_munro<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<pre class="r"><code>folder_munroweights&lt;- paste0(&quot;/project/xinhe/xsun/weights_training/data/weights_munro/&quot;,qtl,&quot;/&quot;)
+
+p &lt;- list()
+for (tissue in name_mapping$Munro_name) {
+  
+  tissue_gtex &lt;- name_mapping$gtex_name[which(name_mapping$Munro_name == tissue)]
+  
+  ### our weights
+
+  rsq &lt;- readRDS(paste0(folder_pred, tissue, &quot;_rsq_all_fusion.RDS&quot;))
+  rsq &lt;- data.frame(id = names(rsq), rsq = rsq)
+  
+  ### Munro&#39;s weights
+  
+  summary_munro &lt;- read.table(paste0(folder_munroweights,tissue,&quot;.&quot;,qtl,&quot;.twas_weights.profile&quot;),header = T)
+  
+  merged_df &lt;- merge(rsq, summary_munro, by= &quot;id&quot;)
+  
+  p[[tissue_gtex]] &lt;-   ggplot(merged_df, aes(x=rsq, y=lasso.r2)) + 
+    geom_point() +
+    labs(x = &quot;rsq-topsnpfromsusie&quot;, y=&quot;rsq-lasso-munro&quot;) +
+    geom_abline(slope = 1, intercept = 0, col=&quot;red&quot;) + 
+    ggtitle(tissue_gtex) + 
+    theme_minimal()
+
+}
+
+grid.arrange(grobs = p, ncol = 4)</code></pre>
+<p><img src="figure/data_weight_training.Rmd/unnamed-chunk-8-1.png" width="960" style="display: block; margin: auto;" /></p>
+</div>
+<div id="rna-stability-l5" class="section level3">
+<h3>RNA stability – L=5</h3>
+<pre class="r"><code>qtl = &quot;stability&quot;
+L=5</code></pre>
+<pre class="r"><code>folder_pred &lt;- paste0(&quot;/project/xinhe/xsun/weights_training/cv/prediction_refitwcovar/&quot;,qtl,&quot;/L&quot;,L,&quot;/&quot;)
+folder_weights&lt;- paste0(&quot;/project/xinhe/xsun/weights_training/cv/weights_train_refitwcovar/&quot;,qtl,&quot;/L&quot;,L,&quot;/&quot;)
+folder_sample&lt;- paste0(&quot;/project/xinhe/xsun/weights_training/cv/samples/&quot;,qtl,&quot;/&quot;)
+
+sum &lt;- c()
+for (tissue in name_mapping$Munro_name) {
+  
+  tissue_gtex &lt;- name_mapping$gtex_name[which(name_mapping$Munro_name == tissue)]
+  
+  ### our weights
+  
+  weights &lt;- readRDS(paste0(folder_weights, tissue, &quot;_training_effectsizes.RDS&quot;))
+  n_rna &lt;- length(weights)
+  
+  mse &lt;- readRDS(paste0(folder_pred, tissue, &quot;_mse_rna.RDS&quot;))
+  rsq &lt;- readRDS(paste0(folder_pred, tissue, &quot;_rsq_all_fusion.RDS&quot;))
+  n_withcs &lt;- length(mse)
+  n_posrsq &lt;- sum(rsq&gt;0,na.rm = T)
+  
+  ### sample size 
+  sample_test &lt;- nrow(read.table(paste0(folder_sample,tissue,&quot;_sample_test.txt&quot;)))
+  sample_train &lt;- nrow(read.table(paste0(folder_sample,tissue,&quot;_sample_training.txt&quot;)))
+  sample_total &lt;- sample_test + sample_train
+  
+  ### Munro&#39;s weights
+  df_munro &lt;- read.table(paste0(&quot;/project/xinhe/xsun/weights_training/data/weights_munro/&quot;,qtl,&quot;/&quot;,tissue,&quot;.&quot;,qtl,&quot;.twas_weights.profile&quot;), header = T)
+  n_rna_withweights_munro &lt;- nrow(df_munro)
+  ### overlap
+  n_overlap_withcs &lt;- sum(names(rsq) %in% df_munro$id)
+  n_overlap_posrsq &lt;- sum(names(rsq[rsq &gt; 0]) %in% df_munro$id,na.rm=T)
+
+  tmp_tissue &lt;- c(tissue_gtex,sample_total,n_rna,n_rna_withweights_munro, n_withcs,n_overlap_withcs,n_posrsq,n_overlap_posrsq)
+  
+  sum &lt;- rbind(sum, tmp_tissue)
+}
+
+sum &lt;- as.data.frame(sum)
+rownames(sum) &lt;- NULL
+colnames(sum) &lt;- c(&quot;tissue&quot;,&quot;sample_size_total&quot;,&quot;n_rna_total&quot;,&quot;n_munro_weights&quot;,&quot;n_rna_withsusie_cs&quot;,&quot;overlap_cs_munro&quot;,&quot;n_rna_rsq+&quot;,&quot;overlap_rsq+_munro&quot;)
+
+sum &lt;- sum[order(as.numeric(sum$sample_size_total),decreasing = T),]
+
+DT::datatable(sum,caption = htmltools::tags$caption( style = &#39;caption-side: left; text-align: left; color:black;  font-size:150% ;&#39;,&#39;Summary for the prediction models&#39;),options = list(pageLength = 10) )</code></pre>
+<div id="htmlwidget-93928d62269dcef60a51" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-93928d62269dcef60a51">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">Summary for the prediction models<\/caption>","data":[["12","21","4","7","5","2","3","6","10","9","8","13","11","16","15","25","22","14","17","27","1","20","26","23","28","18","31","35","19","41","29","30","32","24","33","34","36","40","38","43","37","39","42","44","46","47","45","48","49"],["Muscle_Skeletal","Whole_Blood","Skin_Sun_Exposed_Lower_leg","Artery_Tibial","Adipose_Subcutaneous","Thyroid","Nerve_Tibial","Skin_Not_Sun_Exposed_Suprapubic","Lung","Esophagus_Mucosa","Cells_Cultured_fibroblasts","Adipose_Visceral_Omentum","Esophagus_Muscularis","Breast_Mammary_Tissue","Artery_Aorta","Heart_Left_Ventricle","Heart_Atrial_Appendage","Colon_Transverse","Esophagus_Gastroesophageal_Junction","Stomach","Testis","Colon_Sigmoid","Pancreas","Pituitary","Adrenal_Gland","Spleen","Prostate","Artery_Coronary","Brain_Cerebellum","Liver","Brain_Cortex","Brain_Nucleus_accumbens_basal_ganglia","Brain_Caudate_basal_ganglia","Brain_Cerebellar_Hemisphere","Brain_Frontal_Cortex_BA9","Small_Intestine_Terminal_Ileum","Brain_Putamen_basal_ganglia","Brain_Hypothalamus","Ovary","Brain_Hippocampus","Cells_EBV-transformed_lymphocytes","Brain_Anterior_cingulate_cortex_BA24","Minor_Salivary_Gland","Vagina","Uterus","Brain_Amygdala","Brain_Spinal_cord_cervical_c-1","Brain_Substantia_nigra","Kidney_Cortex"],["702","670","602","584","581","574","532","517","510","493","483","469","461","394","387","382","372","368","330","324","322","318","305","237","233","227","218","213","209","208","205","202","194","175","175","174","170","170","167","165","147","147","144","141","129","129","126","114","73"],["9729","10082","12599","10357","11012","12543","11324","12524","11615","11085","10137","11122","10815","11354","10679","10201","10837","11497","10892","12340","14276","11003","10558","11807","10935","12408","11552","10898","11186","9363","11400","11214","11203","11072","11220","12953","10895","11321","10935","10960","10054","11075","12710","12594","12209","10829","10877","10841","11277"],["3408","2720","4377","3615","3877","4547","4272","3610","3128","3312","4282","2781","3286","2764","2742","2135","2298","2811","2599","2414","4964","2458","2319","2246","1959","2566","1821","1512","2555","1224","2075","1814","1790","2223","1668","1771","1479","1388","1363","1232","1981","1383","1563","1195","1194","949","1057","848","492"],["2497","1971","3259","2748","2958","3533","3344","2667","2258","2490","3597","2038","2531","2090","2039","1579","1696","2124","1993","1807","3826","1840","1743","1517","1415","1955","1225","1044","1648","963","1321","1126","1134","1462","1084","1199","884","746","900","737","1494","833","1054","789","882","607","670","583","619"],["2205","1696","2888","2409","2597","3108","2955","2302","1931","2138","3173","1721","2186","1759","1722","1276","1395","1764","1662","1465","3387","1506","1432","1285","1148","1584","993","822","1452","656","1091","933","927","1223","864","943","718","619","697","576","1176","643","798","583","599","462","502","388","204"],["1623","1178","2122","1779","1901","2190","2178","1604","1416","1514","1947","1164","1435","1275","1118","975","938","1336","1152","1078","2410","1057","1053","848","841","1176","631","567","1042","479","791","674","638","804","631","677","501","423","503","398","734","459","528","397","448","287","393","285","168"],["1466","1044","1943","1600","1712","1998","1970","1444","1243","1351","1765","1034","1297","1127","1008","846","809","1167","1011","946","2185","920","911","746","733","1018","555","492","939","384","696","600","565","725","544","570","437","371","427","350","638","391","438","342","348","233","334","226","101"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>tissue<\/th>\n      <th>sample_size_total<\/th>\n      <th>n_rna_total<\/th>\n      <th>n_munro_weights<\/th>\n      <th>n_rna_withsusie_cs<\/th>\n      <th>overlap_cs_munro<\/th>\n      <th>n_rna_rsq+<\/th>\n      <th>overlap_rsq+_munro<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<pre class="r"><code>folder_munroweights&lt;- paste0(&quot;/project/xinhe/xsun/weights_training/data/weights_munro/&quot;,qtl,&quot;/&quot;)
+
+p &lt;- list()
+for (tissue in name_mapping$Munro_name) {
+  
+  tissue_gtex &lt;- name_mapping$gtex_name[which(name_mapping$Munro_name == tissue)]
+  
+  ### our weights
+
+  rsq &lt;- readRDS(paste0(folder_pred, tissue, &quot;_rsq_all_fusion.RDS&quot;))
+  rsq &lt;- data.frame(id = names(rsq), rsq = rsq)
+  
+  ### Munro&#39;s weights
+  
+  summary_munro &lt;- read.table(paste0(folder_munroweights,tissue,&quot;.&quot;,qtl,&quot;.twas_weights.profile&quot;),header = T)
+  
+  merged_df &lt;- merge(rsq, summary_munro, by= &quot;id&quot;)
+  
+  p[[tissue_gtex]] &lt;-   ggplot(merged_df, aes(x=rsq, y=lasso.r2)) + 
+    geom_point() +
+    labs(x = &quot;rsq-topsnpfromsusie&quot;, y=&quot;rsq-lasso-munro&quot;) +
+    geom_abline(slope = 1, intercept = 0, col=&quot;red&quot;) + 
+    ggtitle(tissue_gtex) + 
+    theme_minimal()
+
+}
+
+grid.arrange(grobs = p, ncol = 4)</code></pre>
+<pre><code>Warning: Removed 2 rows containing missing values or values outside the scale range
+(`geom_point()`).</code></pre>
+<pre><code>Warning: Removed 1 row containing missing values or values outside the scale range
+(`geom_point()`).</code></pre>
+<pre><code>Warning: Removed 4 rows containing missing values or values outside the scale range
+(`geom_point()`).</code></pre>
+<pre><code>Warning: Removed 1 row containing missing values or values outside the scale range
+(`geom_point()`).
+Removed 1 row containing missing values or values outside the scale range
+(`geom_point()`).</code></pre>
+<pre><code>Warning: Removed 2 rows containing missing values or values outside the scale range
+(`geom_point()`).</code></pre>
+<pre><code>Warning: Removed 1 row containing missing values or values outside the scale range
+(`geom_point()`).
+Removed 1 row containing missing values or values outside the scale range
+(`geom_point()`).
+Removed 1 row containing missing values or values outside the scale range
+(`geom_point()`).
+Removed 1 row containing missing values or values outside the scale range
+(`geom_point()`).</code></pre>
+<pre><code>Warning: Removed 3 rows containing missing values or values outside the scale range
+(`geom_point()`).</code></pre>
+<pre><code>Warning: Removed 2 rows containing missing values or values outside the scale range
+(`geom_point()`).
+Removed 2 rows containing missing values or values outside the scale range
+(`geom_point()`).</code></pre>
+<pre><code>Warning: Removed 1 row containing missing values or values outside the scale range
+(`geom_point()`).
+Removed 1 row containing missing values or values outside the scale range
+(`geom_point()`).
+Removed 1 row containing missing values or values outside the scale range
+(`geom_point()`).
+Removed 1 row containing missing values or values outside the scale range
+(`geom_point()`).
+Removed 1 row containing missing values or values outside the scale range
+(`geom_point()`).
+Removed 1 row containing missing values or values outside the scale range
+(`geom_point()`).
+Removed 1 row containing missing values or values outside the scale range
+(`geom_point()`).</code></pre>
+<pre><code>Warning: Removed 3 rows containing missing values or values outside the scale range
+(`geom_point()`).</code></pre>
+<p><img src="figure/data_weight_training.Rmd/unnamed-chunk-11-1.png" width="960" style="display: block; margin: auto;" /></p>
+</div>
+<div id="alt_polya-l1" class="section level3">
+<h3>alt_polyA – L=1</h3>
+<pre class="r"><code>qtl = &quot;alt_polyA&quot;
+L=1</code></pre>
+<pre class="r"><code>folder_pred &lt;- paste0(&quot;/project/xinhe/xsun/weights_training/cv/prediction_refitwcovar/&quot;,qtl,&quot;/L&quot;,L,&quot;/&quot;)
+folder_weights&lt;- paste0(&quot;/project/xinhe/xsun/weights_training/cv/weights_train_refitwcovar/&quot;,qtl,&quot;/L&quot;,L,&quot;/&quot;)
+folder_sample&lt;- paste0(&quot;/project/xinhe/xsun/weights_training/cv/samples/&quot;,qtl,&quot;/&quot;)
+
+sum &lt;- c()
+for (tissue in name_mapping$Munro_name) {
+
+  
+  tissue_gtex &lt;- name_mapping$gtex_name[which(name_mapping$Munro_name == tissue)]
+  
+  ### our weights
+  
+  weights &lt;- readRDS(paste0(folder_weights, tissue, &quot;_training_effectsizes.RDS&quot;))
+  n_rna &lt;- length(weights)
+  
+  mse &lt;- readRDS(paste0(folder_pred, tissue, &quot;_mse_rna.RDS&quot;))
+  rsq &lt;- readRDS(paste0(folder_pred, tissue, &quot;_rsq_all_fusion.RDS&quot;))
+  n_withcs &lt;- length(mse)
+  n_posrsq &lt;- sum(rsq&gt;0,na.rm = T)
+  
+  ### sample size 
+  sample_test &lt;- nrow(read.table(paste0(folder_sample,tissue,&quot;_sample_test.txt&quot;)))
+  sample_train &lt;- nrow(read.table(paste0(folder_sample,tissue,&quot;_sample_training.txt&quot;)))
+  sample_total &lt;- sample_test + sample_train
+  
+  ### Munro&#39;s weights
+  df_munro &lt;- read.table(paste0(&quot;/project/xinhe/xsun/weights_training/data/weights_munro/&quot;,qtl,&quot;/&quot;,tissue,&quot;.&quot;,qtl,&quot;.twas_weights.profile&quot;), header = T)
+  n_rna_withweights_munro &lt;- nrow(df_munro)
+  
+  ### overlap
+  n_overlap_withcs &lt;- sum(names(rsq) %in% df_munro$id)
+  n_overlap_posrsq &lt;- sum(names(rsq[rsq &gt; 0]) %in% df_munro$id,na.rm=T)
+
+  tmp_tissue &lt;- c(tissue_gtex,sample_total,n_rna,n_rna_withweights_munro, n_withcs,n_overlap_withcs,n_posrsq,n_overlap_posrsq)
+  
+  sum &lt;- rbind(sum, tmp_tissue)
+}
+
+sum &lt;- as.data.frame(sum)
+rownames(sum) &lt;- NULL
+colnames(sum) &lt;- c(&quot;tissue&quot;,&quot;sample_size_total&quot;,&quot;n_rna_total&quot;,&quot;n_munro_weights&quot;,&quot;n_rna_withsusie_cs&quot;,&quot;overlap_cs_munro&quot;,&quot;n_rna_rsq+&quot;,&quot;overlap_rsq+_munro&quot;)
+
+sum &lt;- sum[order(as.numeric(sum$sample_size_total),decreasing = T),]
+
+DT::datatable(sum,caption = htmltools::tags$caption( style = &#39;caption-side: left; text-align: left; color:black;  font-size:150% ;&#39;,&#39;Summary for the prediction models&#39;),options = list(pageLength = 10) )</code></pre>
+<div id="htmlwidget-16707cd634e93674753d" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-16707cd634e93674753d">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">Summary for the prediction models<\/caption>","data":[["12","21","4","7","5","2","3","6","10","9","8","13","11","16","15","25","22","14","17","27","1","20","26","23","28","18","31","35","19","41","29","30","32","24","33","34","36","40","38","43","37","39","42","44","46","47","45","48","49"],["Muscle_Skeletal","Whole_Blood","Skin_Sun_Exposed_Lower_leg","Artery_Tibial","Adipose_Subcutaneous","Thyroid","Nerve_Tibial","Skin_Not_Sun_Exposed_Suprapubic","Lung","Esophagus_Mucosa","Cells_Cultured_fibroblasts","Adipose_Visceral_Omentum","Esophagus_Muscularis","Breast_Mammary_Tissue","Artery_Aorta","Heart_Left_Ventricle","Heart_Atrial_Appendage","Colon_Transverse","Esophagus_Gastroesophageal_Junction","Stomach","Testis","Colon_Sigmoid","Pancreas","Pituitary","Adrenal_Gland","Spleen","Prostate","Artery_Coronary","Brain_Cerebellum","Liver","Brain_Cortex","Brain_Nucleus_accumbens_basal_ganglia","Brain_Caudate_basal_ganglia","Brain_Cerebellar_Hemisphere","Brain_Frontal_Cortex_BA9","Small_Intestine_Terminal_Ileum","Brain_Putamen_basal_ganglia","Brain_Hypothalamus","Ovary","Brain_Hippocampus","Cells_EBV-transformed_lymphocytes","Brain_Anterior_cingulate_cortex_BA24","Minor_Salivary_Gland","Vagina","Uterus","Brain_Amygdala","Brain_Spinal_cord_cervical_c-1","Brain_Substantia_nigra","Kidney_Cortex"],["702","670","602","584","581","574","532","517","510","493","483","469","461","394","387","382","372","368","330","324","322","318","305","237","233","227","218","213","209","208","205","202","194","175","175","174","170","170","167","165","147","147","144","141","129","129","126","114","73"],["34711","33082","34666","34857","34721","33997","33905","34467","35328","35086","37613","34879","33765","35290","34565","32845","34509","34344","33482","34478","37578","33479","34436","32409","34187","31539","32560","34367","31064","31035","30521","30152","29950","30693","30071","34712","28719","29795","34731","29449","37379","29391","36235","35359","34608","29071","31080","29587","32572"],["6449","5066","7791","7177","7637","8597","8273","6941","6908","6437","7301","6369","6615","5990","5771","4289","4979","5790","5315","4738","8425","5176","4436","4981","4073","4759","4141","3670","4605","2937","3918","3523","3555","4060","3321","3530","2924","2940","3441","2671","3264","2812","2949","2586","2676","2100","2334","1931","1269"],["4822","3725","5906","5485","5768","6617","6354","5371","5172","4887","5590","4738","5107","4594","4356","3173","3836","4367","4050","3538","6357","3978","3253","3376","2982","3603","3052","2617","3208","2405","2703","2380","2398","2846","2395","2573","2051","1856","2299","1821","2545","1830","2110","1876","2023","1511","1643","1648","2416"],["4095","3095","5096","4654","4943","5727","5488","4544","4319","4033","4725","3980","4282","3824","3579","2506","3062","3606","3316","2806","5406","3209","2568","2915","2338","2823","2442","2016","2667","1612","2244","1912","1938","2293","1870","1942","1636","1539","1782","1430","1839","1454","1564","1357","1400","1115","1240","1042","656"],["3709","2602","4503","4188","4306","4914","4706","3660","3596","3515","3968","3248","3352","3360","3129","2136","2595","2945","2859","2446","4693","2704","2300","2489","1934","2279","2044","1709","2261","1174","1898","1498","1633","1870","1537","1644","1341","1245","1476","1116","1577","1177","1263","1093","1114","928","924","863","638"],["3287","2272","4049","3690","3839","4416","4230","3241","3154","3083","3568","2894","2993","2939","2690","1835","2216","2608","2498","2102","4155","2375","1982","2224","1680","1940","1782","1457","2000","969","1672","1334","1425","1631","1318","1379","1162","1105","1257","965","1329","1038","1066","900","917","778","789","696","369"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>tissue<\/th>\n      <th>sample_size_total<\/th>\n      <th>n_rna_total<\/th>\n      <th>n_munro_weights<\/th>\n      <th>n_rna_withsusie_cs<\/th>\n      <th>overlap_cs_munro<\/th>\n      <th>n_rna_rsq+<\/th>\n      <th>overlap_rsq+_munro<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<pre class="r"><code>folder_munroweights&lt;- paste0(&quot;/project/xinhe/xsun/weights_training/data/weights_munro/&quot;,qtl,&quot;/&quot;)
+
+p &lt;- list()
+for (tissue in name_mapping$Munro_name) {
+  
+  tissue_gtex &lt;- name_mapping$gtex_name[which(name_mapping$Munro_name == tissue)]
+  
+  ### our weights
+
+  rsq &lt;- readRDS(paste0(folder_pred, tissue, &quot;_rsq_all_fusion.RDS&quot;))
+  rsq &lt;- data.frame(id = names(rsq), rsq = rsq)
+  
+  ### Munro&#39;s weights
+  
+  summary_munro &lt;- read.table(paste0(folder_munroweights,tissue,&quot;.&quot;,qtl,&quot;.twas_weights.profile&quot;),header = T)
+  
+  merged_df &lt;- merge(rsq, summary_munro, by= &quot;id&quot;)
+  
+  p[[tissue_gtex]] &lt;-   ggplot(merged_df, aes(x=rsq, y=lasso.r2)) + 
+    geom_point() +
+    labs(x = &quot;rsq-topsnpfromsusie&quot;, y=&quot;rsq-lasso-munro&quot;) +
+    geom_abline(slope = 1, intercept = 0, col=&quot;red&quot;) + 
+    ggtitle(tissue_gtex) + 
+    theme_minimal()
+
+}
+
+grid.arrange(grobs = p, ncol = 4)</code></pre>
+<p><img src="figure/data_weight_training.Rmd/unnamed-chunk-14-1.png" width="960" style="display: block; margin: auto;" /></p>
+</div>
+<div id="alt_polya-l5" class="section level3">
+<h3>alt_polyA – L=5</h3>
+<pre class="r"><code>qtl = &quot;alt_polyA&quot;
+L=5</code></pre>
+<pre class="r"><code>folder_pred &lt;- paste0(&quot;/project/xinhe/xsun/weights_training/cv/prediction_refitwcovar/&quot;,qtl,&quot;/L&quot;,L,&quot;/&quot;)
+folder_weights&lt;- paste0(&quot;/project/xinhe/xsun/weights_training/cv/weights_train_refitwcovar/&quot;,qtl,&quot;/L&quot;,L,&quot;/&quot;)
+folder_sample&lt;- paste0(&quot;/project/xinhe/xsun/weights_training/cv/samples/&quot;,qtl,&quot;/&quot;)
+
+sum &lt;- c()
+for (tissue in name_mapping$Munro_name) {
+  
+  tissue_gtex &lt;- name_mapping$gtex_name[which(name_mapping$Munro_name == tissue)]
+  
+  ### our weights
+  
+  weights &lt;- readRDS(paste0(folder_weights, tissue, &quot;_training_effectsizes.RDS&quot;))
+  n_rna &lt;- length(weights)
+  
+  mse &lt;- readRDS(paste0(folder_pred, tissue, &quot;_mse_rna.RDS&quot;))
+  rsq &lt;- readRDS(paste0(folder_pred, tissue, &quot;_rsq_all_fusion.RDS&quot;))
+  n_withcs &lt;- length(mse)
+  n_posrsq &lt;- sum(rsq&gt;0,na.rm = T)
+  
+  ### sample size 
+  sample_test &lt;- nrow(read.table(paste0(folder_sample,tissue,&quot;_sample_test.txt&quot;)))
+  sample_train &lt;- nrow(read.table(paste0(folder_sample,tissue,&quot;_sample_training.txt&quot;)))
+  sample_total &lt;- sample_test + sample_train
+  
+  ### Munro&#39;s weights
+  df_munro &lt;- read.table(paste0(&quot;/project/xinhe/xsun/weights_training/data/weights_munro/&quot;,qtl,&quot;/&quot;,tissue,&quot;.&quot;,qtl,&quot;.twas_weights.profile&quot;), header = T)
+  n_rna_withweights_munro &lt;- nrow(df_munro)
+  ### overlap
+  n_overlap_withcs &lt;- sum(names(rsq) %in% df_munro$id)
+  n_overlap_posrsq &lt;- sum(names(rsq[rsq &gt; 0]) %in% df_munro$id,na.rm=T)
+
+  tmp_tissue &lt;- c(tissue_gtex,sample_total,n_rna,n_rna_withweights_munro, n_withcs,n_overlap_withcs,n_posrsq,n_overlap_posrsq)
+  
+  sum &lt;- rbind(sum, tmp_tissue)
+}
+
+sum &lt;- as.data.frame(sum)
+rownames(sum) &lt;- NULL
+colnames(sum) &lt;- c(&quot;tissue&quot;,&quot;sample_size_total&quot;,&quot;n_rna_total&quot;,&quot;n_munro_weights&quot;,&quot;n_rna_withsusie_cs&quot;,&quot;overlap_cs_munro&quot;,&quot;n_rna_rsq+&quot;,&quot;overlap_rsq+_munro&quot;)
+
+sum &lt;- sum[order(as.numeric(sum$sample_size_total),decreasing = T),]
+
+DT::datatable(sum,caption = htmltools::tags$caption( style = &#39;caption-side: left; text-align: left; color:black;  font-size:150% ;&#39;,&#39;Summary for the prediction models&#39;),options = list(pageLength = 10) )</code></pre>
+<div id="htmlwidget-37e46cf92521dcbed3f8" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-37e46cf92521dcbed3f8">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">Summary for the prediction models<\/caption>","data":[["12","21","4","7","5","2","3","6","10","9","8","13","11","16","15","25","22","14","17","27","1","20","26","23","28","18","31","35","19","41","29","30","32","24","33","34","36","40","38","43","37","39","42","44","46","47","45","48","49"],["Muscle_Skeletal","Whole_Blood","Skin_Sun_Exposed_Lower_leg","Artery_Tibial","Adipose_Subcutaneous","Thyroid","Nerve_Tibial","Skin_Not_Sun_Exposed_Suprapubic","Lung","Esophagus_Mucosa","Cells_Cultured_fibroblasts","Adipose_Visceral_Omentum","Esophagus_Muscularis","Breast_Mammary_Tissue","Artery_Aorta","Heart_Left_Ventricle","Heart_Atrial_Appendage","Colon_Transverse","Esophagus_Gastroesophageal_Junction","Stomach","Testis","Colon_Sigmoid","Pancreas","Pituitary","Adrenal_Gland","Spleen","Prostate","Artery_Coronary","Brain_Cerebellum","Liver","Brain_Cortex","Brain_Nucleus_accumbens_basal_ganglia","Brain_Caudate_basal_ganglia","Brain_Cerebellar_Hemisphere","Brain_Frontal_Cortex_BA9","Small_Intestine_Terminal_Ileum","Brain_Putamen_basal_ganglia","Brain_Hypothalamus","Ovary","Brain_Hippocampus","Cells_EBV-transformed_lymphocytes","Brain_Anterior_cingulate_cortex_BA24","Minor_Salivary_Gland","Vagina","Uterus","Brain_Amygdala","Brain_Spinal_cord_cervical_c-1","Brain_Substantia_nigra","Kidney_Cortex"],["702","670","602","584","581","574","532","517","510","493","483","469","461","394","387","382","372","368","330","324","322","318","305","237","233","227","218","213","209","208","205","202","194","175","175","174","170","170","167","165","147","147","144","141","129","129","126","114","73"],["34676","33041","34620","34816","34653","33943","33819","34425","35294","35047","37570","34840","33721","35265","34532","32823","34493","34313","33447","34450","37541","33459","34410","32401","34170","31526","32544","34361","31050","31015","30516","30151","29946","30685","30065","34705","28718","29795","34731","29444","37378","29388","36234","35358","34607","29071","31080","29587","32572"],["6449","5066","7791","7177","7637","8597","8273","6941","6908","6437","7301","6369","6615","5990","5771","4289","4979","5790","5315","4738","8425","5176","4436","4981","4073","4759","4141","3670","4605","2937","3918","3523","3555","4060","3321","3530","2924","2940","3441","2671","3264","2812","2949","2586","2676","2100","2334","1931","1269"],["5214","4050","6423","5954","6241","7169","6923","5815","5625","5385","6124","5169","5625","4995","4795","3501","4221","4843","4518","3920","7015","4385","3616","3553","3317","3960","3311","2891","3442","2927","2861","2558","2537","3057","2557","2779","2162","1928","2480","1900","2715","1911","2275","1958","2186","1559","1690","1744","2139"],["4405","3335","5510","5036","5307","6185","5942","4887","4655","4366","5131","4290","4652","4095","3915","2712","3321","3944","3622","3062","5861","3494","2804","3053","2507","3046","2591","2181","2833","1836","2369","2031","2050","2425","1978","2052","1704","1592","1896","1485","1933","1516","1667","1400","1479","1145","1268","1091","665"],["3533","2516","4270","4025","4003","4548","4379","3420","3441","3351","3805","3113","3156","3276","3038","2119","2505","2916","2795","2412","4575","2651","2304","2436","1942","2213","2015","1727","2237","1198","1863","1474","1595","1884","1537","1638","1332","1231","1480","1078","1564","1165","1251","1073","1141","912","919","858","615"],["3099","2164","3820","3505","3528","4037","3912","2999","2973","2879","3388","2745","2783","2825","2589","1777","2115","2547","2402","2049","3993","2310","1957","2157","1644","1869","1735","1444","1967","959","1631","1296","1391","1620","1308","1362","1153","1090","1250","935","1291","1020","1043","875","932","763","783","691","367"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>tissue<\/th>\n      <th>sample_size_total<\/th>\n      <th>n_rna_total<\/th>\n      <th>n_munro_weights<\/th>\n      <th>n_rna_withsusie_cs<\/th>\n      <th>overlap_cs_munro<\/th>\n      <th>n_rna_rsq+<\/th>\n      <th>overlap_rsq+_munro<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<pre class="r"><code>folder_munroweights&lt;- paste0(&quot;/project/xinhe/xsun/weights_training/data/weights_munro/&quot;,qtl,&quot;/&quot;)
+
+p &lt;- list()
+for (tissue in name_mapping$Munro_name) {
+  
+  tissue_gtex &lt;- name_mapping$gtex_name[which(name_mapping$Munro_name == tissue)]
+  
+  ### our weights
+
+  rsq &lt;- readRDS(paste0(folder_pred, tissue, &quot;_rsq_all_fusion.RDS&quot;))
+  rsq &lt;- data.frame(id = names(rsq), rsq = rsq)
+  
+  ### Munro&#39;s weights
+  
+  summary_munro &lt;- read.table(paste0(folder_munroweights,tissue,&quot;.&quot;,qtl,&quot;.twas_weights.profile&quot;),header = T)
+  
+  merged_df &lt;- merge(rsq, summary_munro, by= &quot;id&quot;)
+  
+  p[[tissue_gtex]] &lt;-   ggplot(merged_df, aes(x=rsq, y=lasso.r2)) + 
+    geom_point() +
+    labs(x = &quot;rsq-topsnpfromsusie&quot;, y=&quot;rsq-lasso-munro&quot;) +
+    geom_abline(slope = 1, intercept = 0, col=&quot;red&quot;) + 
+    ggtitle(tissue_gtex) + 
+    theme_minimal()
+
+}
+
+grid.arrange(grobs = p, ncol = 4)</code></pre>
+<pre><code>Warning: Removed 10 rows containing missing values or values outside the scale range
+(`geom_point()`).</code></pre>
+<pre><code>Warning: Removed 2 rows containing missing values or values outside the scale range
+(`geom_point()`).
+Removed 2 rows containing missing values or values outside the scale range
+(`geom_point()`).</code></pre>
+<pre><code>Warning: Removed 4 rows containing missing values or values outside the scale range
+(`geom_point()`).</code></pre>
+<pre><code>Warning: Removed 3 rows containing missing values or values outside the scale range
+(`geom_point()`).</code></pre>
+<pre><code>Warning: Removed 2 rows containing missing values or values outside the scale range
+(`geom_point()`).</code></pre>
+<pre><code>Warning: Removed 1 row containing missing values or values outside the scale range
+(`geom_point()`).</code></pre>
+<pre><code>Warning: Removed 3 rows containing missing values or values outside the scale range
+(`geom_point()`).
+Removed 3 rows containing missing values or values outside the scale range
+(`geom_point()`).</code></pre>
+<pre><code>Warning: Removed 5 rows containing missing values or values outside the scale range
+(`geom_point()`).</code></pre>
+<pre><code>Warning: Removed 4 rows containing missing values or values outside the scale range
+(`geom_point()`).</code></pre>
+<pre><code>Warning: Removed 3 rows containing missing values or values outside the scale range
+(`geom_point()`).</code></pre>
+<pre><code>Warning: Removed 4 rows containing missing values or values outside the scale range
+(`geom_point()`).
+Removed 4 rows containing missing values or values outside the scale range
+(`geom_point()`).</code></pre>
+<pre><code>Warning: Removed 7 rows containing missing values or values outside the scale range
+(`geom_point()`).</code></pre>
+<pre><code>Warning: Removed 1 row containing missing values or values outside the scale range
+(`geom_point()`).</code></pre>
+<pre><code>Warning: Removed 2 rows containing missing values or values outside the scale range
+(`geom_point()`).
+Removed 2 rows containing missing values or values outside the scale range
+(`geom_point()`).
+Removed 2 rows containing missing values or values outside the scale range
+(`geom_point()`).</code></pre>
+<pre><code>Warning: Removed 3 rows containing missing values or values outside the scale range
+(`geom_point()`).</code></pre>
+<pre><code>Warning: Removed 1 row containing missing values or values outside the scale range
+(`geom_point()`).
+Removed 1 row containing missing values or values outside the scale range
+(`geom_point()`).
+Removed 1 row containing missing values or values outside the scale range
+(`geom_point()`).</code></pre>
+<pre><code>Warning: Removed 2 rows containing missing values or values outside the scale range
+(`geom_point()`).
+Removed 2 rows containing missing values or values outside the scale range
+(`geom_point()`).</code></pre>
+<pre><code>Warning: Removed 3 rows containing missing values or values outside the scale range
+(`geom_point()`).</code></pre>
+<p><img src="figure/data_weight_training.Rmd/unnamed-chunk-17-1.png" width="960" style="display: block; margin: auto;" /></p>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.2.0 (2022-04-22)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: CentOS Linux 7 (Core)
+
+Matrix products: default
+BLAS/LAPACK: /software/openblas-0.3.13-el7-x86_64/lib/libopenblas_haswellp-r0.3.13.so
+
+locale:
+[1] C
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] gridExtra_2.3 ggplot2_3.5.1 RSQLite_2.3.1
+
+loaded via a namespace (and not attached):
+ [1] tidyselect_1.2.0  xfun_0.41         bslib_0.3.1       colorspace_2.0-3 
+ [5] vctrs_0.6.5       generics_0.1.2    htmltools_0.5.2   yaml_2.3.5       
+ [9] utf8_1.2.2        blob_1.2.3        rlang_1.1.2       jquerylib_0.1.4  
+[13] later_1.3.0       pillar_1.9.0      glue_1.6.2        withr_2.5.0      
+[17] DBI_1.2.2         bit64_4.0.5       lifecycle_1.0.4   stringr_1.5.1    
+[21] munsell_0.5.0     gtable_0.3.0      workflowr_1.7.0   htmlwidgets_1.5.4
+[25] evaluate_0.15     memoise_2.0.1     labeling_0.4.2    knitr_1.39       
+[29] fastmap_1.1.0     httpuv_1.6.5      crosstalk_1.2.0   fansi_1.0.3      
+[33] highr_0.9         Rcpp_1.0.12       promises_1.2.0.1  scales_1.3.0     
+[37] DT_0.22           cachem_1.0.6      jsonlite_1.8.0    farver_2.1.0     
+[41] fs_1.5.2          bit_4.0.4         digest_0.6.29     stringi_1.7.6    
+[45] dplyr_1.1.4       rprojroot_2.0.3   grid_4.2.0        cli_3.6.1        
+[49] tools_4.2.0       magrittr_2.0.3    sass_0.4.1        tibble_3.2.1     
+[53] pkgconfig_2.0.3   rmarkdown_2.25    rstudioapi_0.13   R6_2.5.1         
+[57] git2r_0.30.1      compiler_4.2.0   </code></pre>
+</div>
+</div>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
