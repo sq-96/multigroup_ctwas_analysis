@@ -100,12 +100,10 @@ plot_enrichment <- function(results_dir, runtag, thins, group_prior_var_structur
   }
 }
 ```
-
-
-## Enrichment=1 (prior_gene = 0.0025, sigma_gene = 0.0155)
-gene prior = 2.5e-3, snp prior = 2.5e-3, sigma_gene = 0.0155, sigma_snp = 0.0155, 7395 genes and 500000 SNPs
+ 
+## Enrichment=1 (two causal tissues)
 ```{r,echo=FALSE,fig.width= 8, fig.height= 4}
-results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_two_tissues_expression/"
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_two_tissues_expression_enrichment/"
 runtag = "two_tissues"
 simutags <- paste(1, 1:10, sep = "-")
 thins <- c(1)
@@ -113,7 +111,6 @@ group_prior_var_structures <- c("shared_all","shared_type")
 null_methods <- c("ctwas","susie")
 ```
 
-### All regions
 ```{r,echo=FALSE,fig.width= 10, fig.height= 5}
 true_value_gene <- 0
 file_name <- ".Gtest.minp0.mingene0.parameters.RDS"
@@ -136,10 +133,9 @@ true_value_SNP <- 10.81125
 plot_prior_variance(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene1,true_value_gene2,true_value_SNP)
 ```
 
-## Enrichment=1 (prior_gene = 0.0025, sigma_gene = 0.0185)
-gene prior = 2.5e-3, snp prior = 2.5e-3, sigma_gene = 0.0185, sigma_snp = 0.0155, 7395 genes and 500000 SNPs
+## Enrichment=10 (two causal tissues)
 ```{r,echo=FALSE,fig.width= 8, fig.height= 4}
-results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_two_tissues_expression/"
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_two_tissues_expression_enrichment/"
 runtag = "two_tissues"
 simutags <- paste(2, 1:10, sep = "-")
 thins <- c(1)
@@ -147,34 +143,31 @@ group_prior_var_structures <- c("shared_all","shared_type")
 null_methods <- c("ctwas","susie")
 ```
 
-### All regions
 ```{r,echo=FALSE,fig.width= 10, fig.height= 5}
-true_value_gene1 <- 0
-true_value_gene2 <- 0
+true_value_gene <- log(10)
 file_name <- ".Gtest.minp0.mingene0.parameters.RDS"
 plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene)
 ```
 
 ### Prior Inclusion Probability
 ```{r,echo=FALSE,fig.width= 10, fig.height= 5}
-true_value_gene1 <- 0.0025
-true_value_gene2 <- 0.0025
+true_value_gene1 <- 0.025
+true_value_gene2 <- 0.025
 true_value_SNP <- 0.0025
 plot_prior_inclusion(results_dir,runtag,simutags,thins,group_prior_var_structures,null_methods,file_name,true_value_gene1,true_value_gene2,true_value_SNP)
 ```
 
 ### Prior Variance
 ```{r,echo=FALSE,fig.width= 10, fig.height= 5}
-true_value_gene1 <- 15.43103
-true_value_gene2 <- 15.43103
+true_value_gene1 <- 10.81125
+true_value_gene2 <- 10.81125
 true_value_SNP <- 10.81125
 plot_prior_variance(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene1,true_value_gene2,true_value_SNP)
 ```
 
-## Enrichment=1 (prior_gene = 0.0025, sigma_gene = 0.0200)
-gene prior = 2.5e-3, snp prior = 2.5e-3, sigma_gene = 0.0200, sigma_snp = 0.0155, 7395 genes and 500000 SNPs
+## Enrichment=20 (two causal tissues)
 ```{r,echo=FALSE,fig.width= 8, fig.height= 4}
-results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_two_tissues_expression/"
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_two_tissues_expression_enrichment/"
 runtag = "two_tissues"
 simutags <- paste(3, 1:10, sep = "-")
 thins <- c(1)
@@ -182,34 +175,31 @@ group_prior_var_structures <- c("shared_all","shared_type")
 null_methods <- c("ctwas","susie")
 ```
 
-### All regions
 ```{r,echo=FALSE,fig.width= 10, fig.height= 5}
-true_value_gene1 <- 0
-true_value_gene2 <- 0
+true_value_gene <- log(20)
 file_name <- ".Gtest.minp0.mingene0.parameters.RDS"
 plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene)
 ```
 
 ### Prior Inclusion Probability
 ```{r,echo=FALSE,fig.width= 10, fig.height= 5}
-true_value_gene1 <- 0.0025
-true_value_gene2 <- 0.0025
+true_value_gene1 <- 0.05
+true_value_gene2 <- 0.05
 true_value_SNP <- 0.0025
 plot_prior_inclusion(results_dir,runtag,simutags,thins,group_prior_var_structures,null_methods,file_name,true_value_gene1,true_value_gene2,true_value_SNP)
 ```
 
 ### Prior Variance
 ```{r,echo=FALSE,fig.width= 10, fig.height= 5}
-true_value_gene1 <- 18.0348
-true_value_gene2 <- 18.0348
+true_value_gene1 <- 10.81125
+true_value_gene2 <- 10.81125
 true_value_SNP <- 10.81125
 plot_prior_variance(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene1,true_value_gene2,true_value_SNP)
 ```
 
-## Enrichment=1 (prior_gene = 0.0025, sigma_gene = 0.0215)
-gene prior = 2.5e-3, snp prior = 2.5e-3, sigma_gene = 0.0215, sigma_snp = 0.0155, 7395 genes and 500000 SNPs
+## Enrichment=40 (two causal tissues)
 ```{r,echo=FALSE,fig.width= 8, fig.height= 4}
-results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_two_tissues_expression/"
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_two_tissues_expression_enrichment/"
 runtag = "two_tissues"
 simutags <- paste(4, 1:10, sep = "-")
 thins <- c(1)
@@ -217,44 +207,72 @@ group_prior_var_structures <- c("shared_all","shared_type")
 null_methods <- c("ctwas","susie")
 ```
 
-### All regions
 ```{r,echo=FALSE,fig.width= 10, fig.height= 5}
-true_value_gene1 <- 0
-true_value_gene2 <- 0
+true_value_gene <- log(40)
 file_name <- ".Gtest.minp0.mingene0.parameters.RDS"
 plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene)
 ```
 
 ### Prior Inclusion Probability
 ```{r,echo=FALSE,fig.width= 10, fig.height= 5}
-true_value_gene1 <- 0.0025
-true_value_gene2 <- 0.0025
+true_value_gene1 <- 0.1
+true_value_gene2 <- 0.1
 true_value_SNP <- 0.0025
 plot_prior_inclusion(results_dir,runtag,simutags,thins,group_prior_var_structures,null_methods,file_name,true_value_gene1,true_value_gene2,true_value_SNP)
 ```
 
 ### Prior Variance
 ```{r,echo=FALSE,fig.width= 10, fig.height= 5}
-true_value_gene1 <- 20.84147
-true_value_gene2 <- 20.84147
+true_value_gene1 <- 10.81125
+true_value_gene2 <- 10.81125
 true_value_SNP <- 10.81125
 plot_prior_variance(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene1,true_value_gene2,true_value_SNP)
 ```
 
-## Enrichment=1 (prior_gene = 0.0025, adipose=0, sigma_gene = 0.0155)
-gene prior = 2.5e-3, snp prior = 2.5e-3, sigma_gene = 0.0155, sigma_snp = 0.0155, 7395 genes and 500000 SNPs
+## Enrichment=80 (two causal tissues)
 ```{r,echo=FALSE,fig.width= 8, fig.height= 4}
-results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_two_tissues_expression/"
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_two_tissues_expression_enrichment/"
 runtag = "two_tissues"
 simutags <- paste(5, 1:10, sep = "-")
+thins <- c(1)
+group_prior_var_structures <- c("shared_all","shared_all")
+null_methods <- c("ctwas","susie")
+```
+
+```{r,echo=FALSE,fig.width= 10, fig.height= 5}
+true_value_gene <- log(80)
+file_name <- ".Gtest.minp0.mingene0.parameters.RDS"
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene)
+```
+
+### Prior Inclusion Probability
+```{r,echo=FALSE,fig.width= 10, fig.height= 5}
+true_value_gene1 <- 0.2
+true_value_gene2 <- 0.2
+true_value_SNP <- 0.0025
+plot_prior_inclusion(results_dir,runtag,simutags,thins,group_prior_var_structures,null_methods,file_name,true_value_gene1,true_value_gene2,true_value_SNP)
+```
+
+### Prior Variance
+```{r,echo=FALSE,fig.width= 10, fig.height= 5}
+true_value_gene1 <- 10.81125
+true_value_gene2 <- 0
+true_value_SNP <- 10.81125
+plot_prior_variance(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene1,true_value_gene2,true_value_SNP)
+```
+
+## Enrichment=1 (one causal tissue)
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_two_tissues_expression_enrichment/"
+runtag = "two_tissues"
+simutags <- paste(6, 1:10, sep = "-")
 thins <- c(1)
 group_prior_var_structures <- c("shared_all","shared_type")
 null_methods <- c("ctwas","susie")
 ```
 
-### All regions
 ```{r,echo=FALSE,fig.width= 10, fig.height= 5}
-true_value_gene <- 0
+true_value_gene <- log(1)
 file_name <- ".Gtest.minp0.mingene0.parameters.RDS"
 plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene)
 ```
@@ -275,45 +293,9 @@ true_value_SNP <- 10.81125
 plot_prior_variance(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene1,true_value_gene2,true_value_SNP)
 ```
 
-## Enrichment=1 (prior_gene = 0.0025, adipose=0, sigma_gene = 0.0185)
-gene prior = 2.5e-3, snp prior = 2.5e-3, sigma_gene = 0.0185, sigma_snp = 0.0155, 7395 genes and 500000 SNPs
+## Enrichment=10 (one causal tissue)
 ```{r,echo=FALSE,fig.width= 8, fig.height= 4}
-results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_two_tissues_expression/"
-runtag = "two_tissues"
-simutags <- paste(6, 1:10, sep = "-")
-thins <- c(1)
-group_prior_var_structures <- c("shared_all","shared_type")
-null_methods <- c("ctwas","susie")
-```
-
-### All regions
-```{r,echo=FALSE,fig.width= 10, fig.height= 5}
-true_value_gene1 <- 0
-true_value_gene2 <- 0
-file_name <- ".Gtest.minp0.mingene0.parameters.RDS"
-plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene)
-```
-
-### Prior Inclusion Probability
-```{r,echo=FALSE,fig.width= 10, fig.height= 5}
-true_value_gene1 <- 0.0025
-true_value_gene2 <- 0
-true_value_SNP <- 0.0025
-plot_prior_inclusion(results_dir,runtag,simutags,thins,group_prior_var_structures,null_methods,file_name,true_value_gene1,true_value_gene2,true_value_SNP)
-```
-
-### Prior Variance
-```{r,echo=FALSE,fig.width= 10, fig.height= 5}
-true_value_gene1 <- 15.43103
-true_value_gene2 <- 0
-true_value_SNP <- 10.81125
-plot_prior_variance(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene1,true_value_gene2,true_value_SNP)
-```
-
-## Enrichment=1 (prior_gene = 0.0025, adipose=0, sigma_gene = 0.0200)
-gene prior = 2.5e-3, snp prior = 2.5e-3, sigma_gene = 0.0200, sigma_snp = 0.0155, 7395 genes and 500000 SNPs
-```{r,echo=FALSE,fig.width= 8, fig.height= 4}
-results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_two_tissues_expression/"
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_two_tissues_expression_enrichment/"
 runtag = "two_tissues"
 simutags <- paste(7, 1:10, sep = "-")
 thins <- c(1)
@@ -321,17 +303,15 @@ group_prior_var_structures <- c("shared_all","shared_type")
 null_methods <- c("ctwas","susie")
 ```
 
-### All regions
 ```{r,echo=FALSE,fig.width= 10, fig.height= 5}
-true_value_gene1 <- 0
-true_value_gene2 <- 0
+true_value_gene <- log(10)
 file_name <- ".Gtest.minp0.mingene0.parameters.RDS"
 plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene)
 ```
 
 ### Prior Inclusion Probability
 ```{r,echo=FALSE,fig.width= 10, fig.height= 5}
-true_value_gene1 <- 0.0025
+true_value_gene1 <- 0.025
 true_value_gene2 <- 0
 true_value_SNP <- 0.0025
 plot_prior_inclusion(results_dir,runtag,simutags,thins,group_prior_var_structures,null_methods,file_name,true_value_gene1,true_value_gene2,true_value_SNP)
@@ -339,16 +319,15 @@ plot_prior_inclusion(results_dir,runtag,simutags,thins,group_prior_var_structure
 
 ### Prior Variance
 ```{r,echo=FALSE,fig.width= 10, fig.height= 5}
-true_value_gene1 <- 18.0348
+true_value_gene1 <- 10.81125
 true_value_gene2 <- 0
 true_value_SNP <- 10.81125
 plot_prior_variance(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene1,true_value_gene2,true_value_SNP)
 ```
 
-## Enrichment=1 (prior_gene = 0.0025, adipose=0,sigma_gene = 0.0215)
-gene prior = 2.5e-3, snp prior = 2.5e-3, sigma_gene = 0.0215, sigma_snp = 0.0155, 7395 genes and 500000 SNPs
+## Enrichment=20 (one causal tissue)
 ```{r,echo=FALSE,fig.width= 8, fig.height= 4}
-results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_two_tissues_expression/"
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_two_tissues_expression_enrichment/"
 runtag = "two_tissues"
 simutags <- paste(8, 1:10, sep = "-")
 thins <- c(1)
@@ -356,17 +335,15 @@ group_prior_var_structures <- c("shared_all","shared_type")
 null_methods <- c("ctwas","susie")
 ```
 
-### All regions
 ```{r,echo=FALSE,fig.width= 10, fig.height= 5}
-true_value_gene1 <- 0
-true_value_gene2 <- 0
+true_value_gene <- log(20)
 file_name <- ".Gtest.minp0.mingene0.parameters.RDS"
 plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene)
 ```
 
 ### Prior Inclusion Probability
 ```{r,echo=FALSE,fig.width= 10, fig.height= 5}
-true_value_gene1 <- 0.0025
+true_value_gene1 <- 0.05
 true_value_gene2 <- 0
 true_value_SNP <- 0.0025
 plot_prior_inclusion(results_dir,runtag,simutags,thins,group_prior_var_structures,null_methods,file_name,true_value_gene1,true_value_gene2,true_value_SNP)
@@ -374,7 +351,72 @@ plot_prior_inclusion(results_dir,runtag,simutags,thins,group_prior_var_structure
 
 ### Prior Variance
 ```{r,echo=FALSE,fig.width= 10, fig.height= 5}
-true_value_gene1 <- 20.84147
+true_value_gene1 <- 10.81125
+true_value_gene2 <- 0
+true_value_SNP <- 10.81125
+plot_prior_variance(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene1,true_value_gene2,true_value_SNP)
+```
+
+## Enrichment=40 (one causal tissue)
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_two_tissues_expression_enrichment/"
+runtag = "two_tissues"
+simutags <- paste(9, 1:10, sep = "-")
+thins <- c(1)
+group_prior_var_structures <- c("shared_all","shared_type")
+null_methods <- c("ctwas","susie")
+```
+
+```{r,echo=FALSE,fig.width= 10, fig.height= 5}
+true_value_gene <- log(40)
+file_name <- ".Gtest.minp0.mingene0.parameters.RDS"
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene)
+```
+
+### Prior Inclusion Probability
+```{r,echo=FALSE,fig.width= 10, fig.height= 5}
+true_value_gene1 <- 0.1
+true_value_gene2 <- 0
+true_value_SNP <- 0.0025
+plot_prior_inclusion(results_dir,runtag,simutags,thins,group_prior_var_structures,null_methods,file_name,true_value_gene1,true_value_gene2,true_value_SNP)
+```
+
+### Prior Variance
+```{r,echo=FALSE,fig.width= 10, fig.height= 5}
+true_value_gene1 <- 10.81125
+true_value_gene2 <- 0
+true_value_SNP <- 10.81125
+plot_prior_variance(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene1,true_value_gene2,true_value_SNP)
+```
+
+## Enrichment=80 (one causal tissue)
+gene prior = 2.5e-3, snp prior = 2.5e-3, sigma_gene = 0.0215, sigma_snp = 0.0155, 7395 genes and 500000 SNPs
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_two_tissues_expression_enrichment/"
+runtag = "two_tissues"
+simutags <- paste(10, 1:10, sep = "-")
+thins <- c(1)
+group_prior_var_structures <- c("shared_all","shared_type")
+null_methods <- c("ctwas","susie")
+```
+
+```{r,echo=FALSE,fig.width= 10, fig.height= 5}
+true_value_gene <- log(80)
+file_name <- ".Gtest.minp0.mingene0.parameters.RDS"
+plot_enrichment(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene)
+```
+
+### Prior Inclusion Probability
+```{r,echo=FALSE,fig.width= 10, fig.height= 5}
+true_value_gene1 <- 0.2
+true_value_gene2 <- 0
+true_value_SNP <- 0.0025
+plot_prior_inclusion(results_dir,runtag,simutags,thins,group_prior_var_structures,null_methods,file_name,true_value_gene1,true_value_gene2,true_value_SNP)
+```
+
+### Prior Variance
+```{r,echo=FALSE,fig.width= 10, fig.height= 5}
+true_value_gene1 <- 10.81125
 true_value_gene2 <- 0
 true_value_SNP <- 10.81125
 plot_prior_variance(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene1,true_value_gene2,true_value_SNP)
