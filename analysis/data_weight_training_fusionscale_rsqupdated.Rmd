@@ -1,0 +1,482 @@
+---
+title: "Training stability weights using FUSION pipeline"
+author: "XSun"
+date: "2025-04-01"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+    toc: true
+---
+
+# Introduction
+
+## Data source
+
+Normalized RNA phenotype were shared by Munro et al
+
+Covariates are downloaded from https://pantry.pejlab.org/
+
+Genotype are from gtex v8, we imputed the missing genotype using `beagle` 
+
+## Workflow
+
+### Scaling and covariates
+
+We first regressed out the covariates from both the phenotype and genotype matrices. Afterward, we scaled the matrices to ensure comparability across samples.
+
+### Cross validation
+
+We utilized the processed RNA phenotype and genotype data for cross-validation.
+
+For RNA phenotype in each tissue, we partitioned the available samples into training (80%) and testing (20%) datasets.  
+
+**The analysis was limited to the RNA phenotypes that are included in the Munro's weights**
+
+- Training Phase  
+
+For each RNA molecular, we performed the following steps:  
+
+1. **Variant Selection:** We defined a ±50 kb window around the transcription start site (TSS) of each gene, following Munro et al. Variants located within this window were selected for analysis.  
+3. **Fine-Mapping with SuSiE:** We applied SuSiE on with `L = 1` and `L = 5` to the processed RNA phenotype and genotype and identified the top variants from the credible sets.  
+4. **Effect Size Estimation:** 
+
+We employed two methods to estimate effect sizes:
+
+    **Linear Regression:**
+
+    For the selected variants, we re-fitted a multiple linear regression model:  
+   
+   ```
+   model <- lm(rna_select_train ~ geno_snpselect_train)
+   effect_sizes <- coef(model)
+   ```  
+  
+    **Elastic-Net Model:**
+
+    This method was applied only to RNA phenotypes with more than one QTL:
+
+  ```
+  enet = cv.glmnet(
+  x = geno_snpselect_train,  
+  y = rna_select_train,
+  alpha = 0.5,
+  nfolds = 10,
+  standardize = FALSE,
+  penalty.factor = (1 - snp_pip)
+  )
+  
+  effect_sizes <- coef(enet)
+  ```
+
+
+The estimated coefficients from this model were used as effect sizes for the selected SNPs.  
+
+- Testing Phase  
+
+Using the trained effect sizes, we predicted RNA phenotypes in the testing dataset and evaluated model performance.  
+
+- Evaluation
+
+We used r2 to evaluate the performance of the prediction model 
+
+r2
+
+$$ R^2 = 1 - \frac{\sum (y_{\text{test}} - y_{\text{pred}})^2}{\sum (y_{\text{test}} - \bar{y}_{\text{test}})^2} $$
+
+- \(y_{\text{test}}\): Observed values in the test set,
+- \(y_{\text{pred}}\): Predicted values,
+- \(\bar{y}_{\text{test}}\): Mean of the test set observed values.
+
+**We pooled all cross-validated predictions into a single vector to get a global $R^2$ for each RNA phenotype.**
+
+
+
+<!-- MSE -->
+
+<!-- $$ \text{MSE} = \frac{1}{n} \sum_{i=1}^n (y_i - \hat{y}_i)^2 $$ -->
+
+<!-- - \( y_i \): Observed value for the \(i\)-th sample, -->
+<!-- - \( \hat{y}_i \): Predicted value for the \(i\)-th sample, -->
+<!-- - \( n \): Total number of samples. -->
+
+
+```{r message=F, warning=F}
+library(RSQLite)
+library(ggplot2)
+library(gridExtra)
+library(dplyr)
+library(tidyr)
+
+name_mapping <- read.table("/project2/xinhe/shared_data/multigroup_ctwas/weights/files_Munro/Munro_name_mapping.txt")
+colnames(name_mapping) <- c("Munro_name","gtex_name")
+
+```
+
+## Comparing L=1 and L=5
+
+### RNA stability
+
+```{r}
+qtl = "stability"
+
+L=1
+folder_pred_L1 <- paste0("/project/xinhe/xsun/weights_training/cv/multiplesets_fusionscale/",qtl,"/L",L,"/rsq_summary_fusionscale/")
+folder_sample_L1<- paste0("/project/xinhe/xsun/weights_training/cv/samples/",qtl,"/")
+
+L=5
+folder_pred_L5 <- paste0("/project/xinhe/xsun/weights_training/cv/multiplesets_fusionscale/",qtl,"/L",L,"/rsq_summary_fusionscale/")
+folder_sample_L5<- paste0("/project/xinhe/xsun/weights_training/cv/samples/",qtl,"/")
+folder_round1 <- paste0("/project/xinhe/xsun/weights_training/cv/multiplesets_fusionscale/",qtl,"/L",L,"/round1/")
+```
+
+
+```{r fig.height=40, fig.width=12, warning=F, message=FALSE}
+
+sum <- c()
+p <- list()
+for (tissue in name_mapping$Munro_name) {
+  
+  if(!file.exists(paste0(folder_pred_L1,tissue,"_rsq_fusion_lm.RDS")) | !file.exists(paste0(folder_pred_L5,tissue,"_rsq_fusion_lm.RDS"))) next
+  
+  tissue_gtex <- name_mapping$gtex_name[which(name_mapping$Munro_name == tissue)]
+  
+  ## sample size 
+  sample_test <- readRDS(paste0(folder_round1,tissue,"_samples_testing.RDS"))
+  sample_test <- length(sample_test)
+  sample_train <- readRDS(paste0(folder_round1,tissue,"_samples_training.RDS"))
+  sample_train <- length(sample_train)
+  sample_total <- sample_test + sample_train 
+  
+  ## L=1
+  rsq_L1 <- readRDS(paste0(folder_pred_L1, tissue, "_rsq_fusion_lm.RDS"))
+  n_withcs_L1 <- nrow(rsq_L1)
+  n_posrsq_L1 <- sum(rsq_L1$rsq>0,na.rm = T)
+  
+  ## L=5
+  rsq_L5 <- readRDS(paste0(folder_pred_L5, tissue, "_rsq_fusion_lm.RDS"))
+  n_withcs_L5 <- nrow(rsq_L5)
+  n_posrsq_L5 <- sum(rsq_L5$rsq>0,na.rm = T)
+  
+  n_overlap_withcs <- sum(rsq_L1$gene %in% rsq_L5$gene)
+  n_overlap_posrsq <- sum(rsq_L1$gene[rsq_L1$rsq > 0] %in% rsq_L1$gene[rsq_L5$rsq > 0])
+  
+  ## total rna & average qtl
+  weights <- readRDS(paste0(folder_round1, tissue, "_training_effectsizes.RDS"))
+  n_rna <- length(weights)
+  
+  weights_nonnull <- Filter(Negate(is.null), weights)
+  avg_qtl <- mean(unlist(lapply(weights_nonnull,length)),na.rm = T)
+  
+  tmp_tissue <- c(tissue_gtex,sample_total, n_rna, n_withcs_L1, n_withcs_L5,round(avg_qtl,digits = 4), n_overlap_withcs, n_posrsq_L1, n_posrsq_L5, n_overlap_posrsq)
+  sum <- rbind(sum, tmp_tissue)
+  
+  rsq_L1_df <- data.frame(id = rsq_L1$gene, rsq_L1 = rsq_L1$rsq, count_L1 = rsq_L1$count)
+  rsq_L5_df <- data.frame(id = rsq_L5$gene, rsq_L5 = rsq_L5$rsq, count_L5 = rsq_L5$count)
+  
+  rsq_merge <- merge(rsq_L1_df, rsq_L5_df , by = "id")
+  
+  p[[tissue_gtex]] <-  ggplot(rsq_merge, aes(x=rsq_L1, y=rsq_L5, color=factor(count_L5))) + 
+    geom_point(size =1) +
+    labs(x = "rsq-L1", y="rsq-L5", color = "Count_L5") +
+    geom_abline(slope = 1, intercept = 0, col="red") + 
+    ggtitle(tissue_gtex) + 
+    scale_color_brewer(palette = "Set1") +
+    theme_minimal()
+  
+}
+
+sum <- as.data.frame(sum)
+rownames(sum) <- NULL
+colnames(sum) <- c("tissue","sample_size_total", "n_rna_total", "n_rna_withcs_L1", "n_rna_withcs_L5", "avg_qtl_L5", "n_overlap_withcs", "n_rna_rsq+_L1", "n_rna_rsq+_L5", "n_overlap_rsq+")
+sum <- sum[order(as.numeric(sum$sample_size_total),decreasing = T),]
+
+grid.arrange(grobs = p, ncol = 4)
+
+DT::datatable(sum,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Comparing L=1 & L=5'),options = list(pageLength = 10) )
+```
+
+
+
+
+## Comparing with Munro's prediction model
+
+### RNA stability -- L=1
+
+```{r}
+qtl = "stability"
+L=1
+```
+
+
+```{r}
+
+folder_pred <-  paste0("/project/xinhe/xsun/weights_training/cv/multiplesets_fusionscale/",qtl,"/L",L,"/rsq_summary_fusionscale/")
+folder_round1<- paste0("/project/xinhe/xsun/weights_training/cv/multiplesets_fusionscale/",qtl,"/L",L,"/round1/")
+
+sum <- c()
+for (tissue in name_mapping$Munro_name) {
+  
+   if(!file.exists(paste0(folder_pred,tissue,"_rsq_fusion_lm.RDS"))) next
+  
+  tissue_gtex <- name_mapping$gtex_name[which(name_mapping$Munro_name == tissue)]
+  
+  ### our weights
+  file_rna_pheno <- paste0("/project/xinhe/xsun/weights_training/data/rna_pheno_norm/",tissue,".",qtl,".norm.bed.gz")
+  n_rna <- as.integer(system(sprintf("zcat %s | wc -l", file_rna_pheno), intern = TRUE)) - 1
+  
+  weights <- readRDS(paste0(folder_round1, tissue, "_training_effectsizes.RDS"))
+  
+  rsq <- readRDS(paste0(folder_pred, tissue, "_rsq_fusion_lm.RDS"))
+  n_withcs <- nrow(rsq)
+  n_posrsq <- sum(rsq$rsq>0,na.rm = T)
+  
+  ### sample size 
+  sample_test <- readRDS(paste0(folder_round1,tissue,"_samples_testing.RDS"))
+  sample_test <- length(sample_test)
+  sample_train <- readRDS(paste0(folder_round1,tissue,"_samples_training.RDS"))
+  sample_train <- length(sample_train)
+  sample_total <- sample_test + sample_train 
+  
+  ### Munro's weights
+  df_munro <- read.table(paste0("/project/xinhe/xsun/weights_training/data/weights_munro/",qtl,"/",tissue,".",qtl,".twas_weights.profile"), header = T)
+  n_rna_withweights_munro <- nrow(df_munro)
+  ### overlap
+  n_overlap_withcs <- sum(rsq$gene %in% df_munro$id)
+  n_overlap_posrsq <- sum(rsq$gene[rsq$rsq>0] %in% df_munro$id,na.rm=T)
+
+  tmp_tissue <- c(tissue_gtex,sample_total,n_rna,n_rna_withweights_munro, n_withcs,n_overlap_withcs,n_posrsq,n_overlap_posrsq)
+  
+  sum <- rbind(sum, tmp_tissue)
+}
+
+sum <- as.data.frame(sum)
+rownames(sum) <- NULL
+colnames(sum) <- c("tissue","sample_size_total","n_rna_total","n_munro_weights","n_rna_withsusie_cs","overlap_cs_munro","n_rna_rsq+","overlap_rsq+_munro")
+
+sum <- sum[order(as.numeric(sum$sample_size_total),decreasing = T),]
+
+DT::datatable(sum,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Summary for the prediction models'),options = list(pageLength = 10) )
+```
+
+
+```{r fig.height=40, fig.width=12, warning=F, message=FALSE}
+
+folder_munroweights<- paste0("/project/xinhe/xsun/weights_training/data/weights_munro/",qtl,"/")
+
+p <- list()
+p2 <- list()
+for (tissue in name_mapping$Munro_name) {
+  
+  if(!file.exists(paste0(folder_pred,tissue,"_rsq_fusion_lm.RDS"))) next
+  
+  tissue_gtex <- name_mapping$gtex_name[which(name_mapping$Munro_name == tissue)]
+  
+  ### our weights
+
+  rsq <- readRDS(paste0(folder_pred, tissue, "_rsq_fusion_lm.RDS"))
+  rsq <- data.frame(id = rsq$gene, rsq = rsq$rsq, count=rsq$count)
+  
+  ### Munro's weights
+  
+  summary_munro <- read.table(paste0(folder_munroweights,tissue,".",qtl,".twas_weights.profile"),header = T)
+  
+  merged_df <- merge(rsq, summary_munro, by= "id")
+  merged_df <- merged_df %>% 
+    filter(!is.na(rsq) & !is.na(lasso.r2) & !is.na(count) & is.finite(rsq) & is.finite(lasso.r2))
+  
+  p[[tissue_gtex]] <- ggplot(merged_df, aes(x=rsq, y=lasso.r2, color=factor(count))) + 
+    geom_point(size =1) +
+    labs(x = "rsq-topsnpfromsusie", y="rsq-lasso-munro", color ="Count") +
+    geom_abline(slope = 1, intercept = 0, col="red") + 
+    ggtitle(tissue_gtex) + 
+    scale_color_brewer(palette = "Set1") + 
+    theme_minimal()
+  
+  df <- merged_df %>% pivot_longer(cols = c("rsq","lasso.r2"), names_to = "variable", values_to = "value") %>%
+    mutate(variable = recode(variable,
+                             rsq = "rsq_susie",
+                             lasso.r2 = "rsq_lasso_munro"))
+  
+  p2[[tissue_gtex]] <- ggplot(df, aes(x=variable, y=value)) + 
+    geom_boxplot() +
+    labs(x="", y ="rsq", title = tissue_gtex) +
+    theme_minimal()
+  
+}
+
+grid.arrange(grobs = p, ncol = 4)
+grid.arrange(grobs = p2, ncol = 4)
+```
+
+
+
+
+### RNA stability -- L=5
+
+```{r}
+qtl = "stability"
+L=5
+```
+
+
+```{r}
+
+folder_pred <-  paste0("/project/xinhe/xsun/weights_training/cv/multiplesets_fusionscale/",qtl,"/L",L,"/rsq_summary_fusionscale/")
+folder_round1<- paste0("/project/xinhe/xsun/weights_training/cv/multiplesets_fusionscale/",qtl,"/L",L,"/round1/")
+
+sum <- c()
+for (tissue in name_mapping$Munro_name) {
+  
+   if(!file.exists(paste0(folder_pred,tissue,"_rsq_fusion_lm.RDS"))) next
+  
+  tissue_gtex <- name_mapping$gtex_name[which(name_mapping$Munro_name == tissue)]
+  
+  ### our weights
+  file_rna_pheno <- paste0("/project/xinhe/xsun/weights_training/data/rna_pheno_norm/",tissue,".",qtl,".norm.bed.gz")
+  n_rna <- as.integer(system(sprintf("zcat %s | wc -l", file_rna_pheno), intern = TRUE)) - 1
+  
+  weights <- readRDS(paste0(folder_round1, tissue, "_training_effectsizes.RDS"))
+  
+  rsq <- readRDS(paste0(folder_pred, tissue, "_rsq_fusion_lm.RDS"))
+  n_withcs <- nrow(rsq)
+  n_posrsq <- sum(rsq$rsq>0,na.rm = T)
+  
+  ### sample size 
+  sample_test <- readRDS(paste0(folder_round1,tissue,"_samples_testing.RDS"))
+  sample_test <- length(sample_test)
+  sample_train <- readRDS(paste0(folder_round1,tissue,"_samples_training.RDS"))
+  sample_train <- length(sample_train)
+  sample_total <- sample_test + sample_train 
+  
+  ### Munro's weights
+  df_munro <- read.table(paste0("/project/xinhe/xsun/weights_training/data/weights_munro/",qtl,"/",tissue,".",qtl,".twas_weights.profile"), header = T)
+  n_rna_withweights_munro <- nrow(df_munro)
+  ### overlap
+  n_overlap_withcs <- sum(rsq$gene %in% df_munro$id)
+  n_overlap_posrsq <- sum(rsq$gene[rsq$rsq>0] %in% df_munro$id,na.rm=T)
+
+  tmp_tissue <- c(tissue_gtex,sample_total,n_rna,n_rna_withweights_munro, n_withcs,n_overlap_withcs,n_posrsq,n_overlap_posrsq)
+  
+  sum <- rbind(sum, tmp_tissue)
+}
+
+sum <- as.data.frame(sum)
+rownames(sum) <- NULL
+colnames(sum) <- c("tissue","sample_size_total","n_rna_total","n_munro_weights","n_rna_withsusie_cs","overlap_cs_munro","n_rna_rsq+","overlap_rsq+_munro")
+
+sum <- sum[order(as.numeric(sum$sample_size_total),decreasing = T),]
+
+DT::datatable(sum,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Summary for the prediction models'),options = list(pageLength = 10) )
+```
+
+
+```{r fig.height=40, fig.width=12, warning=F, message=FALSE}
+
+folder_munroweights<- paste0("/project/xinhe/xsun/weights_training/data/weights_munro/",qtl,"/")
+
+p <- list()
+p2 <- list()
+for (tissue in name_mapping$Munro_name) {
+  
+  if(!file.exists(paste0(folder_pred,tissue,"_rsq_fusion_lm.RDS"))) next
+  
+  tissue_gtex <- name_mapping$gtex_name[which(name_mapping$Munro_name == tissue)]
+  
+  ### our weights
+
+  rsq <- readRDS(paste0(folder_pred, tissue, "_rsq_fusion_lm.RDS"))
+  rsq <- data.frame(id = rsq$gene, rsq = rsq$rsq, count=rsq$count)
+  
+  ### Munro's weights
+  
+  summary_munro <- read.table(paste0(folder_munroweights,tissue,".",qtl,".twas_weights.profile"),header = T)
+  
+  merged_df <- merge(rsq, summary_munro, by= "id")
+  merged_df <- merged_df %>% 
+    filter(!is.na(rsq) & !is.na(lasso.r2) & !is.na(count) & is.finite(rsq) & is.finite(lasso.r2))
+  
+  p[[tissue_gtex]] <- ggplot(merged_df, aes(x=rsq, y=lasso.r2, color=factor(count))) + 
+    geom_point(size =1) +
+    labs(x = "rsq-topsnpfromsusie", y="rsq-lasso-munro", color ="Count") +
+    geom_abline(slope = 1, intercept = 0, col="red") + 
+    ggtitle(tissue_gtex) + 
+    scale_color_brewer(palette = "Set1") + 
+    theme_minimal()
+  
+  df <- merged_df %>% pivot_longer(cols = c("rsq","lasso.r2"), names_to = "variable", values_to = "value") %>%
+    mutate(variable = recode(variable,
+                             rsq = "rsq_susie",
+                             lasso.r2 = "rsq_lasso_munro"))
+  
+  p2[[tissue_gtex]] <- ggplot(df, aes(x=variable, y=value)) + 
+    geom_boxplot() +
+    labs(x="", y ="rsq", title = tissue_gtex) +
+    theme_minimal()
+
+}
+
+grid.arrange(grobs = p, ncol = 4)
+grid.arrange(grobs = p2, ncol = 4)
+```
+
+
+
+## Comparing ENET and linear regression for the genes with more than 1 QTL 
+
+
+### RNA stability
+
+
+```{r fig.height=40, fig.width=12, warning=F, message=FALSE}
+
+qtl <- "stability"
+L <- 5
+
+folder_pred <-  paste0("/project/xinhe/xsun/weights_training/cv/multiplesets_fusionscale/",qtl,"/L",L,"/rsq_summary_fusionscale/")
+
+p <- list()
+for (tissue in name_mapping$Munro_name) {
+  
+  if(!file.exists(paste0(folder_pred,tissue,"_rsq_fusion_lm.RDS"))) next
+  
+  tissue_gtex <- name_mapping$gtex_name[which(name_mapping$Munro_name == tissue)]
+  
+  ### linear
+  rsq_linear <- readRDS(paste0(folder_pred, tissue, "_rsq_fusion_lm.RDS"))
+  
+  ### enet
+  rsq_enet <- readRDS(paste0(folder_pred, tissue, "_rsq_fusion_enetrefit_lm.RDS"))
+  
+  rsq_merge <- merge(rsq_linear, rsq_enet, by = "gene")
+  colnames(rsq_merge) <- c("gene", "rsq_linear","count","rsq_enet")
+  rsq_merge <- rsq_merge[,-ncol(rsq_merge)]
+  
+  rsq_merge_diff <- rsq_merge[rsq_merge$rsq_linear != rsq_merge$rsq_enet,]
+  
+  
+  p[[tissue_gtex]] <- ggplot(rsq_merge_diff, aes(x=rsq_linear, y=rsq_enet, color=factor(count))) + 
+    geom_point(size=1) +
+    labs(x = "rsq-linear", y = "rsq-ENET", color = "Count") +
+    geom_abline(slope = 1, intercept = 0, col="red") + 
+    ggtitle(tissue_gtex) + 
+    scale_color_brewer(palette = "Set1") +  # Try "Set2" or "Dark2" for different looks
+    theme_minimal()
+
+}
+
+grid.arrange(grobs = p, ncol = 4)
+
+```
+
+
+
+
+
+---
+
+## Introduction
+
+```{r}
+
+```
+
