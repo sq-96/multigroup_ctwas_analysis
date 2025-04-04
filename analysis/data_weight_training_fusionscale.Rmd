@@ -105,6 +105,7 @@ library(RSQLite)
 library(ggplot2)
 library(gridExtra)
 library(dplyr)
+library(tidyr)
 
 name_mapping <- read.table("/project2/xinhe/shared_data/multigroup_ctwas/weights/files_Munro/Munro_name_mapping.txt")
 colnames(name_mapping) <- c("Munro_name","gtex_name")
@@ -263,6 +264,7 @@ DT::datatable(sum,caption = htmltools::tags$caption( style = 'caption-side: left
 folder_munroweights<- paste0("/project/xinhe/xsun/weights_training/data/weights_munro/",qtl,"/")
 
 p <- list()
+p2 <- list()
 for (tissue in name_mapping$Munro_name) {
   
   if(!file.exists(paste0(folder_pred,tissue,"_rsq_fusion.RDS"))) next
@@ -289,11 +291,21 @@ for (tissue in name_mapping$Munro_name) {
     ggtitle(tissue_gtex) + 
     scale_color_brewer(palette = "Set1") + 
     theme_minimal()
-
+  
+  df <- merged_df %>% pivot_longer(cols = c("rsq","lasso.r2"), names_to = "variable", values_to = "value") %>%
+    mutate(variable = recode(variable,
+                             rsq = "rsq_susie",
+                             lasso.r2 = "rsq_lasso_munro"))
+  
+  p2[[tissue_gtex]] <- ggplot(df, aes(x=variable, y=value)) + 
+    geom_boxplot() +
+    labs(x="", y ="rsq", title = tissue_gtex) +
+    theme_minimal()
+  
 }
 
 grid.arrange(grobs = p, ncol = 4)
-
+grid.arrange(grobs = p2, ncol = 4)
 ```
 
 
@@ -363,6 +375,7 @@ DT::datatable(sum,caption = htmltools::tags$caption( style = 'caption-side: left
 folder_munroweights<- paste0("/project/xinhe/xsun/weights_training/data/weights_munro/",qtl,"/")
 
 p <- list()
+p2 <- list()
 for (tissue in name_mapping$Munro_name) {
   
   if(!file.exists(paste0(folder_pred,tissue,"_rsq_fusion.RDS"))) next
@@ -389,11 +402,21 @@ for (tissue in name_mapping$Munro_name) {
     ggtitle(tissue_gtex) + 
     scale_color_brewer(palette = "Set1") + 
     theme_minimal()
+  
+  df <- merged_df %>% pivot_longer(cols = c("rsq","lasso.r2"), names_to = "variable", values_to = "value") %>%
+    mutate(variable = recode(variable,
+                             rsq = "rsq_susie",
+                             lasso.r2 = "rsq_lasso_munro"))
+  
+  p2[[tissue_gtex]] <- ggplot(df, aes(x=variable, y=value)) + 
+    geom_boxplot() +
+    labs(x="", y ="rsq", title = tissue_gtex) +
+    theme_minimal()
 
 }
 
 grid.arrange(grobs = p, ncol = 4)
-
+grid.arrange(grobs = p2, ncol = 4)
 ```
 
 
