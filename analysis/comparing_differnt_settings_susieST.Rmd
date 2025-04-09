@@ -30,10 +30,9 @@ mapping_predictdb <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weigh
 mapping_munro <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/Munro_mapping.RDS")
 mapping_two <- rbind(mapping_predictdb,mapping_munro)
 
-traits_silver <- c("T2D","LDL","BMI","RBC","IBD")
-names(traits_silver) <- c("T2D-panukb","LDL-ukb-d-30780_irnt","BMI-panukb","RBC-panukb","IBD-ebi-a-GCST004131")
+traits_silver <- c("T2D","LDL","BMI","RBC","IBD","SCZ","aFib")
+names(traits_silver) <- c("T2D-panukb","LDL-ukb-d-30780_irnt","BMI-panukb","RBC-panukb","IBD-ebi-a-GCST004131","SCZ-ieu-b-5102","aFib-ebi-a-GCST006414")
 
-trait <- "LDL-ukb-d-30780_irnt"
 
 folder_results_old <- "/project/xinhe/shengqian/ctwas_GWAS_analysis/snakemake_outputs/"
 folder_results_susieST <- "/project/xinhe/xsun/multi_group_ctwas/15.susie_weights/snakemake_outputs/"
@@ -67,6 +66,10 @@ create_summary_plot_withTP <- function(df, columns_to_plot, x_var = "setting", x
   # Identify the max value for scaling
   max_main <- max(df_long$value[df_long$variable != "TP_rate"], na.rm = TRUE)
   max_tp_rate <- max(df_long$value[df_long$variable == "TP_rate"], na.rm = TRUE)
+  
+  if(max_tp_rate ==0) {
+    max_tp_rate <- 1
+  }
   
   # Rescale TP_rate
   df_long <- df_long %>%
@@ -821,6 +824,298 @@ create_summary_plot(df,x_order = setting_names,
 <!--                     columns_to_plot = c("num_go_adj005"), title = "Number of enriched GO terms, adj_p < 0.05") -->
 <!-- ``` -->
 
+
+
+
+
+
+# aFib-ebi-a-GCST006414
+
+```{r warning=F, message=FALSE, fig.height=5, fig.width=15}
+trait <- "aFib-ebi-a-GCST006414"
+
+setting_names <- c()
+prop_h2g_nonsnp_all <- c()
+num_gene_pip08_all <- c()
+num_silver_pip08_all <- c()
+num_bystander_pip08_all <- c()
+imputable_known_all <- c()
+imputable_bystander_all <- c()
+
+sts_noother <- "with_susieST"
+
+for (st in sts_noother) {
+  for (thin in thins) {
+    for (var_struc in var_strucs) {
+      for (L in Ls) {
+        
+        if(st == "with_susieST"){
+          folder_results <- folder_results_susieST
+        }else{
+          folder_results <- folder_results_old
+        }
+        
+        setting_names <- c(setting_names, paste0(st,"_thin",thin,"_",var_struc,"_L",L))
+        
+        # non-snp %h2g
+        param <- readRDS(paste0(folder_results,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
+        
+        ctwas_parameters <- summarize_param(param, samplesize[trait])
+        prop_h2g <- ctwas_parameters$prop_heritability
+        prop_h2g_nonsnp <- 1 - ctwas_parameters$prop_heritability["SNP"]
+        prop_h2g_nonsnp_all <- c(prop_h2g_nonsnp_all,prop_h2g_nonsnp)
+        
+        # num_gene_pip08
+        combined_pip_by_group <- readRDS(paste0(folder_results,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L, ".combined_pip_bygroup_final.RDS"))
+        combined_pip_sig <- combined_pip_by_group[combined_pip_by_group$combined_pip > 0.8,]
+        
+        num_gene_pip08_all <- c(num_gene_pip08_all, nrow(combined_pip_sig))
+        
+        # silver_standard genes
+        known <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/data/silverstandard/known_annotations_",traits_silver[trait],".RDS"))
+        bystander <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/data/silverstandard/bystanders_",traits_silver[trait],".RDS"))
+
+        num_silver_pip08_all <- c(num_silver_pip08_all,sum(combined_pip_sig$gene_name %in% known))
+        num_bystander_pip08_all <- c(num_bystander_pip08_all,sum(combined_pip_sig$gene_name %in% bystander))
+        
+        # imputable genes
+        z_gene <-  readRDS(paste0(folder_results,"/",trait,"/",trait,".",st,".z_gene.RDS"))
+        z_gene <- z_gene %>%
+                  mutate(molecular_id = sub("\\|.*", "", id)) %>%  # Extract ENSG ID from id
+                  left_join(mapping_two %>% dplyr::select(molecular_id, gene_name), by = "molecular_id")
+        
+        imputable_known_all <- c(imputable_known_all,sum(unique(z_gene$gene_name) %in% known))
+        imputable_bystander_all <- c(imputable_bystander_all,sum(unique(z_gene$gene_name) %in% bystander))
+        
+      }
+    }
+  }
+}
+
+
+df <- data.frame(setting = setting_names,prop_h2g_nonsnp = prop_h2g_nonsnp_all ,num_gene_pip08 = num_gene_pip08_all,
+                 num_silver_total = rep(length(known),length(setting_names)), num_imputable_silver = imputable_known_all, num_silver_pip08 = num_silver_pip08_all,
+                 num_bystander_total = rep(length(bystander),length(setting_names)), num_imputable_bystander = imputable_bystander_all, num_bystander_pip08 = num_bystander_pip08_all,
+                 TP_rate = num_silver_pip08_all/(num_silver_pip08_all+num_bystander_pip08_all))
+
+## plot Non-SNP %h2g
+create_summary_plot(df,x_order = setting_names, 
+                    columns_to_plot = c("prop_h2g_nonsnp"), title = "%h2g -- NON-SNP")
+# 
+# ## silver standard gene
+# create_summary_plot(df,x_order = setting_names, 
+#                     columns_to_plot = c("num_gene_pip08","num_imputable_silver","num_silver_pip08"),
+#                     title = "Silver standard genes")
+# 
+# ## bystander genes
+# create_summary_plot(df,x_order = setting_names, 
+#                     columns_to_plot = c("num_gene_pip08","num_bystander_pip08"),
+#                     title = "Bystander genes")
+# 
+# ## tp
+# create_summary_plot(df,x_order = setting_names, 
+#                     columns_to_plot = c("num_silver_pip08"),
+#                     title = "True positive rate")
+
+create_summary_plot_withTP(df,x_order = setting_names, 
+                    columns_to_plot =  c("num_gene_pip08","num_silver_pip08","TP_rate","num_imputable_silver"))
+
+
+if(max(as.numeric(df$num_bystander_pip08)) != 0){
+  create_summary_plot_withTP(df,x_order = setting_names, 
+                    columns_to_plot =  c("num_bystander_pip08","TP_rate"))
+}
+
+
+
+DT::datatable(df,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;',trait),options = list(pageLength = 10) )
+```
+
+```{r warning=F, message=FALSE, fig.height=5, fig.width=15}
+
+db <- "GO_Biological_Process_2023"
+
+num_go_adj005 <- c()
+setting_names <- c()
+for (st in sts) {
+  for (thin in thins) {
+    for (var_struc in var_strucs) {
+      for (L in Ls) {
+
+        if(st == "with_susieST"){
+          folder_results <- folder_results_susieST
+        }else{
+          folder_results <- folder_results_old
+        }
+        
+        setting_names <- c(setting_names, paste0(st,"_thin",thin,"_",var_struc,"_L",L))
+        
+        file_enrich <- paste0(folder_results,trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L, ".enrichr_",db,".RDS")
+        if(file.exists(file_enrich)) {
+          
+          enrich_results <- readRDS(file_enrich)
+          num_go_adj005 <- c(num_go_adj005,nrow(enrich_results))
+        }else{
+          num_go_adj005 <- c(num_go_adj005,0)
+        }
+        
+        
+        
+      }
+    }
+  }
+}
+
+
+df <- data.frame(setting = setting_names, num_go_adj005 = num_go_adj005)
+create_summary_plot(df,x_order = setting_names, 
+                    columns_to_plot = c("num_go_adj005"), title = "Number of enriched GO terms, adj_p < 0.05")
+```
+
+
+# SCZ-ieu-b-5102
+
+```{r warning=F, message=FALSE, fig.height=5, fig.width=15}
+trait <- "SCZ-ieu-b-5102"
+
+setting_names <- c()
+prop_h2g_nonsnp_all <- c()
+num_gene_pip08_all <- c()
+num_silver_pip08_all <- c()
+num_bystander_pip08_all <- c()
+imputable_known_all <- c()
+imputable_bystander_all <- c()
+
+
+sts_noother <- "with_susieST"
+
+for (st in sts_noother) {
+  for (thin in thins) {
+    for (var_struc in var_strucs) {
+      for (L in Ls) {
+        
+        if(st == "with_susieST"){
+          folder_results <- folder_results_susieST
+        }else{
+          folder_results <- folder_results_old
+        }
+        
+        setting_names <- c(setting_names, paste0(st,"_thin",thin,"_",var_struc,"_L",L))
+        
+        # non-snp %h2g
+        param <- readRDS(paste0(folder_results,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
+        
+        ctwas_parameters <- summarize_param(param, samplesize[trait])
+        prop_h2g <- ctwas_parameters$prop_heritability
+        prop_h2g_nonsnp <- 1 - ctwas_parameters$prop_heritability["SNP"]
+        prop_h2g_nonsnp_all <- c(prop_h2g_nonsnp_all,prop_h2g_nonsnp)
+        
+        # num_gene_pip08
+        combined_pip_by_group <- readRDS(paste0(folder_results,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L, ".combined_pip_bygroup_final.RDS"))
+        combined_pip_sig <- combined_pip_by_group[combined_pip_by_group$combined_pip > 0.8,]
+        
+        num_gene_pip08_all <- c(num_gene_pip08_all, nrow(combined_pip_sig))
+        
+        # silver_standard genes
+        known <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/data/silverstandard/known_annotations_",traits_silver[trait],".RDS"))
+        bystander <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/data/silverstandard/bystanders_",traits_silver[trait],".RDS"))
+
+        num_silver_pip08_all <- c(num_silver_pip08_all,sum(combined_pip_sig$gene_name %in% known))
+        num_bystander_pip08_all <- c(num_bystander_pip08_all,sum(combined_pip_sig$gene_name %in% bystander))
+        
+        # imputable genes
+        z_gene <-  readRDS(paste0(folder_results,"/",trait,"/",trait,".",st,".z_gene.RDS"))
+        z_gene <- z_gene %>%
+                  mutate(molecular_id = sub("\\|.*", "", id)) %>%  # Extract ENSG ID from id
+                  left_join(mapping_two %>% dplyr::select(molecular_id, gene_name), by = "molecular_id")
+        
+        imputable_known_all <- c(imputable_known_all,sum(unique(z_gene$gene_name) %in% known))
+        imputable_bystander_all <- c(imputable_bystander_all,sum(unique(z_gene$gene_name) %in% bystander))
+        
+      }
+    }
+  }
+}
+
+
+df <- data.frame(setting = setting_names,prop_h2g_nonsnp = prop_h2g_nonsnp_all ,num_gene_pip08 = num_gene_pip08_all,
+                 num_silver_total = rep(length(known),length(setting_names)), num_imputable_silver = imputable_known_all, num_silver_pip08 = num_silver_pip08_all,
+                 num_bystander_total = rep(length(bystander),length(setting_names)), num_imputable_bystander = imputable_bystander_all, num_bystander_pip08 = num_bystander_pip08_all,
+                 TP_rate = num_silver_pip08_all/(num_silver_pip08_all+num_bystander_pip08_all))
+
+## plot Non-SNP %h2g
+create_summary_plot(df,x_order = setting_names, 
+                    columns_to_plot = c("prop_h2g_nonsnp"), title = "%h2g -- NON-SNP")
+# 
+# ## silver standard gene
+# create_summary_plot(df,x_order = setting_names, 
+#                     columns_to_plot = c("num_gene_pip08","num_imputable_silver","num_silver_pip08"),
+#                     title = "Silver standard genes")
+# 
+# ## bystander genes
+# create_summary_plot(df,x_order = setting_names, 
+#                     columns_to_plot = c("num_gene_pip08","num_bystander_pip08"),
+#                     title = "Bystander genes")
+# 
+# ## tp
+# create_summary_plot(df,x_order = setting_names, 
+#                     columns_to_plot = c("num_silver_pip08"),
+#                     title = "True positive rate")
+
+create_summary_plot_withTP(df,x_order = setting_names, 
+                    columns_to_plot =  c("num_gene_pip08","num_silver_pip08","TP_rate","num_imputable_silver"))
+
+
+if(max(as.numeric(df$num_bystander_pip08)) != 0){
+  create_summary_plot_withTP(df,x_order = setting_names, 
+                    columns_to_plot =  c("num_bystander_pip08","TP_rate"))
+}
+
+
+
+DT::datatable(df,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;',trait),options = list(pageLength = 10) )
+```
+
+```{r warning=F, message=FALSE, fig.height=5, fig.width=15}
+
+db <- "GO_Biological_Process_2023"
+
+num_go_adj005 <- c()
+setting_names <- c()
+for (st in sts) {
+  for (thin in thins) {
+    for (var_struc in var_strucs) {
+      for (L in Ls) {
+
+        if(st == "with_susieST"){
+          folder_results <- folder_results_susieST
+        }else{
+          folder_results <- folder_results_old
+        }
+        
+        setting_names <- c(setting_names, paste0(st,"_thin",thin,"_",var_struc,"_L",L))
+        
+        file_enrich <- paste0(folder_results,trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L, ".enrichr_",db,".RDS")
+        if(file.exists(file_enrich)) {
+          
+          enrich_results <- readRDS(file_enrich)
+          num_go_adj005 <- c(num_go_adj005,nrow(enrich_results))
+        }else{
+          num_go_adj005 <- c(num_go_adj005,0)
+        }
+        
+        
+        
+      }
+    }
+  }
+}
+
+
+df <- data.frame(setting = setting_names, num_go_adj005 = num_go_adj005)
+create_summary_plot(df,x_order = setting_names, 
+                    columns_to_plot = c("num_go_adj005"), title = "Number of enriched GO terms, adj_p < 0.05")
+```
 
 
 
