@@ -99,6 +99,63 @@ plot_enrichment <- function(results_dir, runtag, thins, group_prior_var_structur
     print(plots[[1]])  # Just print a single plot if there's only one
   }
 }
+
+plot_power <- function(results_dir,runtag,simutags){
+  pipfs_all_ctwas <- paste0(results_dir, runtag, "_simu",simutags,".thin1.shared_all.ctwas.Gtest.minp0.mingene0.estimated_parameter.finemap_regions_res.RDS")
+  phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
+
+  cau <- lapply(phenofs, function(x) {load(x);get_causal_id(phenores)})
+  df_all_ctwas <- NULL
+  for (i in 1:length(pipfs_all_ctwas)) {
+    res <- readRDS(pipfs_all_ctwas[i])
+    res <- res$finemap_res
+    res <- data.frame(res[res$type!="SNP", ])
+    res$runtag <- i
+    res$ifcausal <- ifelse(res$id %in% cau[[i]], 1, 0)
+    df_all_ctwas <- rbind(df_all_ctwas, res)
+  }
+
+  breaks_ranges = rbind(c(0.5, 1), c(0.8,1))
+  power_df <- data.frame()
+  for(i in 1:nrow(breaks_ranges)){
+    breaks = breaks_ranges[i,]
+    n_all_ctwas = length(which(df_all_ctwas$susie_pip >= breaks[1] & df_all_ctwas$susie_pip < breaks[2]))
+    n_all_ctwas_causal = length(which(df_all_ctwas$susie_pip >= breaks[1] & df_all_ctwas$susie_pip < breaks[2] & df_all_ctwas$ifcausal > 0))
+    tmp_df <- data.frame(
+      "pip_bin" = paste0("PIP: ", breaks[1], "-", breaks[2]),
+      "method" = rep(c("ctwas shared all"), 2),
+      "group" = rep(c("total", "causal"), each = 1),
+      "n_var" = c(n_all_ctwas,n_all_ctwas_causal))
+    power_df <- rbind(power_df, tmp_df)
+  }
+  power_df$method <- factor(power_df$method, levels = c("ctwas shared all"))
+  ggplot(power_df) +
+  geom_bar(aes(x = method, y = n_var, fill = group),
+           position = "identity", stat = "identity", alpha=0.5, width=0.5) +
+  facet_grid(~ pip_bin) +
+  labs(x = "", y = "number of variables") +
+  theme_cowplot()
+}
+
+plot_PIP_shared_all_ctwas <- function(results_dir, runtag,  simutags, ...){
+  phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
+  susieIfs <- paste0(results_dir, runtag, "_simu",simutags, ".thin1.shared_all.ctwas.Gtest.minp0.mingene0.estimated_parameter.finemap_regions_res.RDS")
+  f1 <- caliPIP_plot(phenofs, susieIfs, ...) 
+  return(f1)
+}
+```
+ 
+ 
+```{r}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_two_tissues_expression_enrichment/"
+runtag = "two_tissues"
+simutags <- paste(5, 1:10, sep = "-")
+plot_power(results_dir, runtag, simutags)
+```
+ 
+```{r}
+f1 <- plot_PIP_shared_all_ctwas(results_dir, runtag, simutags, main = "ctwas shared all")
+f1
 ```
  
 ## Enrichment=1 (two causal tissues)
