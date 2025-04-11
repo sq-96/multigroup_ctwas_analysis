@@ -136,7 +136,7 @@ get_results <- function(gwas_id,gwas_name){
   p1 <- ggplot(df, aes(x = value, fill = group)) +
   geom_histogram(
     aes(y = after_stat(count) / tapply(after_stat(count), after_stat(group), sum)[after_stat(group)]), 
-    position = "identity", alpha = 0.5, bins = max(coloc_data)
+    position = "identity", alpha = 0.5, bins = max(twas_data)
   ) +
   scale_fill_manual(values = c("blue", "red", "grey")) +
   labs(title = gwas_id, x = "Value", y = "Proportion (within group)", fill = "Dataset") +
@@ -161,7 +161,7 @@ get_results <- function(gwas_id,gwas_name){
   p2 <- ggplot(df, aes(x = value, fill = group)) +
   geom_histogram(
     aes(y = after_stat(count) / tapply(after_stat(count), after_stat(group), sum)[after_stat(group)]), 
-    position = "identity", alpha = 0.5, bins = max(coloc_data)
+    position = "identity", alpha = 0.5, bins = max(twas_data)
   ) +
   scale_fill_manual(values = c("blue", "red", "grey")) +
   labs(title = gwas_id, x = "Value", y = "Proportion (within group)", fill = "Dataset") +
@@ -285,7 +285,7 @@ get_results_mts <- function(gwas_id,gwas_name){
   p1 <- ggplot(df, aes(x = value, fill = group)) +
   geom_histogram(
     aes(y = after_stat(count) / tapply(after_stat(count), after_stat(group), sum)[after_stat(group)]), 
-    position = "identity", alpha = 0.5, bins = max(coloc_data)
+    position = "identity", alpha = 0.5, bins = max(twas_data)
   ) +
   scale_fill_manual(values = c("blue", "red", "grey")) +
   labs(title = gwas_id, x = "Value", y = "Proportion (within group)", fill = "Dataset") +
@@ -309,7 +309,7 @@ get_results_mts <- function(gwas_id,gwas_name){
   p2 <- ggplot(df, aes(x = value, fill = group)) +
   geom_histogram(
     aes(y = after_stat(count) / tapply(after_stat(count), after_stat(group), sum)[after_stat(group)]), 
-    position = "identity", alpha = 0.5, bins = max(coloc_data)
+    position = "identity", alpha = 0.5, bins = max(twas_data)
   ) +
   scale_fill_manual(values = c("blue", "red", "grey")) +
   labs(title = gwas_id, x = "Value", y = "Proportion (within group)", fill = "Dataset") +
