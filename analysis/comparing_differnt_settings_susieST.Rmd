@@ -15,7 +15,7 @@ Settings are:
 - THINS = ["0.1","0.5","1"]
 - GROUP_PRIOR_VAR_STRUCTURES = ["shared_all", "shared_type"]
 - NUMBER_OF_SIGNALS = ["1","5"]
-- WITH_ST = ["with_ST", "without_ST"]
+- WITH_ST = ["with_ST", "without_ST","with_susieST"]
 
 ```{r warning=F, message=FALSE}
 library(ctwas)
@@ -722,7 +722,7 @@ for (st in sts_noother) {
         prop_h2g_nonsnp_all <- c(prop_h2g_nonsnp_all,prop_h2g_nonsnp)
         
         # num_gene_pip08
-        combined_pip_by_group <- readRDS(paste0(folder_results,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L, ".combined_pip_bygroup_final.RDS"))
+        combined_pip_by_group <- readRDS(paste0(folder_results,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L, ".combined_pip_bytype_final.RDS"))
         combined_pip_sig <- combined_pip_by_group[combined_pip_by_group$combined_pip > 0.8,]
         
         num_gene_pip08_all <- c(num_gene_pip08_all, nrow(combined_pip_sig))
@@ -867,7 +867,7 @@ for (st in sts_noother) {
         prop_h2g_nonsnp_all <- c(prop_h2g_nonsnp_all,prop_h2g_nonsnp)
         
         # num_gene_pip08
-        combined_pip_by_group <- readRDS(paste0(folder_results,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L, ".combined_pip_bygroup_final.RDS"))
+        combined_pip_by_group <- readRDS(paste0(folder_results,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L, ".combined_pip_bytype_final.RDS"))
         combined_pip_sig <- combined_pip_by_group[combined_pip_by_group$combined_pip > 0.8,]
         
         num_gene_pip08_all <- c(num_gene_pip08_all, nrow(combined_pip_sig))
