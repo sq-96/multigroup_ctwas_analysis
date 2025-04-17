@@ -1,0 +1,82 @@
+---
+title: "APA -- Li et al"
+author: "XSun"
+date: "2025-04-16"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+    toc: true
+---
+
+## Introduction
+
+```{r message=FALSE, warning=TRUE}
+library(ctwas)
+
+source("/project/xinhe/xsun/multi_group_ctwas/functions/0.functions.R")
+source("/project/xinhe/xsun/multi_group_ctwas/data/samplesize.R")
+
+folder_results_single <- "/project/xinhe/xsun/multi_group_ctwas/16.apa_li_weights/ctwas_output/apa/"
+
+top_tissues <- c("Liver","Whole_Blood","Cells_Cultured_fibroblasts","Adipose_Subcutaneous","Brain_Cerebellum","Heart_Atrial_Appendage","Pituitary")
+traits <- c("LDL-ukb-d-30780_irnt","IBD-ebi-a-GCST004131","BMI-panukb","RBC-panukb","SCZ-ieu-b-5102","aFib-ebi-a-GCST006414","T2D-panukb")
+names(top_tissues) <- traits
+
+thin <- 1
+vgs <- "shared_all"
+L <-5
+
+```
+
+
+
+# LDL-ukb-d-30780_irnt
+
+```{r warning=F, message=FALSE, fig.height=5, fig.width=5}
+trait <- "LDL-ukb-d-30780_irnt"
+
+top_tissue <- top_tissues[trait]
+gwas_n <- samplesize[trait]
+
+# Load single-eQTL parameters
+file_param_single <- paste0(folder_results_single, trait, "/", trait, "_", top_tissue, ".thin", thin, ".", vgs, ".param.RDS")
+param_single <- readRDS(file_param_single)
+ctwas_parameters_single <- summarize_param(param_single, gwas_n)
+
+plot_piechart_single(ctwas_parameters_single, colors, by="type", trait)
+```
+
+
+
+# IBD-ebi-a-GCST004131
+
+```{r warning=F, message=FALSE, fig.height=5, fig.width=5}
+trait <- "IBD-ebi-a-GCST004131"
+
+top_tissue <- top_tissues[trait]
+gwas_n <- samplesize[trait]
+
+# Load single-eQTL parameters
+file_param_single <- paste0(folder_results_single, trait, "/", trait, "_", top_tissue, ".thin", thin, ".", vgs, ".param.RDS")
+param_single <- readRDS(file_param_single)
+ctwas_parameters_single <- summarize_param(param_single, gwas_n)
+
+plot_piechart_single(ctwas_parameters_single, colors, by="type", trait)
+```
+
+
+# T2D-panukb
+
+```{r warning=F, message=FALSE, fig.height=5, fig.width=5}
+trait <- "T2D-panukb"
+
+top_tissue <- top_tissues[trait]
+gwas_n <- samplesize[trait]
+
+# Load single-eQTL parameters
+file_param_single <- paste0(folder_results_single, trait, "/", trait, "_", top_tissue, ".thin", thin, ".", vgs, ".param.RDS")
+param_single <- readRDS(file_param_single)
+ctwas_parameters_single <- summarize_param(param_single, gwas_n)
+
+plot_piechart_single(ctwas_parameters_single, colors, by="type", trait)
+```
