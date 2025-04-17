@@ -20,7 +20,7 @@ library(ggplot2)
 library(tidyverse)
 
 source("/project/xinhe/xsun/multi_group_ctwas/data/samplesize.R")
-
+source("/project/xinhe/xsun/multi_group_ctwas/functions/0.functions.R")
 
 folder_results_susieST <- "/project/xinhe/xsun/multi_group_ctwas/16.apa_li_weights/snakemake_outputs/"
 folder_results_apaonly <- "/project/xinhe/xsun/multi_group_ctwas/16.apa_li_weights/snakemake_outputs_apaonly/"
@@ -30,9 +30,9 @@ folder_results_single <- "/project/xinhe/xsun/multi_group_ctwas/16.apa_li_weight
 # mapping_munro <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/Munro_mapping.RDS")
 # mapping_two <- rbind(mapping_predictdb,mapping_munro)
 
-colors <- c(  "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728",  "#9467bd", "#8c564b", "#e377c2", "#7f7f7f",  "#bcbd22",  "#17becf",  "#f7b6d2",  "#c5b0d5",  "#9edae5", "#ffbb78",  "#98df8a",  "#ff9896" )
+colors <- c("#ff7f0e", "#2ca02c", "#d62728",  "#9467bd", "#8c564b", "#e377c2", "#7f7f7f",  "#bcbd22",  "#17becf",  "#f7b6d2",  "#c5b0d5",  "#9edae5", "#ffbb78",  "#98df8a",  "#ff9896" )
 
-top_tissues <- c("Liver","Whole_Blood","Cells_Cultured_fibroblasts","Adipose_Subcutaneous","Brain_Cerebellum","Heart_Atrial_Appendage","Pituitary")
+top_tissues <- c("Liver","Whole_Blood","Brain_Cerebellar_Hemisphere","Adipose_Subcutaneous","Brain_Cerebellum","Heart_Atrial_Appendage","Pituitary")
 traits <- c("LDL-ukb-d-30780_irnt","IBD-ebi-a-GCST004131","BMI-panukb","RBC-panukb","SCZ-ieu-b-5102","aFib-ebi-a-GCST006414","T2D-panukb")
 names(top_tissues) <- traits
 
@@ -83,9 +83,60 @@ plot_piechart <- function(ctwas_parameters, colors, by, title) {
   return(pie)
 }
 
+plot_multi <- function(p1,p2,p3,title=NULL) {
+  
+  fix_panel_size <- function(plot, width = 2.1, height = 2) {
+    set_panel_size(plot, width = unit(width, "in"), height = unit(height, "in"))
+  }
+  
+  # Apply fixed panel size
+  pie1 <- fix_panel_size(p1)
+  pie2 <- fix_panel_size(p2)
+  pie3 <- fix_panel_size(p3)
+  
+  # Compute natural widths
+  widths <- unit.c(grobWidth(pie1), grobWidth(pie2), grobWidth(pie3))
+  
+  # Arrange
+  p <- grid.arrange(pie1, pie2, pie3,
+                    ncol = 3,
+                    widths = widths,
+                    top = title)
+  
+  return(p)
+  
+  
+}
 
 ```
 
+# apaQTL summary
+
+```{r warning=F,message=F}
+
+cis_files <- list.files(path = "/project2/xinhe/shared_data/multigroup_ctwas/weights/apa_li/",pattern = "cis.3aQTL.txt")
+
+sum <- c()
+for (file in cis_files){
+  
+  tissue <- gsub(pattern = ".cis.3aQTL.txt",replacement = "",x = file)
+  
+  cisdf <- data.table::fread(paste0("/project2/xinhe/shared_data/multigroup_ctwas/weights/apa_li/",file))
+  
+  cisdf$fdr <- p.adjust(as.numeric(cisdf$p.value), method = "fdr")
+  cisdf_fdr005 <- cisdf[cisdf$fdr < 0.05,]
+  count_df <- cisdf_fdr005[, .N, by = transcript]
+  avg <- sum(count_df$N)/nrow(count_df)
+  
+  tmp <- c(tissue,avg,nrow(count_df))
+  sum <- rbind(sum,tmp)
+}
+
+rownames(sum) <- NULL
+colnames(sum) <- c("Tissue","avg_qtl_fdr005","num_gene")
+
+DT::datatable(sum,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Average number of apaQTL per gene'),options = list(pageLength = 10) )
+```
 
 
 # LDL-ukb-d-30780_irnt
@@ -106,34 +157,34 @@ var_struc <- "shared_all"
 ```
 
 
-```{r warning=F,message=F,fig.width=5, fig.height=5}
+```{r warning=F,message=F,fig.width=15, fig.height=5}
 
 param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
 
 
 ctwas_parameters_susieST <- summarize_param(param_susieST, gwas_n)
 total_nonSNPpve_susieST <- 1- ctwas_parameters_susieST$prop_heritability["SNP"]
-pve_pie_by_type_susieST <- plot_piechart(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_susieST, digits = 4)))
-
-pve_pie_by_type_susieST
+pve_pie_by_type_susieST <- plot_piechart_topn(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = "top-apa, multi-group")
 
 
 param_apaonly <- readRDS(paste0(folder_results_apaonly,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
 
-ctwas_parameters_apaonly <- summarize_param(param_apaonly, gwas_n)
+ctwas_parameters_apaonly <- summarize_param(param_apaonly,gwas_n)
 total_nonSNPpve_apaonly <- 1- ctwas_parameters_apaonly$prop_heritability["SNP"]
-pve_pie_by_type_apaonly <- plot_piechart(ctwas_parameters = ctwas_parameters_apaonly, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_apaonly, digits = 4)))
-
-pve_pie_by_type_apaonly
+pve_pie_by_type_apaonly <- plot_piechart_topn(ctwas_parameters = ctwas_parameters_apaonly, colors = colors, by = "type", title = "top-apa, multi tissue apa")
 
 
 top_tissue <- top_tissues[trait]
 file_param_single <- paste0(folder_results_single, trait, "/", trait, "_", top_tissue, ".thin", thin, ".", var_struc, ".param.RDS")
+
 param_single <- readRDS(file_param_single)
 ctwas_parameters_single <- summarize_param(param_single, gwas_n)
+total_nonSNPpve_single <- 1- ctwas_parameters_single$prop_heritability["SNP"]
+
+pve_pie_by_type_single <- plot_piechart_topn(ctwas_parameters = ctwas_parameters_single, colors = colors, by = "context", title = "top-apa, single tissue apa")
 
 
-pve_pie_by_type_single <- plot_piechart(ctwas_parameters = ctwas_parameters_single, colors = colors, by = "context", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_apaonly, digits = 4)))
+plot_multi(pve_pie_by_type_single,pve_pie_by_type_apaonly,pve_pie_by_type_susieST, title=trait)
 
 ```
 
@@ -156,25 +207,34 @@ var_struc <- "shared_all"
 ```
 
 
-```{r warning=F,message=F,fig.width=5, fig.height=5}
+```{r warning=F,message=F,fig.width=15, fig.height=5}
 
 param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
 
 
 ctwas_parameters_susieST <- summarize_param(param_susieST, gwas_n)
 total_nonSNPpve_susieST <- 1- ctwas_parameters_susieST$prop_heritability["SNP"]
-pve_pie_by_type_susieST <- plot_piechart(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_susieST, digits = 4)))
-
-pve_pie_by_type_susieST
+pve_pie_by_type_susieST <- plot_piechart_topn(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = "top-apa, multi-group")
 
 
 param_apaonly <- readRDS(paste0(folder_results_apaonly,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
 
-ctwas_parameters_apaonly <- summarize_param(param_apaonly, gwas_n)
+ctwas_parameters_apaonly <- summarize_param(param_apaonly,gwas_n)
 total_nonSNPpve_apaonly <- 1- ctwas_parameters_apaonly$prop_heritability["SNP"]
-pve_pie_by_type_apaonly <- plot_piechart(ctwas_parameters = ctwas_parameters_apaonly, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_apaonly, digits = 4)))
+pve_pie_by_type_apaonly <- plot_piechart_topn(ctwas_parameters = ctwas_parameters_apaonly, colors = colors, by = "type", title = "top-apa, multi tissue apa")
 
-pve_pie_by_type_apaonly
+
+top_tissue <- top_tissues[trait]
+file_param_single <- paste0(folder_results_single, trait, "/", trait, "_", top_tissue, ".thin", thin, ".", var_struc, ".param.RDS")
+
+param_single <- readRDS(file_param_single)
+ctwas_parameters_single <- summarize_param(param_single, gwas_n)
+total_nonSNPpve_single <- 1- ctwas_parameters_single$prop_heritability["SNP"]
+
+pve_pie_by_type_single <- plot_piechart_topn(ctwas_parameters = ctwas_parameters_single, colors = colors, by = "context", title = "top-apa, single tissue apa")
+
+
+plot_multi(pve_pie_by_type_single,pve_pie_by_type_apaonly,pve_pie_by_type_susieST, title=trait)
 
 ```
 
@@ -197,25 +257,34 @@ var_struc <- "shared_all"
 ```
 
 
-```{r warning=F,message=F,fig.width=5, fig.height=5}
+```{r warning=F,message=F,fig.width=15, fig.height=5}
 
 param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
 
 
 ctwas_parameters_susieST <- summarize_param(param_susieST, gwas_n)
 total_nonSNPpve_susieST <- 1- ctwas_parameters_susieST$prop_heritability["SNP"]
-pve_pie_by_type_susieST <- plot_piechart(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_susieST, digits = 4)))
-
-pve_pie_by_type_susieST
+pve_pie_by_type_susieST <- plot_piechart_topn(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = "top-apa, multi-group")
 
 
 param_apaonly <- readRDS(paste0(folder_results_apaonly,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
 
-ctwas_parameters_apaonly <- summarize_param(param_apaonly, gwas_n)
+ctwas_parameters_apaonly <- summarize_param(param_apaonly,gwas_n)
 total_nonSNPpve_apaonly <- 1- ctwas_parameters_apaonly$prop_heritability["SNP"]
-pve_pie_by_type_apaonly <- plot_piechart(ctwas_parameters = ctwas_parameters_apaonly, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_apaonly, digits = 4)))
+pve_pie_by_type_apaonly <- plot_piechart_topn(ctwas_parameters = ctwas_parameters_apaonly, colors = colors, by = "type", title = "top-apa, multi tissue apa")
 
-pve_pie_by_type_apaonly
+
+top_tissue <- top_tissues[trait]
+file_param_single <- paste0(folder_results_single, trait, "/", trait, "_", top_tissue, ".thin", thin, ".", var_struc, ".param.RDS")
+
+param_single <- readRDS(file_param_single)
+ctwas_parameters_single <- summarize_param(param_single, gwas_n)
+total_nonSNPpve_single <- 1- ctwas_parameters_single$prop_heritability["SNP"]
+
+pve_pie_by_type_single <- plot_piechart_topn(ctwas_parameters = ctwas_parameters_single, colors = colors, by = "context", title = "top-apa, single tissue apa")
+
+
+plot_multi(pve_pie_by_type_single,pve_pie_by_type_apaonly,pve_pie_by_type_susieST, title=trait)
 
 ```
 
@@ -238,25 +307,34 @@ var_struc <- "shared_all"
 ```
 
 
-```{r warning=F,message=F,fig.width=5, fig.height=5}
+```{r warning=F,message=F,fig.width=15, fig.height=5}
 
 param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
 
 
 ctwas_parameters_susieST <- summarize_param(param_susieST, gwas_n)
 total_nonSNPpve_susieST <- 1- ctwas_parameters_susieST$prop_heritability["SNP"]
-pve_pie_by_type_susieST <- plot_piechart(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_susieST, digits = 4)))
-
-pve_pie_by_type_susieST
+pve_pie_by_type_susieST <- plot_piechart_topn(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = "top-apa, multi-group")
 
 
 param_apaonly <- readRDS(paste0(folder_results_apaonly,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
 
-ctwas_parameters_apaonly <- summarize_param(param_apaonly, gwas_n)
+ctwas_parameters_apaonly <- summarize_param(param_apaonly,gwas_n)
 total_nonSNPpve_apaonly <- 1- ctwas_parameters_apaonly$prop_heritability["SNP"]
-pve_pie_by_type_apaonly <- plot_piechart(ctwas_parameters = ctwas_parameters_apaonly, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_apaonly, digits = 4)))
+pve_pie_by_type_apaonly <- plot_piechart_topn(ctwas_parameters = ctwas_parameters_apaonly, colors = colors, by = "type", title = "top-apa, multi tissue apa")
 
-pve_pie_by_type_apaonly
+
+top_tissue <- top_tissues[trait]
+file_param_single <- paste0(folder_results_single, trait, "/", trait, "_", top_tissue, ".thin", thin, ".", var_struc, ".param.RDS")
+
+param_single <- readRDS(file_param_single)
+ctwas_parameters_single <- summarize_param(param_single, gwas_n)
+total_nonSNPpve_single <- 1- ctwas_parameters_single$prop_heritability["SNP"]
+
+pve_pie_by_type_single <- plot_piechart_topn(ctwas_parameters = ctwas_parameters_single, colors = colors, by = "context", title = "top-apa, single tissue apa")
+
+
+plot_multi(pve_pie_by_type_single,pve_pie_by_type_apaonly,pve_pie_by_type_susieST, title=trait)
 
 ```
 
@@ -279,28 +357,59 @@ var_struc <- "shared_all"
 ```
 
 
-```{r warning=F,message=F,fig.width=5, fig.height=5}
+<!-- ```{r warning=F,message=F,fig.width=5, fig.height=5} -->
+
+<!-- param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS")) -->
+
+
+<!-- ctwas_parameters_susieST <- summarize_param(param_susieST, gwas_n) -->
+<!-- total_nonSNPpve_susieST <- 1- ctwas_parameters_susieST$prop_heritability["SNP"] -->
+<!-- pve_pie_by_type_susieST <- plot_piechart_topn(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = "top-apa, multi-group") -->
+
+<!-- pve_pie_by_type_susieST -->
+
+
+<!-- param_apaonly <- readRDS(paste0(folder_results_apaonly,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS")) -->
+
+<!-- ctwas_parameters_apaonly <- summarize_param(param_apaonly, gwas_n) -->
+<!-- total_nonSNPpve_apaonly <- 1- ctwas_parameters_apaonly$prop_heritability["SNP"] -->
+<!-- pve_pie_by_type_apaonly <- plot_piechart_topn(ctwas_parameters = ctwas_parameters_apaonly, colors = colors, by = "type", title = "top-apa, multi tissue apa") -->
+
+<!-- pve_pie_by_type_apaonly -->
+
+<!-- ``` -->
+
+
+```{r warning=F,message=F,fig.width=15, fig.height=5}
 
 param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
 
 
 ctwas_parameters_susieST <- summarize_param(param_susieST, gwas_n)
 total_nonSNPpve_susieST <- 1- ctwas_parameters_susieST$prop_heritability["SNP"]
-pve_pie_by_type_susieST <- plot_piechart(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_susieST, digits = 4)))
-
-pve_pie_by_type_susieST
+pve_pie_by_type_susieST <- plot_piechart_topn(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = "top-apa, multi-group")
 
 
 param_apaonly <- readRDS(paste0(folder_results_apaonly,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
 
-ctwas_parameters_apaonly <- summarize_param(param_apaonly, gwas_n)
+ctwas_parameters_apaonly <- summarize_param(param_apaonly,gwas_n)
 total_nonSNPpve_apaonly <- 1- ctwas_parameters_apaonly$prop_heritability["SNP"]
-pve_pie_by_type_apaonly <- plot_piechart(ctwas_parameters = ctwas_parameters_apaonly, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_apaonly, digits = 4)))
+pve_pie_by_type_apaonly <- plot_piechart_topn(ctwas_parameters = ctwas_parameters_apaonly, colors = colors, by = "type", title = "top-apa, multi tissue apa")
 
-pve_pie_by_type_apaonly
+
+top_tissue <- top_tissues[trait]
+file_param_single <- paste0(folder_results_single, trait, "/", trait, "_", top_tissue, ".thin", thin, ".", var_struc, ".param.RDS")
+
+param_single <- readRDS(file_param_single)
+ctwas_parameters_single <- summarize_param(param_single, gwas_n)
+total_nonSNPpve_single <- 1- ctwas_parameters_single$prop_heritability["SNP"]
+
+pve_pie_by_type_single <- plot_piechart_topn(ctwas_parameters = ctwas_parameters_single, colors = colors, by = "context", title = "top-apa, single tissue apa")
+
+
+plot_multi(pve_pie_by_type_single,pve_pie_by_type_apaonly,pve_pie_by_type_susieST, title=trait)
 
 ```
-
 
 # aFib-ebi-a-GCST006414
 
@@ -320,25 +429,55 @@ var_struc <- "shared_all"
 ```
 
 
-```{r warning=F,message=F,fig.width=5, fig.height=5}
+<!-- ```{r warning=F,message=F,fig.width=5, fig.height=5} -->
+
+<!-- param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS")) -->
+
+
+<!-- ctwas_parameters_susieST <- summarize_param(param_susieST, gwas_n) -->
+<!-- total_nonSNPpve_susieST <- 1- ctwas_parameters_susieST$prop_heritability["SNP"] -->
+<!-- pve_pie_by_type_susieST <- plot_piechart_topn(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = "top-apa, multi-group") -->
+
+<!-- pve_pie_by_type_susieST -->
+
+
+<!-- param_apaonly <- readRDS(paste0(folder_results_apaonly,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS")) -->
+
+<!-- ctwas_parameters_apaonly <- summarize_param(param_apaonly, gwas_n) -->
+<!-- total_nonSNPpve_apaonly <- 1- ctwas_parameters_apaonly$prop_heritability["SNP"] -->
+<!-- pve_pie_by_type_apaonly <- plot_piechart_topn(ctwas_parameters = ctwas_parameters_apaonly, colors = colors, by = "type", title = "top-apa, multi tissue apa") -->
+
+<!-- pve_pie_by_type_apaonly -->
+
+<!-- ``` -->
+
+```{r warning=F,message=F,fig.width=15, fig.height=5}
 
 param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
 
 
 ctwas_parameters_susieST <- summarize_param(param_susieST, gwas_n)
 total_nonSNPpve_susieST <- 1- ctwas_parameters_susieST$prop_heritability["SNP"]
-pve_pie_by_type_susieST <- plot_piechart(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_susieST, digits = 4)))
-
-pve_pie_by_type_susieST
+pve_pie_by_type_susieST <- plot_piechart_topn(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = "top-apa, multi-group")
 
 
 param_apaonly <- readRDS(paste0(folder_results_apaonly,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
 
-ctwas_parameters_apaonly <- summarize_param(param_apaonly, gwas_n)
+ctwas_parameters_apaonly <- summarize_param(param_apaonly,gwas_n)
 total_nonSNPpve_apaonly <- 1- ctwas_parameters_apaonly$prop_heritability["SNP"]
-pve_pie_by_type_apaonly <- plot_piechart(ctwas_parameters = ctwas_parameters_apaonly, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_apaonly, digits = 4)))
+pve_pie_by_type_apaonly <- plot_piechart_topn(ctwas_parameters = ctwas_parameters_apaonly, colors = colors, by = "type", title = "top-apa, multi tissue apa")
 
-pve_pie_by_type_apaonly
+
+top_tissue <- top_tissues[trait]
+file_param_single <- paste0(folder_results_single, trait, "/", trait, "_", top_tissue, ".thin", thin, ".", var_struc, ".param.RDS")
+
+param_single <- readRDS(file_param_single)
+ctwas_parameters_single <- summarize_param(param_single, gwas_n)
+total_nonSNPpve_single <- 1- ctwas_parameters_single$prop_heritability["SNP"]
+
+pve_pie_by_type_single <- plot_piechart_topn(ctwas_parameters = ctwas_parameters_single, colors = colors, by = "context", title = "top-apa, single tissue apa")
+
+
+plot_multi(pve_pie_by_type_single,pve_pie_by_type_apaonly,pve_pie_by_type_susieST, title=trait)
 
 ```
-
