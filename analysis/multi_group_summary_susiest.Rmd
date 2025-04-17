@@ -1,0 +1,439 @@
+---
+title: "Summary for multi-group analysis, e+s+susie st"
+author: "XSun"
+date: "2025-04-16"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+    toc: true
+---
+
+# Introduction
+
+Summary for the thin = 1, L=5, shared_all
+
+```{r warning=F,message=F}
+library(ctwas)
+
+source("/project/xinhe/xsun/multi_group_ctwas/functions/0.functions.R")
+source("/project/xinhe/xsun/multi_group_ctwas/data/samplesize.R")
+
+top_tissues <- c("Liver","Whole_Blood","Cells_Cultured_fibroblasts","Adipose_Subcutaneous","Brain_Cerebellum","Heart_Atrial_Appendage","Pituitary")
+traits <- c("LDL-ukb-d-30780_irnt","IBD-ebi-a-GCST004131","BMI-panukb","RBC-panukb","SCZ-ieu-b-5102","aFib-ebi-a-GCST006414","T2D-panukb")
+names(top_tissues) <- traits
+
+thin <- 1
+vgs <- "shared_all"
+L <-5
+st <- "with_susieST"
+
+colors <- c("#ff7f0e", "#2ca02c", "#d62728",  "#9467bd", "#8c564b", "#e377c2", "#7f7f7f",  "#bcbd22",  "#17becf",  "#f7b6d2",  "#c5b0d5",  "#9edae5", "#ffbb78",  "#98df8a",  "#ff9896" )
+
+
+folder_results_single <- "/project/xinhe/xsun/multi_group_ctwas/17.single_eQTL/ctwas_output/expression/"
+folder_results_multi <- "/project/xinhe/xsun/multi_group_ctwas/15.susie_weights/snakemake_outputs/"
+
+
+generate_piecharts_for_trait <- function(title_top = NULL, colors = NULL) {
+
+  if(is.null(colors)) {
+    colors <- c("#ff7f0e", "#2ca02c", "#d62728",  "#9467bd", "#8c564b", "#e377c2", "#7f7f7f",  "#bcbd22",  "#17becf",  "#f7b6d2",  "#c5b0d5",  "#9edae5", "#ffbb78",  "#98df8a",  "#ff9896" )
+  }
+  
+  pie_eqtl_single <- plot_piechart_single(ctwas_parameters_single, colors, by = "type", title = NULL)
+  
+  pie_eqtl_multi_type <- plot_piechart_topn(ctwas_parameters_multi, colors, by = "type", title = NULL)
+  pie_eqtl_multi_context <- plot_piechart_topn(ctwas_parameters_multi, colors, by = "context", title = NULL, n_tissue = 10)
+
+  # Function to fix panel size
+  fix_panel_size <- function(plot, width = 2.1, height = 2) {
+    set_panel_size(plot, width = unit(width, "in"), height = unit(height, "in"))
+  }
+
+  # Apply fixed panel size
+  pie1 <- fix_panel_size(pie_eqtl_single)
+  pie2 <- fix_panel_size(pie_eqtl_multi_type)
+  pie3 <- fix_panel_size(pie_eqtl_multi_context)
+
+  # Compute natural widths
+  widths <- unit.c(grobWidth(pie1), grobWidth(pie2), grobWidth(pie3))
+
+  # Arrange
+  p <- grid.arrange(pie1, pie2, pie3,
+                    ncol = 3,
+                    widths = widths,
+                    top = title_top)
+
+  return(p)
+}
+
+plot_overlap_barplot <- function(combined_pip_by_group_multi,
+                                 combined_pip_by_group_single,
+                                 PIP_cutoff = 0.8, tissue,
+                                 trait) {
+  # Filter genes by PIP cutoff
+  combined_pip_by_group_sig_multi <- combined_pip_by_group_multi[combined_pip_by_group_multi$combined_pip > PIP_cutoff, ]
+  combined_pip_by_group_sig_single <- combined_pip_by_group_single[combined_pip_by_group_single$combined_pip > PIP_cutoff, ]
+  
+  # Extract gene names
+  multi_genes <- combined_pip_by_group_sig_multi$gene_name
+  single_genes <- combined_pip_by_group_sig_single$gene_name
+  
+  # Compute overlap
+  overlap_genes <- intersect(multi_genes, single_genes)
+  n_overlap <- length(overlap_genes)
+  n_multi <- length(multi_genes)
+  n_single <- length(single_genes)
+  
+  # Construct data frame for plotting
+  df <- data.frame(
+    group = rep(c("Multi-group", paste0("Single-eQTL - \n", tissue)), each = 2),
+    part = rep(c("Overlap", "Unique"), 2),
+    count = c(n_overlap, n_multi - n_overlap, n_overlap, n_single - n_overlap)
+  )
+  
+  # Ensure proper stacking order
+  df$part <- factor(df$part, levels = c("Unique", "Overlap"))
+  
+  # Plot
+  p <- ggplot(df, aes(x = group, y = count, fill = part)) +
+    geom_bar(stat = "identity", width = 0.6) +
+    geom_text(aes(label = count), position = position_stack(vjust = 0.5), color = "white", size = 5) +
+    scale_fill_manual(values = c("Overlap" = "#1f77b4", "Unique" = "#ff7f0e")) +
+    labs(
+      x = "",
+      y = paste0("Number of Genes at PIP > ", PIP_cutoff),
+      title = trait,
+      fill = ""
+    ) +
+    theme_minimal(base_size = 14)
+  
+  return(p)
+}
+```
+
+
+# LDL-ukb-d-30780_irnt
+
+```{r warning=F, message=FALSE, fig.height=8, fig.width=20}
+trait <- "LDL-ukb-d-30780_irnt"
+
+top_tissue <- top_tissues[trait]
+gwas_n <- samplesize[trait]
+
+# Load single-eQTL parameters
+file_param_single <- paste0(folder_results_single, trait, "/", trait, "_", top_tissue, ".thin", thin, ".", vgs, ".param.RDS")
+param_single <- readRDS(file_param_single)
+ctwas_parameters_single <- summarize_param(param_single, gwas_n)
+
+# Load multi-eQTL parameters
+file_param_multi <- paste0(folder_results_multi, trait, "/", trait, ".with_susieST.thin", thin, ".", vgs, ".param.RDS")
+param_multi <- readRDS(file_param_multi)
+ctwas_parameters_multi <- summarize_param(param_multi, gwas_n)
+
+title <- paste0(trait, ", top tissue: ", top_tissue)
+generate_piecharts_for_trait(title_top = title)
+```
+
+
+```{r warning=F, message=FALSE, fig.height=15, fig.width=15}
+
+PIP_cutoff <- 0.8
+
+file_finalpip_single <- paste0(folder_results_single,trait,"/",trait,".",top_tissue,".thin",thin,".",vgs,".L",L, ".combined_pip_bygroup_final.RDS")
+combined_pip_by_group_single <- readRDS(file_finalpip_single)
+
+file_finalpip_multi <- paste0(folder_results_multi,trait,"/",trait,".",st,".thin",thin,".",vgs,".L",L, ".combined_pip_bygroup_final.RDS")
+combined_pip_by_group_multi <- readRDS(file_finalpip_multi)
+
+combined_pip_by_group_multi_unique <- combined_pip_by_group_multi[!combined_pip_by_group_multi$gene_name %in% combined_pip_by_group_single$gene_name, ]
+combined_pip_by_group_multi_unique <- combined_pip_by_group_multi_unique[combined_pip_by_group_multi_unique$combined_pip > PIP_cutoff,]
+
+plot_heatmap(heatmap_data = combined_pip_by_group_multi_unique, main = paste0("New genes identified by multigroup analysis, PIP>",PIP_cutoff),showPIP = T)
+```
+
+
+```{r warning=F, message=FALSE, fig.height=5, fig.width=5}
+
+plot_overlap_barplot(combined_pip_by_group_multi = combined_pip_by_group_multi, combined_pip_by_group_single = combined_pip_by_group_single,PIP_cutoff = PIP_cutoff,tissue = top_tissue,trait = trait)
+```
+
+
+
+# IBD-ebi-a-GCST004131
+
+```{r warning=F, message=FALSE, fig.height=8, fig.width=20}
+trait <- "IBD-ebi-a-GCST004131"
+
+top_tissue <- top_tissues[trait]
+gwas_n <- samplesize[trait]
+
+# Load single-eQTL parameters
+file_param_single <- paste0(folder_results_single, trait, "/", trait, "_", top_tissue, ".thin", thin, ".", vgs, ".param.RDS")
+param_single <- readRDS(file_param_single)
+ctwas_parameters_single <- summarize_param(param_single, gwas_n)
+
+# Load multi-eQTL parameters
+file_param_multi <- paste0(folder_results_multi, trait, "/", trait, ".with_susieST.thin", thin, ".", vgs, ".param.RDS")
+param_multi <- readRDS(file_param_multi)
+ctwas_parameters_multi <- summarize_param(param_multi, gwas_n)
+
+title <- paste0(trait, ", top tissue: ", top_tissue)
+generate_piecharts_for_trait(title_top = title)
+```
+
+
+```{r warning=F, message=FALSE, fig.height=15, fig.width=15}
+
+PIP_cutoff <- 0.8
+
+file_finalpip_single <- paste0(folder_results_single,trait,"/",trait,".",top_tissue,".thin",thin,".",vgs,".L",L, ".combined_pip_bygroup_final.RDS")
+combined_pip_by_group_single <- readRDS(file_finalpip_single)
+
+file_finalpip_multi <- paste0(folder_results_multi,trait,"/",trait,".",st,".thin",thin,".",vgs,".L",L, ".combined_pip_bygroup_final.RDS")
+combined_pip_by_group_multi <- readRDS(file_finalpip_multi)
+
+combined_pip_by_group_multi_unique <- combined_pip_by_group_multi[!combined_pip_by_group_multi$gene_name %in% combined_pip_by_group_single$gene_name, ]
+combined_pip_by_group_multi_unique <- combined_pip_by_group_multi_unique[combined_pip_by_group_multi_unique$combined_pip > PIP_cutoff,]
+
+plot_heatmap(heatmap_data = combined_pip_by_group_multi_unique, main = paste0("New genes identified by multigroup analysis, PIP>",PIP_cutoff),showPIP = T)
+```
+
+
+```{r warning=F, message=FALSE, fig.height=5, fig.width=5}
+
+plot_overlap_barplot(combined_pip_by_group_multi = combined_pip_by_group_multi, combined_pip_by_group_single = combined_pip_by_group_single,PIP_cutoff = PIP_cutoff,tissue = top_tissue,trait = trait)
+```
+
+
+
+# T2D-panukb
+
+```{r warning=F, message=FALSE, fig.height=8, fig.width=20}
+trait <- "T2D-panukb"
+
+top_tissue <- top_tissues[trait]
+gwas_n <- samplesize[trait]
+
+# Load single-eQTL parameters
+file_param_single <- paste0(folder_results_single, trait, "/", trait, "_", top_tissue, ".thin", thin, ".", vgs, ".param.RDS")
+param_single <- readRDS(file_param_single)
+ctwas_parameters_single <- summarize_param(param_single, gwas_n)
+
+# Load multi-eQTL parameters
+file_param_multi <- paste0(folder_results_multi, trait, "/", trait, ".with_susieST.thin", thin, ".", vgs, ".param.RDS")
+param_multi <- readRDS(file_param_multi)
+ctwas_parameters_multi <- summarize_param(param_multi, gwas_n)
+
+title <- paste0(trait, ", top tissue: ", top_tissue)
+generate_piecharts_for_trait(title_top = title)
+```
+
+
+```{r warning=F, message=FALSE, fig.height=15, fig.width=15}
+
+PIP_cutoff <- 0.8
+
+file_finalpip_single <- paste0(folder_results_single,trait,"/",trait,".",top_tissue,".thin",thin,".",vgs,".L",L, ".combined_pip_bygroup_final.RDS")
+combined_pip_by_group_single <- readRDS(file_finalpip_single)
+
+file_finalpip_multi <- paste0(folder_results_multi,trait,"/",trait,".",st,".thin",thin,".",vgs,".L",L, ".combined_pip_bygroup_final.RDS")
+combined_pip_by_group_multi <- readRDS(file_finalpip_multi)
+
+combined_pip_by_group_multi_unique <- combined_pip_by_group_multi[!combined_pip_by_group_multi$gene_name %in% combined_pip_by_group_single$gene_name, ]
+combined_pip_by_group_multi_unique <- combined_pip_by_group_multi_unique[combined_pip_by_group_multi_unique$combined_pip > PIP_cutoff,]
+
+plot_heatmap(heatmap_data = combined_pip_by_group_multi_unique, main = paste0("New genes identified by multigroup analysis, PIP>",PIP_cutoff),showPIP = T)
+```
+
+
+```{r warning=F, message=FALSE, fig.height=5, fig.width=5}
+
+plot_overlap_barplot(combined_pip_by_group_multi = combined_pip_by_group_multi, combined_pip_by_group_single = combined_pip_by_group_single,PIP_cutoff = PIP_cutoff,tissue = top_tissue,trait = trait)
+```
+
+
+# BMI-panukb
+
+```{r warning=F, message=FALSE, fig.height=8, fig.width=20}
+trait <- "BMI-panukb"
+
+top_tissue <- top_tissues[trait]
+gwas_n <- samplesize[trait]
+
+# Load single-eQTL parameters
+file_param_single <- paste0(folder_results_single, trait, "/", trait, "_", top_tissue, ".thin", thin, ".", vgs, ".param.RDS")
+param_single <- readRDS(file_param_single)
+ctwas_parameters_single <- summarize_param(param_single, gwas_n)
+
+# Load multi-eQTL parameters
+file_param_multi <- paste0(folder_results_multi, trait, "/", trait, ".with_susieST.thin", thin, ".", vgs, ".param.RDS")
+param_multi <- readRDS(file_param_multi)
+ctwas_parameters_multi <- summarize_param(param_multi, gwas_n)
+
+title <- paste0(trait, ", top tissue: ", top_tissue)
+generate_piecharts_for_trait(title_top = title)
+```
+
+
+```{r warning=F, message=FALSE, fig.height=15, fig.width=15}
+
+PIP_cutoff <- 0.8
+
+file_finalpip_single <- paste0(folder_results_single,trait,"/",trait,".",top_tissue,".thin",thin,".",vgs,".L",L, ".combined_pip_bygroup_final.RDS")
+combined_pip_by_group_single <- readRDS(file_finalpip_single)
+
+file_finalpip_multi <- paste0(folder_results_multi,trait,"/",trait,".",st,".thin",thin,".",vgs,".L",L, ".combined_pip_bygroup_final.RDS")
+combined_pip_by_group_multi <- readRDS(file_finalpip_multi)
+
+combined_pip_by_group_multi_unique <- combined_pip_by_group_multi[!combined_pip_by_group_multi$gene_name %in% combined_pip_by_group_single$gene_name, ]
+combined_pip_by_group_multi_unique <- combined_pip_by_group_multi_unique[combined_pip_by_group_multi_unique$combined_pip > PIP_cutoff,]
+
+plot_heatmap(heatmap_data = combined_pip_by_group_multi_unique, main = paste0("New genes identified by multigroup analysis, PIP>",PIP_cutoff),showPIP = T)
+```
+
+
+```{r warning=F, message=FALSE, fig.height=5, fig.width=5}
+
+plot_overlap_barplot(combined_pip_by_group_multi = combined_pip_by_group_multi, combined_pip_by_group_single = combined_pip_by_group_single,PIP_cutoff = PIP_cutoff,tissue = top_tissue,trait = trait)
+```
+
+
+
+# RBC-panukb
+
+```{r warning=F, message=FALSE, fig.height=8, fig.width=20}
+trait <- "RBC-panukb"
+
+top_tissue <- top_tissues[trait]
+gwas_n <- samplesize[trait]
+
+# Load single-eQTL parameters
+file_param_single <- paste0(folder_results_single, trait, "/", trait, "_", top_tissue, ".thin", thin, ".", vgs, ".param.RDS")
+param_single <- readRDS(file_param_single)
+ctwas_parameters_single <- summarize_param(param_single, gwas_n)
+
+# Load multi-eQTL parameters
+file_param_multi <- paste0(folder_results_multi, trait, "/", trait, ".with_susieST.thin", thin, ".", vgs, ".param.RDS")
+param_multi <- readRDS(file_param_multi)
+ctwas_parameters_multi <- summarize_param(param_multi, gwas_n)
+
+title <- paste0(trait, ", top tissue: ", top_tissue)
+generate_piecharts_for_trait(title_top = title)
+```
+
+
+```{r warning=F, message=FALSE, fig.height=15, fig.width=15}
+
+PIP_cutoff <- 0.8
+
+file_finalpip_single <- paste0(folder_results_single,trait,"/",trait,".",top_tissue,".thin",thin,".",vgs,".L",L, ".combined_pip_bygroup_final.RDS")
+combined_pip_by_group_single <- readRDS(file_finalpip_single)
+
+file_finalpip_multi <- paste0(folder_results_multi,trait,"/",trait,".",st,".thin",thin,".",vgs,".L",L, ".combined_pip_bygroup_final.RDS")
+combined_pip_by_group_multi <- readRDS(file_finalpip_multi)
+
+combined_pip_by_group_multi_unique <- combined_pip_by_group_multi[!combined_pip_by_group_multi$gene_name %in% combined_pip_by_group_single$gene_name, ]
+combined_pip_by_group_multi_unique <- combined_pip_by_group_multi_unique[combined_pip_by_group_multi_unique$combined_pip > PIP_cutoff,]
+
+plot_heatmap(heatmap_data = combined_pip_by_group_multi_unique, main = paste0("New genes identified by multigroup analysis, PIP>",PIP_cutoff),showPIP = T)
+```
+
+
+```{r warning=F, message=FALSE, fig.height=5, fig.width=5}
+
+plot_overlap_barplot(combined_pip_by_group_multi = combined_pip_by_group_multi, combined_pip_by_group_single = combined_pip_by_group_single,PIP_cutoff = PIP_cutoff,tissue = top_tissue,trait = trait)
+```
+
+
+
+# aFib-ebi-a-GCST006414
+
+```{r warning=F, message=FALSE, fig.height=8, fig.width=20}
+trait <- "aFib-ebi-a-GCST006414"
+
+top_tissue <- top_tissues[trait]
+gwas_n <- samplesize[trait]
+
+# Load single-eQTL parameters
+file_param_single <- paste0(folder_results_single, trait, "/", trait, "_", top_tissue, ".thin", thin, ".", vgs, ".param.RDS")
+param_single <- readRDS(file_param_single)
+ctwas_parameters_single <- summarize_param(param_single, gwas_n)
+
+# Load multi-eQTL parameters
+file_param_multi <- paste0(folder_results_multi, trait, "/", trait, ".with_susieST.thin", thin, ".", vgs, ".param.RDS")
+param_multi <- readRDS(file_param_multi)
+ctwas_parameters_multi <- summarize_param(param_multi, gwas_n)
+
+title <- paste0(trait, ", top tissue: ", top_tissue)
+generate_piecharts_for_trait(title_top = title)
+```
+
+
+```{r warning=F, message=FALSE, fig.height=15, fig.width=15}
+
+PIP_cutoff <- 0.8
+
+file_finalpip_single <- paste0(folder_results_single,trait,"/",trait,".",top_tissue,".thin",thin,".",vgs,".L",L, ".combined_pip_bygroup_final.RDS")
+combined_pip_by_group_single <- readRDS(file_finalpip_single)
+
+file_finalpip_multi <- paste0(folder_results_multi,trait,"/",trait,".",st,".thin",thin,".",vgs,".L",L, ".combined_pip_bygroup_final.RDS")
+combined_pip_by_group_multi <- readRDS(file_finalpip_multi)
+
+combined_pip_by_group_multi_unique <- combined_pip_by_group_multi[!combined_pip_by_group_multi$gene_name %in% combined_pip_by_group_single$gene_name, ]
+combined_pip_by_group_multi_unique <- combined_pip_by_group_multi_unique[combined_pip_by_group_multi_unique$combined_pip > PIP_cutoff,]
+
+plot_heatmap(heatmap_data = combined_pip_by_group_multi_unique, main = paste0("New genes identified by multigroup analysis, PIP>",PIP_cutoff),showPIP = T)
+```
+
+
+```{r warning=F, message=FALSE, fig.height=5, fig.width=5}
+
+plot_overlap_barplot(combined_pip_by_group_multi = combined_pip_by_group_multi, combined_pip_by_group_single = combined_pip_by_group_single,PIP_cutoff = PIP_cutoff,tissue = top_tissue,trait = trait)
+```
+
+
+# SCZ-ieu-b-5102
+
+```{r warning=F, message=FALSE, fig.height=8, fig.width=20}
+trait <- "SCZ-ieu-b-5102"
+
+top_tissue <- top_tissues[trait]
+gwas_n <- samplesize[trait]
+
+# Load single-eQTL parameters
+file_param_single <- paste0(folder_results_single, trait, "/", trait, "_", top_tissue, ".thin", thin, ".", vgs, ".param.RDS")
+param_single <- readRDS(file_param_single)
+ctwas_parameters_single <- summarize_param(param_single, gwas_n)
+
+# Load multi-eQTL parameters
+file_param_multi <- paste0(folder_results_multi, trait, "/", trait, ".with_susieST.thin", thin, ".", vgs, ".param.RDS")
+param_multi <- readRDS(file_param_multi)
+ctwas_parameters_multi <- summarize_param(param_multi, gwas_n)
+
+title <- paste0(trait, ", top tissue: ", top_tissue)
+generate_piecharts_for_trait(title_top = title)
+```
+
+
+```{r warning=F, message=FALSE, fig.height=15, fig.width=15}
+
+PIP_cutoff <- 0.8
+
+file_finalpip_single <- paste0(folder_results_single,trait,"/",trait,".",top_tissue,".thin",thin,".",vgs,".L",L, ".combined_pip_bygroup_final.RDS")
+combined_pip_by_group_single <- readRDS(file_finalpip_single)
+
+file_finalpip_multi <- paste0(folder_results_multi,trait,"/",trait,".",st,".thin",thin,".",vgs,".L",L, ".combined_pip_bygroup_final.RDS")
+combined_pip_by_group_multi <- readRDS(file_finalpip_multi)
+
+combined_pip_by_group_multi_unique <- combined_pip_by_group_multi[!combined_pip_by_group_multi$gene_name %in% combined_pip_by_group_single$gene_name, ]
+combined_pip_by_group_multi_unique <- combined_pip_by_group_multi_unique[combined_pip_by_group_multi_unique$combined_pip > PIP_cutoff,]
+
+plot_heatmap(heatmap_data = combined_pip_by_group_multi_unique, main = paste0("New genes identified by multigroup analysis, PIP>",PIP_cutoff),showPIP = T)
+```
+
+
+```{r warning=F, message=FALSE, fig.height=5, fig.width=5}
+
+plot_overlap_barplot(combined_pip_by_group_multi = combined_pip_by_group_multi, combined_pip_by_group_single = combined_pip_by_group_single,PIP_cutoff = PIP_cutoff,tissue = top_tissue,trait = trait)
+```

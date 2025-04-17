@@ -23,12 +23,19 @@ source("/project/xinhe/xsun/multi_group_ctwas/data/samplesize.R")
 
 
 folder_results_susieST <- "/project/xinhe/xsun/multi_group_ctwas/16.apa_li_weights/snakemake_outputs/"
+folder_results_apaonly <- "/project/xinhe/xsun/multi_group_ctwas/16.apa_li_weights/snakemake_outputs_apaonly/"
+folder_results_single <- "/project/xinhe/xsun/multi_group_ctwas/16.apa_li_weights/ctwas_output/apa/"
 
 # mapping_predictdb <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
 # mapping_munro <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/Munro_mapping.RDS")
 # mapping_two <- rbind(mapping_predictdb,mapping_munro)
 
 colors <- c(  "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728",  "#9467bd", "#8c564b", "#e377c2", "#7f7f7f",  "#bcbd22",  "#17becf",  "#f7b6d2",  "#c5b0d5",  "#9edae5", "#ffbb78",  "#98df8a",  "#ff9896" )
+
+top_tissues <- c("Liver","Whole_Blood","Cells_Cultured_fibroblasts","Adipose_Subcutaneous","Brain_Cerebellum","Heart_Atrial_Appendage","Pituitary")
+traits <- c("LDL-ukb-d-30780_irnt","IBD-ebi-a-GCST004131","BMI-panukb","RBC-panukb","SCZ-ieu-b-5102","aFib-ebi-a-GCST006414","T2D-panukb")
+names(top_tissues) <- traits
+
 
 plot_piechart <- function(ctwas_parameters, colors, by, title) {
   # Create the initial data frame
@@ -83,68 +90,23 @@ plot_piechart <- function(ctwas_parameters, colors, by, title) {
 
 # LDL-ukb-d-30780_irnt
 
-## Setting: shared_all, thin = 0.1
-
 ```{r warning=F,message=F}
 trait <- "LDL-ukb-d-30780_irnt"
-thin <- 0.1
-var_struc <- "shared_all"
+st <- "with_susieST"
 
 gwas_n <- samplesize[trait]
 ```
 
-
-```{r warning=F,message=F,fig.width=5, fig.height=5}
-st <- "with_susieST"
-
-param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
-
-
-ctwas_parameters_susieST <- summarize_param(param_susieST, gwas_n)
-total_nonSNPpve_susieST <- 1- ctwas_parameters_susieST$prop_heritability["SNP"]
-pve_pie_by_type_susieST <- plot_piechart(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_susieST, digits = 4)))
-
-pve_pie_by_type_susieST
-
-```
-
-
-
-## Setting: shared_all, thin = 0.5
-
-```{r warning=F,message=F}
-thin <- 0.5
-var_struc <- "shared_all"
-
-gwas_n <- samplesize[trait]
-```
-
-
-```{r warning=F,message=F,fig.width=5, fig.height=5}
-st <- "with_susieST"
-
-param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
-
-
-ctwas_parameters_susieST <- summarize_param(param_susieST, gwas_n)
-total_nonSNPpve_susieST <- 1- ctwas_parameters_susieST$prop_heritability["SNP"]
-pve_pie_by_type_susieST <- plot_piechart(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_susieST, digits = 4)))
-
-pve_pie_by_type_susieST
-
-```
 
 ## Setting: shared_all, thin = 1
 
 ```{r warning=F,message=F}
 thin <- 1
 var_struc <- "shared_all"
-
-gwas_n <- samplesize[trait]
 ```
 
+
 ```{r warning=F,message=F,fig.width=5, fig.height=5}
-st <- "with_susieST"
 
 param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
 
@@ -155,148 +117,46 @@ pve_pie_by_type_susieST <- plot_piechart(ctwas_parameters = ctwas_parameters_sus
 
 pve_pie_by_type_susieST
 
-```
 
-## Setting: shared_type, thin = 0.1
+param_apaonly <- readRDS(paste0(folder_results_apaonly,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
 
-```{r warning=F,message=F}
-thin <- 0.1
-var_struc <- "shared_type"
+ctwas_parameters_apaonly <- summarize_param(param_apaonly, gwas_n)
+total_nonSNPpve_apaonly <- 1- ctwas_parameters_apaonly$prop_heritability["SNP"]
+pve_pie_by_type_apaonly <- plot_piechart(ctwas_parameters = ctwas_parameters_apaonly, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_apaonly, digits = 4)))
 
-gwas_n <- samplesize[trait]
-```
-
-```{r warning=F,message=F,fig.width=5, fig.height=5}
-st <- "with_susieST"
-
-param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
+pve_pie_by_type_apaonly
 
 
-ctwas_parameters_susieST <- summarize_param(param_susieST, gwas_n)
-total_nonSNPpve_susieST <- 1- ctwas_parameters_susieST$prop_heritability["SNP"]
-pve_pie_by_type_susieST <- plot_piechart(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_susieST, digits = 4)))
+top_tissue <- top_tissues[trait]
+file_param_single <- paste0(folder_results_single, trait, "/", trait, "_", top_tissue, ".thin", thin, ".", var_struc, ".param.RDS")
+param_single <- readRDS(file_param_single)
+ctwas_parameters_single <- summarize_param(param_single, gwas_n)
 
-pve_pie_by_type_susieST
+
+pve_pie_by_type_single <- plot_piechart(ctwas_parameters = ctwas_parameters_single, colors = colors, by = "context", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_apaonly, digits = 4)))
 
 ```
-
-
-
-
-
-
-## Setting: shared_type, thin = 0.5
-
-```{r warning=F,message=F}
-thin <- 0.5
-var_struc <- "shared_type"
-
-gwas_n <- samplesize[trait]
-```
-
-```{r warning=F,message=F,fig.width=5, fig.height=5}
-st <- "with_susieST"
-
-param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
-
-
-ctwas_parameters_susieST <- summarize_param(param_susieST, gwas_n)
-total_nonSNPpve_susieST <- 1- ctwas_parameters_susieST$prop_heritability["SNP"]
-pve_pie_by_type_susieST <- plot_piechart(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_susieST, digits = 4)))
-
-pve_pie_by_type_susieST
-
-```
-
-
-## Setting: shared_type, thin = 1
-
-```{r warning=F,message=F}
-thin <- 1
-var_struc <- "shared_type"
-
-gwas_n <- samplesize[trait]
-```
-
-```{r warning=F,message=F,fig.width=5, fig.height=5}
-st <- "with_susieST"
-
-param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
-
-
-ctwas_parameters_susieST <- summarize_param(param_susieST, gwas_n)
-total_nonSNPpve_susieST <- 1- ctwas_parameters_susieST$prop_heritability["SNP"]
-pve_pie_by_type_susieST <- plot_piechart(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_susieST, digits = 4)))
-
-pve_pie_by_type_susieST
-
-```
-
 
 
 # IBD-ebi-a-GCST004131
 
-## Setting: shared_all, thin = 0.1
-
 ```{r warning=F,message=F}
 trait <- "IBD-ebi-a-GCST004131"
-thin <- 0.1
-var_struc <- "shared_all"
+st <- "with_susieST"
 
 gwas_n <- samplesize[trait]
 ```
 
-
-```{r warning=F,message=F,fig.width=5, fig.height=5}
-st <- "with_susieST"
-
-param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
-
-
-ctwas_parameters_susieST <- summarize_param(param_susieST, gwas_n)
-total_nonSNPpve_susieST <- 1- ctwas_parameters_susieST$prop_heritability["SNP"]
-pve_pie_by_type_susieST <- plot_piechart(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_susieST, digits = 4)))
-
-pve_pie_by_type_susieST
-
-```
-
-
-
-## Setting: shared_all, thin = 0.5
-
-```{r warning=F,message=F}
-thin <- 0.5
-var_struc <- "shared_all"
-
-gwas_n <- samplesize[trait]
-```
-
-```{r warning=F,message=F,fig.width=5, fig.height=5}
-st <- "with_susieST"
-
-param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
-
-
-ctwas_parameters_susieST <- summarize_param(param_susieST, gwas_n)
-total_nonSNPpve_susieST <- 1- ctwas_parameters_susieST$prop_heritability["SNP"]
-pve_pie_by_type_susieST <- plot_piechart(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_susieST, digits = 4)))
-
-pve_pie_by_type_susieST
-
-```
 
 ## Setting: shared_all, thin = 1
 
 ```{r warning=F,message=F}
 thin <- 1
 var_struc <- "shared_all"
-
-gwas_n <- samplesize[trait]
 ```
 
+
 ```{r warning=F,message=F,fig.width=5, fig.height=5}
-st <- "with_susieST"
 
 param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
 
@@ -307,145 +167,37 @@ pve_pie_by_type_susieST <- plot_piechart(ctwas_parameters = ctwas_parameters_sus
 
 pve_pie_by_type_susieST
 
-```
 
-## Setting: shared_type, thin = 0.1
+param_apaonly <- readRDS(paste0(folder_results_apaonly,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
 
-```{r warning=F,message=F}
-thin <- 0.1
-var_struc <- "shared_type"
+ctwas_parameters_apaonly <- summarize_param(param_apaonly, gwas_n)
+total_nonSNPpve_apaonly <- 1- ctwas_parameters_apaonly$prop_heritability["SNP"]
+pve_pie_by_type_apaonly <- plot_piechart(ctwas_parameters = ctwas_parameters_apaonly, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_apaonly, digits = 4)))
 
-gwas_n <- samplesize[trait]
-```
-
-```{r warning=F,message=F,fig.width=5, fig.height=5}
-st <- "with_susieST"
-
-param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
-
-
-ctwas_parameters_susieST <- summarize_param(param_susieST, gwas_n)
-total_nonSNPpve_susieST <- 1- ctwas_parameters_susieST$prop_heritability["SNP"]
-pve_pie_by_type_susieST <- plot_piechart(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_susieST, digits = 4)))
-
-pve_pie_by_type_susieST
+pve_pie_by_type_apaonly
 
 ```
 
-
-
-
-
-
-## Setting: shared_type, thin = 0.5
-
-```{r warning=F,message=F}
-thin <- 0.5
-var_struc <- "shared_type"
-
-gwas_n <- samplesize[trait]
-```
-
-```{r warning=F,message=F,fig.width=5, fig.height=5}
-st <- "with_susieST"
-
-param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
-
-
-ctwas_parameters_susieST <- summarize_param(param_susieST, gwas_n)
-total_nonSNPpve_susieST <- 1- ctwas_parameters_susieST$prop_heritability["SNP"]
-pve_pie_by_type_susieST <- plot_piechart(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_susieST, digits = 4)))
-
-pve_pie_by_type_susieST
-
-```
-
-
-## Setting: shared_type, thin = 1
-
-```{r warning=F,message=F}
-thin <- 1
-var_struc <- "shared_type"
-
-gwas_n <- samplesize[trait]
-```
-
-```{r warning=F,message=F,fig.width=5, fig.height=5}
-st <- "with_susieST"
-
-param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
-
-
-ctwas_parameters_susieST <- summarize_param(param_susieST, gwas_n)
-total_nonSNPpve_susieST <- 1- ctwas_parameters_susieST$prop_heritability["SNP"]
-pve_pie_by_type_susieST <- plot_piechart(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_susieST, digits = 4)))
-
-pve_pie_by_type_susieST
-
-```
 
 # T2D-panukb
 
-## Setting: shared_all, thin = 0.1
-
 ```{r warning=F,message=F}
 trait <- "T2D-panukb"
-thin <- 0.1
-var_struc <- "shared_all"
+st <- "with_susieST"
 
 gwas_n <- samplesize[trait]
 ```
 
-
-```{r warning=F,message=F,fig.width=5, fig.height=5}
-st <- "with_susieST"
-
-param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
-
-
-ctwas_parameters_susieST <- summarize_param(param_susieST, gwas_n)
-total_nonSNPpve_susieST <- 1- ctwas_parameters_susieST$prop_heritability["SNP"]
-pve_pie_by_type_susieST <- plot_piechart(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_susieST, digits = 4)))
-
-pve_pie_by_type_susieST
-
-```
-
-
-
-## Setting: shared_all, thin = 0.5
-
-```{r warning=F,message=F}
-thin <- 0.5
-var_struc <- "shared_all"
-
-gwas_n <- samplesize[trait]
-```
-```{r warning=F,message=F,fig.width=5, fig.height=5}
-st <- "with_susieST"
-
-param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
-
-
-ctwas_parameters_susieST <- summarize_param(param_susieST, gwas_n)
-total_nonSNPpve_susieST <- 1- ctwas_parameters_susieST$prop_heritability["SNP"]
-pve_pie_by_type_susieST <- plot_piechart(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_susieST, digits = 4)))
-
-pve_pie_by_type_susieST
-
-```
 
 ## Setting: shared_all, thin = 1
 
 ```{r warning=F,message=F}
 thin <- 1
 var_struc <- "shared_all"
-
-gwas_n <- samplesize[trait]
 ```
 
+
 ```{r warning=F,message=F,fig.width=5, fig.height=5}
-st <- "with_susieST"
 
 param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
 
@@ -456,150 +208,37 @@ pve_pie_by_type_susieST <- plot_piechart(ctwas_parameters = ctwas_parameters_sus
 
 pve_pie_by_type_susieST
 
-```
 
-## Setting: shared_type, thin = 0.1
+param_apaonly <- readRDS(paste0(folder_results_apaonly,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
 
-```{r warning=F,message=F}
-thin <- 0.1
-var_struc <- "shared_type"
+ctwas_parameters_apaonly <- summarize_param(param_apaonly, gwas_n)
+total_nonSNPpve_apaonly <- 1- ctwas_parameters_apaonly$prop_heritability["SNP"]
+pve_pie_by_type_apaonly <- plot_piechart(ctwas_parameters = ctwas_parameters_apaonly, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_apaonly, digits = 4)))
 
-gwas_n <- samplesize[trait]
-```
-
-```{r warning=F,message=F,fig.width=5, fig.height=5}
-st <- "with_susieST"
-
-param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
-
-
-ctwas_parameters_susieST <- summarize_param(param_susieST, gwas_n)
-total_nonSNPpve_susieST <- 1- ctwas_parameters_susieST$prop_heritability["SNP"]
-pve_pie_by_type_susieST <- plot_piechart(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_susieST, digits = 4)))
-
-pve_pie_by_type_susieST
+pve_pie_by_type_apaonly
 
 ```
-
-
-
-
-
-
-## Setting: shared_type, thin = 0.5
-
-```{r warning=F,message=F}
-thin <- 0.5
-var_struc <- "shared_type"
-
-gwas_n <- samplesize[trait]
-```
-
-```{r warning=F,message=F,fig.width=5, fig.height=5}
-st <- "with_susieST"
-
-param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
-
-
-ctwas_parameters_susieST <- summarize_param(param_susieST, gwas_n)
-total_nonSNPpve_susieST <- 1- ctwas_parameters_susieST$prop_heritability["SNP"]
-pve_pie_by_type_susieST <- plot_piechart(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_susieST, digits = 4)))
-
-pve_pie_by_type_susieST
-
-```
-
-
-## Setting: shared_type, thin = 1
-
-```{r warning=F,message=F}
-thin <- 1
-var_struc <- "shared_type"
-
-gwas_n <- samplesize[trait]
-```
-
-```{r warning=F,message=F,fig.width=5, fig.height=5}
-st <- "with_susieST"
-
-param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
-
-
-ctwas_parameters_susieST <- summarize_param(param_susieST, gwas_n)
-total_nonSNPpve_susieST <- 1- ctwas_parameters_susieST$prop_heritability["SNP"]
-pve_pie_by_type_susieST <- plot_piechart(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_susieST, digits = 4)))
-
-pve_pie_by_type_susieST
-
-```
-
-
-
-
 
 
 # BMI-panukb
 
-## Setting: shared_all, thin = 0.1
-
 ```{r warning=F,message=F}
 trait <- "BMI-panukb"
-thin <- 0.1
-var_struc <- "shared_all"
+st <- "with_susieST"
 
 gwas_n <- samplesize[trait]
 ```
 
-
-```{r warning=F,message=F,fig.width=5, fig.height=5}
-st <- "with_susieST"
-
-param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
-
-
-ctwas_parameters_susieST <- summarize_param(param_susieST, gwas_n)
-total_nonSNPpve_susieST <- 1- ctwas_parameters_susieST$prop_heritability["SNP"]
-pve_pie_by_type_susieST <- plot_piechart(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_susieST, digits = 4)))
-
-pve_pie_by_type_susieST
-
-```
-
-
-
-## Setting: shared_all, thin = 0.5
-
-```{r warning=F,message=F}
-thin <- 0.5
-var_struc <- "shared_all"
-
-gwas_n <- samplesize[trait]
-```
-```{r warning=F,message=F,fig.width=5, fig.height=5}
-st <- "with_susieST"
-
-param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
-
-
-ctwas_parameters_susieST <- summarize_param(param_susieST, gwas_n)
-total_nonSNPpve_susieST <- 1- ctwas_parameters_susieST$prop_heritability["SNP"]
-pve_pie_by_type_susieST <- plot_piechart(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_susieST, digits = 4)))
-
-pve_pie_by_type_susieST
-
-```
 
 ## Setting: shared_all, thin = 1
 
 ```{r warning=F,message=F}
 thin <- 1
 var_struc <- "shared_all"
-
-gwas_n <- samplesize[trait]
 ```
 
+
 ```{r warning=F,message=F,fig.width=5, fig.height=5}
-st <- "with_susieST"
 
 param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
 
@@ -610,148 +249,37 @@ pve_pie_by_type_susieST <- plot_piechart(ctwas_parameters = ctwas_parameters_sus
 
 pve_pie_by_type_susieST
 
-```
 
-## Setting: shared_type, thin = 0.1
+param_apaonly <- readRDS(paste0(folder_results_apaonly,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
 
-```{r warning=F,message=F}
-thin <- 0.1
-var_struc <- "shared_type"
+ctwas_parameters_apaonly <- summarize_param(param_apaonly, gwas_n)
+total_nonSNPpve_apaonly <- 1- ctwas_parameters_apaonly$prop_heritability["SNP"]
+pve_pie_by_type_apaonly <- plot_piechart(ctwas_parameters = ctwas_parameters_apaonly, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_apaonly, digits = 4)))
 
-gwas_n <- samplesize[trait]
-```
-
-```{r warning=F,message=F,fig.width=5, fig.height=5}
-st <- "with_susieST"
-
-param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
-
-
-ctwas_parameters_susieST <- summarize_param(param_susieST, gwas_n)
-total_nonSNPpve_susieST <- 1- ctwas_parameters_susieST$prop_heritability["SNP"]
-pve_pie_by_type_susieST <- plot_piechart(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_susieST, digits = 4)))
-
-pve_pie_by_type_susieST
+pve_pie_by_type_apaonly
 
 ```
-
-
-
-
-
-
-## Setting: shared_type, thin = 0.5
-
-```{r warning=F,message=F}
-thin <- 0.5
-var_struc <- "shared_type"
-
-gwas_n <- samplesize[trait]
-```
-
-```{r warning=F,message=F,fig.width=5, fig.height=5}
-st <- "with_susieST"
-
-param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
-
-
-ctwas_parameters_susieST <- summarize_param(param_susieST, gwas_n)
-total_nonSNPpve_susieST <- 1- ctwas_parameters_susieST$prop_heritability["SNP"]
-pve_pie_by_type_susieST <- plot_piechart(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_susieST, digits = 4)))
-
-pve_pie_by_type_susieST
-
-```
-
-
-## Setting: shared_type, thin = 1
-
-```{r warning=F,message=F}
-thin <- 1
-var_struc <- "shared_type"
-
-gwas_n <- samplesize[trait]
-```
-
-```{r warning=F,message=F,fig.width=5, fig.height=5}
-st <- "with_susieST"
-
-param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
-
-
-ctwas_parameters_susieST <- summarize_param(param_susieST, gwas_n)
-total_nonSNPpve_susieST <- 1- ctwas_parameters_susieST$prop_heritability["SNP"]
-pve_pie_by_type_susieST <- plot_piechart(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_susieST, digits = 4)))
-
-pve_pie_by_type_susieST
-
-```
-
-
 
 
 # RBC-panukb
 
-## Setting: shared_all, thin = 0.1
-
 ```{r warning=F,message=F}
 trait <- "RBC-panukb"
-thin <- 0.1
-var_struc <- "shared_all"
+st <- "with_susieST"
 
 gwas_n <- samplesize[trait]
 ```
 
-
-```{r warning=F,message=F,fig.width=5, fig.height=5}
-st <- "with_susieST"
-
-param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
-
-
-ctwas_parameters_susieST <- summarize_param(param_susieST, gwas_n)
-total_nonSNPpve_susieST <- 1- ctwas_parameters_susieST$prop_heritability["SNP"]
-pve_pie_by_type_susieST <- plot_piechart(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_susieST, digits = 4)))
-
-pve_pie_by_type_susieST
-
-```
-
-
-
-## Setting: shared_all, thin = 0.5
-
-```{r warning=F,message=F}
-thin <- 0.5
-var_struc <- "shared_all"
-
-gwas_n <- samplesize[trait]
-```
-```{r warning=F,message=F,fig.width=5, fig.height=5}
-st <- "with_susieST"
-
-param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
-
-
-ctwas_parameters_susieST <- summarize_param(param_susieST, gwas_n)
-total_nonSNPpve_susieST <- 1- ctwas_parameters_susieST$prop_heritability["SNP"]
-pve_pie_by_type_susieST <- plot_piechart(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_susieST, digits = 4)))
-
-pve_pie_by_type_susieST
-
-```
 
 ## Setting: shared_all, thin = 1
 
 ```{r warning=F,message=F}
 thin <- 1
 var_struc <- "shared_all"
-
-gwas_n <- samplesize[trait]
 ```
 
+
 ```{r warning=F,message=F,fig.width=5, fig.height=5}
-st <- "with_susieST"
 
 param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
 
@@ -762,151 +290,37 @@ pve_pie_by_type_susieST <- plot_piechart(ctwas_parameters = ctwas_parameters_sus
 
 pve_pie_by_type_susieST
 
-```
 
-## Setting: shared_type, thin = 0.1
+param_apaonly <- readRDS(paste0(folder_results_apaonly,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
 
-```{r warning=F,message=F}
-thin <- 0.1
-var_struc <- "shared_type"
+ctwas_parameters_apaonly <- summarize_param(param_apaonly, gwas_n)
+total_nonSNPpve_apaonly <- 1- ctwas_parameters_apaonly$prop_heritability["SNP"]
+pve_pie_by_type_apaonly <- plot_piechart(ctwas_parameters = ctwas_parameters_apaonly, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_apaonly, digits = 4)))
 
-gwas_n <- samplesize[trait]
-```
-
-```{r warning=F,message=F,fig.width=5, fig.height=5}
-st <- "with_susieST"
-
-param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
-
-
-ctwas_parameters_susieST <- summarize_param(param_susieST, gwas_n)
-total_nonSNPpve_susieST <- 1- ctwas_parameters_susieST$prop_heritability["SNP"]
-pve_pie_by_type_susieST <- plot_piechart(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_susieST, digits = 4)))
-
-pve_pie_by_type_susieST
+pve_pie_by_type_apaonly
 
 ```
-
-
-
-
-
-
-## Setting: shared_type, thin = 0.5
-
-```{r warning=F,message=F}
-thin <- 0.5
-var_struc <- "shared_type"
-
-gwas_n <- samplesize[trait]
-```
-
-```{r warning=F,message=F,fig.width=5, fig.height=5}
-st <- "with_susieST"
-
-param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
-
-
-ctwas_parameters_susieST <- summarize_param(param_susieST, gwas_n)
-total_nonSNPpve_susieST <- 1- ctwas_parameters_susieST$prop_heritability["SNP"]
-pve_pie_by_type_susieST <- plot_piechart(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_susieST, digits = 4)))
-
-pve_pie_by_type_susieST
-
-```
-
-
-## Setting: shared_type, thin = 1
-
-```{r warning=F,message=F}
-thin <- 1
-var_struc <- "shared_type"
-
-gwas_n <- samplesize[trait]
-```
-
-```{r warning=F,message=F,fig.width=5, fig.height=5}
-st <- "with_susieST"
-
-param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
-
-
-ctwas_parameters_susieST <- summarize_param(param_susieST, gwas_n)
-total_nonSNPpve_susieST <- 1- ctwas_parameters_susieST$prop_heritability["SNP"]
-pve_pie_by_type_susieST <- plot_piechart(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_susieST, digits = 4)))
-
-pve_pie_by_type_susieST
-
-```
-
-
-
-
-
 
 
 # aFib-ebi-a-GCST006414
 
-## Setting: shared_all, thin = 0.1
-
 ```{r warning=F,message=F}
 trait <- "aFib-ebi-a-GCST006414"
-thin <- 0.1
-var_struc <- "shared_all"
+st <- "with_susieST"
 
 gwas_n <- samplesize[trait]
 ```
 
-
-```{r warning=F,message=F,fig.width=5, fig.height=5}
-st <- "with_susieST"
-
-param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
-
-
-ctwas_parameters_susieST <- summarize_param(param_susieST, gwas_n)
-total_nonSNPpve_susieST <- 1- ctwas_parameters_susieST$prop_heritability["SNP"]
-pve_pie_by_type_susieST <- plot_piechart(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_susieST, digits = 4)))
-
-pve_pie_by_type_susieST
-
-```
-
-
-
-## Setting: shared_all, thin = 0.5
-
-```{r warning=F,message=F}
-thin <- 0.5
-var_struc <- "shared_all"
-
-gwas_n <- samplesize[trait]
-```
-```{r warning=F,message=F,fig.width=5, fig.height=5}
-st <- "with_susieST"
-
-param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
-
-
-ctwas_parameters_susieST <- summarize_param(param_susieST, gwas_n)
-total_nonSNPpve_susieST <- 1- ctwas_parameters_susieST$prop_heritability["SNP"]
-pve_pie_by_type_susieST <- plot_piechart(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_susieST, digits = 4)))
-
-pve_pie_by_type_susieST
-
-```
 
 ## Setting: shared_all, thin = 1
 
 ```{r warning=F,message=F}
 thin <- 1
 var_struc <- "shared_all"
-
-gwas_n <- samplesize[trait]
 ```
 
+
 ```{r warning=F,message=F,fig.width=5, fig.height=5}
-st <- "with_susieST"
 
 param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
 
@@ -917,80 +331,14 @@ pve_pie_by_type_susieST <- plot_piechart(ctwas_parameters = ctwas_parameters_sus
 
 pve_pie_by_type_susieST
 
-```
 
-## Setting: shared_type, thin = 0.1
+param_apaonly <- readRDS(paste0(folder_results_apaonly,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
 
-```{r warning=F,message=F}
-thin <- 0.1
-var_struc <- "shared_type"
+ctwas_parameters_apaonly <- summarize_param(param_apaonly, gwas_n)
+total_nonSNPpve_apaonly <- 1- ctwas_parameters_apaonly$prop_heritability["SNP"]
+pve_pie_by_type_apaonly <- plot_piechart(ctwas_parameters = ctwas_parameters_apaonly, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_apaonly, digits = 4)))
 
-gwas_n <- samplesize[trait]
-```
-
-```{r warning=F,message=F,fig.width=5, fig.height=5}
-st <- "with_susieST"
-
-param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
-
-
-ctwas_parameters_susieST <- summarize_param(param_susieST, gwas_n)
-total_nonSNPpve_susieST <- 1- ctwas_parameters_susieST$prop_heritability["SNP"]
-pve_pie_by_type_susieST <- plot_piechart(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_susieST, digits = 4)))
-
-pve_pie_by_type_susieST
-
-```
-
-
-
-
-
-
-## Setting: shared_type, thin = 0.5
-
-```{r warning=F,message=F}
-thin <- 0.5
-var_struc <- "shared_type"
-
-gwas_n <- samplesize[trait]
-```
-
-```{r warning=F,message=F,fig.width=5, fig.height=5}
-st <- "with_susieST"
-
-param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
-
-
-ctwas_parameters_susieST <- summarize_param(param_susieST, gwas_n)
-total_nonSNPpve_susieST <- 1- ctwas_parameters_susieST$prop_heritability["SNP"]
-pve_pie_by_type_susieST <- plot_piechart(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_susieST, digits = 4)))
-
-pve_pie_by_type_susieST
-
-```
-
-
-## Setting: shared_type, thin = 1
-
-```{r warning=F,message=F}
-thin <- 1
-var_struc <- "shared_type"
-
-gwas_n <- samplesize[trait]
-```
-
-```{r warning=F,message=F,fig.width=5, fig.height=5}
-st <- "with_susieST"
-
-param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS"))
-
-
-ctwas_parameters_susieST <- summarize_param(param_susieST, gwas_n)
-total_nonSNPpve_susieST <- 1- ctwas_parameters_susieST$prop_heritability["SNP"]
-pve_pie_by_type_susieST <- plot_piechart(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = paste0("top-apa - nonSNP %h2g:",round(total_nonSNPpve_susieST, digits = 4)))
-
-pve_pie_by_type_susieST
+pve_pie_by_type_apaonly
 
 ```
 
