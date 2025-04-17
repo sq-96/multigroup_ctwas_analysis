@@ -110,22 +110,24 @@ get_results <- function(gwas_id,gwas_name){
   
   num_multi_ctwas_gene <- length(combined_pip$gene_name)
   
-  region_singals <- unique(combined_pip$region_id)
-  num_coloc_ctwas_gene <- length(unique(coloc_mts[coloc_mts$region_id %in% region_singals, ]$gene_name))
-  
-  coloc_data <- as.vector(table(unique(coloc_mts[,c("gene_name","region_id")])$region_id))
-  multictwas_data <- as.vector(table(combined_pip$region_id))
-  
   alpha <- 0.05
   finemap_res <- finemap_res[finemap_res$type!="SNP",]
   finemap_res <- unique(finemap_res[,c("id","z","gene_name","region_id")])
   sig_thresh <- qnorm(1-(alpha/nrow(finemap_res)/2), lower=T)
   twas_res <- finemap_res[abs(finemap_res$z)>sig_thresh,]
-  twas_data <- as.vector(table(unique(twas_res[,c("gene_name","region_id")])$region_id))
+  #twas_data <- as.vector(table(unique(twas_res[,c("gene_name","region_id")])$region_id))
+  region_singals <- unique(twas_res$region_id)
+  #region_singals <- unique(combined_pip$region_id)
+  num_coloc_ctwas_gene <- length(unique(coloc_mts[coloc_mts$region_id %in% region_singals, ]$gene_name))
+  
+  coloc_mts <- coloc_mts[coloc_mts$region_id %in% region_singals, ]
+  coloc_data <- as.vector(table(unique(coloc_mts[,c("gene_name","region_id")])$region_id))
+  multictwas_data <- as.vector(table(combined_pip$region_id))
+  
   # Combine data into a data frame
   df <- data.frame(
-    value = c(coloc_data, multictwas_data,twas_data),
-    group = c(rep("Coloc",length(coloc_data)),rep("Multi-cTWAS",length(multictwas_data)),rep("TWAS",length(twas_data)))
+    value = c(coloc_data, multictwas_data),
+    group = c(rep("Coloc",length(coloc_data)),rep("Multi-cTWAS",length(multictwas_data)))
   )
   
   #p1 <- ggplot(df, aes(x = value, fill = group)) +
@@ -136,42 +138,47 @@ get_results <- function(gwas_id,gwas_name){
   p1 <- ggplot(df, aes(x = value, fill = group)) +
   geom_histogram(
     aes(y = after_stat(count) / tapply(after_stat(count), after_stat(group), sum)[after_stat(group)]), 
-    position = "identity", alpha = 0.5, bins = max(twas_data)
+    position = "identity", alpha = 0.5, bins = max(coloc_data)
   ) +
   scale_fill_manual(values = c("blue", "red", "grey")) +
-  labs(title = gwas_id, x = "Value", y = "Proportion (within group)", fill = "Dataset") +
-  theme_minimal()
-  
-  ctwas_coloc_data <- coloc_mts[coloc_mts$region_id %in% region_singals, ]
-  ctwas_coloc_data <- as.vector(table(unique(ctwas_coloc_data[,c("gene_name","region_id")])$region_id))
-  
-  ctwas_twas_data <- twas_res[twas_res$region_id %in% region_singals, ]
-  ctwas_twas_data <- as.vector(table(twas_res$region_id))
-  # Combine data into a data frame
-  # Combine data into a data frame
-  df <- data.frame(
-    value = c(ctwas_coloc_data, multictwas_data,ctwas_twas_data),
-    group = c(rep("Coloc",length(ctwas_coloc_data)),rep("Multi-cTWAS",length(multictwas_data)),rep("TWAS",length(ctwas_twas_data)))
+  labs(title = "", x = "Number of genes", y = "Proportion", fill = "") +
+  theme_minimal()+
+  theme(
+    axis.title = element_text(size = 16),
+    axis.text = element_text(size = 14),
+    legend.text = element_text(size = 14)
   )
+  
+  #ctwas_coloc_data <- coloc_mts[coloc_mts$region_id %in% region_singals, ]
+  #ctwas_coloc_data <- as.vector(table(unique(ctwas_coloc_data[,c("gene_name","region_id")])$region_id))
+  
+  #ctwas_twas_data <- twas_res[twas_res$region_id %in% region_singals, ]
+  #ctwas_twas_data <- as.vector(table(twas_res$region_id))
+  # Combine data into a data frame
+  # Combine data into a data frame
+  #df <- data.frame(
+  #  value = c(ctwas_coloc_data, multictwas_data,ctwas_twas_data),
+  #  group = c(rep("Coloc",length(ctwas_coloc_data)),rep("Multi-cTWAS",length(multictwas_data)),rep("TWAS",length(ctwas_twas_data)))
+  #)
   
   #p2 <- ggplot(df, aes(x = value, fill = group)) +
   #  geom_histogram(position = "identity", alpha = 0.5, bins = max(coloc_data)) +
   #  scale_fill_manual(values = c("blue", "red")) +
   #  labs(title = gwas_id, x = "Value", y = "Frequency", fill = "Dataset") + theme_minimal()
-  p2 <- ggplot(df, aes(x = value, fill = group)) +
-  geom_histogram(
-    aes(y = after_stat(count) / tapply(after_stat(count), after_stat(group), sum)[after_stat(group)]), 
-    position = "identity", alpha = 0.5, bins = max(twas_data)
-  ) +
-  scale_fill_manual(values = c("blue", "red", "grey")) +
-  labs(title = gwas_id, x = "Value", y = "Proportion (within group)", fill = "Dataset") +
-  theme_minimal()
+  #p2 <- ggplot(df, aes(x = value, fill = group)) +
+  #geom_histogram(
+  #  aes(y = after_stat(count) / tapply(after_stat(count), after_stat(group), sum)[after_stat(group)]), 
+  #  position = "identity", alpha = 0.5, bins = max(twas_data)
+  #) +
+  #scale_fill_manual(values = c("blue", "red", "grey")) +
+  #labs(title = gwas_id, x = "Value", y = "Proportion (within group)", fill = "Dataset") +
+  #theme_minimal()
   
   return(list("num_coloc_gene" = num_coloc_gene,
               "num_coloc_ctwas_gene" = num_coloc_ctwas_gene,
               "num_multi_ctwas_gene" = num_multi_ctwas_gene,
-              "p1" = p1,
-              "p2" = p2))
+              "p1" = p1))#,
+              #"p2" = p2))
 }
 ```
 
@@ -259,57 +266,28 @@ get_results_mts <- function(gwas_id,gwas_name){
   alpha <- 0.05
   sig_thresh <- qnorm(1-(alpha/nrow(finemap_res)/2), lower=T)
   twas_res <- finemap_res[abs(finemap_res$z)>sig_thresh,]
+  region_singals <- unique(twas_res$region_id)
   
-  
+  coloc_mts <- coloc_mts[coloc_mts$region_id %in% region_singals, ]
   
   finemap_res <- finemap_res[finemap_res$susie_pip>0.8,]
-  
   num_multi_ctwas_mts <- length(unique(finemap_res$id))
-  
-  region_singals <- unique(finemap_res$region_id)
+
   num_coloc_ctwas_mts <- length(unique(coloc_mts[coloc_mts$region_id %in% region_singals, ]$id))
   
   coloc_data <- as.vector(table(unique(coloc_mts[,c("id","region_id")])$region_id))
   multictwas_data <- as.vector(table(finemap_res$region_id))
-  twas_data <- as.vector(table(twas_res$region_id))
+  
   # Combine data into a data frame
   df <- data.frame(
-    value = c(coloc_data, multictwas_data,twas_data),
-    group = c(rep("Coloc",length(coloc_data)),rep("Multi-cTWAS",length(multictwas_data)),rep("TWAS",length(twas_data)))
+    value = c(coloc_data, multictwas_data),
+    group = c(rep("Coloc",length(coloc_data)),rep("Multi-cTWAS",length(multictwas_data)))
   )
   
-  #p1 <- ggplot(df, aes(x = value, fill = group)) +
-  #  geom_histogram(position = "identity", alpha = 0.5) + #bins = max(coloc_data)
-  #  scale_fill_manual(values = c("blue", "red")) +
-  #  labs(title = gwas_id, x = "Value", y = "Frequency", fill = "Dataset") + theme_minimal()
   p1 <- ggplot(df, aes(x = value, fill = group)) +
   geom_histogram(
     aes(y = after_stat(count) / tapply(after_stat(count), after_stat(group), sum)[after_stat(group)]), 
-    position = "identity", alpha = 0.5, bins = max(twas_data)
-  ) +
-  scale_fill_manual(values = c("blue", "red", "grey")) +
-  labs(title = gwas_id, x = "Value", y = "Proportion (within group)", fill = "Dataset") +
-  theme_minimal()
-  
-  ctwas_coloc_data <- coloc_mts[coloc_mts$region_id %in% region_singals, ]
-  ctwas_coloc_data <- as.vector(table(unique(ctwas_coloc_data[,c("id","region_id")])$region_id))
-  
-  ctwas_twas_data <- twas_res[twas_res$region_id %in% region_singals, ]
-  ctwas_twas_data <- as.vector(table(twas_res$region_id))
-  # Combine data into a data frame
-  df <- data.frame(
-    value = c(ctwas_coloc_data, multictwas_data,ctwas_twas_data),
-    group = c(rep("Coloc",length(ctwas_coloc_data)),rep("Multi-cTWAS",length(multictwas_data)),rep("TWAS",length(ctwas_twas_data)))
-  )
-  
-  #p2 <- ggplot(df, aes(x = value, fill = group)) +
-  #  geom_histogram(position = "identity", alpha = 0.5, bins = max(coloc_data)) +
-  #  scale_fill_manual(values = c("blue", "red")) +
-  #  labs(title = gwas_id, x = "Value", y = "Frequency", fill = "Dataset") + theme_minimal()
-  p2 <- ggplot(df, aes(x = value, fill = group)) +
-  geom_histogram(
-    aes(y = after_stat(count) / tapply(after_stat(count), after_stat(group), sum)[after_stat(group)]), 
-    position = "identity", alpha = 0.5, bins = max(twas_data)
+    position = "identity", alpha = 0.5, bins = max(coloc_data)
   ) +
   scale_fill_manual(values = c("blue", "red", "grey")) +
   labs(title = gwas_id, x = "Value", y = "Proportion (within group)", fill = "Dataset") +
@@ -318,8 +296,7 @@ get_results_mts <- function(gwas_id,gwas_name){
   return(list("num_coloc_mts" = num_coloc_mts,
               "num_coloc_ctwas_mts" = num_coloc_ctwas_mts,
               "num_multi_ctwas_mts" = num_multi_ctwas_mts,
-              "p1" = p1,
-              "p2" = p2))
+              "p1" = p1))
 }
 ```
 
@@ -380,9 +357,9 @@ IBD_results$p2
 ```{r, echo=FALSE, eval=FALSE}
 library(EnsDb.Hsapiens.v86)
 ens_db <- EnsDb.Hsapiens.v86
-weights <- readRDS("/project/xinhe/shengqian/ctwas_GWAS_analysis/results/LDL-ukb-d-30780_irnt/LDL-ukb-d-30780_irnt.preprocessed.weights.RDS")
+weights <- readRDS("/project/xinhe/shengqian/ctwas_GWAS_analysis/results_ES/LDL-ukb-d-30780_irnt/LDL-ukb-d-30780_irnt.preprocessed.weights.RDS")
 mapping_predictdb <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_E_S_M_mapping.RDS")
-finemap_res <- readRDS("/project/xinhe/shengqian/ctwas_GWAS_analysis/results/LDL-ukb-d-30780_irnt/LDL-ukb-d-30780_irnt.finemap_regions_res.RDS")
+finemap_res <- readRDS("/project/xinhe/shengqian/ctwas_GWAS_analysis/results_ES/LDL-ukb-d-30780_irnt/LDL-ukb-d-30780_irnt.finemap_regions_res.RDS")
 finemap_res <- finemap_res$finemap_res
 snp_map <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/LD_region_info/snp_map.RDS")
 finemap_res_multi <- anno_finemap_res(finemap_res,
@@ -396,14 +373,15 @@ finemap_res_multi <- anno_finemap_res(finemap_res,
 ```
 
 ```{r, echo=FALSE, eval=FALSE}
-pdf(file = "/project/xinhe/shengqian/test.pdf",width = 12,height = 10)
+pdf(file = "/project/xinhe/shengqian/LDL_FADS1.pdf",width = 12,height = 10)
 make_locusplot(finemap_res_multi,
-               region_id = "9_127293231_129403191",
+               region_id = "11_59013076_62456299",
+               locus_range = c(61700000,62000000),
                ens_db = ens_db,
                weights = weights,
                highlight_pip = 0.8,
                filter_protein_coding_genes = TRUE,
-               filter_cs = TRUE,
+               filter_cs = FALSE,
                color_pval_by = "cs",
                color_pip_by = "cs",
                panel.heights = c(4, 4, 1, 4))
