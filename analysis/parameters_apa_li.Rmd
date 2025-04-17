@@ -110,6 +110,33 @@ plot_multi <- function(p1,p2,p3,title=NULL) {
 
 ```
 
+# apaQTL summary
+
+```{r warning=F,message=F}
+
+cis_files <- list.files(path = "/project2/xinhe/shared_data/multigroup_ctwas/weights/apa_li/",pattern = "cis.3aQTL.txt")
+
+sum <- c()
+for (file in cis_files){
+  
+  tissue <- gsub(pattern = ".cis.3aQTL.txt",replacement = "",x = file)
+  
+  cisdf <- data.table::fread(paste0("/project2/xinhe/shared_data/multigroup_ctwas/weights/apa_li/",file))
+  
+  cisdf$fdr <- p.adjust(as.numeric(cisdf$p.value), method = "fdr")
+  cisdf_fdr005 <- cisdf[cisdf$fdr < 0.05,]
+  count_df <- cisdf_fdr005[, .N, by = transcript]
+  avg <- sum(count_df$N)/nrow(count_df)
+  
+  tmp <- c(tissue,avg,nrow(count_df))
+  sum <- rbind(sum,tmp)
+}
+
+rownames(sum) <- NULL
+colnames(sum) <- c("Tissue","avg_qtl_fdr005","num_gene")
+
+DT::datatable(sum,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Average number of apaQTL per gene'),options = list(pageLength = 10) )
+```
 
 
 # LDL-ukb-d-30780_irnt

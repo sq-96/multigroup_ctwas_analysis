@@ -38,6 +38,14 @@
 <script src="site_libs/navigation-1.1/codefolding.js"></script>
 <link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/htmlwidgets-1.5.4/htmlwidgets.js"></script>
+<link href="site_libs/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet" />
+<script src="site_libs/datatables-binding-0.22/datatables.js"></script>
+<link href="site_libs/dt-core-1.11.3/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="site_libs/dt-core-1.11.3/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="site_libs/dt-core-1.11.3/js/jquery.dataTables.min.js"></script>
+<link href="site_libs/crosstalk-1.2.0/css/crosstalk.min.css" rel="stylesheet" />
+<script src="site_libs/crosstalk-1.2.0/js/crosstalk.min.js"></script>
 <link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
 <link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
 
@@ -536,15 +544,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree795f8ce2ba143740db834d4e84fe6b21a6d0634atargetblank795f8cea">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree6e494579437be150bbe961d8a709e3f52794f2e6targetblank6e49457a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/795f8ce2ba143740db834d4e84fe6b21a6d0634a" target="_blank">795f8ce</a>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/6e494579437be150bbe961d8a709e3f52794f2e6" target="_blank">6e49457</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree795f8ce2ba143740db834d4e84fe6b21a6d0634atargetblank795f8cea"
+id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree6e494579437be150bbe961d8a709e3f52794f2e6targetblank6e49457a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -554,7 +562,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/795f8ce2ba143740db834d4e84fe6b21a6d0634a" target="_blank">795f8ce</a>.
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/6e494579437be150bbe961d8a709e3f52794f2e6" target="_blank">6e49457</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -572,11 +580,7 @@ Ignored files:
     Ignored:    .Rhistory
     Ignored:    cv/
 
-Untracked files:
-    Untracked:  slurm-30495497.out
-
 Unstaged changes:
-    Modified:   analysis/comparing_differnt_settings_ldmm.Rmd
     Modified:   analysis/parameters_apa_li.Rmd
 
 </code></pre>
@@ -623,6 +627,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/6e494579437be150bbe961d8a709e3f52794f2e6/analysis/parameters_apa_li.Rmd" target="_blank">6e49457</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-04-17
+</td>
+<td>
+update
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/sq-96/multigroup_ctwas_analysis/6e494579437be150bbe961d8a709e3f52794f2e6/docs/parameters_apa_li.html" target="_blank">6e49457</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-04-17
+</td>
+<td>
+update
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -815,6 +853,33 @@ plot_multi &lt;- function(p1,p2,p3,title=NULL) {
   
 }</code></pre>
 </div>
+<div id="apaqtl-summary" class="section level1">
+<h1>apaQTL summary</h1>
+<pre class="r"><code>cis_files &lt;- list.files(path = &quot;/project2/xinhe/shared_data/multigroup_ctwas/weights/apa_li/&quot;,pattern = &quot;cis.3aQTL.txt&quot;)
+
+sum &lt;- c()
+for (file in cis_files){
+  
+  tissue &lt;- gsub(pattern = &quot;.cis.3aQTL.txt&quot;,replacement = &quot;&quot;,x = file)
+  
+  cisdf &lt;- data.table::fread(paste0(&quot;/project2/xinhe/shared_data/multigroup_ctwas/weights/apa_li/&quot;,file))
+  
+  cisdf$fdr &lt;- p.adjust(as.numeric(cisdf$p.value), method = &quot;fdr&quot;)
+  cisdf_fdr005 &lt;- cisdf[cisdf$fdr &lt; 0.05,]
+  count_df &lt;- cisdf_fdr005[, .N, by = transcript]
+  avg &lt;- sum(count_df$N)/nrow(count_df)
+  
+  tmp &lt;- c(tissue,avg,nrow(count_df))
+  sum &lt;- rbind(sum,tmp)
+}
+
+rownames(sum) &lt;- NULL
+colnames(sum) &lt;- c(&quot;Tissue&quot;,&quot;avg_qtl_fdr005&quot;,&quot;num_gene&quot;)
+
+DT::datatable(sum,caption = htmltools::tags$caption( style = &#39;caption-side: left; text-align: left; color:black;  font-size:150% ;&#39;,&#39;Average number of apaQTL per gene&#39;),options = list(pageLength = 10) )</code></pre>
+<div id="htmlwidget-4de263013227ca78a293" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-4de263013227ca78a293">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">Average number of apaQTL per gene<\/caption>","data":[["Adipose_Subcutaneous","Adipose_Visceral_Omentum","Adrenal_Gland","Artery_Aorta","Artery_Coronary","Artery_Tibial","Brain_Amygdala","Brain_Anterior_cingulate_cortex_BA24","Brain_Caudate_basal_ganglia","Brain_Cerebellar_Hemisphere","Brain_Cerebellum","Brain_Cortex","Brain_Frontal_Cortex_BA9","Brain_Hippocampus","Brain_Hypothalamus","Brain_Nucleus_accumbens_basal_ganglia","Brain_Putamen_basal_ganglia","Brain_Spinal_cord_cervical_c-1","Breast_Mammary_Tissue","Cells_EBV-transformed_lymphocytes","Cells_Transformed_fibroblasts","Colon_Sigmoid","Colon_Transverse","Esophagus_Gastroesophageal_Junction","Esophagus_Mucosa","Esophagus_Muscularis","Heart_Atrial_Appendage","Heart_Left_Ventricle","Liver","Lung","Muscle_Skeletal","Nerve_Tibial","Ovary","Pancreas","Pituitary","Prostate","Skin_Not_Sun_Exposed_Suprapubic","Skin_Sun_Exposed_Lower_leg","Small_Intestine_Terminal_Ileum","Spleen","Stomach","Testis","Thyroid","Uterus","Vagina","Whole_Blood"],["52.9422222222222","47.6139618138425","37.8311036789298","47.1340282948622","33.0562874251497","51.2350515463918","27.7352941176471","39.0087336244542","33.8086956521739","39.6397058823529","41.2560175054705","34.1123778501629","36.8775","44.5041666666667","41.9618055555556","36","33.535","27.303738317757","36.3502509760178","42.8323076923077","44.0351979886864","40.2881493506493","47.0943672275055","45.6040268456376","54.0393032603841","52.9166666666667","47.9588652482269","47.6416040100251","41.5643431635389","53.8252771618625","54.0632497273719","49.8113300492611","33.5936435868331","40.0051858254105","39.088295687885","30.3194321206744","45.2229924898902","49.2748858447489","37.5116696588869","34.4914285714286","42.2837370242215","39.0725050916497","53.5209066041422","37.8435897435897","36.7725752508361","54.036301369863"],["2250","1676","1196","1343","835","1940","136","229","575","408","457","614","400","240","288","350","400","214","1793","650","1591","1232","1367","1341","2239","2208","1410","1197","746","2255","1834","2030","881","1157","974","1127","1731","2190","557","1225","1156","2455","2559","390","598","1460"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>Tissue<\/th>\n      <th>avg_qtl_fdr005<\/th>\n      <th>num_gene<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
 <div id="ldl-ukb-d-30780_irnt" class="section level1">
 <h1>LDL-ukb-d-30780_irnt</h1>
 <pre class="r"><code>trait &lt;- &quot;LDL-ukb-d-30780_irnt&quot;
@@ -851,7 +916,44 @@ pve_pie_by_type_single &lt;- plot_piechart_topn(ctwas_parameters = ctwas_paramet
 
 
 plot_multi(pve_pie_by_type_single,pve_pie_by_type_apaonly,pve_pie_by_type_susieST, title=trait)</code></pre>
-<p><img src="figure/parameters_apa_li.Rmd/unnamed-chunk-4-1.png" width="1440" style="display: block; margin: auto;" /></p>
+<p><img src="figure/parameters_apa_li.Rmd/unnamed-chunk-5-1.png" width="1440" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-5-1">
+Past versions of unnamed-chunk-5-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-5-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/bda6e43c069dced286db546b09122f1d4bdf1246/docs/figure/parameters_apa_li.Rmd/unnamed-chunk-5-1.png" target="_blank">bda6e43</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-04-09
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>TableGrob (2 x 3) &quot;arrange&quot;: 4 grobs
   z     cells    name                grob
 1 1 (2-2,1-1) arrange      gtable[layout]
@@ -896,44 +998,7 @@ pve_pie_by_type_single &lt;- plot_piechart_topn(ctwas_parameters = ctwas_paramet
 
 
 plot_multi(pve_pie_by_type_single,pve_pie_by_type_apaonly,pve_pie_by_type_susieST, title=trait)</code></pre>
-<p><img src="figure/parameters_apa_li.Rmd/unnamed-chunk-7-1.png" width="1440" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-7-1">
-Past versions of unnamed-chunk-7-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-7-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/bda6e43c069dced286db546b09122f1d4bdf1246/docs/figure/parameters_apa_li.Rmd/unnamed-chunk-7-1.png" target="_blank">bda6e43</a>
-</td>
-<td>
-XSun
-</td>
-<td>
-2025-04-09
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
+<p><img src="figure/parameters_apa_li.Rmd/unnamed-chunk-8-1.png" width="1440" style="display: block; margin: auto;" /></p>
 <pre><code>TableGrob (2 x 3) &quot;arrange&quot;: 4 grobs
   z     cells    name                grob
 1 1 (2-2,1-1) arrange      gtable[layout]
@@ -978,7 +1043,44 @@ pve_pie_by_type_single &lt;- plot_piechart_topn(ctwas_parameters = ctwas_paramet
 
 
 plot_multi(pve_pie_by_type_single,pve_pie_by_type_apaonly,pve_pie_by_type_susieST, title=trait)</code></pre>
-<p><img src="figure/parameters_apa_li.Rmd/unnamed-chunk-10-1.png" width="1440" style="display: block; margin: auto;" /></p>
+<p><img src="figure/parameters_apa_li.Rmd/unnamed-chunk-11-1.png" width="1440" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-11-1">
+Past versions of unnamed-chunk-11-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-11-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/bda6e43c069dced286db546b09122f1d4bdf1246/docs/figure/parameters_apa_li.Rmd/unnamed-chunk-11-1.png" target="_blank">bda6e43</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-04-09
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>TableGrob (2 x 3) &quot;arrange&quot;: 4 grobs
   z     cells    name                grob
 1 1 (2-2,1-1) arrange      gtable[layout]
@@ -1023,44 +1125,7 @@ pve_pie_by_type_single &lt;- plot_piechart_topn(ctwas_parameters = ctwas_paramet
 
 
 plot_multi(pve_pie_by_type_single,pve_pie_by_type_apaonly,pve_pie_by_type_susieST, title=trait)</code></pre>
-<p><img src="figure/parameters_apa_li.Rmd/unnamed-chunk-13-1.png" width="1440" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-13-1">
-Past versions of unnamed-chunk-13-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-13-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/bda6e43c069dced286db546b09122f1d4bdf1246/docs/figure/parameters_apa_li.Rmd/unnamed-chunk-13-1.png" target="_blank">bda6e43</a>
-</td>
-<td>
-XSun
-</td>
-<td>
-2025-04-09
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
+<p><img src="figure/parameters_apa_li.Rmd/unnamed-chunk-14-1.png" width="1440" style="display: block; margin: auto;" /></p>
 <pre><code>TableGrob (2 x 3) &quot;arrange&quot;: 4 grobs
   z     cells    name                grob
 1 1 (2-2,1-1) arrange      gtable[layout]
@@ -1117,7 +1182,44 @@ pve_pie_by_type_single &lt;- plot_piechart_topn(ctwas_parameters = ctwas_paramet
 
 
 plot_multi(pve_pie_by_type_single,pve_pie_by_type_apaonly,pve_pie_by_type_susieST, title=trait)</code></pre>
-<p><img src="figure/parameters_apa_li.Rmd/unnamed-chunk-16-1.png" width="1440" style="display: block; margin: auto;" /></p>
+<p><img src="figure/parameters_apa_li.Rmd/unnamed-chunk-17-1.png" width="1440" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-17-1">
+Past versions of unnamed-chunk-17-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-17-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/bda6e43c069dced286db546b09122f1d4bdf1246/docs/figure/parameters_apa_li.Rmd/unnamed-chunk-17-1.png" target="_blank">bda6e43</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-04-09
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>TableGrob (2 x 3) &quot;arrange&quot;: 4 grobs
   z     cells    name                grob
 1 1 (2-2,1-1) arrange      gtable[layout]
@@ -1174,44 +1276,7 @@ pve_pie_by_type_single &lt;- plot_piechart_topn(ctwas_parameters = ctwas_paramet
 
 
 plot_multi(pve_pie_by_type_single,pve_pie_by_type_apaonly,pve_pie_by_type_susieST, title=trait)</code></pre>
-<p><img src="figure/parameters_apa_li.Rmd/unnamed-chunk-19-1.png" width="1440" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-19-1">
-Past versions of unnamed-chunk-19-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-19-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/bda6e43c069dced286db546b09122f1d4bdf1246/docs/figure/parameters_apa_li.Rmd/unnamed-chunk-19-1.png" target="_blank">bda6e43</a>
-</td>
-<td>
-XSun
-</td>
-<td>
-2025-04-09
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
+<p><img src="figure/parameters_apa_li.Rmd/unnamed-chunk-20-1.png" width="1440" style="display: block; margin: auto;" /></p>
 <pre><code>TableGrob (2 x 3) &quot;arrange&quot;: 4 grobs
   z     cells    name                grob
 1 1 (2-2,1-1) arrange      gtable[layout]
@@ -1251,69 +1316,70 @@ loaded via a namespace (and not attached):
   [1] readxl_1.4.0                backports_1.4.1            
   [3] workflowr_1.7.0             BiocFileCache_2.4.0        
   [5] repr_1.1.4                  lazyeval_0.2.2             
-  [7] BiocParallel_1.30.3         GenomeInfoDb_1.39.9        
-  [9] LDlinkR_1.2.3               digest_0.6.29              
- [11] ensembldb_2.20.2            htmltools_0.5.2            
- [13] fansi_1.0.3                 magrittr_2.0.3             
- [15] memoise_2.0.1               tzdb_0.4.0                 
- [17] Biostrings_2.64.0           modelr_0.1.8               
- [19] AMR_2.1.1                   matrixStats_0.62.0         
- [21] locuszoomr_0.2.1            prettyunits_1.1.1          
- [23] colorspace_2.0-3            skimr_2.1.4                
- [25] blob_1.2.3                  rvest_1.0.2                
- [27] rappdirs_0.3.3              haven_2.5.0                
- [29] xfun_0.41                   crayon_1.5.1               
- [31] RCurl_1.98-1.7              jsonlite_1.8.0             
- [33] zoo_1.8-10                  glue_1.6.2                 
- [35] gtable_0.3.0                zlibbioc_1.42.0            
- [37] XVector_0.36.0              DelayedArray_0.22.0        
- [39] BiocGenerics_0.42.0         scales_1.3.0               
- [41] DBI_1.2.2                   Rcpp_1.0.12                
- [43] viridisLite_0.4.0           progress_1.2.2             
- [45] bit_4.0.4                   stats4_4.2.0               
- [47] htmlwidgets_1.5.4           httr_1.4.3                 
- [49] RColorBrewer_1.1-3          ellipsis_0.3.2             
- [51] farver_2.1.0                pkgconfig_2.0.3            
- [53] XML_3.99-0.14               sass_0.4.1                 
- [55] dbplyr_2.1.1                utf8_1.2.2                 
- [57] labeling_0.4.2              tidyselect_1.2.0           
- [59] rlang_1.1.2                 later_1.3.0                
- [61] AnnotationDbi_1.58.0        munsell_0.5.0              
- [63] pgenlibr_0.3.3              cellranger_1.1.0           
- [65] tools_4.2.0                 cachem_1.0.6               
- [67] cli_3.6.1                   generics_0.1.2             
- [69] RSQLite_2.3.1               broom_0.8.0                
- [71] evaluate_0.15               fastmap_1.1.0              
- [73] yaml_2.3.5                  knitr_1.39                 
- [75] bit64_4.0.5                 fs_1.5.2                   
- [77] KEGGREST_1.36.3             AnnotationFilter_1.20.0    
- [79] whisker_0.4                 xml2_1.3.3                 
- [81] biomaRt_2.54.1              compiler_4.2.0             
- [83] rstudioapi_0.13             plotly_4.10.0              
- [85] filelock_1.0.2              curl_4.3.2                 
- [87] png_0.1-7                   reprex_2.0.1               
- [89] bslib_0.3.1                 stringi_1.7.6              
- [91] highr_0.9                   GenomicFeatures_1.48.3     
- [93] lattice_0.20-45             ProtGenerics_1.28.0        
- [95] Matrix_1.5-3                vctrs_0.6.5                
- [97] pillar_1.9.0                lifecycle_1.0.4            
- [99] jquerylib_0.1.4             data.table_1.14.2          
-[101] cowplot_1.1.1               bitops_1.0-7               
-[103] irlba_2.3.5                 httpuv_1.6.5               
-[105] rtracklayer_1.56.0          GenomicRanges_1.48.0       
-[107] R6_2.5.1                    BiocIO_1.6.0               
-[109] promises_1.2.0.1            IRanges_2.30.0             
-[111] codetools_0.2-18            assertthat_0.2.1           
-[113] SummarizedExperiment_1.26.1 rprojroot_2.0.3            
-[115] rjson_0.2.21                withr_2.5.0                
-[117] GenomicAlignments_1.32.0    Rsamtools_2.12.0           
-[119] S4Vectors_0.34.0            GenomeInfoDbData_1.2.8     
-[121] parallel_4.2.0              hms_1.1.1                  
-[123] gggrid_0.2-0                rmarkdown_2.25             
-[125] MatrixGenerics_1.8.0        logging_0.10-108           
-[127] git2r_0.30.1                mixsqp_0.3-43              
-[129] Biobase_2.56.0              lubridate_1.8.0            
-[131] base64enc_0.1-3             restfulr_0.0.14            </code></pre>
+  [7] crosstalk_1.2.0             BiocParallel_1.30.3        
+  [9] GenomeInfoDb_1.39.9         LDlinkR_1.2.3              
+ [11] digest_0.6.29               ensembldb_2.20.2           
+ [13] htmltools_0.5.2             fansi_1.0.3                
+ [15] magrittr_2.0.3              memoise_2.0.1              
+ [17] tzdb_0.4.0                  Biostrings_2.64.0          
+ [19] modelr_0.1.8                AMR_2.1.1                  
+ [21] matrixStats_0.62.0          locuszoomr_0.2.1           
+ [23] prettyunits_1.1.1           colorspace_2.0-3           
+ [25] skimr_2.1.4                 blob_1.2.3                 
+ [27] rvest_1.0.2                 rappdirs_0.3.3             
+ [29] haven_2.5.0                 xfun_0.41                  
+ [31] crayon_1.5.1                RCurl_1.98-1.7             
+ [33] jsonlite_1.8.0              zoo_1.8-10                 
+ [35] glue_1.6.2                  gtable_0.3.0               
+ [37] zlibbioc_1.42.0             XVector_0.36.0             
+ [39] DelayedArray_0.22.0         BiocGenerics_0.42.0        
+ [41] scales_1.3.0                DBI_1.2.2                  
+ [43] Rcpp_1.0.12                 viridisLite_0.4.0          
+ [45] progress_1.2.2              bit_4.0.4                  
+ [47] DT_0.22                     stats4_4.2.0               
+ [49] htmlwidgets_1.5.4           httr_1.4.3                 
+ [51] RColorBrewer_1.1-3          ellipsis_0.3.2             
+ [53] farver_2.1.0                pkgconfig_2.0.3            
+ [55] XML_3.99-0.14               sass_0.4.1                 
+ [57] dbplyr_2.1.1                utf8_1.2.2                 
+ [59] labeling_0.4.2              tidyselect_1.2.0           
+ [61] rlang_1.1.2                 later_1.3.0                
+ [63] AnnotationDbi_1.58.0        munsell_0.5.0              
+ [65] pgenlibr_0.3.3              cellranger_1.1.0           
+ [67] tools_4.2.0                 cachem_1.0.6               
+ [69] cli_3.6.1                   generics_0.1.2             
+ [71] RSQLite_2.3.1               broom_0.8.0                
+ [73] evaluate_0.15               fastmap_1.1.0              
+ [75] yaml_2.3.5                  knitr_1.39                 
+ [77] bit64_4.0.5                 fs_1.5.2                   
+ [79] KEGGREST_1.36.3             AnnotationFilter_1.20.0    
+ [81] whisker_0.4                 xml2_1.3.3                 
+ [83] biomaRt_2.54.1              compiler_4.2.0             
+ [85] rstudioapi_0.13             plotly_4.10.0              
+ [87] filelock_1.0.2              curl_4.3.2                 
+ [89] png_0.1-7                   reprex_2.0.1               
+ [91] bslib_0.3.1                 stringi_1.7.6              
+ [93] highr_0.9                   GenomicFeatures_1.48.3     
+ [95] lattice_0.20-45             ProtGenerics_1.28.0        
+ [97] Matrix_1.5-3                vctrs_0.6.5                
+ [99] pillar_1.9.0                lifecycle_1.0.4            
+[101] jquerylib_0.1.4             data.table_1.14.2          
+[103] cowplot_1.1.1               bitops_1.0-7               
+[105] irlba_2.3.5                 httpuv_1.6.5               
+[107] rtracklayer_1.56.0          GenomicRanges_1.48.0       
+[109] R6_2.5.1                    BiocIO_1.6.0               
+[111] promises_1.2.0.1            IRanges_2.30.0             
+[113] codetools_0.2-18            assertthat_0.2.1           
+[115] SummarizedExperiment_1.26.1 rprojroot_2.0.3            
+[117] rjson_0.2.21                withr_2.5.0                
+[119] GenomicAlignments_1.32.0    Rsamtools_2.12.0           
+[121] S4Vectors_0.34.0            GenomeInfoDbData_1.2.8     
+[123] parallel_4.2.0              hms_1.1.1                  
+[125] gggrid_0.2-0                rmarkdown_2.25             
+[127] MatrixGenerics_1.8.0        logging_0.10-108           
+[129] git2r_0.30.1                mixsqp_0.3-43              
+[131] Biobase_2.56.0              lubridate_1.8.0            
+[133] base64enc_0.1-3             restfulr_0.0.14            </code></pre>
 </div>
 </div>
 </div>
