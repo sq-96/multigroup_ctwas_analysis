@@ -137,6 +137,29 @@ plot_power <- function(results_dir,runtag,simutags){
   theme_cowplot()
 }
 
+check_power <- function(results_dir,runtag,simutags,screen_region){
+  if(screen_region==TRUE){
+    pipfs_all_ctwas <- paste0(results_dir, runtag, "_simu",simutags,".thin1.shared_all.ctwas.Gtest.minp0.mingene0.estimated_parameter.screened_region.finemap_regions_res.RDS")
+  }
+  else{
+    pipfs_all_ctwas <- paste0(results_dir, runtag, "_simu",simutags,".thin1.shared_all.ctwas.Gtest.minp0.mingene0.estimated_parameter.finemap_regions_res.RDS")
+  }
+  phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
+
+  cau <- lapply(phenofs, function(x) {load(x);get_causal_id(phenores)})
+  df_all_ctwas <- NULL
+  for (i in 1:length(pipfs_all_ctwas)) {
+    res <- readRDS(pipfs_all_ctwas[i])
+    res <- res$finemap_res
+    res <- res[res$susie_pip>0.8,]
+    res <- data.frame(res[res$type!="SNP", ])
+    causal_genes <- cau[[i]]
+    causal_genes <- causal_genes[!grepl("^rs\\d+$", causal_genes)]
+    df_all_ctwas <- rbind(df_all_ctwas,c(length(intersect(res$id,causal_genes)), length(causal_genes)))
+  }
+  return(df_all_ctwas)
+}
+
 plot_PIP_shared_all_ctwas <- function(results_dir, runtag,  simutags, ...){
   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
   susieIfs <- paste0(results_dir, runtag, "_simu",simutags, ".thin1.shared_all.ctwas.Gtest.minp0.mingene0.estimated_parameter.finemap_regions_res.RDS")
@@ -149,8 +172,9 @@ plot_PIP_shared_all_ctwas <- function(results_dir, runtag,  simutags, ...){
 ```{r}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_two_tissues_expression_enrichment/"
 runtag = "two_tissues"
-simutags <- paste(5, 1:10, sep = "-")
-plot_power(results_dir, runtag, simutags)
+simutags <- paste(3, 1:10, sep = "-")
+aa<-check_power(results_dir, runtag, simutags,screen_region = FALSE)
+bb<-check_power(results_dir, runtag, simutags,screen_region = TRUE)
 ```
  
 ```{r}
