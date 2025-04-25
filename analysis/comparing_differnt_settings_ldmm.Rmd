@@ -17,7 +17,15 @@ We compare different ld - mismatch settings
 
 ```{r}
 library(ggplot2)
+library(ctwas)
+library(dplyr)
+
 folder_results_susieST <- "/project/xinhe/xsun/multi_group_ctwas/15.susie_weights/snakemake_outputs/"
+
+mapping_predictdb <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
+mapping_munro <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/Munro_mapping.RDS")
+mapping_two <- rbind(mapping_predictdb,mapping_munro)
+
 ```
 
 # IBD-ebi-a-GCST004131
@@ -40,6 +48,18 @@ finemap_res_regionmerge <- ctwas_res_regionmerge$finemap_res
 finemap_res_gene_regionmerge <- finemap_res_regionmerge[finemap_res_regionmerge$type != "SNP",]
 
 df_summary <- c()
+
+susie_alpha_res_regionmerge <- ctwas_res_regionmerge$susie_alpha_res
+susie_alpha_res_regionmerge <- anno_susie_alpha_res(susie_alpha_res_regionmerge,
+                                        mapping_table = mapping_two,
+                                        map_by = "molecular_id",
+                                        drop_unmapped = TRUE)
+combined_pip_by_group_regionmerge <- combine_gene_pips(susie_alpha_res_regionmerge,
+                                           group_by = "gene_name",
+                                           by = "group",
+                                           method = "combine_cs",
+                                           filter_cs = TRUE,
+                                           include_cs_id = F)
 
 ```
 
@@ -108,6 +128,59 @@ if(file.exists(file_problematic_genes)) {
   gridExtra::grid.arrange(p1,p2,p3,p4,
                           ncol = 4,
                           top = paste0(trait,"-nonSNP_PIPs:",threshold_nonSNP_PIPs,"-SNP_p:",threshold_SNP_p))
+  
+  
+  
+  susie_alpha_res_ldmismatch <- ctwas_res_ldmismatch$susie_alpha_res
+  susie_alpha_res_ldmismatch <- anno_susie_alpha_res(susie_alpha_res_ldmismatch,
+                                                     mapping_table = mapping_two,
+                                                     map_by = "molecular_id",
+                                                     drop_unmapped = TRUE)
+  combined_pip_by_group_ldmismatch <- combine_gene_pips(susie_alpha_res_ldmismatch,
+                                                        group_by = "gene_name",
+                                                        by = "group",
+                                                        method = "combine_cs",
+                                                        filter_cs = TRUE,
+                                                        include_cs_id = F)
+  
+  
+  susie_alpha_res_ldmismatchnoLD <- ctwas_res_ldmismatchnoLD$susie_alpha_res
+  susie_alpha_res_ldmismatchnoLD <- anno_susie_alpha_res(susie_alpha_res_ldmismatchnoLD,
+                                                         mapping_table = mapping_two,
+                                                         map_by = "molecular_id",
+                                                         drop_unmapped = TRUE)
+  combined_pip_by_group_ldmismatchnoLD <- combine_gene_pips(susie_alpha_res_ldmismatchnoLD,
+                                                            group_by = "gene_name",
+                                                            by = "group",
+                                                            method = "combine_cs",
+                                                            filter_cs = TRUE,
+                                                            include_cs_id = F)
+  
+  combined_pip_by_group_ldmismatch <- combined_pip_by_group_ldmismatch[,c("gene_name","combined_pip")]
+  combined_pip_by_group_regionmerge <- combined_pip_by_group_regionmerge[,c("gene_name","combined_pip")]
+  combined_pip_by_group_ldmismatchnoLD <- combined_pip_by_group_ldmismatchnoLD[,c("gene_name","combined_pip")]
+  
+  
+  merged <- merge(combined_pip_by_group_regionmerge,combined_pip_by_group_ldmismatch, by = "gene_name", all.x = T)
+  merged <- merge(merged,combined_pip_by_group_ldmismatchnoLD, by = "gene_name", all.x = T)
+  
+  colnames(merged) <- c("gene_name","combined_pip_regionmerge", "combined_pip_ldmismatch_remove", "combined_pip_ldmismatchnoLD")
+  
+  genes_diff <- merged %>%
+    rowwise() %>%
+    dplyr::filter(n_distinct(c(combined_pip_regionmerge, combined_pip_ldmismatch_remove, combined_pip_ldmismatchnoLD)) > 1)
+  
+  
+  known <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/data/silverstandard/known_annotations_IBD.RDS"))
+  bystander <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/data/silverstandard/bystanders_IBD.RDS"))
+  
+  genes_diff <- genes_diff %>%
+    mutate(
+      is_silver = gene_name %in% known,
+      is_bystander = gene_name %in% bystander
+    )
+
+  
 }else {
   
   n_problematic_gene <- 0
@@ -121,6 +194,8 @@ setting <- paste0("genepip",threshold_nonSNP_PIPs,"_snpp_",threshold_SNP_p)
 tmp <- c(setting, n_problematic_snp, n_problematic_gene)
 
 df_summary <- rbind(df_summary,tmp)
+
+DT::datatable(genes_diff,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Genes -- PIP changed'),options = list(pageLength = 10) )
 
 ```
 
@@ -194,6 +269,59 @@ if(file.exists(file_problematic_genes)) {
   gridExtra::grid.arrange(p1,p2,p3,p4,
                           ncol = 4,
                           top = paste0(trait,"-nonSNP_PIPs:",threshold_nonSNP_PIPs,"-SNP_p:",threshold_SNP_p))
+  
+  
+  
+  susie_alpha_res_ldmismatch <- ctwas_res_ldmismatch$susie_alpha_res
+  susie_alpha_res_ldmismatch <- anno_susie_alpha_res(susie_alpha_res_ldmismatch,
+                                                     mapping_table = mapping_two,
+                                                     map_by = "molecular_id",
+                                                     drop_unmapped = TRUE)
+  combined_pip_by_group_ldmismatch <- combine_gene_pips(susie_alpha_res_ldmismatch,
+                                                        group_by = "gene_name",
+                                                        by = "group",
+                                                        method = "combine_cs",
+                                                        filter_cs = TRUE,
+                                                        include_cs_id = F)
+  
+  
+  susie_alpha_res_ldmismatchnoLD <- ctwas_res_ldmismatchnoLD$susie_alpha_res
+  susie_alpha_res_ldmismatchnoLD <- anno_susie_alpha_res(susie_alpha_res_ldmismatchnoLD,
+                                                         mapping_table = mapping_two,
+                                                         map_by = "molecular_id",
+                                                         drop_unmapped = TRUE)
+  combined_pip_by_group_ldmismatchnoLD <- combine_gene_pips(susie_alpha_res_ldmismatchnoLD,
+                                                            group_by = "gene_name",
+                                                            by = "group",
+                                                            method = "combine_cs",
+                                                            filter_cs = TRUE,
+                                                            include_cs_id = F)
+  
+  combined_pip_by_group_ldmismatch <- combined_pip_by_group_ldmismatch[,c("gene_name","combined_pip")]
+  combined_pip_by_group_regionmerge <- combined_pip_by_group_regionmerge[,c("gene_name","combined_pip")]
+  combined_pip_by_group_ldmismatchnoLD <- combined_pip_by_group_ldmismatchnoLD[,c("gene_name","combined_pip")]
+  
+  
+  merged <- merge(combined_pip_by_group_regionmerge,combined_pip_by_group_ldmismatch, by = "gene_name", all.x = T)
+  merged <- merge(merged,combined_pip_by_group_ldmismatchnoLD, by = "gene_name", all.x = T)
+  
+  colnames(merged) <- c("gene_name","combined_pip_regionmerge", "combined_pip_ldmismatch_remove", "combined_pip_ldmismatchnoLD")
+  
+  genes_diff <- merged %>%
+    rowwise() %>%
+    dplyr::filter(n_distinct(c(combined_pip_regionmerge, combined_pip_ldmismatch_remove, combined_pip_ldmismatchnoLD)) > 1)
+  
+  
+  known <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/data/silverstandard/known_annotations_IBD.RDS"))
+  bystander <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/data/silverstandard/bystanders_IBD.RDS"))
+  
+  genes_diff <- genes_diff %>%
+    mutate(
+      is_silver = gene_name %in% known,
+      is_bystander = gene_name %in% bystander
+    )
+
+  
 }else {
   
   n_problematic_gene <- 0
@@ -207,6 +335,8 @@ setting <- paste0("genepip",threshold_nonSNP_PIPs,"_snpp_",threshold_SNP_p)
 tmp <- c(setting, n_problematic_snp, n_problematic_gene)
 
 df_summary <- rbind(df_summary,tmp)
+
+DT::datatable(genes_diff,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Genes -- PIP changed'),options = list(pageLength = 10) )
 
 ```
 
@@ -275,6 +405,59 @@ if(file.exists(file_problematic_genes)) {
   gridExtra::grid.arrange(p1,p2,p3,p4,
                           ncol = 4,
                           top = paste0(trait,"-nonSNP_PIPs:",threshold_nonSNP_PIPs,"-SNP_p:",threshold_SNP_p))
+  
+  
+  
+  susie_alpha_res_ldmismatch <- ctwas_res_ldmismatch$susie_alpha_res
+  susie_alpha_res_ldmismatch <- anno_susie_alpha_res(susie_alpha_res_ldmismatch,
+                                                     mapping_table = mapping_two,
+                                                     map_by = "molecular_id",
+                                                     drop_unmapped = TRUE)
+  combined_pip_by_group_ldmismatch <- combine_gene_pips(susie_alpha_res_ldmismatch,
+                                                        group_by = "gene_name",
+                                                        by = "group",
+                                                        method = "combine_cs",
+                                                        filter_cs = TRUE,
+                                                        include_cs_id = F)
+  
+  
+  susie_alpha_res_ldmismatchnoLD <- ctwas_res_ldmismatchnoLD$susie_alpha_res
+  susie_alpha_res_ldmismatchnoLD <- anno_susie_alpha_res(susie_alpha_res_ldmismatchnoLD,
+                                                         mapping_table = mapping_two,
+                                                         map_by = "molecular_id",
+                                                         drop_unmapped = TRUE)
+  combined_pip_by_group_ldmismatchnoLD <- combine_gene_pips(susie_alpha_res_ldmismatchnoLD,
+                                                            group_by = "gene_name",
+                                                            by = "group",
+                                                            method = "combine_cs",
+                                                            filter_cs = TRUE,
+                                                            include_cs_id = F)
+  
+  combined_pip_by_group_ldmismatch <- combined_pip_by_group_ldmismatch[,c("gene_name","combined_pip")]
+  combined_pip_by_group_regionmerge <- combined_pip_by_group_regionmerge[,c("gene_name","combined_pip")]
+  combined_pip_by_group_ldmismatchnoLD <- combined_pip_by_group_ldmismatchnoLD[,c("gene_name","combined_pip")]
+  
+  
+  merged <- merge(combined_pip_by_group_regionmerge,combined_pip_by_group_ldmismatch, by = "gene_name", all.x = T)
+  merged <- merge(merged,combined_pip_by_group_ldmismatchnoLD, by = "gene_name", all.x = T)
+  
+  colnames(merged) <- c("gene_name","combined_pip_regionmerge", "combined_pip_ldmismatch_remove", "combined_pip_ldmismatchnoLD")
+  
+  genes_diff <- merged %>%
+    rowwise() %>%
+    dplyr::filter(n_distinct(c(combined_pip_regionmerge, combined_pip_ldmismatch_remove, combined_pip_ldmismatchnoLD)) > 1)
+  
+  
+  known <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/data/silverstandard/known_annotations_IBD.RDS"))
+  bystander <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/data/silverstandard/bystanders_IBD.RDS"))
+  
+  genes_diff <- genes_diff %>%
+    mutate(
+      is_silver = gene_name %in% known,
+      is_bystander = gene_name %in% bystander
+    )
+
+  
 }else {
   
   n_problematic_gene <- 0
@@ -288,6 +471,8 @@ setting <- paste0("genepip",threshold_nonSNP_PIPs,"_snpp_",threshold_SNP_p)
 tmp <- c(setting, n_problematic_snp, n_problematic_gene)
 
 df_summary <- rbind(df_summary,tmp)
+
+DT::datatable(genes_diff,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Genes -- PIP changed'),options = list(pageLength = 10) )
 
 ```
 
@@ -357,6 +542,59 @@ if(file.exists(file_problematic_genes)) {
   gridExtra::grid.arrange(p1,p2,p3,p4,
                           ncol = 4,
                           top = paste0(trait,"-nonSNP_PIPs:",threshold_nonSNP_PIPs,"-SNP_p:",threshold_SNP_p))
+  
+  
+  
+  susie_alpha_res_ldmismatch <- ctwas_res_ldmismatch$susie_alpha_res
+  susie_alpha_res_ldmismatch <- anno_susie_alpha_res(susie_alpha_res_ldmismatch,
+                                                     mapping_table = mapping_two,
+                                                     map_by = "molecular_id",
+                                                     drop_unmapped = TRUE)
+  combined_pip_by_group_ldmismatch <- combine_gene_pips(susie_alpha_res_ldmismatch,
+                                                        group_by = "gene_name",
+                                                        by = "group",
+                                                        method = "combine_cs",
+                                                        filter_cs = TRUE,
+                                                        include_cs_id = F)
+  
+  
+  susie_alpha_res_ldmismatchnoLD <- ctwas_res_ldmismatchnoLD$susie_alpha_res
+  susie_alpha_res_ldmismatchnoLD <- anno_susie_alpha_res(susie_alpha_res_ldmismatchnoLD,
+                                                         mapping_table = mapping_two,
+                                                         map_by = "molecular_id",
+                                                         drop_unmapped = TRUE)
+  combined_pip_by_group_ldmismatchnoLD <- combine_gene_pips(susie_alpha_res_ldmismatchnoLD,
+                                                            group_by = "gene_name",
+                                                            by = "group",
+                                                            method = "combine_cs",
+                                                            filter_cs = TRUE,
+                                                            include_cs_id = F)
+  
+  combined_pip_by_group_ldmismatch <- combined_pip_by_group_ldmismatch[,c("gene_name","combined_pip")]
+  combined_pip_by_group_regionmerge <- combined_pip_by_group_regionmerge[,c("gene_name","combined_pip")]
+  combined_pip_by_group_ldmismatchnoLD <- combined_pip_by_group_ldmismatchnoLD[,c("gene_name","combined_pip")]
+  
+  
+  merged <- merge(combined_pip_by_group_regionmerge,combined_pip_by_group_ldmismatch, by = "gene_name", all.x = T)
+  merged <- merge(merged,combined_pip_by_group_ldmismatchnoLD, by = "gene_name", all.x = T)
+  
+  colnames(merged) <- c("gene_name","combined_pip_regionmerge", "combined_pip_ldmismatch_remove", "combined_pip_ldmismatchnoLD")
+  
+  genes_diff <- merged %>%
+    rowwise() %>%
+    dplyr::filter(n_distinct(c(combined_pip_regionmerge, combined_pip_ldmismatch_remove, combined_pip_ldmismatchnoLD)) > 1)
+  
+  
+  known <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/data/silverstandard/known_annotations_IBD.RDS"))
+  bystander <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/data/silverstandard/bystanders_IBD.RDS"))
+  
+  genes_diff <- genes_diff %>%
+    mutate(
+      is_silver = gene_name %in% known,
+      is_bystander = gene_name %in% bystander
+    )
+
+  
 }else {
   
   n_problematic_gene <- 0
@@ -370,6 +608,8 @@ setting <- paste0("genepip",threshold_nonSNP_PIPs,"_snpp_",threshold_SNP_p)
 tmp <- c(setting, n_problematic_snp, n_problematic_gene)
 
 df_summary <- rbind(df_summary,tmp)
+
+DT::datatable(genes_diff,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Genes -- PIP changed'),options = list(pageLength = 10) )
 
 ```
 
@@ -452,6 +692,59 @@ if(file.exists(file_problematic_genes)) {
   gridExtra::grid.arrange(p1,p2,p3,p4,
                           ncol = 4,
                           top = paste0(trait,"-nonSNP_PIPs:",threshold_nonSNP_PIPs,"-SNP_p:",threshold_SNP_p))
+  
+  
+  
+  susie_alpha_res_ldmismatch <- ctwas_res_ldmismatch$susie_alpha_res
+  susie_alpha_res_ldmismatch <- anno_susie_alpha_res(susie_alpha_res_ldmismatch,
+                                                     mapping_table = mapping_two,
+                                                     map_by = "molecular_id",
+                                                     drop_unmapped = TRUE)
+  combined_pip_by_group_ldmismatch <- combine_gene_pips(susie_alpha_res_ldmismatch,
+                                                        group_by = "gene_name",
+                                                        by = "group",
+                                                        method = "combine_cs",
+                                                        filter_cs = TRUE,
+                                                        include_cs_id = F)
+  
+  
+  susie_alpha_res_ldmismatchnoLD <- ctwas_res_ldmismatchnoLD$susie_alpha_res
+  susie_alpha_res_ldmismatchnoLD <- anno_susie_alpha_res(susie_alpha_res_ldmismatchnoLD,
+                                                         mapping_table = mapping_two,
+                                                         map_by = "molecular_id",
+                                                         drop_unmapped = TRUE)
+  combined_pip_by_group_ldmismatchnoLD <- combine_gene_pips(susie_alpha_res_ldmismatchnoLD,
+                                                            group_by = "gene_name",
+                                                            by = "group",
+                                                            method = "combine_cs",
+                                                            filter_cs = TRUE,
+                                                            include_cs_id = F)
+  
+  combined_pip_by_group_ldmismatch <- combined_pip_by_group_ldmismatch[,c("gene_name","combined_pip")]
+  combined_pip_by_group_regionmerge <- combined_pip_by_group_regionmerge[,c("gene_name","combined_pip")]
+  combined_pip_by_group_ldmismatchnoLD <- combined_pip_by_group_ldmismatchnoLD[,c("gene_name","combined_pip")]
+  
+  
+  merged <- merge(combined_pip_by_group_regionmerge,combined_pip_by_group_ldmismatch, by = "gene_name", all.x = T)
+  merged <- merge(merged,combined_pip_by_group_ldmismatchnoLD, by = "gene_name", all.x = T)
+  
+  colnames(merged) <- c("gene_name","combined_pip_regionmerge", "combined_pip_ldmismatch_remove", "combined_pip_ldmismatchnoLD")
+  
+  genes_diff <- merged %>%
+    rowwise() %>%
+    dplyr::filter(n_distinct(c(combined_pip_regionmerge, combined_pip_ldmismatch_remove, combined_pip_ldmismatchnoLD)) > 1)
+  
+  
+  known <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/data/silverstandard/known_annotations_IBD.RDS"))
+  bystander <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/data/silverstandard/bystanders_IBD.RDS"))
+  
+  genes_diff <- genes_diff %>%
+    mutate(
+      is_silver = gene_name %in% known,
+      is_bystander = gene_name %in% bystander
+    )
+
+  
 }else {
   
   n_problematic_gene <- 0
@@ -466,11 +759,16 @@ tmp <- c(setting, n_problematic_snp, n_problematic_gene)
 
 df_summary <- rbind(df_summary,tmp)
 
+DT::datatable(genes_diff,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Genes -- PIP changed'),options = list(pageLength = 10) )
+
 ```
+
+
 
 ```{r warning=F,message=F}
 
 colnames(df_summary) <- c("threshold","num_problematic_snp","num_problematic_gene")
+rownames(df_summary) <- NULL
 DT::datatable(df_summary,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Number of problematci genes & snps'),options = list(pageLength = 10) )
 
 ```
@@ -928,6 +1226,7 @@ df_summary <- rbind(df_summary,tmp)
 ```{r warning=F,message=F}
 
 colnames(df_summary) <- c("threshold","num_problematic_snp","num_problematic_gene")
+rownames(df_summary) <- NULL
 DT::datatable(df_summary,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Number of problematci genes & snps'),options = list(pageLength = 10) )
 
 ```
