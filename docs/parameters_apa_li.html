@@ -410,7 +410,7 @@ aria-hidden="true"></span> </a>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2025-04-17
+<strong>Last updated:</strong> 2025-04-25
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -544,15 +544,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree6e494579437be150bbe961d8a709e3f52794f2e6targetblank6e49457a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree278bbd9a31e794fb4edf80db64c209888ee30828targetblank278bbd9a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/6e494579437be150bbe961d8a709e3f52794f2e6" target="_blank">6e49457</a>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/278bbd9a31e794fb4edf80db64c209888ee30828" target="_blank">278bbd9</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree6e494579437be150bbe961d8a709e3f52794f2e6targetblank6e49457a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree278bbd9a31e794fb4edf80db64c209888ee30828targetblank278bbd9a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -562,7 +562,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/6e494579437be150bbe961d8a709e3f52794f2e6" target="_blank">6e49457</a>.
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/278bbd9a31e794fb4edf80db64c209888ee30828" target="_blank">278bbd9</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -580,8 +580,12 @@ Ignored files:
     Ignored:    .Rhistory
     Ignored:    cv/
 
+Untracked files:
+    Untracked:  analysis/edqtl.Rmd
+
 Unstaged changes:
     Modified:   analysis/parameters_apa_li.Rmd
+    Deleted:    slurm-30495497.out
 
 </code></pre>
 <p>
@@ -627,6 +631,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/278bbd9a31e794fb4edf80db64c209888ee30828/analysis/parameters_apa_li.Rmd" target="_blank">278bbd9</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-04-17
+</td>
+<td>
+update
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/sq-96/multigroup_ctwas_analysis/278bbd9a31e794fb4edf80db64c209888ee30828/docs/parameters_apa_li.html" target="_blank">278bbd9</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-04-17
+</td>
+<td>
+update
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -763,6 +801,9 @@ each gene, we used the lead QTL to construct a PredictDB model.</p>
 <pre class="r"><code>library(ctwas)
 library(ggplot2)
 library(tidyverse)
+library(dplyr)
+library(EnsDb.Hsapiens.v86)
+ens_db &lt;- EnsDb.Hsapiens.v86
 
 source(&quot;/project/xinhe/xsun/multi_group_ctwas/data/samplesize.R&quot;)
 source(&quot;/project/xinhe/xsun/multi_group_ctwas/functions/0.functions.R&quot;)
@@ -770,6 +811,11 @@ source(&quot;/project/xinhe/xsun/multi_group_ctwas/functions/0.functions.R&quot;
 folder_results_susieST &lt;- &quot;/project/xinhe/xsun/multi_group_ctwas/16.apa_li_weights/snakemake_outputs/&quot;
 folder_results_apaonly &lt;- &quot;/project/xinhe/xsun/multi_group_ctwas/16.apa_li_weights/snakemake_outputs_apaonly/&quot;
 folder_results_single &lt;- &quot;/project/xinhe/xsun/multi_group_ctwas/16.apa_li_weights/ctwas_output/apa/&quot;
+
+
+folder_results_susieST_susie &lt;- &quot;/project/xinhe/xsun/multi_group_ctwas/15.susie_weights/snakemake_outputs/&quot;
+folder_results_apaonly_susie &lt;- &quot;/project/xinhe/xsun/multi_group_ctwas/15.susie_weights/snakemake_outputs_marginaltissue/&quot;
+folder_results_single_susie &lt;- &quot;/project/xinhe/xsun/multi_group_ctwas/17.single_eQTL/ctwas_output/stability_weight_unscaled/&quot;
 
 # mapping_predictdb &lt;- readRDS(&quot;/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS&quot;)
 # mapping_munro &lt;- readRDS(&quot;/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/Munro_mapping.RDS&quot;)
@@ -886,8 +932,8 @@ DT::datatable(sum,caption = htmltools::tags$caption( style = &#39;caption-side: 
 st &lt;- &quot;with_susieST&quot;
 
 gwas_n &lt;- samplesize[trait]</code></pre>
-<div id="setting-shared_all-thin-1" class="section level2">
-<h2>Setting: shared_all, thin = 1</h2>
+<div id="h2g-for-setting-shared_all-thin-1" class="section level2">
+<h2>%h2g for setting: shared_all, thin = 1</h2>
 <pre class="r"><code>thin &lt;- 1
 var_struc &lt;- &quot;shared_all&quot;</code></pre>
 <pre class="r"><code>param_susieST &lt;- readRDS(paste0(folder_results_susieST,&quot;/&quot;,trait,&quot;/&quot;,trait,&quot;.&quot;,st,&quot;.thin&quot;,thin,&quot;.&quot;,var_struc,&quot;.param.RDS&quot;))
@@ -941,6 +987,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/278bbd9a31e794fb4edf80db64c209888ee30828/docs/figure/parameters_apa_li.Rmd/unnamed-chunk-5-1.png" target="_blank">278bbd9</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-04-17
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/bda6e43c069dced286db546b09122f1d4bdf1246/docs/figure/parameters_apa_li.Rmd/unnamed-chunk-5-1.png" target="_blank">bda6e43</a>
 </td>
 <td>
@@ -960,45 +1017,33 @@ XSun
 2 2 (2-2,2-2) arrange      gtable[layout]
 3 3 (2-2,3-3) arrange      gtable[layout]
 4 4 (1-1,1-3) arrange text[GRID.text.136]</code></pre>
-</div>
-</div>
-<div id="ibd-ebi-a-gcst004131" class="section level1">
-<h1>IBD-ebi-a-GCST004131</h1>
-<pre class="r"><code>trait &lt;- &quot;IBD-ebi-a-GCST004131&quot;
-st &lt;- &quot;with_susieST&quot;
-
-gwas_n &lt;- samplesize[trait]</code></pre>
-<div id="setting-shared_all-thin-1-1" class="section level2">
-<h2>Setting: shared_all, thin = 1</h2>
-<pre class="r"><code>thin &lt;- 1
-var_struc &lt;- &quot;shared_all&quot;</code></pre>
-<pre class="r"><code>param_susieST &lt;- readRDS(paste0(folder_results_susieST,&quot;/&quot;,trait,&quot;/&quot;,trait,&quot;.&quot;,st,&quot;.thin&quot;,thin,&quot;.&quot;,var_struc,&quot;.param.RDS&quot;))
+<pre class="r"><code>param_susieST &lt;- readRDS(paste0(folder_results_susieST_susie,&quot;/&quot;,trait,&quot;/&quot;,trait,&quot;.&quot;,st,&quot;.thin&quot;,thin,&quot;.&quot;,var_struc,&quot;.param.RDS&quot;))
 
 
 ctwas_parameters_susieST &lt;- summarize_param(param_susieST, gwas_n)
 total_nonSNPpve_susieST &lt;- 1- ctwas_parameters_susieST$prop_heritability[&quot;SNP&quot;]
-pve_pie_by_type_susieST &lt;- plot_piechart_topn(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = &quot;type&quot;, title = &quot;top-apa, multi-group&quot;)
+pve_pie_by_type_susieST &lt;- plot_piechart_topn(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = &quot;type&quot;, title = &quot;multi-group&quot;)
 
 
-param_apaonly &lt;- readRDS(paste0(folder_results_apaonly,&quot;/&quot;,trait,&quot;/&quot;,trait,&quot;.&quot;,st,&quot;.thin&quot;,thin,&quot;.&quot;,var_struc,&quot;.param.RDS&quot;))
+param_apaonly &lt;- readRDS(paste0(folder_results_apaonly_susie,&quot;/&quot;,trait,&quot;/&quot;,trait,&quot;.&quot;,st,&quot;.thin&quot;,thin,&quot;.&quot;,var_struc,&quot;.param.RDS&quot;))
 
 ctwas_parameters_apaonly &lt;- summarize_param(param_apaonly,gwas_n)
 total_nonSNPpve_apaonly &lt;- 1- ctwas_parameters_apaonly$prop_heritability[&quot;SNP&quot;]
-pve_pie_by_type_apaonly &lt;- plot_piechart_topn(ctwas_parameters = ctwas_parameters_apaonly, colors = colors, by = &quot;type&quot;, title = &quot;top-apa, multi tissue apa&quot;)
+pve_pie_by_type_apaonly &lt;- plot_piechart_topn(ctwas_parameters = ctwas_parameters_apaonly, colors = colors, by = &quot;type&quot;, title = &quot;multi tissue susie st&quot;)
 
 
 top_tissue &lt;- top_tissues[trait]
-file_param_single &lt;- paste0(folder_results_single, trait, &quot;/&quot;, trait, &quot;_&quot;, top_tissue, &quot;.thin&quot;, thin, &quot;.&quot;, var_struc, &quot;.param.RDS&quot;)
+file_param_single &lt;- paste0(folder_results_single_susie, trait, &quot;/&quot;, trait, &quot;_&quot;, top_tissue, &quot;.thin&quot;, thin, &quot;.&quot;, var_struc, &quot;.param.RDS&quot;)
 
 param_single &lt;- readRDS(file_param_single)
 ctwas_parameters_single &lt;- summarize_param(param_single, gwas_n)
 total_nonSNPpve_single &lt;- 1- ctwas_parameters_single$prop_heritability[&quot;SNP&quot;]
 
-pve_pie_by_type_single &lt;- plot_piechart_topn(ctwas_parameters = ctwas_parameters_single, colors = colors, by = &quot;context&quot;, title = &quot;top-apa, single tissue apa&quot;)
+pve_pie_by_type_single &lt;- plot_piechart_topn(ctwas_parameters = ctwas_parameters_single, colors = colors, by = &quot;context&quot;, title = &quot;single tissue susie st&quot;)
 
 
 plot_multi(pve_pie_by_type_single,pve_pie_by_type_apaonly,pve_pie_by_type_susieST, title=trait)</code></pre>
-<p><img src="figure/parameters_apa_li.Rmd/unnamed-chunk-8-1.png" width="1440" style="display: block; margin: auto;" /></p>
+<p><img src="figure/parameters_apa_li.Rmd/unnamed-chunk-6-1.png" width="1440" style="display: block; margin: auto;" /></p>
 <pre><code>TableGrob (2 x 3) &quot;arrange&quot;: 4 grobs
   z     cells    name                grob
 1 1 (2-2,1-1) arrange      gtable[layout]
@@ -1007,14 +1052,14 @@ plot_multi(pve_pie_by_type_single,pve_pie_by_type_apaonly,pve_pie_by_type_susieS
 4 4 (1-1,1-3) arrange text[GRID.text.275]</code></pre>
 </div>
 </div>
-<div id="t2d-panukb" class="section level1">
-<h1>T2D-panukb</h1>
-<pre class="r"><code>trait &lt;- &quot;T2D-panukb&quot;
+<div id="ibd-ebi-a-gcst004131" class="section level1">
+<h1>IBD-ebi-a-GCST004131</h1>
+<pre class="r"><code>trait &lt;- &quot;IBD-ebi-a-GCST004131&quot;
 st &lt;- &quot;with_susieST&quot;
 
 gwas_n &lt;- samplesize[trait]</code></pre>
-<div id="setting-shared_all-thin-1-2" class="section level2">
-<h2>Setting: shared_all, thin = 1</h2>
+<div id="h2g-for-setting-shared_all-thin-1-1" class="section level2">
+<h2>%h2g for setting: shared_all, thin = 1</h2>
 <pre class="r"><code>thin &lt;- 1
 var_struc &lt;- &quot;shared_all&quot;</code></pre>
 <pre class="r"><code>param_susieST &lt;- readRDS(paste0(folder_results_susieST,&quot;/&quot;,trait,&quot;/&quot;,trait,&quot;.&quot;,st,&quot;.thin&quot;,thin,&quot;.&quot;,var_struc,&quot;.param.RDS&quot;))
@@ -1043,13 +1088,13 @@ pve_pie_by_type_single &lt;- plot_piechart_topn(ctwas_parameters = ctwas_paramet
 
 
 plot_multi(pve_pie_by_type_single,pve_pie_by_type_apaonly,pve_pie_by_type_susieST, title=trait)</code></pre>
-<p><img src="figure/parameters_apa_li.Rmd/unnamed-chunk-11-1.png" width="1440" style="display: block; margin: auto;" /></p>
+<p><img src="figure/parameters_apa_li.Rmd/unnamed-chunk-9-1.png" width="1440" style="display: block; margin: auto;" /></p>
 <p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-11-1">
-Past versions of unnamed-chunk-11-1.png
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-9-1">
+Past versions of unnamed-chunk-9-1.png
 </button>
 </p>
-<div id="fig-unnamed-chunk-11-1" class="collapse">
+<div id="fig-unnamed-chunk-9-1" class="collapse">
 <div class="table-responsive">
 <table class="table table-condensed table-hover">
 <thead>
@@ -1068,7 +1113,7 @@ Date
 <tbody>
 <tr>
 <td>
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/bda6e43c069dced286db546b09122f1d4bdf1246/docs/figure/parameters_apa_li.Rmd/unnamed-chunk-11-1.png" target="_blank">bda6e43</a>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/bda6e43c069dced286db546b09122f1d4bdf1246/docs/figure/parameters_apa_li.Rmd/unnamed-chunk-9-1.png" target="_blank">bda6e43</a>
 </td>
 <td>
 XSun
@@ -1087,16 +1132,200 @@ XSun
 2 2 (2-2,2-2) arrange      gtable[layout]
 3 3 (2-2,3-3) arrange      gtable[layout]
 4 4 (1-1,1-3) arrange text[GRID.text.414]</code></pre>
+<pre class="r"><code>param_susieST &lt;- readRDS(paste0(folder_results_susieST_susie,&quot;/&quot;,trait,&quot;/&quot;,trait,&quot;.&quot;,st,&quot;.thin&quot;,thin,&quot;.&quot;,var_struc,&quot;.param.RDS&quot;))
+
+
+ctwas_parameters_susieST &lt;- summarize_param(param_susieST, gwas_n)
+total_nonSNPpve_susieST &lt;- 1- ctwas_parameters_susieST$prop_heritability[&quot;SNP&quot;]
+pve_pie_by_type_susieST &lt;- plot_piechart_topn(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = &quot;type&quot;, title = &quot;multi-group&quot;)
+
+
+param_apaonly &lt;- readRDS(paste0(folder_results_apaonly_susie,&quot;/&quot;,trait,&quot;/&quot;,trait,&quot;.&quot;,st,&quot;.thin&quot;,thin,&quot;.&quot;,var_struc,&quot;.param.RDS&quot;))
+
+ctwas_parameters_apaonly &lt;- summarize_param(param_apaonly,gwas_n)
+total_nonSNPpve_apaonly &lt;- 1- ctwas_parameters_apaonly$prop_heritability[&quot;SNP&quot;]
+pve_pie_by_type_apaonly &lt;- plot_piechart_topn(ctwas_parameters = ctwas_parameters_apaonly, colors = colors, by = &quot;type&quot;, title = &quot;multi tissue susie st&quot;)
+
+
+top_tissue &lt;- top_tissues[trait]
+file_param_single &lt;- paste0(folder_results_single_susie, trait, &quot;/&quot;, trait, &quot;_&quot;, top_tissue, &quot;.thin&quot;, thin, &quot;.&quot;, var_struc, &quot;.param.RDS&quot;)
+
+param_single &lt;- readRDS(file_param_single)
+ctwas_parameters_single &lt;- summarize_param(param_single, gwas_n)
+total_nonSNPpve_single &lt;- 1- ctwas_parameters_single$prop_heritability[&quot;SNP&quot;]
+
+pve_pie_by_type_single &lt;- plot_piechart_topn(ctwas_parameters = ctwas_parameters_single, colors = colors, by = &quot;context&quot;, title = &quot;single tissue susie st&quot;)
+
+
+plot_multi(pve_pie_by_type_single,pve_pie_by_type_apaonly,pve_pie_by_type_susieST, title=trait)</code></pre>
+<p><img src="figure/parameters_apa_li.Rmd/unnamed-chunk-10-1.png" width="1440" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-10-1">
+Past versions of unnamed-chunk-10-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-10-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/6e494579437be150bbe961d8a709e3f52794f2e6/docs/figure/parameters_apa_li.Rmd/unnamed-chunk-10-1.png" target="_blank">6e49457</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-04-17
+</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
-<div id="bmi-panukb" class="section level1">
-<h1>BMI-panukb</h1>
-<pre class="r"><code>trait &lt;- &quot;BMI-panukb&quot;
+<pre><code>TableGrob (2 x 3) &quot;arrange&quot;: 4 grobs
+  z     cells    name                grob
+1 1 (2-2,1-1) arrange      gtable[layout]
+2 2 (2-2,2-2) arrange      gtable[layout]
+3 3 (2-2,3-3) arrange      gtable[layout]
+4 4 (1-1,1-3) arrange text[GRID.text.553]</code></pre>
+</div>
+<div id="gene-level-results-whole-blood" class="section level2">
+<h2>gene level results – whole blood</h2>
+<pre class="r"><code>results_li &lt;- read.table(&quot;/project/xinhe/xsun/multi_group_ctwas/16.apa_li_weights/data/IBD_genes_li.txt&quot;, header = T)
+
+tissues_target &lt;- c(&quot;Whole_Blood&quot;)
+results_li_overlaptissue &lt;- results_li[results_li$Tissue %in% tissues_target,]
+
+ctwas_res &lt;- readRDS(&quot;/project/xinhe/xsun/multi_group_ctwas/16.apa_li_weights/ctwas_output/apa//IBD-ebi-a-GCST004131/IBD-ebi-a-GCST004131_Whole_Blood.thin1.shared_all.L5.finemap_regions_res.RDS&quot;)
+
+mapping_table &lt;- readRDS(&quot;/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/apa_li.RDS&quot;)
+
+susie_alpha_res &lt;- ctwas_res$susie_alpha_res
+susie_alpha_res$molecular_id &lt;- sub(&quot;\\|[^|]*$&quot;, &quot;&quot;, susie_alpha_res$id)
+susie_alpha_res &lt;- anno_susie_alpha_res(susie_alpha_res,
+                                        mapping_table = mapping_table,
+                                        map_by = &quot;molecular_id&quot;,
+                                        drop_unmapped = F)</code></pre>
+<pre><code>2025-04-25 09:37:25 INFO::Annotating susie alpha result ...
+2025-04-25 09:37:25 INFO::Map molecular traits to genes</code></pre>
+<pre class="r"><code>susie_alpha_res_uniq &lt;- susie_alpha_res[!duplicated(susie_alpha_res$id),]
+
+susie_summary &lt;- susie_alpha_res_uniq %&gt;%
+  group_by(gene_name) %&gt;%
+  summarise(
+    susie_z = mean(z, na.rm = TRUE),             # or median(z) if you prefer
+    susie_pip = max(susie_pip, na.rm = TRUE),     # max to reflect strongest evidence
+    region_id = region_id,
+    id = id,
+  )
+
+# Step 2: Merge with results_li
+results_li_merged &lt;- results_li_overlaptissue %&gt;%
+  left_join(susie_summary, by = c(&quot;GeneName&quot; = &quot;gene_name&quot;))
+
+DT::datatable(results_li_merged,caption = htmltools::tags$caption( style = &#39;caption-side: left; text-align: left; color:black;  font-size:150% ;&#39;,&#39;&#39;),options = list(pageLength = 10) )</code></pre>
+<div id="htmlwidget-20575149739a71fc930f" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-20575149739a71fc930f">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\"><\/caption>","data":[["1","2","3","4","5","6","7","8","9","10","11"],["IBD","IBD","IBD","IBD","IBD","IBD","IBD","IBD","IBD","IBD","IBD"],["Whole_Blood","Whole_Blood","Whole_Blood","Whole_Blood","Whole_Blood","Whole_Blood","Whole_Blood","Whole_Blood","Whole_Blood","Whole_Blood","Whole_Blood"],["ARPC2","CCNY","CD55","FOSL2","HLA-DRB5","MS4A6A","MS4A6A","P4HTM","PIK3CG","THEM4","UBE2L3"],[1.05222e-09,1.54134e-08,1.4372e-21,2.74123e-10,3.7274e-14,6.72042e-09,6.72042e-09,2.5614e-16,1.08305e-10,0.029765267,2.54445e-14],[5.25e-11,1.73e-08,4.95e-23,1.10383e-10,1.93335e-08,1.52e-09,1.52e-09,5.09e-17,5.36e-12,0.001902078,8.23e-09],[0.213,0.0769,0.137,0.026640596,2.70108e-09,0.135,0.135,0.103,0.208,0.014919785,2.92e-07],[0.009842854,0.085565016,0.003856649,0.009763946,0.000401415,0.029661302,0.029661302,0.019536207,0.0095183,0,0.093398761],[0.777403622,0.837494326,0.859151582,0.963595458,0.999598563,0.835693545,0.835693545,0.877824372,0.782183865,0.953412871,0.906600939],[null,-2.4108527131787,null,6.3253968253964,null,-0.0285901762279251,-0.0285901762279251,-5.32323232322904,null,-0.417322834645766,null],[null,6.21001061684723e-09,null,3.85482898934697e-08,null,3.87117182754082e-09,3.87117182754082e-09,5.58540880213343e-09,null,5.82571135776533e-09,null],[null,"10_34820427_36283580",null,"2_28375910_28994693",null,"11_59013076_62456299","11_59013076_62456299","3_49279539_51797999",null,"1_151566405_153208353",null],[null,"NM_181698|CCNY|chr10|+|Whole_Blood_stQTL",null,"NM_005253|FOSL2|chr2|+|Whole_Blood_stQTL",null,"NM_022349|MS4A6A|chr11|-|Whole_Blood_stQTL","NM_152851|MS4A6A|chr11|-|Whole_Blood_stQTL","NM_177939|P4HTM|chr3|+|Whole_Blood_stQTL",null,"NM_053055|THEM4|chr1|-|Whole_Blood_stQTL",null]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Trait<\/th>\n      <th>Tissue<\/th>\n      <th>GeneName<\/th>\n      <th>PP0<\/th>\n      <th>PP1<\/th>\n      <th>PP2<\/th>\n      <th>PP3<\/th>\n      <th>PP4<\/th>\n      <th>susie_z<\/th>\n      <th>susie_pip<\/th>\n      <th>region_id<\/th>\n      <th>id<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[4,5,6,7,8,9,10]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<pre class="r"><code>results_li_merged &lt;- results_li_merged[complete.cases(results_li_merged$region_id),]
+
+
+weights &lt;- readRDS(&quot;/project/xinhe/xsun/multi_group_ctwas/16.apa_li_weights/ctwas_output/apa//IBD-ebi-a-GCST004131/IBD-ebi-a-GCST004131_Whole_Blood.preprocessed.weights.ST.RDS&quot;)
+snp_map &lt;- readRDS(&quot;/project2/xinhe/shared_data/multigroup_ctwas/LD_region_info/snp_map.RDS&quot;)
+
+
+finemap_res &lt;- ctwas_res$finemap_res
+finemap_res$molecular_id &lt;- get_molecular_ids(finemap_res)
+finemap_res &lt;- anno_finemap_res(finemap_res,
+                                snp_map = snp_map,
+                                mapping_table = mapping_table,
+                                add_gene_annot = TRUE,
+                                map_by = &quot;molecular_id&quot;,
+                                drop_unmapped = TRUE,
+                                add_position = TRUE,
+                                use_gene_pos = &quot;mid&quot;)</code></pre>
+<pre><code>2025-04-25 09:37:43 INFO::Annotating fine-mapping result ...
+2025-04-25 09:37:45 INFO::Map molecular traits to genes
+2025-04-25 09:37:45 INFO::Drop 966 unmapped molecular traits
+2025-04-25 09:38:00 INFO::Add gene positions
+2025-04-25 09:38:00 INFO::Add SNP positions</code></pre>
+<pre class="r"><code>for (i in 1:nrow(results_li_merged)) {
+  
+  region_id &lt;- results_li_merged$region_id[i]
+  
+  p &lt;- make_locusplot(finemap_res,
+               region_id = region_id,
+               ens_db = ens_db,
+               weights = weights,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = TRUE,
+               filter_cs = F,
+               focal_id = results_li_merged$id[i],
+               color_pval_by = &quot;cs&quot;,
+               color_pip_by = &quot;cs&quot;)
+  
+  print(p)
+  
+}</code></pre>
+<pre><code>2025-04-25 09:38:11 INFO::Limit to protein coding genes
+2025-04-25 09:38:11 INFO::focal id: NM_181698|CCNY|chr10|+|Whole_Blood_stQTL
+2025-04-25 09:38:11 INFO::focal molecular trait:
+2025-04-25 09:38:11 INFO::Range of locus: chr10:34820327-36282921
+2025-04-25 09:38:12 INFO::focal molecular trait QTL positions: 35456424</code></pre>
+<p><img src="figure/parameters_apa_li.Rmd/unnamed-chunk-11-2.png" width="1152" style="display: block; margin: auto;" /></p>
+<pre><code>2025-04-25 09:38:12 INFO::Limit to protein coding genes
+2025-04-25 09:38:12 INFO::focal id: NM_005253|FOSL2|chr2|+|Whole_Blood_stQTL
+2025-04-25 09:38:12 INFO::focal molecular trait:
+2025-04-25 09:38:12 INFO::Range of locus: chr2:28376782-28994103
+2025-04-25 09:38:13 INFO::focal molecular trait QTL positions: 28412873</code></pre>
+<p><img src="figure/parameters_apa_li.Rmd/unnamed-chunk-11-3.png" width="1152" style="display: block; margin: auto;" /></p>
+<pre><code>2025-04-25 09:38:14 INFO::Limit to protein coding genes
+2025-04-25 09:38:14 INFO::focal id: NM_022349|MS4A6A|chr11|-|Whole_Blood_stQTL
+2025-04-25 09:38:14 INFO::focal molecular trait:
+2025-04-25 09:38:14 INFO::Range of locus: chr11:59012976-62455196
+2025-04-25 09:38:14 INFO::focal molecular trait QTL positions: 60200909</code></pre>
+<p><img src="figure/parameters_apa_li.Rmd/unnamed-chunk-11-4.png" width="1152" style="display: block; margin: auto;" /></p>
+<pre><code>2025-04-25 09:38:16 INFO::Limit to protein coding genes
+2025-04-25 09:38:16 INFO::focal id: NM_152851|MS4A6A|chr11|-|Whole_Blood_stQTL
+2025-04-25 09:38:16 INFO::focal molecular trait:
+2025-04-25 09:38:16 INFO::Range of locus: chr11:59012976-62455196
+2025-04-25 09:38:16 INFO::focal molecular trait QTL positions: 60088555</code></pre>
+<p><img src="figure/parameters_apa_li.Rmd/unnamed-chunk-11-5.png" width="1152" style="display: block; margin: auto;" /></p>
+<pre><code>2025-04-25 09:38:19 INFO::Limit to protein coding genes
+2025-04-25 09:38:19 INFO::focal id: NM_177939|P4HTM|chr3|+|Whole_Blood_stQTL
+2025-04-25 09:38:19 INFO::focal molecular trait:
+2025-04-25 09:38:19 INFO::Range of locus: chr3:49279805-51794719
+2025-04-25 09:38:19 INFO::focal molecular trait QTL positions: 49970685</code></pre>
+<p><img src="figure/parameters_apa_li.Rmd/unnamed-chunk-11-6.png" width="1152" style="display: block; margin: auto;" /></p>
+<pre><code>2025-04-25 09:38:20 INFO::Limit to protein coding genes
+2025-04-25 09:38:20 INFO::focal id: NM_053055|THEM4|chr1|-|Whole_Blood_stQTL
+2025-04-25 09:38:20 INFO::focal molecular trait:
+2025-04-25 09:38:20 INFO::Range of locus: chr1:151566589-153207547
+2025-04-25 09:38:20 INFO::focal molecular trait QTL positions: 151865616</code></pre>
+<p><img src="figure/parameters_apa_li.Rmd/unnamed-chunk-11-7.png" width="1152" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="t2d-panukb" class="section level1">
+<h1>T2D-panukb</h1>
+<pre class="r"><code>trait &lt;- &quot;T2D-panukb&quot;
 st &lt;- &quot;with_susieST&quot;
 
 gwas_n &lt;- samplesize[trait]</code></pre>
-<div id="setting-shared_all-thin-1-3" class="section level2">
-<h2>Setting: shared_all, thin = 1</h2>
+<div id="h2g-for-setting-shared_all-thin-1-2" class="section level2">
+<h2>%h2g for setting: shared_all, thin = 1</h2>
 <pre class="r"><code>thin &lt;- 1
 var_struc &lt;- &quot;shared_all&quot;</code></pre>
 <pre class="r"><code>param_susieST &lt;- readRDS(paste0(folder_results_susieST,&quot;/&quot;,trait,&quot;/&quot;,trait,&quot;.&quot;,st,&quot;.thin&quot;,thin,&quot;.&quot;,var_struc,&quot;.param.RDS&quot;))
@@ -1126,69 +1355,12 @@ pve_pie_by_type_single &lt;- plot_piechart_topn(ctwas_parameters = ctwas_paramet
 
 plot_multi(pve_pie_by_type_single,pve_pie_by_type_apaonly,pve_pie_by_type_susieST, title=trait)</code></pre>
 <p><img src="figure/parameters_apa_li.Rmd/unnamed-chunk-14-1.png" width="1440" style="display: block; margin: auto;" /></p>
-<pre><code>TableGrob (2 x 3) &quot;arrange&quot;: 4 grobs
-  z     cells    name                grob
-1 1 (2-2,1-1) arrange      gtable[layout]
-2 2 (2-2,2-2) arrange      gtable[layout]
-3 3 (2-2,3-3) arrange      gtable[layout]
-4 4 (1-1,1-3) arrange text[GRID.text.553]</code></pre>
-</div>
-</div>
-<div id="rbc-panukb" class="section level1">
-<h1>RBC-panukb</h1>
-<pre class="r"><code>trait &lt;- &quot;RBC-panukb&quot;
-st &lt;- &quot;with_susieST&quot;
-
-gwas_n &lt;- samplesize[trait]</code></pre>
-<div id="setting-shared_all-thin-1-4" class="section level2">
-<h2>Setting: shared_all, thin = 1</h2>
-<pre class="r"><code>thin &lt;- 1
-var_struc &lt;- &quot;shared_all&quot;</code></pre>
-<!-- ```{r warning=F,message=F,fig.width=5, fig.height=5} -->
-<!-- param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS")) -->
-<!-- ctwas_parameters_susieST <- summarize_param(param_susieST, gwas_n) -->
-<!-- total_nonSNPpve_susieST <- 1- ctwas_parameters_susieST$prop_heritability["SNP"] -->
-<!-- pve_pie_by_type_susieST <- plot_piechart_topn(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = "top-apa, multi-group") -->
-<!-- pve_pie_by_type_susieST -->
-<!-- param_apaonly <- readRDS(paste0(folder_results_apaonly,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS")) -->
-<!-- ctwas_parameters_apaonly <- summarize_param(param_apaonly, gwas_n) -->
-<!-- total_nonSNPpve_apaonly <- 1- ctwas_parameters_apaonly$prop_heritability["SNP"] -->
-<!-- pve_pie_by_type_apaonly <- plot_piechart_topn(ctwas_parameters = ctwas_parameters_apaonly, colors = colors, by = "type", title = "top-apa, multi tissue apa") -->
-<!-- pve_pie_by_type_apaonly -->
-<!-- ``` -->
-<pre class="r"><code>param_susieST &lt;- readRDS(paste0(folder_results_susieST,&quot;/&quot;,trait,&quot;/&quot;,trait,&quot;.&quot;,st,&quot;.thin&quot;,thin,&quot;.&quot;,var_struc,&quot;.param.RDS&quot;))
-
-
-ctwas_parameters_susieST &lt;- summarize_param(param_susieST, gwas_n)
-total_nonSNPpve_susieST &lt;- 1- ctwas_parameters_susieST$prop_heritability[&quot;SNP&quot;]
-pve_pie_by_type_susieST &lt;- plot_piechart_topn(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = &quot;type&quot;, title = &quot;top-apa, multi-group&quot;)
-
-
-param_apaonly &lt;- readRDS(paste0(folder_results_apaonly,&quot;/&quot;,trait,&quot;/&quot;,trait,&quot;.&quot;,st,&quot;.thin&quot;,thin,&quot;.&quot;,var_struc,&quot;.param.RDS&quot;))
-
-ctwas_parameters_apaonly &lt;- summarize_param(param_apaonly,gwas_n)
-total_nonSNPpve_apaonly &lt;- 1- ctwas_parameters_apaonly$prop_heritability[&quot;SNP&quot;]
-pve_pie_by_type_apaonly &lt;- plot_piechart_topn(ctwas_parameters = ctwas_parameters_apaonly, colors = colors, by = &quot;type&quot;, title = &quot;top-apa, multi tissue apa&quot;)
-
-
-top_tissue &lt;- top_tissues[trait]
-file_param_single &lt;- paste0(folder_results_single, trait, &quot;/&quot;, trait, &quot;_&quot;, top_tissue, &quot;.thin&quot;, thin, &quot;.&quot;, var_struc, &quot;.param.RDS&quot;)
-
-param_single &lt;- readRDS(file_param_single)
-ctwas_parameters_single &lt;- summarize_param(param_single, gwas_n)
-total_nonSNPpve_single &lt;- 1- ctwas_parameters_single$prop_heritability[&quot;SNP&quot;]
-
-pve_pie_by_type_single &lt;- plot_piechart_topn(ctwas_parameters = ctwas_parameters_single, colors = colors, by = &quot;context&quot;, title = &quot;top-apa, single tissue apa&quot;)
-
-
-plot_multi(pve_pie_by_type_single,pve_pie_by_type_apaonly,pve_pie_by_type_susieST, title=trait)</code></pre>
-<p><img src="figure/parameters_apa_li.Rmd/unnamed-chunk-17-1.png" width="1440" style="display: block; margin: auto;" /></p>
 <p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-17-1">
-Past versions of unnamed-chunk-17-1.png
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-14-1">
+Past versions of unnamed-chunk-14-1.png
 </button>
 </p>
-<div id="fig-unnamed-chunk-17-1" class="collapse">
+<div id="fig-unnamed-chunk-14-1" class="collapse">
 <div class="table-responsive">
 <table class="table table-condensed table-hover">
 <thead>
@@ -1207,7 +1379,77 @@ Date
 <tbody>
 <tr>
 <td>
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/bda6e43c069dced286db546b09122f1d4bdf1246/docs/figure/parameters_apa_li.Rmd/unnamed-chunk-17-1.png" target="_blank">bda6e43</a>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/278bbd9a31e794fb4edf80db64c209888ee30828/docs/figure/parameters_apa_li.Rmd/unnamed-chunk-14-1.png" target="_blank">278bbd9</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-04-17
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<pre><code>TableGrob (2 x 3) &quot;arrange&quot;: 4 grobs
+  z     cells    name                 grob
+1 1 (2-2,1-1) arrange       gtable[layout]
+2 2 (2-2,2-2) arrange       gtable[layout]
+3 3 (2-2,3-3) arrange       gtable[layout]
+4 4 (1-1,1-3) arrange text[GRID.text.2032]</code></pre>
+<pre class="r"><code>param_susieST &lt;- readRDS(paste0(folder_results_susieST_susie,&quot;/&quot;,trait,&quot;/&quot;,trait,&quot;.&quot;,st,&quot;.thin&quot;,thin,&quot;.&quot;,var_struc,&quot;.param.RDS&quot;))
+
+
+ctwas_parameters_susieST &lt;- summarize_param(param_susieST, gwas_n)
+total_nonSNPpve_susieST &lt;- 1- ctwas_parameters_susieST$prop_heritability[&quot;SNP&quot;]
+pve_pie_by_type_susieST &lt;- plot_piechart_topn(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = &quot;type&quot;, title = &quot;multi-group&quot;)
+
+
+param_apaonly &lt;- readRDS(paste0(folder_results_apaonly_susie,&quot;/&quot;,trait,&quot;/&quot;,trait,&quot;.&quot;,st,&quot;.thin&quot;,thin,&quot;.&quot;,var_struc,&quot;.param.RDS&quot;))
+
+ctwas_parameters_apaonly &lt;- summarize_param(param_apaonly,gwas_n)
+total_nonSNPpve_apaonly &lt;- 1- ctwas_parameters_apaonly$prop_heritability[&quot;SNP&quot;]
+pve_pie_by_type_apaonly &lt;- plot_piechart_topn(ctwas_parameters = ctwas_parameters_apaonly, colors = colors, by = &quot;type&quot;, title = &quot;multi tissue susie st&quot;)
+
+
+top_tissue &lt;- top_tissues[trait]
+file_param_single &lt;- paste0(folder_results_single_susie, trait, &quot;/&quot;, trait, &quot;_&quot;, top_tissue, &quot;.thin&quot;, thin, &quot;.&quot;, var_struc, &quot;.param.RDS&quot;)
+
+param_single &lt;- readRDS(file_param_single)
+ctwas_parameters_single &lt;- summarize_param(param_single, gwas_n)
+total_nonSNPpve_single &lt;- 1- ctwas_parameters_single$prop_heritability[&quot;SNP&quot;]
+
+pve_pie_by_type_single &lt;- plot_piechart_topn(ctwas_parameters = ctwas_parameters_single, colors = colors, by = &quot;context&quot;, title = &quot;single tissue susie st&quot;)
+
+
+plot_multi(pve_pie_by_type_single,pve_pie_by_type_apaonly,pve_pie_by_type_susieST, title=trait)</code></pre>
+<p><img src="figure/parameters_apa_li.Rmd/unnamed-chunk-15-1.png" width="1440" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-15-1">
+Past versions of unnamed-chunk-15-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-15-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/bda6e43c069dced286db546b09122f1d4bdf1246/docs/figure/parameters_apa_li.Rmd/unnamed-chunk-15-1.png" target="_blank">bda6e43</a>
 </td>
 <td>
 XSun
@@ -1221,35 +1463,23 @@ XSun
 </div>
 </div>
 <pre><code>TableGrob (2 x 3) &quot;arrange&quot;: 4 grobs
-  z     cells    name                grob
-1 1 (2-2,1-1) arrange      gtable[layout]
-2 2 (2-2,2-2) arrange      gtable[layout]
-3 3 (2-2,3-3) arrange      gtable[layout]
-4 4 (1-1,1-3) arrange text[GRID.text.692]</code></pre>
+  z     cells    name                 grob
+1 1 (2-2,1-1) arrange       gtable[layout]
+2 2 (2-2,2-2) arrange       gtable[layout]
+3 3 (2-2,3-3) arrange       gtable[layout]
+4 4 (1-1,1-3) arrange text[GRID.text.2171]</code></pre>
 </div>
 </div>
-<div id="afib-ebi-a-gcst006414" class="section level1">
-<h1>aFib-ebi-a-GCST006414</h1>
-<pre class="r"><code>trait &lt;- &quot;aFib-ebi-a-GCST006414&quot;
+<div id="bmi-panukb" class="section level1">
+<h1>BMI-panukb</h1>
+<pre class="r"><code>trait &lt;- &quot;BMI-panukb&quot;
 st &lt;- &quot;with_susieST&quot;
 
 gwas_n &lt;- samplesize[trait]</code></pre>
-<div id="setting-shared_all-thin-1-5" class="section level2">
-<h2>Setting: shared_all, thin = 1</h2>
+<div id="h2g-for-setting-shared_all-thin-1-3" class="section level2">
+<h2>%h2g for setting: shared_all, thin = 1</h2>
 <pre class="r"><code>thin &lt;- 1
 var_struc &lt;- &quot;shared_all&quot;</code></pre>
-<!-- ```{r warning=F,message=F,fig.width=5, fig.height=5} -->
-<!-- param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS")) -->
-<!-- ctwas_parameters_susieST <- summarize_param(param_susieST, gwas_n) -->
-<!-- total_nonSNPpve_susieST <- 1- ctwas_parameters_susieST$prop_heritability["SNP"] -->
-<!-- pve_pie_by_type_susieST <- plot_piechart_topn(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = "top-apa, multi-group") -->
-<!-- pve_pie_by_type_susieST -->
-<!-- param_apaonly <- readRDS(paste0(folder_results_apaonly,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS")) -->
-<!-- ctwas_parameters_apaonly <- summarize_param(param_apaonly, gwas_n) -->
-<!-- total_nonSNPpve_apaonly <- 1- ctwas_parameters_apaonly$prop_heritability["SNP"] -->
-<!-- pve_pie_by_type_apaonly <- plot_piechart_topn(ctwas_parameters = ctwas_parameters_apaonly, colors = colors, by = "type", title = "top-apa, multi tissue apa") -->
-<!-- pve_pie_by_type_apaonly -->
-<!-- ``` -->
 <pre class="r"><code>param_susieST &lt;- readRDS(paste0(folder_results_susieST,&quot;/&quot;,trait,&quot;/&quot;,trait,&quot;.&quot;,st,&quot;.thin&quot;,thin,&quot;.&quot;,var_struc,&quot;.param.RDS&quot;))
 
 
@@ -1276,13 +1506,254 @@ pve_pie_by_type_single &lt;- plot_piechart_topn(ctwas_parameters = ctwas_paramet
 
 
 plot_multi(pve_pie_by_type_single,pve_pie_by_type_apaonly,pve_pie_by_type_susieST, title=trait)</code></pre>
-<p><img src="figure/parameters_apa_li.Rmd/unnamed-chunk-20-1.png" width="1440" style="display: block; margin: auto;" /></p>
+<p><img src="figure/parameters_apa_li.Rmd/unnamed-chunk-18-1.png" width="1440" style="display: block; margin: auto;" /></p>
 <pre><code>TableGrob (2 x 3) &quot;arrange&quot;: 4 grobs
-  z     cells    name                grob
-1 1 (2-2,1-1) arrange      gtable[layout]
-2 2 (2-2,2-2) arrange      gtable[layout]
-3 3 (2-2,3-3) arrange      gtable[layout]
-4 4 (1-1,1-3) arrange text[GRID.text.831]</code></pre>
+  z     cells    name                 grob
+1 1 (2-2,1-1) arrange       gtable[layout]
+2 2 (2-2,2-2) arrange       gtable[layout]
+3 3 (2-2,3-3) arrange       gtable[layout]
+4 4 (1-1,1-3) arrange text[GRID.text.2310]</code></pre>
+<pre class="r"><code>param_susieST &lt;- readRDS(paste0(folder_results_susieST_susie,&quot;/&quot;,trait,&quot;/&quot;,trait,&quot;.&quot;,st,&quot;.thin&quot;,thin,&quot;.&quot;,var_struc,&quot;.param.RDS&quot;))
+
+
+ctwas_parameters_susieST &lt;- summarize_param(param_susieST, gwas_n)
+total_nonSNPpve_susieST &lt;- 1- ctwas_parameters_susieST$prop_heritability[&quot;SNP&quot;]
+pve_pie_by_type_susieST &lt;- plot_piechart_topn(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = &quot;type&quot;, title = &quot;multi-group&quot;)
+
+
+param_apaonly &lt;- readRDS(paste0(folder_results_apaonly_susie,&quot;/&quot;,trait,&quot;/&quot;,trait,&quot;.&quot;,st,&quot;.thin&quot;,thin,&quot;.&quot;,var_struc,&quot;.param.RDS&quot;))
+
+ctwas_parameters_apaonly &lt;- summarize_param(param_apaonly,gwas_n)
+total_nonSNPpve_apaonly &lt;- 1- ctwas_parameters_apaonly$prop_heritability[&quot;SNP&quot;]
+pve_pie_by_type_apaonly &lt;- plot_piechart_topn(ctwas_parameters = ctwas_parameters_apaonly, colors = colors, by = &quot;type&quot;, title = &quot;multi tissue susie st&quot;)
+
+
+top_tissue &lt;- top_tissues[trait]
+file_param_single &lt;- paste0(folder_results_single_susie, trait, &quot;/&quot;, trait, &quot;_&quot;, top_tissue, &quot;.thin&quot;, thin, &quot;.&quot;, var_struc, &quot;.param.RDS&quot;)
+
+param_single &lt;- readRDS(file_param_single)
+ctwas_parameters_single &lt;- summarize_param(param_single, gwas_n)
+total_nonSNPpve_single &lt;- 1- ctwas_parameters_single$prop_heritability[&quot;SNP&quot;]
+
+pve_pie_by_type_single &lt;- plot_piechart_topn(ctwas_parameters = ctwas_parameters_single, colors = colors, by = &quot;context&quot;, title = &quot;single tissue susie st&quot;)
+
+
+plot_multi(pve_pie_by_type_single,pve_pie_by_type_apaonly,pve_pie_by_type_susieST, title=trait)</code></pre>
+<p><img src="figure/parameters_apa_li.Rmd/unnamed-chunk-19-1.png" width="1440" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-19-1">
+Past versions of unnamed-chunk-19-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-19-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/6e494579437be150bbe961d8a709e3f52794f2e6/docs/figure/parameters_apa_li.Rmd/unnamed-chunk-19-1.png" target="_blank">6e49457</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-04-17
+</td>
+</tr>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/bda6e43c069dced286db546b09122f1d4bdf1246/docs/figure/parameters_apa_li.Rmd/unnamed-chunk-19-1.png" target="_blank">bda6e43</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-04-09
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<pre><code>TableGrob (2 x 3) &quot;arrange&quot;: 4 grobs
+  z     cells    name                 grob
+1 1 (2-2,1-1) arrange       gtable[layout]
+2 2 (2-2,2-2) arrange       gtable[layout]
+3 3 (2-2,3-3) arrange       gtable[layout]
+4 4 (1-1,1-3) arrange text[GRID.text.2449]</code></pre>
+</div>
+</div>
+<div id="rbc-panukb" class="section level1">
+<h1>RBC-panukb</h1>
+<pre class="r"><code>trait &lt;- &quot;RBC-panukb&quot;
+st &lt;- &quot;with_susieST&quot;
+
+gwas_n &lt;- samplesize[trait]</code></pre>
+<div id="h2g-for-setting-shared_all-thin-1-4" class="section level2">
+<h2>%h2g for setting: shared_all, thin = 1</h2>
+<pre class="r"><code>thin &lt;- 1
+var_struc &lt;- &quot;shared_all&quot;</code></pre>
+<pre class="r"><code>param_susieST &lt;- readRDS(paste0(folder_results_susieST,&quot;/&quot;,trait,&quot;/&quot;,trait,&quot;.&quot;,st,&quot;.thin&quot;,thin,&quot;.&quot;,var_struc,&quot;.param.RDS&quot;))
+
+
+ctwas_parameters_susieST &lt;- summarize_param(param_susieST, gwas_n)
+total_nonSNPpve_susieST &lt;- 1- ctwas_parameters_susieST$prop_heritability[&quot;SNP&quot;]
+pve_pie_by_type_susieST &lt;- plot_piechart_topn(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = &quot;type&quot;, title = &quot;top-apa, multi-group&quot;)
+
+
+param_apaonly &lt;- readRDS(paste0(folder_results_apaonly,&quot;/&quot;,trait,&quot;/&quot;,trait,&quot;.&quot;,st,&quot;.thin&quot;,thin,&quot;.&quot;,var_struc,&quot;.param.RDS&quot;))
+
+ctwas_parameters_apaonly &lt;- summarize_param(param_apaonly,gwas_n)
+total_nonSNPpve_apaonly &lt;- 1- ctwas_parameters_apaonly$prop_heritability[&quot;SNP&quot;]
+pve_pie_by_type_apaonly &lt;- plot_piechart_topn(ctwas_parameters = ctwas_parameters_apaonly, colors = colors, by = &quot;type&quot;, title = &quot;top-apa, multi tissue apa&quot;)
+
+
+top_tissue &lt;- top_tissues[trait]
+file_param_single &lt;- paste0(folder_results_single, trait, &quot;/&quot;, trait, &quot;_&quot;, top_tissue, &quot;.thin&quot;, thin, &quot;.&quot;, var_struc, &quot;.param.RDS&quot;)
+
+param_single &lt;- readRDS(file_param_single)
+ctwas_parameters_single &lt;- summarize_param(param_single, gwas_n)
+total_nonSNPpve_single &lt;- 1- ctwas_parameters_single$prop_heritability[&quot;SNP&quot;]
+
+pve_pie_by_type_single &lt;- plot_piechart_topn(ctwas_parameters = ctwas_parameters_single, colors = colors, by = &quot;context&quot;, title = &quot;top-apa, single tissue apa&quot;)
+
+
+plot_multi(pve_pie_by_type_single,pve_pie_by_type_apaonly,pve_pie_by_type_susieST, title=trait)</code></pre>
+<p><img src="figure/parameters_apa_li.Rmd/unnamed-chunk-22-1.png" width="1440" style="display: block; margin: auto;" /></p>
+<pre><code>TableGrob (2 x 3) &quot;arrange&quot;: 4 grobs
+  z     cells    name                 grob
+1 1 (2-2,1-1) arrange       gtable[layout]
+2 2 (2-2,2-2) arrange       gtable[layout]
+3 3 (2-2,3-3) arrange       gtable[layout]
+4 4 (1-1,1-3) arrange text[GRID.text.2588]</code></pre>
+<pre class="r"><code>param_susieST &lt;- readRDS(paste0(folder_results_susieST_susie,&quot;/&quot;,trait,&quot;/&quot;,trait,&quot;.&quot;,st,&quot;.thin&quot;,thin,&quot;.&quot;,var_struc,&quot;.param.RDS&quot;))
+
+
+ctwas_parameters_susieST &lt;- summarize_param(param_susieST, gwas_n)
+total_nonSNPpve_susieST &lt;- 1- ctwas_parameters_susieST$prop_heritability[&quot;SNP&quot;]
+pve_pie_by_type_susieST &lt;- plot_piechart_topn(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = &quot;type&quot;, title = &quot;multi-group&quot;)
+
+
+param_apaonly &lt;- readRDS(paste0(folder_results_apaonly_susie,&quot;/&quot;,trait,&quot;/&quot;,trait,&quot;.&quot;,st,&quot;.thin&quot;,thin,&quot;.&quot;,var_struc,&quot;.param.RDS&quot;))
+
+ctwas_parameters_apaonly &lt;- summarize_param(param_apaonly,gwas_n)
+total_nonSNPpve_apaonly &lt;- 1- ctwas_parameters_apaonly$prop_heritability[&quot;SNP&quot;]
+pve_pie_by_type_apaonly &lt;- plot_piechart_topn(ctwas_parameters = ctwas_parameters_apaonly, colors = colors, by = &quot;type&quot;, title = &quot;multi tissue susie st&quot;)
+
+
+top_tissue &lt;- top_tissues[trait]
+file_param_single &lt;- paste0(folder_results_single_susie, trait, &quot;/&quot;, trait, &quot;_&quot;, top_tissue, &quot;.thin&quot;, thin, &quot;.&quot;, var_struc, &quot;.param.RDS&quot;)
+
+param_single &lt;- readRDS(file_param_single)
+ctwas_parameters_single &lt;- summarize_param(param_single, gwas_n)
+total_nonSNPpve_single &lt;- 1- ctwas_parameters_single$prop_heritability[&quot;SNP&quot;]
+
+pve_pie_by_type_single &lt;- plot_piechart_topn(ctwas_parameters = ctwas_parameters_single, colors = colors, by = &quot;context&quot;, title = &quot;single tissue susie st&quot;)
+
+
+plot_multi(pve_pie_by_type_single,pve_pie_by_type_apaonly,pve_pie_by_type_susieST, title=trait)</code></pre>
+<p><img src="figure/parameters_apa_li.Rmd/unnamed-chunk-23-1.png" width="1440" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-23-1">
+Past versions of unnamed-chunk-23-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-23-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/bda6e43c069dced286db546b09122f1d4bdf1246/docs/figure/parameters_apa_li.Rmd/unnamed-chunk-23-1.png" target="_blank">bda6e43</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-04-09
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<pre><code>TableGrob (2 x 3) &quot;arrange&quot;: 4 grobs
+  z     cells    name                 grob
+1 1 (2-2,1-1) arrange       gtable[layout]
+2 2 (2-2,2-2) arrange       gtable[layout]
+3 3 (2-2,3-3) arrange       gtable[layout]
+4 4 (1-1,1-3) arrange text[GRID.text.2727]</code></pre>
+<!-- # aFib-ebi-a-GCST006414 -->
+<!-- ```{r warning=F,message=F} -->
+<!-- trait <- "aFib-ebi-a-GCST006414" -->
+<!-- st <- "with_susieST" -->
+<!-- gwas_n <- samplesize[trait] -->
+<!-- ``` -->
+<!-- ## %h2g for setting: shared_all, thin = 1 -->
+<!-- ```{r warning=F,message=F} -->
+<!-- thin <- 1 -->
+<!-- var_struc <- "shared_all" -->
+<!-- ``` -->
+<!-- ```{r warning=F,message=F,fig.width=15, fig.height=5} -->
+<!-- param_susieST <- readRDS(paste0(folder_results_susieST,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS")) -->
+<!-- ctwas_parameters_susieST <- summarize_param(param_susieST, gwas_n) -->
+<!-- total_nonSNPpve_susieST <- 1- ctwas_parameters_susieST$prop_heritability["SNP"] -->
+<!-- pve_pie_by_type_susieST <- plot_piechart_topn(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = "top-apa, multi-group") -->
+<!-- param_apaonly <- readRDS(paste0(folder_results_apaonly,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS")) -->
+<!-- ctwas_parameters_apaonly <- summarize_param(param_apaonly,gwas_n) -->
+<!-- total_nonSNPpve_apaonly <- 1- ctwas_parameters_apaonly$prop_heritability["SNP"] -->
+<!-- pve_pie_by_type_apaonly <- plot_piechart_topn(ctwas_parameters = ctwas_parameters_apaonly, colors = colors, by = "type", title = "top-apa, multi tissue apa") -->
+<!-- top_tissue <- top_tissues[trait] -->
+<!-- file_param_single <- paste0(folder_results_single, trait, "/", trait, "_", top_tissue, ".thin", thin, ".", var_struc, ".param.RDS") -->
+<!-- param_single <- readRDS(file_param_single) -->
+<!-- ctwas_parameters_single <- summarize_param(param_single, gwas_n) -->
+<!-- total_nonSNPpve_single <- 1- ctwas_parameters_single$prop_heritability["SNP"] -->
+<!-- pve_pie_by_type_single <- plot_piechart_topn(ctwas_parameters = ctwas_parameters_single, colors = colors, by = "context", title = "top-apa, single tissue apa") -->
+<!-- plot_multi(pve_pie_by_type_single,pve_pie_by_type_apaonly,pve_pie_by_type_susieST, title=trait) -->
+<!-- ``` -->
+<!-- ```{r warning=F,message=F,fig.width=15, fig.height=5} -->
+<!-- param_susieST <- readRDS(paste0(folder_results_susieST_susie,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS")) -->
+<!-- ctwas_parameters_susieST <- summarize_param(param_susieST, gwas_n) -->
+<!-- total_nonSNPpve_susieST <- 1- ctwas_parameters_susieST$prop_heritability["SNP"] -->
+<!-- pve_pie_by_type_susieST <- plot_piechart_topn(ctwas_parameters = ctwas_parameters_susieST, colors = colors, by = "type", title = "multi-group") -->
+<!-- param_apaonly <- readRDS(paste0(folder_results_apaonly_susie,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".param.RDS")) -->
+<!-- ctwas_parameters_apaonly <- summarize_param(param_apaonly,gwas_n) -->
+<!-- total_nonSNPpve_apaonly <- 1- ctwas_parameters_apaonly$prop_heritability["SNP"] -->
+<!-- pve_pie_by_type_apaonly <- plot_piechart_topn(ctwas_parameters = ctwas_parameters_apaonly, colors = colors, by = "type", title = "multi tissue susie st") -->
+<!-- top_tissue <- top_tissues[trait] -->
+<!-- file_param_single <- paste0(folder_results_single_susie, trait, "/", trait, "_", top_tissue, ".thin", thin, ".", var_struc, ".param.RDS") -->
+<!-- param_single <- readRDS(file_param_single) -->
+<!-- ctwas_parameters_single <- summarize_param(param_single, gwas_n) -->
+<!-- total_nonSNPpve_single <- 1- ctwas_parameters_single$prop_heritability["SNP"] -->
+<!-- pve_pie_by_type_single <- plot_piechart_topn(ctwas_parameters = ctwas_parameters_single, colors = colors, by = "context", title = "single tissue susie st") -->
+<!-- plot_multi(pve_pie_by_type_single,pve_pie_by_type_apaonly,pve_pie_by_type_susieST, title=trait) -->
+<!-- ``` -->
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
@@ -1303,83 +1774,87 @@ locale:
 [1] C
 
 attached base packages:
-[1] grid      stats     graphics  grDevices utils     datasets  methods  
-[8] base     
+[1] grid      stats4    stats     graphics  grDevices utils     datasets 
+[8] methods   base     
 
 other attached packages:
- [1] egg_0.4.5        gridExtra_2.3    ggrepel_0.9.1    pheatmap_1.0.12 
- [5] forcats_0.5.1    stringr_1.5.1    dplyr_1.1.4      purrr_1.0.2     
- [9] readr_2.1.2      tidyr_1.3.0      tibble_3.2.1     tidyverse_1.3.1 
-[13] ggplot2_3.5.1    ctwas_0.5.4.9000
+ [1] egg_0.4.5                 gridExtra_2.3            
+ [3] ggrepel_0.9.1             pheatmap_1.0.12          
+ [5] EnsDb.Hsapiens.v86_2.99.0 ensembldb_2.20.2         
+ [7] AnnotationFilter_1.20.0   GenomicFeatures_1.48.3   
+ [9] AnnotationDbi_1.58.0      Biobase_2.56.0           
+[11] GenomicRanges_1.48.0      GenomeInfoDb_1.39.9      
+[13] IRanges_2.30.0            S4Vectors_0.34.0         
+[15] BiocGenerics_0.42.0       forcats_0.5.1            
+[17] stringr_1.5.1             dplyr_1.1.4              
+[19] purrr_1.0.2               readr_2.1.2              
+[21] tidyr_1.3.0               tibble_3.2.1             
+[23] tidyverse_1.3.1           ggplot2_3.5.1            
+[25] ctwas_0.5.4.9000         
 
 loaded via a namespace (and not attached):
   [1] readxl_1.4.0                backports_1.4.1            
   [3] workflowr_1.7.0             BiocFileCache_2.4.0        
   [5] repr_1.1.4                  lazyeval_0.2.2             
   [7] crosstalk_1.2.0             BiocParallel_1.30.3        
-  [9] GenomeInfoDb_1.39.9         LDlinkR_1.2.3              
- [11] digest_0.6.29               ensembldb_2.20.2           
- [13] htmltools_0.5.2             fansi_1.0.3                
- [15] magrittr_2.0.3              memoise_2.0.1              
- [17] tzdb_0.4.0                  Biostrings_2.64.0          
- [19] modelr_0.1.8                AMR_2.1.1                  
- [21] matrixStats_0.62.0          locuszoomr_0.2.1           
- [23] prettyunits_1.1.1           colorspace_2.0-3           
- [25] skimr_2.1.4                 blob_1.2.3                 
- [27] rvest_1.0.2                 rappdirs_0.3.3             
- [29] haven_2.5.0                 xfun_0.41                  
- [31] crayon_1.5.1                RCurl_1.98-1.7             
- [33] jsonlite_1.8.0              zoo_1.8-10                 
- [35] glue_1.6.2                  gtable_0.3.0               
- [37] zlibbioc_1.42.0             XVector_0.36.0             
- [39] DelayedArray_0.22.0         BiocGenerics_0.42.0        
- [41] scales_1.3.0                DBI_1.2.2                  
- [43] Rcpp_1.0.12                 viridisLite_0.4.0          
- [45] progress_1.2.2              bit_4.0.4                  
- [47] DT_0.22                     stats4_4.2.0               
- [49] htmlwidgets_1.5.4           httr_1.4.3                 
- [51] RColorBrewer_1.1-3          ellipsis_0.3.2             
- [53] farver_2.1.0                pkgconfig_2.0.3            
- [55] XML_3.99-0.14               sass_0.4.1                 
- [57] dbplyr_2.1.1                utf8_1.2.2                 
- [59] labeling_0.4.2              tidyselect_1.2.0           
- [61] rlang_1.1.2                 later_1.3.0                
- [63] AnnotationDbi_1.58.0        munsell_0.5.0              
- [65] pgenlibr_0.3.3              cellranger_1.1.0           
- [67] tools_4.2.0                 cachem_1.0.6               
- [69] cli_3.6.1                   generics_0.1.2             
- [71] RSQLite_2.3.1               broom_0.8.0                
- [73] evaluate_0.15               fastmap_1.1.0              
- [75] yaml_2.3.5                  knitr_1.39                 
- [77] bit64_4.0.5                 fs_1.5.2                   
- [79] KEGGREST_1.36.3             AnnotationFilter_1.20.0    
- [81] whisker_0.4                 xml2_1.3.3                 
- [83] biomaRt_2.54.1              compiler_4.2.0             
- [85] rstudioapi_0.13             plotly_4.10.0              
- [87] filelock_1.0.2              curl_4.3.2                 
- [89] png_0.1-7                   reprex_2.0.1               
- [91] bslib_0.3.1                 stringi_1.7.6              
- [93] highr_0.9                   GenomicFeatures_1.48.3     
- [95] lattice_0.20-45             ProtGenerics_1.28.0        
- [97] Matrix_1.5-3                vctrs_0.6.5                
- [99] pillar_1.9.0                lifecycle_1.0.4            
-[101] jquerylib_0.1.4             data.table_1.14.2          
-[103] cowplot_1.1.1               bitops_1.0-7               
-[105] irlba_2.3.5                 httpuv_1.6.5               
-[107] rtracklayer_1.56.0          GenomicRanges_1.48.0       
-[109] R6_2.5.1                    BiocIO_1.6.0               
-[111] promises_1.2.0.1            IRanges_2.30.0             
-[113] codetools_0.2-18            assertthat_0.2.1           
-[115] SummarizedExperiment_1.26.1 rprojroot_2.0.3            
-[117] rjson_0.2.21                withr_2.5.0                
-[119] GenomicAlignments_1.32.0    Rsamtools_2.12.0           
-[121] S4Vectors_0.34.0            GenomeInfoDbData_1.2.8     
-[123] parallel_4.2.0              hms_1.1.1                  
-[125] gggrid_0.2-0                rmarkdown_2.25             
-[127] MatrixGenerics_1.8.0        logging_0.10-108           
-[129] git2r_0.30.1                mixsqp_0.3-43              
-[131] Biobase_2.56.0              lubridate_1.8.0            
-[133] base64enc_0.1-3             restfulr_0.0.14            </code></pre>
+  [9] LDlinkR_1.2.3               digest_0.6.29              
+ [11] htmltools_0.5.2             fansi_1.0.3                
+ [13] magrittr_2.0.3              memoise_2.0.1              
+ [15] tzdb_0.4.0                  Biostrings_2.64.0          
+ [17] modelr_0.1.8                AMR_2.1.1                  
+ [19] matrixStats_0.62.0          locuszoomr_0.2.1           
+ [21] prettyunits_1.1.1           colorspace_2.0-3           
+ [23] skimr_2.1.4                 blob_1.2.3                 
+ [25] rvest_1.0.2                 rappdirs_0.3.3             
+ [27] haven_2.5.0                 xfun_0.41                  
+ [29] crayon_1.5.1                RCurl_1.98-1.7             
+ [31] jsonlite_1.8.0              zoo_1.8-10                 
+ [33] glue_1.6.2                  gtable_0.3.0               
+ [35] zlibbioc_1.42.0             XVector_0.36.0             
+ [37] DelayedArray_0.22.0         scales_1.3.0               
+ [39] DBI_1.2.2                   Rcpp_1.0.12                
+ [41] viridisLite_0.4.0           progress_1.2.2             
+ [43] bit_4.0.4                   DT_0.22                    
+ [45] htmlwidgets_1.5.4           httr_1.4.3                 
+ [47] RColorBrewer_1.1-3          ellipsis_0.3.2             
+ [49] farver_2.1.0                pkgconfig_2.0.3            
+ [51] XML_3.99-0.14               sass_0.4.1                 
+ [53] dbplyr_2.1.1                utf8_1.2.2                 
+ [55] labeling_0.4.2              tidyselect_1.2.0           
+ [57] rlang_1.1.2                 later_1.3.0                
+ [59] munsell_0.5.0               pgenlibr_0.3.3             
+ [61] cellranger_1.1.0            tools_4.2.0                
+ [63] cachem_1.0.6                cli_3.6.1                  
+ [65] generics_0.1.2              RSQLite_2.3.1              
+ [67] broom_0.8.0                 evaluate_0.15              
+ [69] fastmap_1.1.0               yaml_2.3.5                 
+ [71] knitr_1.39                  bit64_4.0.5                
+ [73] fs_1.5.2                    KEGGREST_1.36.3            
+ [75] whisker_0.4                 xml2_1.3.3                 
+ [77] biomaRt_2.54.1              compiler_4.2.0             
+ [79] rstudioapi_0.13             plotly_4.10.0              
+ [81] filelock_1.0.2              curl_4.3.2                 
+ [83] png_0.1-7                   reprex_2.0.1               
+ [85] bslib_0.3.1                 stringi_1.7.6              
+ [87] highr_0.9                   lattice_0.20-45            
+ [89] ProtGenerics_1.28.0         Matrix_1.5-3               
+ [91] vctrs_0.6.5                 pillar_1.9.0               
+ [93] lifecycle_1.0.4             jquerylib_0.1.4            
+ [95] data.table_1.14.2           cowplot_1.1.1              
+ [97] bitops_1.0-7                irlba_2.3.5                
+ [99] httpuv_1.6.5                rtracklayer_1.56.0         
+[101] R6_2.5.1                    BiocIO_1.6.0               
+[103] promises_1.2.0.1            codetools_0.2-18           
+[105] assertthat_0.2.1            SummarizedExperiment_1.26.1
+[107] rprojroot_2.0.3             rjson_0.2.21               
+[109] withr_2.5.0                 GenomicAlignments_1.32.0   
+[111] Rsamtools_2.12.0            GenomeInfoDbData_1.2.8     
+[113] parallel_4.2.0              hms_1.1.1                  
+[115] gggrid_0.2-0                rmarkdown_2.25             
+[117] MatrixGenerics_1.8.0        logging_0.10-108           
+[119] git2r_0.30.1                mixsqp_0.3-43              
+[121] lubridate_1.8.0             base64enc_0.1-3            
+[123] restfulr_0.0.14            </code></pre>
 </div>
 </div>
 </div>

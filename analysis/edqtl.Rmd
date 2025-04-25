@@ -1,0 +1,111 @@
+---
+title: "RNA editing QTL"
+author: "XSun"
+date: "2025-04-22"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+    toc: true
+
+---
+
+We check the estimated prior from IBD analysis here 
+
+Paper: https://www.nature.com/articles/s41586-022-05052-x
+
+Data is downloaded from https://gtexportal.org/home/downloads/adult-gtex/qtl#qtl-gtex_analysis_v8-single_tissue_cis-rna_editing_qtl_data
+
+
+```{r message=FALSE, warning=FALSE}
+library(ctwas)
+library(gridExtra)
+
+
+source("/project/xinhe/xsun/multi_group_ctwas/functions/0.functions.R")
+source("/project/xinhe/xsun/multi_group_ctwas/data/samplesize.R")
+
+folder_results_single <- "/project/xinhe/xsun/multi_group_ctwas/17.single_eQTL/ctwas_output/RNAediting/"
+
+```
+
+# Single group edQTL analysis
+
+
+```{r warning=F, message=F, fig.height=4, fig.width=4}
+thin <- 1
+vgs <- "shared_all"
+L <-5
+
+trait <- "IBD-ebi-a-GCST004131"
+
+tissues <- c("Cells_Cultured_fibroblasts", "Whole_Blood", "Skin_Not_Sun_Exposed_Suprapubic", "Colon_Transverse", "Heart_Left_Ventricle", "Liver", "Adipose_Subcutaneous", "Esophagus_Muscularis", "Thyroid", "Brain_Nucleus_accumbens_basal_ganglia")
+
+gwas_n <- samplesize[trait]
+
+#p <- list()
+for (tissue in tissues){
+  
+  # Load single-eQTL parameters
+  file_param_single <- paste0(folder_results_single, trait, "/", trait, "_", tissue, ".thin", thin, ".", vgs, ".param.RDS")
+  param_single <- readRDS(file_param_single)
+  ctwas_parameters_single <- summarize_param(param_single, gwas_n)
+  
+  
+  title <- paste0(trait, ",", tissue)
+  p <- plot_piechart_single(ctwas_parameters = ctwas_parameters_single, title = title,by = "type",colors = colors)
+ 
+  print(p) 
+}
+
+
+
+
+```
+
+
+# Multi omics analysis -- Whole blood
+
+```{r warning=F, message=F, fig.height=5, fig.width=5}
+
+param_multi <- readRDS("/project/xinhe/xsun/multi_group_ctwas/18.4qtls/snakemake_outputs/IBD-ebi-a-GCST004131_wholeblood/IBD-ebi-a-GCST004131.4qtls.thin1.shared_all.param.RDS")
+ctwas_parameters_multi <- summarize_param(param_multi, gwas_n)
+
+p <- plot_piechart_topn(ctwas_parameters = ctwas_parameters_multi, title = "Whole blood only",by = "type",colors = colors)
+
+p
+
+```
+
+# Multi omics analysis -- Colon_Transverse
+
+```{r warning=F, message=F, fig.height=5, fig.width=5}
+
+param_multi <- readRDS("/project/xinhe/xsun/multi_group_ctwas/18.4qtls/snakemake_outputs_col/IBD-ebi-a-GCST004131/IBD-ebi-a-GCST004131.4qtls.thin1.shared_all.param.RDS")
+ctwas_parameters_multi <- summarize_param(param_multi, gwas_n)
+
+p <- plot_piechart_topn(ctwas_parameters = ctwas_parameters_multi, title = "Colon_Transverse only",by = "type",colors = colors)
+
+p
+
+```
+
+
+
+# Multi group analysis -- 10 tissues
+
+```{r warning=F, message=F, fig.height=5, fig.width=5}
+
+param_multi <- readRDS("/project/xinhe/xsun/multi_group_ctwas/18.4qtls/snakemake_outputs/IBD-ebi-a-GCST004131/IBD-ebi-a-GCST004131.4qtls.thin1.shared_all.param.RDS")
+ctwas_parameters_multi <- summarize_param(param_multi, gwas_n)
+
+p <- plot_piechart_topn(ctwas_parameters = ctwas_parameters_multi, title = "10 tissues",by = "type",colors = colors)
+
+p
+
+p <- plot_piechart_topn(ctwas_parameters = ctwas_parameters_multi, title = "10 tissues",by = "context",colors = colors, n_tissue = 10)
+
+p
+
+```
+
+
