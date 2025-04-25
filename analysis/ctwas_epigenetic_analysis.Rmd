@@ -1,0 +1,545 @@
+---
+title: "real data coloc analysis"
+output: html_document
+date: '2024-10-22'
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r echo=FALSE}
+library(RColorBrewer)
+```
+
+## SCZ one QTL
+```{r,echo=FALSE,fig.width=10,fig.height=4}
+# Example: Load three different heritability proportion datasets
+prop1 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/SCZ_eQTL/SCZ_eQTL.parameters.RDS")$prop_heritability
+prop2 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/SCZ_caQTL/SCZ_caQTL.parameters.RDS")$prop_heritability
+prop3 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/SCZ_mQTL/SCZ_mQTL.parameters.RDS")$prop_heritability
+
+# Set up layout for 3 plots in one row
+par(mfrow = c(1, 3), mar = c(2, 2, 2, 1))  # Adjust margins if needed
+
+# Choose consistent color palette
+colors <- brewer.pal(n = max(lengths(list(prop1, prop2, prop3))), name = "Set2")
+
+# Plot each pie chart
+pie(
+  prop1,
+  labels = paste0(c("eQTL","SNP"), "\n", round(100 * prop1, 1), "%"),
+  col = colors,
+  border = "white"
+)
+
+pie(
+  prop2,
+  labels = paste0(c("caQTL","SNP"), "\n", round(100 * prop2, 1), "%"),
+  col = colors,
+  border = "white"
+)
+
+pie(
+  prop3,
+  labels = paste0(c("mQTL","SNP"), "\n", round(100 * prop3, 1), "%"),
+  col = colors,
+  border = "white"
+)
+
+```
+
+## SCZ one QTL (top eQTL)
+```{r,echo=FALSE,fig.width=10,fig.height=4}
+# Example: Load three different heritability proportion datasets
+prop1 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/SCZ_eQTL_top/SCZ_eQTL.parameters.RDS")$prop_heritability
+prop2 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/SCZ_caQTL/SCZ_caQTL.parameters.RDS")$prop_heritability
+prop3 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/SCZ_mQTL/SCZ_mQTL.parameters.RDS")$prop_heritability
+
+# Set up layout for 3 plots in one row
+par(mfrow = c(1, 3), mar = c(2, 2, 2, 1))  # Adjust margins if needed
+
+# Choose consistent color palette
+colors <- brewer.pal(n = max(lengths(list(prop1, prop2, prop3))), name = "Set2")
+
+# Plot each pie chart
+pie(
+  prop1,
+  labels = paste0(c("eQTL","SNP"), "\n", round(100 * prop1, 1), "%"),
+  col = colors,
+  border = "white"
+)
+
+pie(
+  prop2,
+  labels = paste0(c("caQTL","SNP"), "\n", round(100 * prop2, 1), "%"),
+  col = colors,
+  border = "white"
+)
+
+pie(
+  prop3,
+  labels = paste0(c("mQTL","SNP"), "\n", round(100 * prop3, 1), "%"),
+  col = colors,
+  border = "white"
+)
+
+```
+
+## SCZ two QTLs
+```{r,echo=FALSE,fig.width=10,fig.height=4}
+# Example: Load three different heritability proportion datasets
+prop1 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/SCZ_eQTL_caQTL/SCZ_eQTL_caQTL.parameters.RDS")$prop_heritability
+prop2 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/SCZ_eQTL_mQTL/SCZ_eQTL_mQTL.parameters.RDS")$prop_heritability
+prop3 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/SCZ_caQTL_mQTL/SCZ_caQTL_mQTL.parameters.RDS")$prop_heritability
+
+# Set up layout for 3 plots in one row
+par(mfrow = c(1, 3), mar = c(4, 4, 4, 2))  # Adjust margins if needed
+
+# Choose consistent color palette
+colors <- brewer.pal(n = max(lengths(list(prop1, prop2, prop3))), name = "Set2")
+
+# Plot each pie chart
+pie(
+  prop1,
+  labels = paste0(c("eQTL","caQTL","SNP"), "\n", round(100 * prop1, 1), "%"),
+  col = colors,
+  border = "white"
+)
+
+pie(
+  prop2,
+  labels = paste0(c("eQTL","mQTL","SNP"), "\n", round(100 * prop2, 1), "%"),
+  col = colors,
+  border = "white"
+)
+
+pie(
+  prop3,
+  labels = paste0(c("caQTL","mQTL","SNP"), "\n", round(100 * prop3, 1), "%"),
+  col = colors,
+  border = "white"
+)
+
+```
+
+## SCZ two QTLs (top eQTL)
+```{r,echo=FALSE,fig.width=10,fig.height=4}
+# Example: Load three different heritability proportion datasets
+prop1 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/SCZ_eQTL_caQTL_top/SCZ_eQTL_caQTL.parameters.RDS")$prop_heritability
+prop2 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/SCZ_eQTL_mQTL_top/SCZ_eQTL_mQTL.parameters.RDS")$prop_heritability
+prop3 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/SCZ_caQTL_mQTL/SCZ_caQTL_mQTL.parameters.RDS")$prop_heritability
+
+# Set up layout for 3 plots in one row
+par(mfrow = c(1, 3), mar = c(4, 4, 4, 2))  # Adjust margins if needed
+
+# Choose consistent color palette
+colors <- brewer.pal(n = max(lengths(list(prop1, prop2, prop3))), name = "Set2")
+
+# Plot each pie chart
+pie(
+  prop1,
+  labels = paste0(c("eQTL","caQTL","SNP"), "\n", round(100 * prop1, 1), "%"),
+  col = colors,
+  border = "white"
+)
+
+pie(
+  prop2,
+  labels = paste0(c("eQTL","mQTL","SNP"), "\n", round(100 * prop2, 1), "%"),
+  col = colors,
+  border = "white"
+)
+
+pie(
+  prop3,
+  labels = paste0(c("caQTL","mQTL","SNP"), "\n", round(100 * prop3, 1), "%"),
+  col = colors,
+  border = "white"
+)
+
+```
+
+## SCZ three QTLs
+```{r,echo=FALSE}
+prop_heritability <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/SCZ_eQTL_caQTL_mQTL/SCZ_eQTL_caQTL_mQTL.parameters.RDS")
+prop_heritability <- prop_heritability$prop_heritability
+colors <- brewer.pal(n = 4, name = "Set2")  # Alternatives: "Pastel1", "Dark2", "Set3"
+
+# Draw pie chart
+pie(
+  prop_heritability,
+  labels = paste0(c("eQTL","caQTL","mQTL","SNP"), "\n", round(100 * prop_heritability, 1), "%"),
+  col = colors,
+  border = "white"
+)
+```
+
+## SCZ three QTLs (top eQTL)
+```{r,echo=FALSE}
+prop_heritability <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/SCZ_eQTL_caQTL_mQTL_top/SCZ_eQTL_caQTL_mQTL.parameters.RDS")
+prop_heritability <- prop_heritability$prop_heritability
+colors <- brewer.pal(n = 4, name = "Set2")  # Alternatives: "Pastel1", "Dark2", "Set3"
+
+# Draw pie chart
+pie(
+  prop_heritability,
+  labels = paste0(c("eQTL","caQTL","mQTL","SNP"), "\n", round(100 * prop_heritability, 1), "%"),
+  col = colors,
+  border = "white"
+)
+```
+
+## BIP one QTL
+```{r,echo=FALSE,fig.width=10,fig.height=4}
+# Example: Load three different heritability proportion datasets
+prop1 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/BIP_eQTL/BIP_eQTL.parameters.RDS")$prop_heritability
+prop2 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/BIP_caQTL/BIP_caQTL.parameters.RDS")$prop_heritability
+prop3 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/BIP_mQTL/BIP_mQTL.parameters.RDS")$prop_heritability
+
+# Set up layout for 3 plots in one row
+par(mfrow = c(1, 3), mar = c(2, 2, 2, 1))  # Adjust margins if needed
+
+# Choose consistent color palette
+colors <- brewer.pal(n = max(lengths(list(prop1, prop2, prop3))), name = "Set2")
+
+# Plot each pie chart
+pie(
+  prop1,
+  labels = paste0(c("eQTL","SNP"), "\n", round(100 * prop1, 1), "%"),
+  col = colors,
+  border = "white"
+)
+
+pie(
+  prop2,
+  labels = paste0(c("caQTL","SNP"), "\n", round(100 * prop2, 1), "%"),
+  col = colors,
+  border = "white"
+)
+
+pie(
+  prop3,
+  labels = paste0(c("mQTL","SNP"), "\n", round(100 * prop3, 1), "%"),
+  col = colors,
+  border = "white"
+)
+
+```
+
+## BIP one QTL (top eQTL)
+```{r,echo=FALSE,fig.width=10,fig.height=4}
+# Example: Load three different heritability proportion datasets
+prop1 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/BIP_eQTL_top/BIP_eQTL.parameters.RDS")$prop_heritability
+prop2 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/BIP_caQTL/BIP_caQTL.parameters.RDS")$prop_heritability
+prop3 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/BIP_mQTL/BIP_mQTL.parameters.RDS")$prop_heritability
+
+# Set up layout for 3 plots in one row
+par(mfrow = c(1, 3), mar = c(2, 2, 2, 1))  # Adjust margins if needed
+
+# Choose consistent color palette
+colors <- brewer.pal(n = max(lengths(list(prop1, prop2, prop3))), name = "Set2")
+
+# Plot each pie chart
+pie(
+  prop1,
+  labels = paste0(c("eQTL","SNP"), "\n", round(100 * prop1, 1), "%"),
+  col = colors,
+  border = "white"
+)
+
+pie(
+  prop2,
+  labels = paste0(c("caQTL","SNP"), "\n", round(100 * prop2, 1), "%"),
+  col = colors,
+  border = "white"
+)
+
+pie(
+  prop3,
+  labels = paste0(c("mQTL","SNP"), "\n", round(100 * prop3, 1), "%"),
+  col = colors,
+  border = "white"
+)
+
+```
+
+## BIP two QTLs
+```{r,echo=FALSE,fig.width=10,fig.height=4}
+# Example: Load three different heritability proportion datasets
+prop1 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/BIP_eQTL_caQTL/BIP_eQTL_caQTL.parameters.RDS")$prop_heritability
+prop2 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/BIP_eQTL_mQTL/BIP_eQTL_mQTL.parameters.RDS")$prop_heritability
+prop3 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/BIP_caQTL_mQTL/BIP_caQTL_mQTL.parameters.RDS")$prop_heritability
+
+# Set up layout for 3 plots in one row
+par(mfrow = c(1, 3), mar = c(4, 4, 4, 2))  # Adjust margins if needed
+
+# Choose consistent color palette
+colors <- brewer.pal(n = max(lengths(list(prop1, prop2, prop3))), name = "Set2")
+
+# Plot each pie chart
+pie(
+  prop1,
+  labels = paste0(c("eQTL","caQTL","SNP"), "\n", round(100 * prop1, 1), "%"),
+  col = colors,
+  border = "white"
+)
+
+pie(
+  prop2,
+  labels = paste0(c("eQTL","mQTL","SNP"), "\n", round(100 * prop2, 1), "%"),
+  col = colors,
+  border = "white"
+)
+
+pie(
+  prop3,
+  labels = paste0(c("caQTL","mQTL","SNP"), "\n", round(100 * prop3, 1), "%"),
+  col = colors,
+  border = "white"
+)
+
+```
+
+## BIP two QTLs (top eQTL)
+```{r,echo=FALSE,fig.width=10,fig.height=4}
+# Example: Load three different heritability proportion datasets
+prop1 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/BIP_eQTL_caQTL_top/BIP_eQTL_caQTL.parameters.RDS")$prop_heritability
+prop2 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/BIP_eQTL_mQTL_top/BIP_eQTL_mQTL.parameters.RDS")$prop_heritability
+prop3 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/BIP_caQTL_mQTL/BIP_caQTL_mQTL.parameters.RDS")$prop_heritability
+
+# Set up layout for 3 plots in one row
+par(mfrow = c(1, 3), mar = c(4, 4, 4, 2))  # Adjust margins if needed
+
+# Choose consistent color palette
+colors <- brewer.pal(n = max(lengths(list(prop1, prop2, prop3))), name = "Set2")
+
+# Plot each pie chart
+pie(
+  prop1,
+  labels = paste0(c("eQTL","caQTL","SNP"), "\n", round(100 * prop1, 1), "%"),
+  col = colors,
+  border = "white"
+)
+
+pie(
+  prop2,
+  labels = paste0(c("eQTL","mQTL","SNP"), "\n", round(100 * prop2, 1), "%"),
+  col = colors,
+  border = "white"
+)
+
+pie(
+  prop3,
+  labels = paste0(c("caQTL","mQTL","SNP"), "\n", round(100 * prop3, 1), "%"),
+  col = colors,
+  border = "white"
+)
+
+```
+
+## BIP three QTLs
+```{r,echo=FALSE}
+prop_heritability <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/BIP_eQTL_caQTL_mQTL/BIP_eQTL_caQTL_mQTL.parameters.RDS")
+prop_heritability <- prop_heritability$prop_heritability
+colors <- brewer.pal(n = 4, name = "Set2")  # Alternatives: "Pastel1", "Dark2", "Set3"
+
+# Draw pie chart
+pie(
+  prop_heritability,
+  labels = paste0(c("eQTL","caQTL","mQTL","SNP"), "\n", round(100 * prop_heritability, 1), "%"),
+  col = colors,
+  border = "white"
+)
+```
+
+## BIP three QTLs
+```{r,echo=FALSE}
+prop_heritability <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/BIP_eQTL_caQTL_mQTL_top/BIP_eQTL_caQTL_mQTL.parameters.RDS")
+prop_heritability <- prop_heritability$prop_heritability
+colors <- brewer.pal(n = 4, name = "Set2")  # Alternatives: "Pastel1", "Dark2", "Set3"
+
+# Draw pie chart
+pie(
+  prop_heritability,
+  labels = paste0(c("eQTL","caQTL","mQTL","SNP"), "\n", round(100 * prop_heritability, 1), "%"),
+  col = colors,
+  border = "white"
+)
+```
+
+## MDD one QTL
+```{r,echo=FALSE,fig.width=10,fig.height=4}
+# Example: Load three different heritability proportion datasets
+prop1 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/MDD_eQTL/MDD_eQTL.parameters.RDS")$prop_heritability
+prop2 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/MDD_caQTL/MDD_caQTL.parameters.RDS")$prop_heritability
+prop3 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/MDD_mQTL/MDD_mQTL.parameters.RDS")$prop_heritability
+
+# Set up layout for 3 plots in one row
+par(mfrow = c(1, 3), mar = c(2, 2, 2, 1))  # Adjust margins if needed
+
+# Choose consistent color palette
+colors <- brewer.pal(n = max(lengths(list(prop1, prop2, prop3))), name = "Set2")
+
+# Plot each pie chart
+pie(
+  prop1,
+  labels = paste0(c("eQTL","SNP"), "\n", round(100 * prop1, 1), "%"),
+  col = colors,
+  border = "white"
+)
+
+pie(
+  prop2,
+  labels = paste0(c("caQTL","SNP"), "\n", round(100 * prop2, 1), "%"),
+  col = colors,
+  border = "white"
+)
+
+pie(
+  prop3,
+  labels = paste0(c("mQTL","SNP"), "\n", round(100 * prop3, 1), "%"),
+  col = colors,
+  border = "white"
+)
+
+```
+
+## MDD one QTL
+```{r,echo=FALSE,fig.width=10,fig.height=4}
+# Example: Load three different heritability proportion datasets
+prop1 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/MDD_eQTL_top/MDD_eQTL.parameters.RDS")$prop_heritability
+prop2 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/MDD_caQTL/MDD_caQTL.parameters.RDS")$prop_heritability
+prop3 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/MDD_mQTL/MDD_mQTL.parameters.RDS")$prop_heritability
+
+# Set up layout for 3 plots in one row
+par(mfrow = c(1, 3), mar = c(2, 2, 2, 1))  # Adjust margins if needed
+
+# Choose consistent color palette
+colors <- brewer.pal(n = max(lengths(list(prop1, prop2, prop3))), name = "Set2")
+
+# Plot each pie chart
+pie(
+  prop1,
+  labels = paste0(c("eQTL","SNP"), "\n", round(100 * prop1, 1), "%"),
+  col = colors,
+  border = "white"
+)
+
+pie(
+  prop2,
+  labels = paste0(c("caQTL","SNP"), "\n", round(100 * prop2, 1), "%"),
+  col = colors,
+  border = "white"
+)
+
+pie(
+  prop3,
+  labels = paste0(c("mQTL","SNP"), "\n", round(100 * prop3, 1), "%"),
+  col = colors,
+  border = "white"
+)
+
+```
+
+## MDD two QTLs
+```{r,echo=FALSE,fig.width=10,fig.height=4}
+# Example: Load three different heritability proportion datasets
+prop1 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/MDD_eQTL_caQTL/MDD_eQTL_caQTL.parameters.RDS")$prop_heritability
+prop2 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/MDD_eQTL_mQTL/MDD_eQTL_mQTL.parameters.RDS")$prop_heritability
+prop3 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/MDD_caQTL_mQTL/MDD_caQTL_mQTL.parameters.RDS")$prop_heritability
+
+# Set up layout for 3 plots in one row
+par(mfrow = c(1, 3), mar = c(4, 4, 4, 2))  # Adjust margins if needed
+
+# Choose consistent color palette
+colors <- brewer.pal(n = max(lengths(list(prop1, prop2, prop3))), name = "Set2")
+
+# Plot each pie chart
+pie(
+  prop1,
+  labels = paste0(c("eQTL","caQTL","SNP"), "\n", round(100 * prop1, 1), "%"),
+  col = colors,
+  border = "white"
+)
+
+pie(
+  prop2,
+  labels = paste0(c("eQTL","mQTL","SNP"), "\n", round(100 * prop2, 1), "%"),
+  col = colors,
+  border = "white"
+)
+
+pie(
+  prop3,
+  labels = paste0(c("caQTL","mQTL","SNP"), "\n", round(100 * prop3, 1), "%"),
+  col = colors,
+  border = "white"
+)
+
+```
+
+## MDD two QTLs
+```{r,echo=FALSE,fig.width=10,fig.height=4}
+# Example: Load three different heritability proportion datasets
+prop1 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/MDD_eQTL_caQTL_top/MDD_eQTL_caQTL.parameters.RDS")$prop_heritability
+prop2 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/MDD_eQTL_mQTL_top/MDD_eQTL_mQTL.parameters.RDS")$prop_heritability
+prop3 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/MDD_caQTL_mQTL/MDD_caQTL_mQTL.parameters.RDS")$prop_heritability
+
+# Set up layout for 3 plots in one row
+par(mfrow = c(1, 3), mar = c(4, 4, 4, 2))  # Adjust margins if needed
+
+# Choose consistent color palette
+colors <- brewer.pal(n = max(lengths(list(prop1, prop2, prop3))), name = "Set2")
+
+# Plot each pie chart
+pie(
+  prop1,
+  labels = paste0(c("eQTL","caQTL","SNP"), "\n", round(100 * prop1, 1), "%"),
+  col = colors,
+  border = "white"
+)
+
+pie(
+  prop2,
+  labels = paste0(c("eQTL","mQTL","SNP"), "\n", round(100 * prop2, 1), "%"),
+  col = colors,
+  border = "white"
+)
+
+pie(
+  prop3,
+  labels = paste0(c("caQTL","mQTL","SNP"), "\n", round(100 * prop3, 1), "%"),
+  col = colors,
+  border = "white"
+)
+
+```
+
+## MDD three QTLs
+```{r,echo=FALSE}
+prop_heritability <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/MDD_eQTL_caQTL_mQTL/MDD_eQTL_caQTL_mQTL.parameters.RDS")
+prop_heritability <- prop_heritability$prop_heritability
+colors <- brewer.pal(n = 4, name = "Set2")  # Alternatives: "Pastel1", "Dark2", "Set3"
+
+# Draw pie chart
+pie(
+  prop_heritability,
+  labels = paste0(c("eQTL","caQTL","mQTL","SNP"), "\n", round(100 * prop_heritability, 1), "%"),
+  col = colors,
+  border = "white"
+)
+```
+
+## MDD three QTLs
+```{r,echo=FALSE}
+prop_heritability <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/MDD_eQTL_caQTL_mQTL_top/MDD_eQTL_caQTL_mQTL.parameters.RDS")
+prop_heritability <- prop_heritability$prop_heritability
+colors <- brewer.pal(n = 4, name = "Set2")  # Alternatives: "Pastel1", "Dark2", "Set3"
+
+# Draw pie chart
+pie(
+  prop_heritability,
+  labels = paste0(c("eQTL","caQTL","mQTL","SNP"), "\n", round(100 * prop_heritability, 1), "%"),
+  col = colors,
+  border = "white"
+)
+```
