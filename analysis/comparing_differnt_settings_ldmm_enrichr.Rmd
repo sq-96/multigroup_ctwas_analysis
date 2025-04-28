@@ -1,0 +1,55 @@
+---
+title: "Compare ld-mismatch setting enrichr results"
+author: "XSun"
+date: "2025-04-25"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+# Introduction
+
+The main analysis is here https://sq-96.github.io/multigroup_ctwas_analysis/comparing_differnt_settings_ldmm.html
+
+```{r}
+folder_results_susieST <- "/project/xinhe/xsun/multi_group_ctwas/15.susie_weights/snakemake_outputs/"
+```
+
+
+# IBD-ebi-a-GCST004131
+
+## Setting: shared_all, thin = 1, L = 5, susieST
+
+
+```{r warning=F,message=F}
+trait <- "IBD-ebi-a-GCST004131"
+thin <- 1
+var_struc <- "shared_all"
+st <- "with_susieST"
+L <- 5
+db <- "GO_Biological_Process_2023"
+```
+
+### Thresholds for ld mismatch diagnosis: nonSNP PIP = 0.5, SNP p_diff = 5e-8
+
+```{r}
+threshold_nonSNP_PIPs <- 0.5
+threshold_SNP_p <- "5e-08"
+```
+
+```{r}
+
+combined_pip_by_group_reginmerge <-  readRDS(paste0(folder_results_susieST,trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L,".regionmerge_combined_pip_bygroup_final.RDS"))
+genes_reginmerge <- combined_pip_by_group_reginmerge$gene_name[combined_pip_by_group_reginmerge$combined_pip > 0.8]
+df_reginmerge <- readRDS(paste0(folder_results_susieST,trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L, ".regionmerge_enrichr_",db,".RDS"))
+   
+combined_pip_by_group_ldmm <-  readRDS(paste0(folder_results_susieST,trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L,".ldmismatch_combined_pip_bygroup_final_genepip",threshold_nonSNP_PIPs,"_snpp_",threshold_SNP_p,".RDS"))
+genes_ldmm <- combined_pip_by_group_ldmm$gene_name[combined_pip_by_group_ldmm$combined_pip > 0.8]
+df_ldmm <-  readRDS(paste0(folder_results_susieST,trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L,".ldmismatch_regionmerge_enrichr_genepip",threshold_nonSNP_PIPs,"_snpp_",threshold_SNP_p,".RDS"))
+
+combined_pip_by_group_ldmm_nold <-readRDS(paste0(folder_results_susieST,trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L,".ldmismatch_noLD_combined_pip_bygroup_final_genepip",threshold_nonSNP_PIPs,"_snpp_",threshold_SNP_p,".RDS"))
+genes_ldmm_nold <- combined_pip_by_group_ldmm_nold$gene_name[combined_pip_by_group_ldmm_nold$combined_pip > 0.8]
+df_ldmm_nold <-  readRDS(paste0(folder_results_susieST,trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L,".ldmismatch_noLD_regionmerge_enrichr_genepip",threshold_nonSNP_PIPs,"_snpp_",threshold_SNP_p,".RDS"))
+
+tmp <- c(length(genes_reginmerge),length(genes_reginmerge),length(genes_ldmm_nold))
+```

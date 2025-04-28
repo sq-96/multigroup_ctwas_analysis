@@ -1,0 +1,130 @@
+---
+title: "Compare different settings: cs index filter or not"
+author: "XSun"
+date: "2025-04-28"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+    toc: true
+---
+
+
+```{r warning=F, message=FALSE}
+library(dplyr)
+library(scales)
+library(tidyr)
+library(ggplot2)
+
+traits_silver <- c("T2D","LDL","BMI","RBC","IBD","SCZ","aFib")
+names(traits_silver) <- c("T2D-panukb","LDL-ukb-d-30780_irnt","BMI-panukb","RBC-panukb","IBD-ebi-a-GCST004131","SCZ-ieu-b-5102","aFib-ebi-a-GCST006414")
+
+traits <- c("LDL-ukb-d-30780_irnt","IBD-ebi-a-GCST004131","BMI-panukb","RBC-panukb","SCZ-ieu-b-5102","aFib-ebi-a-GCST006414","T2D-panukb")
+
+
+folder_results <- "/project/xinhe/xsun/multi_group_ctwas/15.susie_weights/snakemake_outputs/"
+
+create_summary_plot_withTP <- function(df, columns_to_plot, x_var = "setting", x_order = NULL, title = NULL) {
+
+  # Reshape data
+  df_long <- df %>%
+    pivot_longer(
+      cols = all_of(columns_to_plot),
+      names_to = "variable",
+      values_to = "value"
+    )
+  
+  # Convert to factor with specified order if x_order is provided
+  if (!is.null(x_order)) {
+    df_long <- df_long %>%
+      mutate(across(all_of(x_var), ~factor(., levels = x_order)))
+  }
+  
+  # Identify the max value for scaling
+  max_main <- max(df_long$value[df_long$variable != "TP_rate"], na.rm = TRUE)
+  max_tp_rate <- max(df_long$value[df_long$variable == "TP_rate"], na.rm = TRUE)
+  
+  if(max_tp_rate ==0) {
+    max_tp_rate <- 1
+  }
+  
+  # Rescale TP_rate
+  df_long <- df_long %>%
+    mutate(scaled_value = ifelse(variable == "TP_rate", 
+                                 value * (max_main / max_tp_rate), value))
+  
+  # Create plot
+  ggplot(df_long, aes(x = .data[[x_var]], y = scaled_value, color = variable, shape = variable)) +
+    #geom_point(size = 3, position = position_jitter(width = 0.2)) +
+    geom_point(size = 3) + 
+    scale_y_continuous(
+      name = "Count",
+      sec.axis = sec_axis(~ . * (max_tp_rate / max_main), name = "TP Rate")
+    ) +
+    labs(x = "Settings", title = title) +
+    theme_minimal() +
+    theme(
+      axis.text.x = element_text(angle = 45, hjust = 1, size = 10),
+      legend.position = "right",
+      legend.title = element_blank()
+    ) +
+    scale_color_brewer(palette = "Set1")
+}
+
+
+```
+
+
+```{r warning=F, message=FALSE, fig.height=5, fig.width=15}
+thin <- 1
+var_struc <- "shared_all"
+L <- 5
+st <- "with_susieST"
+
+setting_names <- c()
+num_gene_pip08_all <- c()
+num_silver_pip08_all <- c()
+num_bystander_pip08_all <- c()
+
+for (trait in traits) {
+  for (cs in c("CS_filtered","CS_NOT_filtered")){
+    
+    if(cs == "CS_filtered"){
+      cs_setting <- NULL
+    }else{
+      cs_setting <- "_csF"
+    }
+    
+    setting_names <- c(setting_names, paste0(traits_silver[trait],"-",cs))
+    
+    # num_gene_pip08 -- cs filtered
+    combined_pip_by_group <- readRDS(paste0(folder_results,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L, ".combined_pip_bygroup_final",cs_setting,".RDS"))
+    combined_pip_sig <- combined_pip_by_group[combined_pip_by_group$combined_pip > 0.8,]
+    
+    num_gene_pip08_all <- c(num_gene_pip08_all, nrow(combined_pip_sig))
+    
+    # silver_standard genes
+    known <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/data/silverstandard/known_annotations_",traits_silver[trait],".RDS"))
+    bystander <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/data/silverstandard/bystanders_",traits_silver[trait],".RDS"))
+    
+    num_silver_pip08_all <- c(num_silver_pip08_all,sum(combined_pip_sig$gene_name %in% known))
+    num_bystander_pip08_all <- c(num_bystander_pip08_all,sum(combined_pip_sig$gene_name %in% bystander))
+
+    
+  }
+}
+
+df <- data.frame(setting = setting_names, 
+                 num_gene_pip08 = num_gene_pip08_all,
+                 num_silver_pip08 = num_silver_pip08_all,
+                 num_bystander_pip08 = num_bystander_pip08_all,
+                 TP_rate = num_silver_pip08_all/(num_silver_pip08_all+num_bystander_pip08_all))
+
+create_summary_plot_withTP(df,x_order = setting_names, 
+                    columns_to_plot = c("num_gene_pip08","num_silver_pip08","TP_rate"))
+
+
+DT::datatable(df,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;',''),options = list(pageLength = 10) )
+```
+
+
+
