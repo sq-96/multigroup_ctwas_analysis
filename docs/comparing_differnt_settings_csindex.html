@@ -411,7 +411,7 @@ aria-hidden="true"></span> </a>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2025-04-28
+<strong>Last updated:</strong> 2025-04-30
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -449,10 +449,10 @@ changes </a>
 <div id="strongRMarkdownfilestronguncommittedchanges"
 class="panel-collapse collapse">
 <div class="panel-body">
-<p>The R Markdown is untracked by Git. To know which version of the R
-Markdown file created these results, you’ll want to first commit it to
-the Git repo. If you’re still working on the analysis, you can ignore
-this warning. When you’re finished, you can run
+<p>The R Markdown file has unstaged changes. To know which version of
+the R Markdown file created these results, you’ll want to first commit
+it to the Git repo. If you’re still working on the analysis, you can
+ignore this warning. When you’re finished, you can run
 <code>wflow_publish</code> to commit the R Markdown file and build the
 HTML.</p>
 </div>
@@ -545,15 +545,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree95adbf839eb2eb561e9deda554d2865b3cf7687dtargetblank95adbf8a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistreed9f4daaee8ab0a2d363e29c8cd4cdf639049dbb9targetblankd9f4daaa">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/95adbf839eb2eb561e9deda554d2865b3cf7687d" target="_blank">95adbf8</a>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/d9f4daaee8ab0a2d363e29c8cd4cdf639049dbb9" target="_blank">d9f4daa</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree95adbf839eb2eb561e9deda554d2865b3cf7687dtargetblank95adbf8a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistreed9f4daaee8ab0a2d363e29c8cd4cdf639049dbb9targetblankd9f4daaa"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -563,7 +563,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/95adbf839eb2eb561e9deda554d2865b3cf7687d" target="_blank">95adbf8</a>.
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/d9f4daaee8ab0a2d363e29c8cd4cdf639049dbb9" target="_blank">d9f4daa</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -581,10 +581,9 @@ Ignored files:
     Ignored:    .Rhistory
     Ignored:    cv/
 
-Untracked files:
-    Untracked:  analysis/combine_qtls.Rmd
-    Untracked:  analysis/comparing_differnt_settings_csindex.Rmd
-    Untracked:  analysis/comparing_differnt_settings_ldmm_enrichr.Rmd
+Unstaged changes:
+    Modified:   analysis/comparing_differnt_settings_csindex.Rmd
+    Deleted:    slurm-30624233.out
 
 </code></pre>
 <p>
@@ -599,10 +598,75 @@ have uncommitted changes.
 <hr>
 </div>
 <div id="versions" class="tab-pane fade">
+
 <p>
-There are no past versions. Publish this analysis with
-<code>wflow_publish()</code> to start tracking its development.
+These are the previous versions of the repository in which changes were
+made to the R Markdown
+(<code>analysis/comparing_differnt_settings_csindex.Rmd</code>) and HTML
+(<code>docs/comparing_differnt_settings_csindex.html</code>) files. If
+you’ve configured a remote Git repository (see
+<code>?wflow_git_remote</code>), click on the hyperlinks in the table
+below to view the files as they were in that past version.
 </p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/3b4edbeb0ca45598313a293861a9d653315fb3e2/analysis/comparing_differnt_settings_csindex.Rmd" target="_blank">3b4edbe</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-04-28
+</td>
+<td>
+update
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/sq-96/multigroup_ctwas_analysis/3b4edbeb0ca45598313a293861a9d653315fb3e2/docs/comparing_differnt_settings_csindex.html" target="_blank">3b4edbe</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-04-28
+</td>
+<td>
+update
+</td>
+</tr>
+</tbody>
+</table>
+</div>
 <hr>
 </div>
 </div>
@@ -611,12 +675,13 @@ There are no past versions. Publish this analysis with
 library(scales)
 library(tidyr)
 library(ggplot2)
+library(eulerr)
 
 traits_silver &lt;- c(&quot;T2D&quot;,&quot;LDL&quot;,&quot;BMI&quot;,&quot;RBC&quot;,&quot;IBD&quot;,&quot;SCZ&quot;,&quot;aFib&quot;)
 names(traits_silver) &lt;- c(&quot;T2D-panukb&quot;,&quot;LDL-ukb-d-30780_irnt&quot;,&quot;BMI-panukb&quot;,&quot;RBC-panukb&quot;,&quot;IBD-ebi-a-GCST004131&quot;,&quot;SCZ-ieu-b-5102&quot;,&quot;aFib-ebi-a-GCST006414&quot;)
 
 traits &lt;- c(&quot;LDL-ukb-d-30780_irnt&quot;,&quot;IBD-ebi-a-GCST004131&quot;,&quot;BMI-panukb&quot;,&quot;RBC-panukb&quot;,&quot;SCZ-ieu-b-5102&quot;,&quot;aFib-ebi-a-GCST006414&quot;,&quot;T2D-panukb&quot;)
-
+db &lt;- &quot;GO_Biological_Process_2023&quot;
 
 folder_results &lt;- &quot;/project/xinhe/xsun/multi_group_ctwas/15.susie_weights/snakemake_outputs/&quot;
 
@@ -665,7 +730,11 @@ create_summary_plot_withTP &lt;- function(df, columns_to_plot, x_var = &quot;set
       legend.title = element_blank()
     ) +
     scale_color_brewer(palette = &quot;Set1&quot;)
-}</code></pre>
+}
+
+DT::datatable(matrix())</code></pre>
+<div id="htmlwidget-4de263013227ca78a293" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-4de263013227ca78a293">{"x":{"filter":"none","vertical":false,"data":[[null]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>V1<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 <pre class="r"><code>thin &lt;- 1
 var_struc &lt;- &quot;shared_all&quot;
 L &lt;- 5
@@ -675,7 +744,7 @@ setting_names &lt;- c()
 num_gene_pip08_all &lt;- c()
 num_silver_pip08_all &lt;- c()
 num_bystander_pip08_all &lt;- c()
-
+go_num_fdr005 &lt;- c()
 for (trait in traits) {
   for (cs in c(&quot;CS_filtered&quot;,&quot;CS_NOT_filtered&quot;)){
     
@@ -699,7 +768,15 @@ for (trait in traits) {
     
     num_silver_pip08_all &lt;- c(num_silver_pip08_all,sum(combined_pip_sig$gene_name %in% known))
     num_bystander_pip08_all &lt;- c(num_bystander_pip08_all,sum(combined_pip_sig$gene_name %in% bystander))
-
+    
+    file_go &lt;- paste0(folder_results,trait,&quot;/&quot;,trait,&quot;.&quot;,st,&quot;.thin&quot;,thin,&quot;.&quot;,var_struc,&quot;.L&quot;,L, &quot;.enrichr_&quot;,db,&quot;_&quot;,cs,&quot;.RDS&quot;)
+    if(!file.exists(file_go)){
+      go_num_fdr005 &lt;- c(go_num_fdr005,0)
+    }else{
+      go &lt;- readRDS(paste0(folder_results,trait,&quot;/&quot;,trait,&quot;.&quot;,st,&quot;.thin&quot;,thin,&quot;.&quot;,var_struc,&quot;.L&quot;,L, &quot;.enrichr_&quot;,db,&quot;_&quot;,cs,&quot;.RDS&quot;))
+      go_num_fdr005 &lt;- c(go_num_fdr005,nrow(go))
+    }
+    
     
   }
 }
@@ -708,14 +785,134 @@ df &lt;- data.frame(setting = setting_names,
                  num_gene_pip08 = num_gene_pip08_all,
                  num_silver_pip08 = num_silver_pip08_all,
                  num_bystander_pip08 = num_bystander_pip08_all,
-                 TP_rate = num_silver_pip08_all/(num_silver_pip08_all+num_bystander_pip08_all))
+                 TP_rate = num_silver_pip08_all/(num_silver_pip08_all+num_bystander_pip08_all),
+                 go_num_fdr005 = go_num_fdr005)
 
 create_summary_plot_withTP(df,x_order = setting_names, 
                     columns_to_plot = c(&quot;num_gene_pip08&quot;,&quot;num_silver_pip08&quot;,&quot;TP_rate&quot;))</code></pre>
 <p><img src="figure/comparing_differnt_settings_csindex.Rmd/unnamed-chunk-2-1.png" width="1440" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-2-1">
+Past versions of unnamed-chunk-2-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-2-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/3b4edbeb0ca45598313a293861a9d653315fb3e2/docs/figure/comparing_differnt_settings_csindex.Rmd/unnamed-chunk-2-1.png" target="_blank">3b4edbe</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-04-28
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<pre class="r"><code>create_summary_plot_withTP(df,x_order = setting_names, 
+                    columns_to_plot = c(&quot;go_num_fdr005&quot;), title = &quot;Number of GO terms at p.adjust &lt; 0.05&quot;)</code></pre>
+<p><img src="figure/comparing_differnt_settings_csindex.Rmd/unnamed-chunk-2-2.png" width="1440" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>DT::datatable(df,caption = htmltools::tags$caption( style = &#39;caption-side: left; text-align: left; color:black;  font-size:150% ;&#39;,&#39;&#39;),options = list(pageLength = 10) )</code></pre>
-<div id="htmlwidget-4de263013227ca78a293" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-4de263013227ca78a293">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\"><\/caption>","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14"],["LDL-CS_filtered","LDL-CS_NOT_filtered","IBD-CS_filtered","IBD-CS_NOT_filtered","BMI-CS_filtered","BMI-CS_NOT_filtered","RBC-CS_filtered","RBC-CS_NOT_filtered","SCZ-CS_filtered","SCZ-CS_NOT_filtered","aFib-CS_filtered","aFib-CS_NOT_filtered","T2D-CS_filtered","T2D-CS_NOT_filtered"],[60,72,22,28,52,61,152,194,11,16,43,57,8,15],[10,10,5,5,0,0,3,3,0,0,10,10,1,1],[4,5,0,0,0,0,20,24,1,1,5,5,3,3],[0.714285714285714,0.666666666666667,1,1,null,null,0.130434782608696,0.111111111111111,0,0,0.666666666666667,0.666666666666667,0.25,0.25]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>setting<\/th>\n      <th>num_gene_pip08<\/th>\n      <th>num_silver_pip08<\/th>\n      <th>num_bystander_pip08<\/th>\n      <th>TP_rate<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[2,3,4,5]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-20575149739a71fc930f" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-20575149739a71fc930f">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\"><\/caption>","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14"],["LDL-CS_filtered","LDL-CS_NOT_filtered","IBD-CS_filtered","IBD-CS_NOT_filtered","BMI-CS_filtered","BMI-CS_NOT_filtered","RBC-CS_filtered","RBC-CS_NOT_filtered","SCZ-CS_filtered","SCZ-CS_NOT_filtered","aFib-CS_filtered","aFib-CS_NOT_filtered","T2D-CS_filtered","T2D-CS_NOT_filtered"],[60,72,22,28,52,61,152,194,11,16,43,57,8,15],[10,10,5,5,0,0,3,3,0,0,10,10,1,1],[4,5,0,0,0,0,20,24,1,1,5,5,3,3],[0.714285714285714,0.666666666666667,1,1,null,null,0.130434782608696,0.111111111111111,0,0,0.666666666666667,0.666666666666667,0.25,0.25],[50,47,190,139,0,0,13,0,34,0,28,13,63,3]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>setting<\/th>\n      <th>num_gene_pip08<\/th>\n      <th>num_silver_pip08<\/th>\n      <th>num_bystander_pip08<\/th>\n      <th>TP_rate<\/th>\n      <th>go_num_fdr005<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[2,3,4,5,6]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<pre class="r"><code>traits &lt;- c(&quot;LDL-ukb-d-30780_irnt&quot;,&quot;IBD-ebi-a-GCST004131&quot;)
+
+for (trait in traits) {
+  
+  file_go_filtered &lt;- paste0(folder_results,trait,&quot;/&quot;,trait,&quot;.&quot;,st,&quot;.thin&quot;,thin,&quot;.&quot;,var_struc,&quot;.L&quot;,L, &quot;.enrichr_&quot;,db,&quot;_CS_filtered.RDS&quot;)
+  if(!file.exists(file_go_filtered)){
+    go_filtered &lt;- NULL
+  }else{
+    go_filtered &lt;- readRDS(file_go_filtered)
+  }
+  
+
+  
+  file_go_nofiltered &lt;- paste0(folder_results,trait,&quot;/&quot;,trait,&quot;.&quot;,st,&quot;.thin&quot;,thin,&quot;.&quot;,var_struc,&quot;.L&quot;,L, &quot;.enrichr_&quot;,db,&quot;_CS_NOT_filtered.RDS&quot;)
+  if(!file.exists(file_go_nofiltered)){
+    go_nofiltered &lt;- NULL
+  }else{
+    go_nofiltered &lt;- readRDS(file_go_nofiltered)
+  }
+  
+  set1 &lt;- unique(go_filtered$Term)
+  set2 &lt;- unique(go_nofiltered$Term)
+  
+  venn_input &lt;- list(
+    Filtered = set1,
+    NoFiltered = set2
+  )
+  
+  fit &lt;- euler(venn_input)
+  
+  print(plot(fit,
+       fills = c(&quot;skyblue&quot;, &quot;orange&quot;),
+       labels = TRUE,
+       quantities = TRUE,
+       main = trait))
+  
+    
+}</code></pre>
+<p><img src="figure/comparing_differnt_settings_csindex.Rmd/unnamed-chunk-3-1.png" width="384" style="display: block; margin: auto;" /><img src="figure/comparing_differnt_settings_csindex.Rmd/unnamed-chunk-3-2.png" width="384" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>traits &lt;- c(&quot;LDL-ukb-d-30780_irnt&quot;,&quot;IBD-ebi-a-GCST004131&quot;)
+
+for (trait in traits) {
+  
+  file_go_filtered &lt;- paste0(folder_results,trait,&quot;/&quot;,trait,&quot;.&quot;,st,&quot;.thin&quot;,thin,&quot;.&quot;,var_struc,&quot;.L&quot;,L, &quot;.enrichr_&quot;,db,&quot;_CS_filtered.RDS&quot;)
+  if(!file.exists(file_go_filtered)){
+    go_filtered &lt;- NULL
+  }else{
+    go_filtered &lt;- readRDS(file_go_filtered)
+  }
+  
+
+  
+  file_go_nofiltered &lt;- paste0(folder_results,trait,&quot;/&quot;,trait,&quot;.&quot;,st,&quot;.thin&quot;,thin,&quot;.&quot;,var_struc,&quot;.L&quot;,L, &quot;.enrichr_&quot;,db,&quot;_CS_NOT_filtered.RDS&quot;)
+  if(!file.exists(file_go_nofiltered)){
+    go_nofiltered &lt;- NULL
+  }else{
+    go_nofiltered &lt;- readRDS(file_go_nofiltered)
+  }
+
+  
+  cat(&quot;\n\n&quot;)
+  cat(knitr::knit_print(DT::datatable(go_filtered[!go_filtered$Term %in% go_nofiltered$Term,], caption = htmltools::tags$caption( style = &#39;font-size: 150%; caption-side: topleft; text-align = left; color:black;&#39;,paste0(&quot;Unique GO terms at p.adjust &lt; 0.05 -- &quot;,trait, &quot;--CS_filtered&quot;)),options = list(pageLength = 5))))
+  cat(&quot;\n\n&quot;)
+  
+  cat(&quot;\n\n&quot;)
+  cat(knitr::knit_print(DT::datatable(go_nofiltered[!go_nofiltered$Term %in% go_filtered$Term,], caption = htmltools::tags$caption( style = &#39;font-size: 150%; caption-side: topleft; text-align = left; color:black;&#39;,paste0(&quot;Unique GO terms at p.adjust &lt; 0.05 -- &quot;,trait, &quot;--CS_NOT_filtered&quot;)),options = list(pageLength = 5))))
+  cat(&quot;\n\n&quot;)
+  
+ 
+    
+}</code></pre>
+<div id="htmlwidget-a23c348805048a1f64c7" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-a23c348805048a1f64c7">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"font-size: 150%; caption-side: topleft; text-align = left; color:black;\">Unique GO terms at p.adjust &lt; 0.05 -- LDL-ukb-d-30780_irnt--CS_filtered<\/caption>","data":[["35","36","37","38","39","41","42","43","44","45","46","48","49","50"],["Response To Insulin (GO:0032868)","Positive Regulation Of Endocytosis (GO:0045807)","Regulation Of Protein Export From Nucleus (GO:0046825)","Dendritic Cell Differentiation (GO:0097028)","Positive Regulation Of Cholesterol Efflux (GO:0010875)","Secondary Alcohol Biosynthetic Process (GO:1902653)","Mononuclear Cell Differentiation (GO:1903131)","Negative Regulation Of Macromolecule Metabolic Process (GO:0010605)","Cellular Response To Peptide Hormone Stimulus (GO:0071375)","Organophosphate Ester Transport (GO:0015748)","Cholesterol Biosynthetic Process (GO:0006695)","Negative Regulation Of Receptor-Mediated Endocytosis (GO:0048261)","Positive Regulation Of Microtubule Polymerization Or Depolymerization (GO:0031112)","Regulation Of Actin Filament Bundle Assembly (GO:0032231)"],["3/79","3/79","2/22","2/22","2/22","2/24","2/24","4/186","3/89","2/25","2/25","2/26","2/26","2/26"],[0.00172623576251799,0.00172623576251799,0.00196693859693445,0.00196693859693445,0.00196693859693445,0.00234106985124172,0.00234106985124172,0.00235319177997096,0.00242697845689802,0.00253974446225944,0.00253974446225944,0.00274609634217686,0.00274609634217686,0.00274609634217686],[0.0416694132674482,0.0416694132674482,0.0438274266855394,0.0438274266855394,0.0438274266855394,0.0475563641115062,0.0475563641115062,0.0475563641115062,0.0477271544270338,0.0477271544270338,0.0477271544270338,0.0477271544270338,0.0477271544270338,0.0477271544270338],[0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0],[13.7562326869806,13.7562326869806,34.3448275862069,34.3448275862069,34.3448275862069,31.2194357366771,31.2194357366771,7.75431711145997,12.1505507955936,29.8605697151424,29.8605697151424,28.6149425287356,28.6149425287356,28.6149425287356],[87.5145675709806,87.5145675709806,214.012132718709,214.012132718709,214.012132718709,189.100719403629,189.100719403629,46.9289927615703,73.159781378704,178.437561841603,178.437561841603,168.758766470475,168.758766470475,168.758766470475],["INSIG2;PCSK9;INHBB","RAB21;HFE;GAS6","GSK3B;GAS6","FLT3;GAS6","ABCA8;PLTP","INSIG2;HMGCR","FLT3;GAS6","GSK3B;PCSK9;PARP9;LDLR","INSIG2;PCSK9;INHBB","LDLR;PLTP","INSIG2;HMGCR","PCSK9;RAC1","PSRC1;RAC1","ASAP3;RAC1"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Term<\/th>\n      <th>Overlap<\/th>\n      <th>P.value<\/th>\n      <th>Adjusted.P.value<\/th>\n      <th>Old.P.value<\/th>\n      <th>Old.Adjusted.P.value<\/th>\n      <th>Odds.Ratio<\/th>\n      <th>Combined.Score<\/th>\n      <th>Genes<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":5,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[5,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-93928d62269dcef60a51" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-93928d62269dcef60a51">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"font-size: 150%; caption-side: topleft; text-align = left; color:black;\">Unique GO terms at p.adjust &lt; 0.05 -- LDL-ukb-d-30780_irnt--CS_NOT_filtered<\/caption>","data":[["26","27","31","32","33","34","35","38","41","44","47"],["Regulation Of Cytoplasmic Transport (GO:1903649)","Regulation Of Mitochondrion Organization (GO:0010821)","Phosphorylation (GO:0016310)","Protein Modification Process (GO:0036211)","Cellular Response To Starvation (GO:0009267)","Regulation Of Cholesterol Storage (GO:0010885)","Positive Regulation Of Protein Binding (GO:0032092)","Activin Receptor Signaling Pathway (GO:0032924)","Excitatory Postsynaptic Potential (GO:0060079)","Negative Regulation Of Protein Binding (GO:0032091)","Positive Regulation Of Protein Phosphorylation (GO:0001934)"],["2/11","3/50","7/429","9/711","4/126","2/14","3/59","2/16","2/18","3/71","6/377"],[0.000688306132347803,0.000776571159573549,0.000882624308239369,0.000991903459908926,0.00110982132766907,0.00113090369603985,0.00125855549078998,0.00148437429368802,0.00188378999792587,0.00214552673996789,0.00236502378858464],[0.0258644265886078,0.026836409713089,0.0278169015854795,0.0302840525103444,0.0324968503244392,0.0324968503244392,0.0348919299100449,0.0381640443403473,0.0448893372676481,0.0476404460215596,0.0491623030095148],[0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0],[63.2349206349206,18.3913043478261,4.97783448778709,3.91249491249491,9.549662487946,47.4190476190476,15.4285714285714,40.6408163265306,35.5571428571429,12.6982097186701,4.79220779220779],[460.430964311659,131.693183637102,35.0071731761757,27.0583639938926,64.9716658353351,321.725825441771,103.02877005264,264.683962049075,223.102211034977,78.0225012659559,28.9783233278319],["LRRK2;DNAJC13","PRMT6;GSK3B;LRRK2","GSK3B;PXK;ACVR1C;PKN3;LRRK2;PRKD2;GAS6","PRMT6;GSK3B;CSNK1G3;PXK;ACVR1C;PKN3;LRRK2;PRKD2;GAS6","LRRK2;PCSK9;INHBB;FADS1","APOB;TTC39B","GSK3B;HFE;LRRK2","ACVR1C;INHBB","GSK3B;LRRK2","GSK3B;HFE;LRRK2","LRRK2;HFE;PRKD2;INHBB;RAC1;GAS6"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Term<\/th>\n      <th>Overlap<\/th>\n      <th>P.value<\/th>\n      <th>Adjusted.P.value<\/th>\n      <th>Old.P.value<\/th>\n      <th>Old.Adjusted.P.value<\/th>\n      <th>Odds.Ratio<\/th>\n      <th>Combined.Score<\/th>\n      <th>Genes<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":5,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[5,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-16707cd634e93674753d" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-16707cd634e93674753d">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"font-size: 150%; caption-side: topleft; text-align = left; color:black;\">Unique GO terms at p.adjust &lt; 0.05 -- IBD-ebi-a-GCST004131--CS_filtered<\/caption>","data":[["113","126","127","132","140","141","142","143","144","145","146","147","148","149","150","151","152","153","154","155","156","157","158","159","160","161","162","163","164","165","166","167","168","169","170","171","172","173","174","175","176","177","178","179","180","181","182","183","184","185","186","187","188","189","190"],["Negative Regulation Of Cell Population Proliferation (GO:0008285)","Negative Regulation Of Transcription By RNA Polymerase II (GO:0000122)","Transmembrane Receptor Protein Serine/Threonine Kinase Signaling Pathway (GO:0007178)","Positive Regulation Of DNA-templated Transcription (GO:0045893)","Negative Regulation Of Response To External Stimulus (GO:0032102)","Negative Regulation Of Platelet-Derived Growth Factor Receptor Signaling Pathway (GO:0010642)","Visual Learning (GO:0008542)","Positive Regulation Of Platelet Aggregation (GO:1901731)","Lysosomal Microautophagy (GO:0016237)","Regulation Of Type II Interferon-Mediated Signaling Pathway (GO:0060334)","Positive Regulation Of Circadian Rhythm (GO:0042753)","C-terminal Protein Amino Acid Modification (GO:0018410)","Eye Photoreceptor Cell Differentiation (GO:0001754)","Negative Regulation Of Locomotion (GO:0040013)","Negative Regulation Of Macrophage Derived Foam Cell Differentiation (GO:0010745)","Adipose Tissue Development (GO:0060612)","Negative Regulation Of Voltage-Gated Calcium Channel Activity (GO:1901386)","Primary miRNA Processing (GO:0031053)","Regulation Of Nitric-Oxide Synthase Biosynthetic Process (GO:0051769)","Positive Regulation Of Gene Expression (GO:0010628)","Regulation Of Feeding Behavior (GO:0060259)","Negative Regulation Of Receptor Signaling Pathway Via STAT (GO:1904893)","Regulation Of Macrophage Differentiation (GO:0045649)","Lipoprotein Biosynthetic Process (GO:0042158)","Mammary Gland Epithelium Development (GO:0061180)","Regulation Of MHC Class II Biosynthetic Process (GO:0045346)","Positive Regulation Of Cellular Biosynthetic Process (GO:0031328)","Positive Regulation Of Glucose Metabolic Process (GO:0010907)","Activation Of NF-kappaB-inducing Kinase Activity (GO:0007250)","Negative Regulation Of Type I Interferon-Mediated Signaling Pathway (GO:0060339)","Platelet-Derived Growth Factor Receptor Signaling Pathway (GO:0048008)","Cellular Response To Sterol (GO:0036315)","Positive Regulation Of Cell Activation (GO:0050867)","Regulation Of Carbohydrate Metabolic Process (GO:0006109)","Positive Regulation Of Homotypic Cell-Cell Adhesion (GO:0034112)","Extrinsic Apoptotic Signaling Pathway In Absence Of Ligand (GO:0097192)","Negative Regulation Of Receptor Signaling Pathway Via JAK-STAT (GO:0046426)","Activin Receptor Signaling Pathway (GO:0032924)","Protein Localization To Mitochondrion (GO:0070585)","Negative Regulation Of Macromolecule Metabolic Process (GO:0010605)","Positive Regulation Of Transcription By RNA Polymerase II (GO:0045944)","Positive Regulation Of Leukocyte Proliferation (GO:0070665)","Positive Regulation Of Small GTPase Mediated Signal Transduction (GO:0051057)","Regulation Of Receptor Signaling Pathway Via STAT (GO:1904892)","Regulation Of Vacuole Organization (GO:0044088)","Positive Regulation Of SMAD Protein Signal Transduction (GO:0060391)","Regulation Of Signal Transduction (GO:0009966)","Regulation Of Cell Differentiation (GO:0045595)","Regulation Of Transcription By RNA Polymerase II (GO:0006357)","T-helper Cell Differentiation (GO:0042093)","Associative Learning (GO:0008306)","Negative Regulation Of ERBB Signaling Pathway (GO:1901185)","Negative Regulation Of T Cell Receptor Signaling Pathway (GO:0050860)","Positive Regulation Of Cytokine Production Involved In Inflammatory Response (GO:1900017)","Positive Regulation Of Extracellular Matrix Organization (GO:1903055)"],["3/379","4/763","2/130","5/1243","2/146","1/11","1/11","1/11","1/11","1/11","1/11","1/12","1/12","1/12","1/12","1/12","1/12","1/12","1/13","3/480","1/14","1/14","1/14","1/14","1/14","1/14","2/174","1/15","1/15","1/15","1/15","1/15","1/15","1/15","1/16","1/16","1/16","1/16","1/16","2/186","4/938","1/17","1/17","1/17","1/17","1/17","2/193","2/193","6/2028","1/18","1/18","1/18","1/18","1/18","1/18"],[0.00795718062611596,0.00888313754259764,0.00889480097267258,0.00996457736920374,0.0111101460750924,0.0120365474388125,0.0120365474388125,0.0120365474388125,0.0120365474388125,0.0120365474388125,0.0120365474388125,0.0131238993688259,0.0131238993688259,0.0131238993688259,0.0131238993688259,0.0131238993688259,0.0131238993688259,0.0131238993688259,0.0142101091631312,0.0150717979131515,0.0152951779293368,0.0152951779293368,0.0152951779293368,0.0152951779293368,0.0152951779293368,0.0152951779293368,0.0155076314157012,0.0163791067947741,0.0163791067947741,0.0163791067947741,0.0163791067947741,0.0163791067947741,0.0163791067947741,0.0163791067947741,0.0174618968734111,0.0174618968734111,0.0174618968734111,0.0174618968734111,0.0174618968734111,0.0175868771046072,0.0178975605538794,0.0185435492893687,0.0185435492893687,0.0185435492893687,0.0185435492893687,0.0185435492893687,0.0188518227411103,0.0188518227411103,0.0193413029411517,0.0196240651712844,0.0196240651712844,0.0196240651712844,0.0196240651712844,0.0196240651712844,0.0196240651712844],[0.0333379941967886,0.0333379941967886,0.0333379941967886,0.0359328699071286,0.037774496655314,0.0392424423347587,0.0392424423347587,0.0392424423347587,0.0392424423347587,0.0392424423347587,0.0392424423347587,0.0408299091474583,0.0408299091474583,0.0408299091474583,0.0408299091474583,0.0408299091474583,0.0408299091474583,0.0408299091474583,0.0439221555951329,0.0452205260519523,0.0452205260519523,0.0452205260519523,0.0452205260519523,0.0452205260519523,0.0452205260519523,0.0452205260519523,0.0455656330486034,0.0461328688420858,0.0461328688420858,0.0461328688420858,0.0461328688420858,0.0461328688420858,0.0461328688420858,0.0461328688420858,0.0477693270789867,0.0477693270789867,0.0477693270789867,0.0477693270789867,0.0477693270789867,0.0478363057245315,0.0484047660434466,0.0487664611145829,0.0487664611145829,0.0487664611145829,0.0487664611145829,0.0487664611145829,0.0490353422118498,0.0490353422118498,0.0491634474817441,0.0491634474817441,0.0491634474817441,0.0491634474817441,0.0491634474817441,0.0491634474817441,0.0491634474817441],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[8.23152295632699,5.62699458351632,15.5078125,4.45215242801482,13.7736111111111,95.0857142857143,95.0857142857143,95.0857142857143,95.0857142857143,95.0857142857143,95.0857142857143,86.4372294372294,86.4372294372294,86.4372294372294,86.4372294372294,86.4372294372294,86.4372294372294,86.4372294372294,79.2301587301587,6.45514730221781,73.1318681318681,73.1318681318681,73.1318681318681,73.1318681318681,73.1318681318681,73.1318681318681,11.5151162790698,67.9047619047619,67.9047619047619,67.9047619047619,67.9047619047619,67.9047619047619,67.9047619047619,67.9047619047619,63.3746031746032,63.3746031746032,63.3746031746032,63.3746031746032,63.3746031746032,10.7576086956522,4.53104925053533,59.4107142857143,59.4107142857143,59.4107142857143,59.4107142857143,59.4107142857143,10.3596858638743,10.3596858638743,3.33011869436202,55.9131652661064,55.9131652661064,55.9131652661064,55.9131652661064,55.9131652661064,55.9131652661064],[39.7885522838301,26.5796741891276,73.2323620438479,20.5187183182519,61.9798248078744,420.260566245477,420.260566245477,420.260566245477,420.260566245477,420.260566245477,420.260566245477,374.560203730456,374.560203730456,374.560203730456,374.560203730456,374.560203730456,374.560203730456,374.560203730456,337.029380313891,27.0788908745501,305.707127278926,305.707127278926,305.707127278926,305.707127278926,305.707127278926,305.707127278926,47.9768456216383,279.207318677518,279.207318677518,279.207318677518,279.207318677518,279.207318677518,279.207318677518,279.207318677518,256.523541924451,256.523541924451,256.523541924451,256.523541924451,256.523541924451,43.4672181596009,18.2288228139353,236.908142520545,236.908142520545,236.908142520545,236.908142520545,236.908142520545,41.1398216880464,41.1398216880464,13.1390246718416,219.79457723602,219.79457723602,219.79457723602,219.79457723602,219.79457723602,219.79457723602],["SMAD3;JAK2;PTPN2","SMAD3;STAT3;RORC;IRF8","SMAD3;STAT3","SMAD3;STAT3;RORC;IRF8;FOSL2","STAT3;PTPN2","PTPN2","RGS14","JAK2","ATG16L1","PTPN2","RORC","ATG16L1","STAT3","PTPN2","ITGAV","RORC","GPR35","SMAD3","JAK2","SMAD3;STAT3;BRD7","STAT3","PTPN2","PTPN2","ATG16L1","JAK2","JAK2","SMAD3;PTPN2","PTPN2","TNFSF15","PTPN2","RGS14","RORC","JAK2","RORC","JAK2","ITGAV","PTPN2","SMAD3","RNF186","SMAD3;STAT3","SMAD3;STAT3;IRF8;FOSL2","JAK2","ITGAV","JAK2","RNF186","JAK2","RGS14;PTPN2","RORC;BRD7","SMAD3;STAT3;RORC;IRF8;BRD7;FOSL2","RORC","RGS14","PTPN2","PTPN2","STAT3","SMAD3"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Term<\/th>\n      <th>Overlap<\/th>\n      <th>P.value<\/th>\n      <th>Adjusted.P.value<\/th>\n      <th>Old.P.value<\/th>\n      <th>Old.Adjusted.P.value<\/th>\n      <th>Odds.Ratio<\/th>\n      <th>Combined.Score<\/th>\n      <th>Genes<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":5,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[5,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-37e46cf92521dcbed3f8" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-37e46cf92521dcbed3f8">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"font-size: 150%; caption-side: topleft; text-align = left; color:black;\">Unique GO terms at p.adjust &lt; 0.05 -- IBD-ebi-a-GCST004131--CS_NOT_filtered<\/caption>","data":[["53","76","104","124"],["Cellular Response To Chemokine (GO:1990869)","Regulation Of Establishment Of T Cell Polarity (GO:1903903)","Intracellular pH Elevation (GO:0051454)","Regulation Of Small GTPase Mediated Signal Transduction (GO:0051056)"],["2/59","1/5","1/7","2/118"],[0.00307824866090805,0.00698104063423331,0.00976029245561303,0.01180359006217],[0.0288077610530263,0.0422267823729234,0.0444138078714134,0.0472143602486801],[0,0,0,0],[0,0,0,0],[26.8758434547908,184.888888888889,123.246913580247,13.1671087533157],[155.43360415256,917.891480308298,570.56331831325,58.4534246691948],["GPR35;DOCK8","DOCK8","SLC26A3","DOCK8;ITGAV"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Term<\/th>\n      <th>Overlap<\/th>\n      <th>P.value<\/th>\n      <th>Adjusted.P.value<\/th>\n      <th>Old.P.value<\/th>\n      <th>Old.Adjusted.P.value<\/th>\n      <th>Odds.Ratio<\/th>\n      <th>Combined.Score<\/th>\n      <th>Genes<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":5,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[5,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
@@ -739,22 +936,23 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
-[1] ggplot2_3.5.1 tidyr_1.3.0   scales_1.3.0  dplyr_1.1.4  
+[1] eulerr_6.1.1  ggplot2_3.5.1 tidyr_1.3.0   scales_1.3.0  dplyr_1.1.4  
 
 loaded via a namespace (and not attached):
- [1] Rcpp_1.0.12        highr_0.9          RColorBrewer_1.1-3 pillar_1.9.0      
- [5] compiler_4.2.0     bslib_0.3.1        later_1.3.0        jquerylib_0.1.4   
- [9] git2r_0.30.1       workflowr_1.7.0    tools_4.2.0        digest_0.6.29     
-[13] gtable_0.3.0       jsonlite_1.8.0     evaluate_0.15      lifecycle_1.0.4   
-[17] tibble_3.2.1       pkgconfig_2.0.3    rlang_1.1.2        cli_3.6.1         
-[21] rstudioapi_0.13    crosstalk_1.2.0    yaml_2.3.5         xfun_0.41         
-[25] fastmap_1.1.0      withr_2.5.0        stringr_1.5.1      knitr_1.39        
-[29] htmlwidgets_1.5.4  generics_0.1.2     fs_1.5.2           vctrs_0.6.5       
-[33] sass_0.4.1         DT_0.22            grid_4.2.0         rprojroot_2.0.3   
-[37] tidyselect_1.2.0   glue_1.6.2         R6_2.5.1           fansi_1.0.3       
-[41] rmarkdown_2.25     farver_2.1.0       purrr_1.0.2        magrittr_2.0.3    
-[45] promises_1.2.0.1   htmltools_0.5.2    colorspace_2.0-3   httpuv_1.6.5      
-[49] labeling_0.4.2     utf8_1.2.2         stringi_1.7.6      munsell_0.5.0     </code></pre>
+ [1] tidyselect_1.2.0   xfun_0.41          bslib_0.3.1        purrr_1.0.2       
+ [5] colorspace_2.0-3   vctrs_0.6.5        generics_0.1.2     htmltools_0.5.2   
+ [9] yaml_2.3.5         utf8_1.2.2         rlang_1.1.2        jquerylib_0.1.4   
+[13] later_1.3.0        pillar_1.9.0       glue_1.6.2         withr_2.5.0       
+[17] RColorBrewer_1.1-3 lifecycle_1.0.4    stringr_1.5.1      munsell_0.5.0     
+[21] gtable_0.3.0       workflowr_1.7.0    htmlwidgets_1.5.4  evaluate_0.15     
+[25] labeling_0.4.2     knitr_1.39         fastmap_1.1.0      httpuv_1.6.5      
+[29] crosstalk_1.2.0    fansi_1.0.3        highr_0.9          Rcpp_1.0.12       
+[33] promises_1.2.0.1   DT_0.22            jsonlite_1.8.0     farver_2.1.0      
+[37] fs_1.5.2           digest_0.6.29      stringi_1.7.6      polyclip_1.10-0   
+[41] rprojroot_2.0.3    grid_4.2.0         cli_3.6.1          tools_4.2.0       
+[45] magrittr_2.0.3     sass_0.4.1         tibble_3.2.1       whisker_0.4       
+[49] pkgconfig_2.0.3    polylabelr_0.2.0   rmarkdown_2.25     rstudioapi_0.13   
+[53] R6_2.5.1           git2r_0.30.1       compiler_4.2.0    </code></pre>
 </div>
 
 
