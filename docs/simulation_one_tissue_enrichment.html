@@ -383,7 +383,7 @@ div.tocify {
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2025-04-28
+<strong>Last updated:</strong> 2025-04-29
 </p>
 <p>
 <strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 1
@@ -474,21 +474,24 @@ This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a> analysi
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistreef1f4ab5632b4ca85532fb90f533d980406983ee6targetblankf1f4ab5a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/f1f4ab5632b4ca85532fb90f533d980406983ee6" target="_blank">f1f4ab5</a> </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree999846c9173df1e69df3263e919dc1e0ccae9912targetblank999846ca"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/999846c9173df1e69df3263e919dc1e0ccae9912" target="_blank">999846c</a> </a>
 </p>
 </div>
-<div id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistreef1f4ab5632b4ca85532fb90f533d980406983ee6targetblankf1f4ab5a" class="panel-collapse collapse">
+<div id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree999846c9173df1e69df3263e919dc1e0ccae9912targetblank999846ca" class="panel-collapse collapse">
 <div class="panel-body">
 <p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility.
 </p>
 <p>
-The results in this page were generated with repository version <a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/f1f4ab5632b4ca85532fb90f533d980406983ee6" target="_blank">f1f4ab5</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
+The results in this page were generated with repository version <a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/999846c9173df1e69df3263e919dc1e0ccae9912" target="_blank">999846c</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
 </p>
 <p>
 Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
 </p>
 <pre><code>
+Ignored files:
+    Ignored:    analysis/figure/
+
 Unstaged changes:
     Modified:   analysis/simulation_one_tissue_enrichment.Rmd
 
@@ -534,6 +537,40 @@ Message
 Rmd
 </td>
 <td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/999846c9173df1e69df3263e919dc1e0ccae9912/analysis/simulation_one_tissue_enrichment.Rmd" target="_blank">999846c</a>
+</td>
+<td>
+sq-96
+</td>
+<td>
+2025-04-28
+</td>
+<td>
+update
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/sq-96/multigroup_ctwas_analysis/999846c9173df1e69df3263e919dc1e0ccae9912/docs/simulation_one_tissue_enrichment.html" target="_blank">999846c</a>
+</td>
+<td>
+sq-96
+</td>
+<td>
+2025-04-28
+</td>
+<td>
+update
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
 <a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/24ee65745f910a76b25e765d388bf35cc13460c1/analysis/simulation_one_tissue_enrichment.Rmd" target="_blank">24ee657</a>
 </td>
 <td>
@@ -570,8 +607,10 @@ update
 </div>
 </div>
 </div>
-<div id="one-tissue-simulation" class="section level2">
-<h2>One tissue simulation</h2>
+<div id="simulation-settings" class="section level2">
+<h2>Simulation Settings</h2>
+<p>This is an one-tissue simulation to test the enrichment and PVE parameters. Expression traits are from whole blood There are five simulations with different enrichment parameters and each has 10 replicates. Gene and SNP variance are fixed to be the same.</p>
+<p>True PVE is calculated in two ways and compared. The first way is calculating PVE when simulating the phenotype. It is simply var.gene &lt;- var(X.g %*% e.beta). The second way is calculating PVE using the per-SNP heribility formula in paper given prior inclusion probablity, group size and variance of effect size.</p>
 </div>
 <div id="simulation-parameters" class="section level2">
 <h2>Simulation Parameters</h2>
@@ -583,50 +622,9 @@ sigma_snp =   c(0.0155,   0.0155,   0.0155,    0.0155,    0.0155)
 pi_snp =      c(0.0025,   0.0025,   0.0025,    0.0025,    0.0025)
 size_snp =    c(500000,   500000,   500000,    500000,    500000)</code></pre>
 </div>
-<div id="enrichment-parameter" class="section level2">
-<h2>Enrichment Parameter</h2>
-<p><img src="figure/simulation_one_tissue_enrichment.Rmd/unnamed-chunk-3-1.png" width="768" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-3-1">
-Past versions of unnamed-chunk-3-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-3-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/24ee65745f910a76b25e765d388bf35cc13460c1/docs/figure/simulation_one_tissue_enrichment.Rmd/unnamed-chunk-3-1.png" target="_blank">24ee657</a>
-</td>
-<td>
-sq-96
-</td>
-<td>
-2025-04-28
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-</div>
-<div id="pve-parameter-true-value-calculated-with-formula-in-ctwas-paper" class="section level2">
-<h2>PVE Parameter (true value calculated with formula in ctwas paper)</h2>
-<p><img src="figure/simulation_one_tissue_enrichment.Rmd/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
+<div id="shared_all-ctwas-null-weight" class="section level2">
+<h2>shared_all, ctwas null weight</h2>
+<p><img src="figure/simulation_one_tissue_enrichment.Rmd/unnamed-chunk-4-1.png" width="768" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-4-1">
 Past versions of unnamed-chunk-4-1.png
@@ -664,9 +662,8 @@ sq-96
 </table>
 </div>
 </div>
-</div>
-<div id="pve-parameter-true-value-calculated-when-simulating-phenotype-data-var.gene---varx.g-e.beta-10-replicates-take-average" class="section level2">
-<h2>PVE Parameter (true value calculated when simulating phenotype data [var.gene &lt;- var(X.g %*% e.beta)], 10 replicates, take average)</h2>
+<div id="pve-calculated-with-the-per-snp-heritability-formula" class="section level3">
+<h3>PVE calculated with the per-SNP heritability formula</h3>
 <p><img src="figure/simulation_one_tissue_enrichment.Rmd/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-5-1">
@@ -705,6 +702,48 @@ sq-96
 </table>
 </div>
 </div>
+</div>
+<div id="pve-calculated-from-simulated-data-var.gene---varx.g-e.beta" class="section level3">
+<h3>PVE calculated from simulated data var.gene &lt;- var(X.g %*% e.beta)</h3>
+<p><img src="figure/simulation_one_tissue_enrichment.Rmd/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="shared_type-ctwas-null-weight" class="section level2">
+<h2>shared_type, ctwas null weight</h2>
+<p><img src="figure/simulation_one_tissue_enrichment.Rmd/unnamed-chunk-7-1.png" width="768" style="display: block; margin: auto;" /></p>
+<div id="pve-calculated-with-the-per-snp-heritability-formula-1" class="section level3">
+<h3>PVE calculated with the per-SNP heritability formula</h3>
+<p><img src="figure/simulation_one_tissue_enrichment.Rmd/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="pve-calculated-from-simulated-data-var.gene---varx.g-e.beta-1" class="section level3">
+<h3>PVE calculated from simulated data var.gene &lt;- var(X.g %*% e.beta)</h3>
+<p><img src="figure/simulation_one_tissue_enrichment.Rmd/unnamed-chunk-9-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="shared_all-susie-null-weight" class="section level2">
+<h2>shared_all, susie null weight</h2>
+<pre><code>Warning: Removed 1 row containing missing values or values outside the scale range
+(`geom_point()`).</code></pre>
+<p><img src="figure/simulation_one_tissue_enrichment.Rmd/unnamed-chunk-10-1.png" width="768" style="display: block; margin: auto;" /></p>
+<div id="pve-calculated-with-the-per-snp-heritability-formula-2" class="section level3">
+<h3>PVE calculated with the per-SNP heritability formula</h3>
+<p><img src="figure/simulation_one_tissue_enrichment.Rmd/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="pve-calculated-from-simulated-data-var.gene---varx.g-e.beta-2" class="section level3">
+<h3>PVE calculated from simulated data var.gene &lt;- var(X.g %*% e.beta)</h3>
+<p><img src="figure/simulation_one_tissue_enrichment.Rmd/unnamed-chunk-12-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="shared_type-susie-null-weight" class="section level2">
+<h2>shared_type, susie null weight</h2>
+<p><img src="figure/simulation_one_tissue_enrichment.Rmd/unnamed-chunk-13-1.png" width="768" style="display: block; margin: auto;" /></p>
+<div id="pve-calculated-with-the-per-snp-heritability-formula-3" class="section level3">
+<h3>PVE calculated with the per-SNP heritability formula</h3>
+<p><img src="figure/simulation_one_tissue_enrichment.Rmd/unnamed-chunk-14-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="pve-calculated-from-simulated-data-var.gene---varx.g-e.beta-3" class="section level3">
+<h3>PVE calculated from simulated data var.gene &lt;- var(X.g %*% e.beta)</h3>
+<p><img src="figure/simulation_one_tissue_enrichment.Rmd/unnamed-chunk-15-1.png" width="672" style="display: block; margin: auto;" /></p>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
@@ -807,6 +846,7 @@ loaded via a namespace (and not attached):
 [135] git2r_0.30.1                mixsqp_0.3-54              
 [137] getPass_0.2-2               Biobase_2.58.0             
 [139] base64enc_0.1-3             restfulr_0.0.15            </code></pre>
+</div>
 </div>
 </div>
 
