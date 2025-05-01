@@ -15,6 +15,7 @@ library(scales)
 library(tidyr)
 library(ggplot2)
 library(eulerr)
+library(patchwork)
 
 traits_silver <- c("T2D","LDL","BMI","RBC","IBD","SCZ","aFib")
 names(traits_silver) <- c("T2D-panukb","LDL-ukb-d-30780_irnt","BMI-panukb","RBC-panukb","IBD-ebi-a-GCST004131","SCZ-ieu-b-5102","aFib-ebi-a-GCST006414")
@@ -73,14 +74,17 @@ create_summary_plot_withTP <- function(df, columns_to_plot, x_var = "setting", x
 
 DT::datatable(matrix())
 
-```
 
-
-```{r warning=F, message=FALSE, fig.height=5, fig.width=15}
 thin <- 1
 var_struc <- "shared_all"
 L <- 5
 st <- "with_susieST"
+```
+
+# The number of genes at PIP > 0.8
+
+```{r warning=F, message=FALSE, fig.height=5, fig.width=15}
+
 
 setting_names <- c()
 num_gene_pip08_all <- c()
@@ -89,28 +93,28 @@ num_bystander_pip08_all <- c()
 go_num_fdr005 <- c()
 for (trait in traits) {
   for (cs in c("CS_filtered","CS_NOT_filtered")){
-    
+
     if(cs == "CS_filtered"){
       cs_setting <- NULL
     }else{
       cs_setting <- "_csF"
     }
-    
+
     setting_names <- c(setting_names, paste0(traits_silver[trait],"-",cs))
-    
+
     # num_gene_pip08 -- cs filtered
     combined_pip_by_group <- readRDS(paste0(folder_results,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L, ".combined_pip_bygroup_final",cs_setting,".RDS"))
     combined_pip_sig <- combined_pip_by_group[combined_pip_by_group$combined_pip > 0.8,]
-    
+
     num_gene_pip08_all <- c(num_gene_pip08_all, nrow(combined_pip_sig))
-    
+
     # silver_standard genes
     known <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/data/silverstandard/known_annotations_",traits_silver[trait],".RDS"))
     bystander <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/data/silverstandard/bystanders_",traits_silver[trait],".RDS"))
-    
+
     num_silver_pip08_all <- c(num_silver_pip08_all,sum(combined_pip_sig$gene_name %in% known))
     num_bystander_pip08_all <- c(num_bystander_pip08_all,sum(combined_pip_sig$gene_name %in% bystander))
-    
+
     file_go <- paste0(folder_results,trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L, ".enrichr_",db,"_",cs,".RDS")
     if(!file.exists(file_go)){
       go_num_fdr005 <- c(go_num_fdr005,0)
@@ -118,22 +122,22 @@ for (trait in traits) {
       go <- readRDS(paste0(folder_results,trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L, ".enrichr_",db,"_",cs,".RDS"))
       go_num_fdr005 <- c(go_num_fdr005,nrow(go))
     }
-    
-    
+
+
   }
 }
 
-df <- data.frame(setting = setting_names, 
+df <- data.frame(setting = setting_names,
                  num_gene_pip08 = num_gene_pip08_all,
                  num_silver_pip08 = num_silver_pip08_all,
                  num_bystander_pip08 = num_bystander_pip08_all,
                  TP_rate = num_silver_pip08_all/(num_silver_pip08_all+num_bystander_pip08_all),
                  go_num_fdr005 = go_num_fdr005)
 
-create_summary_plot_withTP(df,x_order = setting_names, 
+create_summary_plot_withTP(df,x_order = setting_names,
                     columns_to_plot = c("num_gene_pip08","num_silver_pip08","TP_rate"))
 
-create_summary_plot_withTP(df,x_order = setting_names, 
+create_summary_plot_withTP(df,x_order = setting_names,
                     columns_to_plot = c("go_num_fdr005"), title = "Number of GO terms at p.adjust < 0.05")
 
 
@@ -141,45 +145,48 @@ DT::datatable(df,caption = htmltools::tags$caption( style = 'caption-side: left;
 ```
 
 
+
+# Number of GO terms at adjusted.p < 0.05
+
 ```{r results='asis', warning=F, message=FALSE, fig.height=4, fig.width=4}
 
 traits <- c("LDL-ukb-d-30780_irnt","IBD-ebi-a-GCST004131")
 
 for (trait in traits) {
-  
+
   file_go_filtered <- paste0(folder_results,trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L, ".enrichr_",db,"_CS_filtered.RDS")
   if(!file.exists(file_go_filtered)){
     go_filtered <- NULL
   }else{
     go_filtered <- readRDS(file_go_filtered)
   }
-  
 
-  
+
+
   file_go_nofiltered <- paste0(folder_results,trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L, ".enrichr_",db,"_CS_NOT_filtered.RDS")
   if(!file.exists(file_go_nofiltered)){
     go_nofiltered <- NULL
   }else{
     go_nofiltered <- readRDS(file_go_nofiltered)
   }
-  
+
   set1 <- unique(go_filtered$Term)
   set2 <- unique(go_nofiltered$Term)
-  
+
   venn_input <- list(
     Filtered = set1,
     NoFiltered = set2
   )
-  
+
   fit <- euler(venn_input)
-  
+
   print(plot(fit,
        fills = c("skyblue", "orange"),
        labels = TRUE,
        quantities = TRUE,
        main = trait))
-  
-    
+
+
 }
 
 ```
@@ -190,16 +197,16 @@ for (trait in traits) {
 traits <- c("LDL-ukb-d-30780_irnt","IBD-ebi-a-GCST004131")
 
 for (trait in traits) {
-  
+
   file_go_filtered <- paste0(folder_results,trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L, ".enrichr_",db,"_CS_filtered.RDS")
   if(!file.exists(file_go_filtered)){
     go_filtered <- NULL
   }else{
     go_filtered <- readRDS(file_go_filtered)
   }
-  
 
-  
+
+
   file_go_nofiltered <- paste0(folder_results,trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L, ".enrichr_",db,"_CS_NOT_filtered.RDS")
   if(!file.exists(file_go_nofiltered)){
     go_nofiltered <- NULL
@@ -207,17 +214,81 @@ for (trait in traits) {
     go_nofiltered <- readRDS(file_go_nofiltered)
   }
 
-  
+
   cat("\n\n")
   cat(knitr::knit_print(DT::datatable(go_filtered[!go_filtered$Term %in% go_nofiltered$Term,], caption = htmltools::tags$caption( style = 'font-size: 150%; caption-side: topleft; text-align = left; color:black;',paste0("Unique GO terms at p.adjust < 0.05 -- ",trait, "--CS_filtered")),options = list(pageLength = 5))))
   cat("\n\n")
-  
+
   cat("\n\n")
   cat(knitr::knit_print(DT::datatable(go_nofiltered[!go_nofiltered$Term %in% go_filtered$Term,], caption = htmltools::tags$caption( style = 'font-size: 150%; caption-side: topleft; text-align = left; color:black;',paste0("Unique GO terms at p.adjust < 0.05 -- ",trait, "--CS_NOT_filtered")),options = list(pageLength = 5))))
   cat("\n\n")
-  
- 
-    
+
+
+
 }
 
 ```
+
+
+
+# Comparing PIPs at gene-level
+
+```{r results='asis',warning=F, message=FALSE, fig.height=4, fig.width=4}
+traits <- c("LDL-ukb-d-30780_irnt","IBD-ebi-a-GCST004131","BMI-panukb","RBC-panukb","SCZ-ieu-b-5102","aFib-ebi-a-GCST006414","T2D-panukb")
+
+p <- list()
+for (trait in traits) {
+  
+  combined_pip_filtered <- readRDS(paste0(folder_results,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L, ".combined_pip_bygroup_final_csincluded.RDS"))
+  combined_pip_filtered_plot <- combined_pip_filtered[,c("gene_name","combined_pip")]
+  colnames(combined_pip_filtered_plot) <- c("gene_name","combined_pip_csfiltered")
+  
+  combined_pip_NOTfiltered <- readRDS(paste0(folder_results,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L, ".combined_pip_bygroup_final_csF.RDS"))
+  combined_pip_NOTfiltered_plot <- combined_pip_NOTfiltered[,c("gene_name","combined_pip")]
+  colnames(combined_pip_NOTfiltered_plot) <- c("gene_name","combined_pip_csNOTfiltered")
+
+  combined_pip_filtered_sig <- combined_pip_filtered[combined_pip_filtered$combined_pip > 0.8,]
+  combined_pip_NOTfiltered_sig <- combined_pip_NOTfiltered[combined_pip_NOTfiltered$combined_pip > 0.8,]
+  combined_pip_NOTfiltered_sig_plot <- combined_pip_NOTfiltered_plot[combined_pip_NOTfiltered_plot$combined_pip > 0.8,]
+  
+  df_merge <- merge(combined_pip_NOTfiltered_sig_plot, combined_pip_filtered_plot, by = "gene_name", all.x = T)
+  df_merge$combined_pip_csfiltered[is.na(df_merge$combined_pip_csfiltered)] <- 1.1
+  
+  p <-ggplot(data = df_merge,aes(x = combined_pip_csfiltered, y = combined_pip_csNOTfiltered)) +
+  #p[[trait]] <-ggplot(data = df_merge,aes(x = combined_pip_csfiltered, y = combined_pip_csNOTfiltered)) +
+    geom_point() + 
+    labs(x = "Combined PIP -- CS filtered", y = "Combined PIP -- CS NOT filtered") +
+    geom_abline(slope = 1, intercept = 0, col = "Red") +
+    ggtitle(trait) +
+    theme_minimal()
+  
+  print("PIP = 1.1 means PIP = NA when filtering CS")
+  print(p)
+  
+  # Merge the two data frames by 'gene_name' with suffixes to distinguish columns
+  merged_df <- merge(combined_pip_NOTfiltered_sig, combined_pip_filtered, 
+                     by = "gene_name", suffixes = c("_NOTfiltered", "_filtered"),all.x=T)
+  
+  # List of columns to process (excluding 'gene_name')
+  original_cols <- setdiff(names(combined_pip_NOTfiltered_sig), "gene_name")
+  
+  # Iterate over each column and concatenate values from both data frames
+  for (col in original_cols) {
+    notfiltered_col <- paste0(col, "_NOTfiltered")
+    filtered_col <- paste0(col, "_filtered")
+    merged_df[[col]] <- paste(round(merged_df[[notfiltered_col]],digits = 5), round(merged_df[[filtered_col]],digits = 5), sep = "-")
+  }
+  
+  # Select the relevant columns to match the original structure
+  df <- merged_df[, c("gene_name", original_cols)]
+  
+  cat("\n\n")
+  cat(knitr::knit_print(DT::datatable(df, caption = htmltools::tags$caption( style = 'font-size: 150%; caption-side: topleft; text-align = left; color:black;', trait),options = list(pageLength = 5))))
+  cat("\n\n")
+
+  
+}
+
+#wrap_plots(lapply(p, wrap_elements), ncol = 4)
+```
+
