@@ -16,12 +16,24 @@ library(tidyr)
 library(ggplot2)
 library(eulerr)
 library(patchwork)
+library(ctwas)
+library(EnsDb.Hsapiens.v86)
+
+ens_db <- EnsDb.Hsapiens.v86
+
+source("/project/xinhe/xsun/multi_group_ctwas/14.comparing_diff_settings/0.functions.R")
 
 traits_silver <- c("T2D","LDL","BMI","RBC","IBD","SCZ","aFib")
 names(traits_silver) <- c("T2D-panukb","LDL-ukb-d-30780_irnt","BMI-panukb","RBC-panukb","IBD-ebi-a-GCST004131","SCZ-ieu-b-5102","aFib-ebi-a-GCST006414")
 
 traits <- c("LDL-ukb-d-30780_irnt","IBD-ebi-a-GCST004131","BMI-panukb","RBC-panukb","SCZ-ieu-b-5102","aFib-ebi-a-GCST006414","T2D-panukb")
 db <- "GO_Biological_Process_2023"
+
+mapping_predictdb <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
+mapping_munro <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/Munro_mapping.RDS")
+mapping_two <- rbind(mapping_predictdb,mapping_munro)
+
+snp_map <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/LD_region_info/snp_map.RDS")
 
 folder_results <- "/project/xinhe/xsun/multi_group_ctwas/15.susie_weights/snakemake_outputs/"
 
@@ -233,6 +245,445 @@ for (trait in traits) {
 
 # Comparing PIPs at gene-level
 
+
+## LDL-ukb-d-30780_irnt
+
+```{r results='asis',warning=F, message=FALSE, fig.height=4, fig.width=4}
+trait <- "LDL-ukb-d-30780_irnt"
+
+combined_pip_filtered <- readRDS(paste0(folder_results,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L, ".combined_pip_bygroup_final_csincluded.RDS"))
+combined_pip_filtered_plot <- combined_pip_filtered[,c("gene_name","combined_pip")]
+colnames(combined_pip_filtered_plot) <- c("gene_name","combined_pip_csfiltered")
+
+combined_pip_NOTfiltered <- readRDS(paste0(folder_results,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L, ".combined_pip_bygroup_final_csF.RDS"))
+combined_pip_NOTfiltered_plot <- combined_pip_NOTfiltered[,c("gene_name","combined_pip")]
+colnames(combined_pip_NOTfiltered_plot) <- c("gene_name","combined_pip_csNOTfiltered")
+
+combined_pip_filtered_sig <- combined_pip_filtered[combined_pip_filtered$combined_pip > 0.8,]
+combined_pip_NOTfiltered_sig <- combined_pip_NOTfiltered[combined_pip_NOTfiltered$combined_pip > 0.8,]
+combined_pip_NOTfiltered_sig_plot <- combined_pip_NOTfiltered_plot[combined_pip_NOTfiltered_plot$combined_pip > 0.8,]
+
+df_merge <- merge(combined_pip_NOTfiltered_sig_plot, combined_pip_filtered_plot, by = "gene_name", all.x = T)
+df_merge$combined_pip_csfiltered[is.na(df_merge$combined_pip_csfiltered)] <- 1.1
+
+p <-ggplot(data = df_merge,aes(x = combined_pip_csfiltered, y = combined_pip_csNOTfiltered)) +
+  #p[[trait]] <-ggplot(data = df_merge,aes(x = combined_pip_csfiltered, y = combined_pip_csNOTfiltered)) +
+  geom_point() + 
+  labs(x = "Combined PIP -- CS filtered", y = "Combined PIP -- CS NOT filtered") +
+  geom_abline(slope = 1, intercept = 0, col = "Red") +
+  ggtitle(trait) +
+  theme_minimal()
+
+print("PIP = 1.1 means PIP = NA when filtering CS")
+print(p)
+
+# Merge the two data frames by 'gene_name' with suffixes to distinguish columns
+merged_df <- merge(combined_pip_NOTfiltered_sig, combined_pip_filtered, 
+                   by = "gene_name", suffixes = c("_NOTfiltered", "_filtered"),all.x=T)
+
+# List of columns to process (excluding 'gene_name')
+original_cols <- setdiff(names(combined_pip_NOTfiltered_sig), "gene_name")
+
+# Iterate over each column and concatenate values from both data frames
+for (col in original_cols) {
+  notfiltered_col <- paste0(col, "_NOTfiltered")
+  filtered_col <- paste0(col, "_filtered")
+  merged_df[[col]] <- paste(round(merged_df[[notfiltered_col]],digits = 5), round(merged_df[[filtered_col]],digits = 5), sep = "-")
+}
+
+# Select the relevant columns to match the original structure
+df <- merged_df[, c("gene_name", original_cols)]
+
+DT::datatable(df, caption = htmltools::tags$caption( style = 'font-size: 150%; caption-side: topleft; text-align = left; color:black;', trait),options = list(pageLength = 5))
+
+
+```
+
+
+
+| Gene      | Involvement in LDL/Lipid Metabolism                           | Evidence Level |
+|-----------|---------------------------------------------------------------|----------------|
+| KIF13B    | Enhances LDL uptake via LRP1                                  | Strong         |
+| TTC39B    | Regulates cholesterol homeostasis via LXR degradation         | Strong         |
+| USP53     | Modulates SR-A ubiquitination affecting LDL clearance         | Moderate       |
+| ACVR1C    | Influences adipose lipid metabolism                           | Moderate       |
+| LRRK2     | Affects lipid storage and lysosomal function                  | Moderate       |
+| ACP6      | Involved in LPA metabolism; indirect link to LDL              | Limited        |
+| CD163L1   | Scavenger receptor; unclear role in LDL metabolism            | Limited        |
+| KDSR      | Sphingolipid biosynthesis; indirect association with LDL      | Limited        |
+| ZNF518A   | Function not well-characterized; no direct link to LDL        | Limited        |
+
+
+
+```{r results='asis',warning=F, message=FALSE, fig.height=10, fig.width=10}
+file_ctwas_result <- get_ctwas_file(trait, tissue = NULL, folder_results,st,thin, var_struc, L)
+ctwas_res <- readRDS(file_ctwas_result)
+weights <- readRDS(paste0(folder_results,"/",trait,"/",trait,".",st,".preprocessed.weights.RDS"))
+
+finemap_res <- ctwas_res$finemap_res
+finemap_res$molecular_id <- get_molecular_ids(finemap_res)
+finemap_res <- anno_finemap_res(finemap_res,
+                                snp_map = snp_map,
+                                mapping_table = mapping_two,
+                                add_gene_annot = TRUE,
+                                map_by = "molecular_id",
+                                drop_unmapped = TRUE,
+                                add_position = TRUE,
+                                use_gene_pos = "mid")
+
+finemap_res <- finemap_res[complete.cases(finemap_res$id),]
+
+make_locusplot(finemap_res,
+               region_id = "8_28304875_29470379",
+               ens_db = ens_db,
+               weights = weights,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = TRUE,
+               filter_cs = F,
+               focal_gene = "KIF13B",
+               color_pval_by = "cs",
+               color_pip_by = "cs",
+               label.text.size = 6,
+               axis.text.size = 16,
+               axis.title.size = 16,
+               legend.text.size = 16,
+               point.sizes = c(3,5,5,5))
+
+make_locusplot(finemap_res,
+               region_id = "9_14836365_16659657",
+               ens_db = ens_db,
+               weights = weights,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = TRUE,
+               filter_cs = F,
+               focal_gene = "TTC39B",
+               color_pval_by = "cs",
+               color_pip_by = "cs",
+               label.text.size = 6,
+               axis.text.size = 16,
+               axis.title.size = 16,
+               legend.text.size = 16,
+               point.sizes = c(3,5,5,5))
+
+make_locusplot(finemap_res,
+               region_id = "4_119012357_119471529",
+               ens_db = ens_db,
+               weights = weights,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = TRUE,
+               filter_cs = F,
+               focal_gene = "USP53",
+               color_pval_by = "cs",
+               color_pip_by = "cs",
+               label.text.size = 6,
+               axis.text.size = 16,
+               axis.title.size = 16,
+               legend.text.size = 16,
+               point.sizes = c(3,5,5,5))
+
+make_locusplot(finemap_res,
+               region_id = "2_156704123_157676706",
+               ens_db = ens_db,
+               weights = weights,
+               highlight_pip = 0.8,
+               filter_protein_coding_genes = TRUE,
+               filter_cs = F,
+               focal_gene = "ACVR1C",
+               color_pval_by = "cs",
+               color_pip_by = "cs",
+               label.text.size = 6,
+               axis.text.size = 16,
+               axis.title.size = 16,
+               legend.text.size = 16,
+               point.sizes = c(3,5,5,5))
+
+```
+
+
+## IBD-ebi-a-GCST004131
+
+```{r results='asis',warning=F, message=FALSE, fig.height=4, fig.width=4}
+trait <- "IBD-ebi-a-GCST004131"
+
+combined_pip_filtered <- readRDS(paste0(folder_results,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L, ".combined_pip_bygroup_final_csincluded.RDS"))
+combined_pip_filtered_plot <- combined_pip_filtered[,c("gene_name","combined_pip")]
+colnames(combined_pip_filtered_plot) <- c("gene_name","combined_pip_csfiltered")
+
+combined_pip_NOTfiltered <- readRDS(paste0(folder_results,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L, ".combined_pip_bygroup_final_csF.RDS"))
+combined_pip_NOTfiltered_plot <- combined_pip_NOTfiltered[,c("gene_name","combined_pip")]
+colnames(combined_pip_NOTfiltered_plot) <- c("gene_name","combined_pip_csNOTfiltered")
+
+combined_pip_filtered_sig <- combined_pip_filtered[combined_pip_filtered$combined_pip > 0.8,]
+combined_pip_NOTfiltered_sig <- combined_pip_NOTfiltered[combined_pip_NOTfiltered$combined_pip > 0.8,]
+combined_pip_NOTfiltered_sig_plot <- combined_pip_NOTfiltered_plot[combined_pip_NOTfiltered_plot$combined_pip > 0.8,]
+
+df_merge <- merge(combined_pip_NOTfiltered_sig_plot, combined_pip_filtered_plot, by = "gene_name", all.x = T)
+df_merge$combined_pip_csfiltered[is.na(df_merge$combined_pip_csfiltered)] <- 1.1
+
+p <-ggplot(data = df_merge,aes(x = combined_pip_csfiltered, y = combined_pip_csNOTfiltered)) +
+  #p[[trait]] <-ggplot(data = df_merge,aes(x = combined_pip_csfiltered, y = combined_pip_csNOTfiltered)) +
+  geom_point() + 
+  labs(x = "Combined PIP -- CS filtered", y = "Combined PIP -- CS NOT filtered") +
+  geom_abline(slope = 1, intercept = 0, col = "Red") +
+  ggtitle(trait) +
+  theme_minimal()
+
+print("PIP = 1.1 means PIP = NA when filtering CS")
+print(p)
+
+# Merge the two data frames by 'gene_name' with suffixes to distinguish columns
+merged_df <- merge(combined_pip_NOTfiltered_sig, combined_pip_filtered, 
+                   by = "gene_name", suffixes = c("_NOTfiltered", "_filtered"),all.x=T)
+
+# List of columns to process (excluding 'gene_name')
+original_cols <- setdiff(names(combined_pip_NOTfiltered_sig), "gene_name")
+
+# Iterate over each column and concatenate values from both data frames
+for (col in original_cols) {
+  notfiltered_col <- paste0(col, "_NOTfiltered")
+  filtered_col <- paste0(col, "_filtered")
+  merged_df[[col]] <- paste(round(merged_df[[notfiltered_col]],digits = 5), round(merged_df[[filtered_col]],digits = 5), sep = "-")
+}
+
+# Select the relevant columns to match the original structure
+df <- merged_df[, c("gene_name", original_cols)]
+
+DT::datatable(df, caption = htmltools::tags$caption( style = 'font-size: 150%; caption-side: topleft; text-align = left; color:black;', trait),options = list(pageLength = 5))
+
+
+```
+
+
+
+
+| Gene       | Evidence of Association with IBD                                                                 | Evidence Level |
+|------------|--------------------------------------------------------------------------------------------------|----------------|
+| SLC26A3    | Identified as an IBD susceptibility gene; downregulation impairs epithelial barrier and increases inflammation. | Strong         |
+| MAST2      | Regulates NF-κB signaling; involved in inflammatory response modulation.                         | Moderate       |
+| DOCK8      | Deficiency leads to immune dysregulation with IBD-like enteropathy and colitis.                  | Moderate       |
+| FOXN2      | Regulates REG Iβ, which is upregulated in IBD mucosa.                                            | Limited        |
+| ACBD3      | No direct link to IBD; studied more in cancer and viral replication contexts.                    | Limited        |
+| TMEM151B   | No known evidence linking it to IBD.                                                             | None           |
+
+
+
+## BMI-panukb
+
+```{r results='asis',warning=F, message=FALSE, fig.height=4, fig.width=4}
+trait <- "BMI-panukb"
+
+combined_pip_filtered <- readRDS(paste0(folder_results,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L, ".combined_pip_bygroup_final_csincluded.RDS"))
+combined_pip_filtered_plot <- combined_pip_filtered[,c("gene_name","combined_pip")]
+colnames(combined_pip_filtered_plot) <- c("gene_name","combined_pip_csfiltered")
+
+combined_pip_NOTfiltered <- readRDS(paste0(folder_results,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L, ".combined_pip_bygroup_final_csF.RDS"))
+combined_pip_NOTfiltered_plot <- combined_pip_NOTfiltered[,c("gene_name","combined_pip")]
+colnames(combined_pip_NOTfiltered_plot) <- c("gene_name","combined_pip_csNOTfiltered")
+
+combined_pip_filtered_sig <- combined_pip_filtered[combined_pip_filtered$combined_pip > 0.8,]
+combined_pip_NOTfiltered_sig <- combined_pip_NOTfiltered[combined_pip_NOTfiltered$combined_pip > 0.8,]
+combined_pip_NOTfiltered_sig_plot <- combined_pip_NOTfiltered_plot[combined_pip_NOTfiltered_plot$combined_pip > 0.8,]
+
+df_merge <- merge(combined_pip_NOTfiltered_sig_plot, combined_pip_filtered_plot, by = "gene_name", all.x = T)
+df_merge$combined_pip_csfiltered[is.na(df_merge$combined_pip_csfiltered)] <- 1.1
+
+p <-ggplot(data = df_merge,aes(x = combined_pip_csfiltered, y = combined_pip_csNOTfiltered)) +
+  #p[[trait]] <-ggplot(data = df_merge,aes(x = combined_pip_csfiltered, y = combined_pip_csNOTfiltered)) +
+  geom_point() + 
+  labs(x = "Combined PIP -- CS filtered", y = "Combined PIP -- CS NOT filtered") +
+  geom_abline(slope = 1, intercept = 0, col = "Red") +
+  ggtitle(trait) +
+  theme_minimal()
+
+print("PIP = 1.1 means PIP = NA when filtering CS")
+print(p)
+
+# Merge the two data frames by 'gene_name' with suffixes to distinguish columns
+merged_df <- merge(combined_pip_NOTfiltered_sig, combined_pip_filtered, 
+                   by = "gene_name", suffixes = c("_NOTfiltered", "_filtered"),all.x=T)
+
+# List of columns to process (excluding 'gene_name')
+original_cols <- setdiff(names(combined_pip_NOTfiltered_sig), "gene_name")
+
+# Iterate over each column and concatenate values from both data frames
+for (col in original_cols) {
+  notfiltered_col <- paste0(col, "_NOTfiltered")
+  filtered_col <- paste0(col, "_filtered")
+  merged_df[[col]] <- paste(round(merged_df[[notfiltered_col]],digits = 5), round(merged_df[[filtered_col]],digits = 5), sep = "-")
+}
+
+# Select the relevant columns to match the original structure
+df <- merged_df[, c("gene_name", original_cols)]
+
+DT::datatable(df, caption = htmltools::tags$caption( style = 'font-size: 150%; caption-side: topleft; text-align = left; color:black;', trait),options = list(pageLength = 5))
+
+
+```
+
+
+
+## RBC-panukb
+
+```{r results='asis',warning=F, message=FALSE, fig.height=4, fig.width=4}
+trait <- "RBC-panukb"
+
+combined_pip_filtered <- readRDS(paste0(folder_results,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L, ".combined_pip_bygroup_final_csincluded.RDS"))
+combined_pip_filtered_plot <- combined_pip_filtered[,c("gene_name","combined_pip")]
+colnames(combined_pip_filtered_plot) <- c("gene_name","combined_pip_csfiltered")
+
+combined_pip_NOTfiltered <- readRDS(paste0(folder_results,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L, ".combined_pip_bygroup_final_csF.RDS"))
+combined_pip_NOTfiltered_plot <- combined_pip_NOTfiltered[,c("gene_name","combined_pip")]
+colnames(combined_pip_NOTfiltered_plot) <- c("gene_name","combined_pip_csNOTfiltered")
+
+combined_pip_filtered_sig <- combined_pip_filtered[combined_pip_filtered$combined_pip > 0.8,]
+combined_pip_NOTfiltered_sig <- combined_pip_NOTfiltered[combined_pip_NOTfiltered$combined_pip > 0.8,]
+combined_pip_NOTfiltered_sig_plot <- combined_pip_NOTfiltered_plot[combined_pip_NOTfiltered_plot$combined_pip > 0.8,]
+
+df_merge <- merge(combined_pip_NOTfiltered_sig_plot, combined_pip_filtered_plot, by = "gene_name", all.x = T)
+df_merge$combined_pip_csfiltered[is.na(df_merge$combined_pip_csfiltered)] <- 1.1
+
+p <-ggplot(data = df_merge,aes(x = combined_pip_csfiltered, y = combined_pip_csNOTfiltered)) +
+  #p[[trait]] <-ggplot(data = df_merge,aes(x = combined_pip_csfiltered, y = combined_pip_csNOTfiltered)) +
+  geom_point() + 
+  labs(x = "Combined PIP -- CS filtered", y = "Combined PIP -- CS NOT filtered") +
+  geom_abline(slope = 1, intercept = 0, col = "Red") +
+  ggtitle(trait) +
+  theme_minimal()
+
+print("PIP = 1.1 means PIP = NA when filtering CS")
+print(p)
+
+# Merge the two data frames by 'gene_name' with suffixes to distinguish columns
+merged_df <- merge(combined_pip_NOTfiltered_sig, combined_pip_filtered, 
+                   by = "gene_name", suffixes = c("_NOTfiltered", "_filtered"),all.x=T)
+
+# List of columns to process (excluding 'gene_name')
+original_cols <- setdiff(names(combined_pip_NOTfiltered_sig), "gene_name")
+
+# Iterate over each column and concatenate values from both data frames
+for (col in original_cols) {
+  notfiltered_col <- paste0(col, "_NOTfiltered")
+  filtered_col <- paste0(col, "_filtered")
+  merged_df[[col]] <- paste(round(merged_df[[notfiltered_col]],digits = 5), round(merged_df[[filtered_col]],digits = 5), sep = "-")
+}
+
+# Select the relevant columns to match the original structure
+df <- merged_df[, c("gene_name", original_cols)]
+
+DT::datatable(df, caption = htmltools::tags$caption( style = 'font-size: 150%; caption-side: topleft; text-align = left; color:black;', trait),options = list(pageLength = 5))
+
+
+```
+
+## SCZ-ieu-b-5102
+
+```{r results='asis',warning=F, message=FALSE, fig.height=4, fig.width=4}
+trait <- "SCZ-ieu-b-5102"
+
+combined_pip_filtered <- readRDS(paste0(folder_results,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L, ".combined_pip_bygroup_final_csincluded.RDS"))
+combined_pip_filtered_plot <- combined_pip_filtered[,c("gene_name","combined_pip")]
+colnames(combined_pip_filtered_plot) <- c("gene_name","combined_pip_csfiltered")
+
+combined_pip_NOTfiltered <- readRDS(paste0(folder_results,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L, ".combined_pip_bygroup_final_csF.RDS"))
+combined_pip_NOTfiltered_plot <- combined_pip_NOTfiltered[,c("gene_name","combined_pip")]
+colnames(combined_pip_NOTfiltered_plot) <- c("gene_name","combined_pip_csNOTfiltered")
+
+combined_pip_filtered_sig <- combined_pip_filtered[combined_pip_filtered$combined_pip > 0.8,]
+combined_pip_NOTfiltered_sig <- combined_pip_NOTfiltered[combined_pip_NOTfiltered$combined_pip > 0.8,]
+combined_pip_NOTfiltered_sig_plot <- combined_pip_NOTfiltered_plot[combined_pip_NOTfiltered_plot$combined_pip > 0.8,]
+
+df_merge <- merge(combined_pip_NOTfiltered_sig_plot, combined_pip_filtered_plot, by = "gene_name", all.x = T)
+df_merge$combined_pip_csfiltered[is.na(df_merge$combined_pip_csfiltered)] <- 1.1
+
+p <-ggplot(data = df_merge,aes(x = combined_pip_csfiltered, y = combined_pip_csNOTfiltered)) +
+  #p[[trait]] <-ggplot(data = df_merge,aes(x = combined_pip_csfiltered, y = combined_pip_csNOTfiltered)) +
+  geom_point() + 
+  labs(x = "Combined PIP -- CS filtered", y = "Combined PIP -- CS NOT filtered") +
+  geom_abline(slope = 1, intercept = 0, col = "Red") +
+  ggtitle(trait) +
+  theme_minimal()
+
+print("PIP = 1.1 means PIP = NA when filtering CS")
+print(p)
+
+# Merge the two data frames by 'gene_name' with suffixes to distinguish columns
+merged_df <- merge(combined_pip_NOTfiltered_sig, combined_pip_filtered, 
+                   by = "gene_name", suffixes = c("_NOTfiltered", "_filtered"),all.x=T)
+
+# List of columns to process (excluding 'gene_name')
+original_cols <- setdiff(names(combined_pip_NOTfiltered_sig), "gene_name")
+
+# Iterate over each column and concatenate values from both data frames
+for (col in original_cols) {
+  notfiltered_col <- paste0(col, "_NOTfiltered")
+  filtered_col <- paste0(col, "_filtered")
+  merged_df[[col]] <- paste(round(merged_df[[notfiltered_col]],digits = 5), round(merged_df[[filtered_col]],digits = 5), sep = "-")
+}
+
+# Select the relevant columns to match the original structure
+df <- merged_df[, c("gene_name", original_cols)]
+
+DT::datatable(df, caption = htmltools::tags$caption( style = 'font-size: 150%; caption-side: topleft; text-align = left; color:black;', trait),options = list(pageLength = 5))
+
+
+```
+
+## aFib-ebi-a-GCST006414
+
+```{r results='asis',warning=F, message=FALSE, fig.height=4, fig.width=4}
+trait <- "aFib-ebi-a-GCST006414"
+
+combined_pip_filtered <- readRDS(paste0(folder_results,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L, ".combined_pip_bygroup_final_csincluded.RDS"))
+combined_pip_filtered_plot <- combined_pip_filtered[,c("gene_name","combined_pip")]
+colnames(combined_pip_filtered_plot) <- c("gene_name","combined_pip_csfiltered")
+
+combined_pip_NOTfiltered <- readRDS(paste0(folder_results,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L, ".combined_pip_bygroup_final_csF.RDS"))
+combined_pip_NOTfiltered_plot <- combined_pip_NOTfiltered[,c("gene_name","combined_pip")]
+colnames(combined_pip_NOTfiltered_plot) <- c("gene_name","combined_pip_csNOTfiltered")
+
+combined_pip_filtered_sig <- combined_pip_filtered[combined_pip_filtered$combined_pip > 0.8,]
+combined_pip_NOTfiltered_sig <- combined_pip_NOTfiltered[combined_pip_NOTfiltered$combined_pip > 0.8,]
+combined_pip_NOTfiltered_sig_plot <- combined_pip_NOTfiltered_plot[combined_pip_NOTfiltered_plot$combined_pip > 0.8,]
+
+df_merge <- merge(combined_pip_NOTfiltered_sig_plot, combined_pip_filtered_plot, by = "gene_name", all.x = T)
+df_merge$combined_pip_csfiltered[is.na(df_merge$combined_pip_csfiltered)] <- 1.1
+
+p <-ggplot(data = df_merge,aes(x = combined_pip_csfiltered, y = combined_pip_csNOTfiltered)) +
+  #p[[trait]] <-ggplot(data = df_merge,aes(x = combined_pip_csfiltered, y = combined_pip_csNOTfiltered)) +
+  geom_point() + 
+  labs(x = "Combined PIP -- CS filtered", y = "Combined PIP -- CS NOT filtered") +
+  geom_abline(slope = 1, intercept = 0, col = "Red") +
+  ggtitle(trait) +
+  theme_minimal()
+
+print("PIP = 1.1 means PIP = NA when filtering CS")
+print(p)
+
+# Merge the two data frames by 'gene_name' with suffixes to distinguish columns
+merged_df <- merge(combined_pip_NOTfiltered_sig, combined_pip_filtered, 
+                   by = "gene_name", suffixes = c("_NOTfiltered", "_filtered"),all.x=T)
+
+# List of columns to process (excluding 'gene_name')
+original_cols <- setdiff(names(combined_pip_NOTfiltered_sig), "gene_name")
+
+# Iterate over each column and concatenate values from both data frames
+for (col in original_cols) {
+  notfiltered_col <- paste0(col, "_NOTfiltered")
+  filtered_col <- paste0(col, "_filtered")
+  merged_df[[col]] <- paste(round(merged_df[[notfiltered_col]],digits = 5), round(merged_df[[filtered_col]],digits = 5), sep = "-")
+}
+
+# Select the relevant columns to match the original structure
+df <- merged_df[, c("gene_name", original_cols)]
+
+DT::datatable(df, caption = htmltools::tags$caption( style = 'font-size: 150%; caption-side: topleft; text-align = left; color:black;', trait),options = list(pageLength = 5))
+
+
+```
+
+
+
+
 ```{r results='asis',warning=F, message=FALSE, fig.height=4, fig.width=4}
 traits <- c("LDL-ukb-d-30780_irnt","IBD-ebi-a-GCST004131","BMI-panukb","RBC-panukb","SCZ-ieu-b-5102","aFib-ebi-a-GCST006414","T2D-panukb")
 
@@ -291,4 +742,140 @@ for (trait in traits) {
 
 #wrap_plots(lapply(p, wrap_elements), ncol = 4)
 ```
+
+
+LDL: 
+
+
+| Gene      | Involvement in LDL/Lipid Metabolism                           | Evidence Level |
+|-----------|---------------------------------------------------------------|----------------|
+| KIF13B    | Enhances LDL uptake via LRP1                                  | Strong         |
+| TTC39B    | Regulates cholesterol homeostasis via LXR degradation         | Strong         |
+| USP53     | Modulates SR-A ubiquitination affecting LDL clearance         | Moderate       |
+| ACVR1C    | Influences adipose lipid metabolism                           | Moderate       |
+| LRRK2     | Affects lipid storage and lysosomal function                  | Moderate       |
+| ACP6      | Involved in LPA metabolism; indirect link to LDL              | Limited        |
+| CD163L1   | Scavenger receptor; unclear role in LDL metabolism            | Limited        |
+| KDSR      | Sphingolipid biosynthesis; indirect association with LDL      | Limited        |
+| ZNF518A   | Function not well-characterized; no direct link to LDL        | Limited        |
+
+
+
+
+
+## T2D-panukb
+
+```{r results='asis',warning=F, message=FALSE, fig.height=4, fig.width=4}
+trait <- "T2D-panukb"
+
+combined_pip_filtered <- readRDS(paste0(folder_results,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L, ".combined_pip_bygroup_final_csincluded.RDS"))
+combined_pip_filtered_plot <- combined_pip_filtered[,c("gene_name","combined_pip")]
+colnames(combined_pip_filtered_plot) <- c("gene_name","combined_pip_csfiltered")
+
+combined_pip_NOTfiltered <- readRDS(paste0(folder_results,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L, ".combined_pip_bygroup_final_csF.RDS"))
+combined_pip_NOTfiltered_plot <- combined_pip_NOTfiltered[,c("gene_name","combined_pip")]
+colnames(combined_pip_NOTfiltered_plot) <- c("gene_name","combined_pip_csNOTfiltered")
+
+combined_pip_filtered_sig <- combined_pip_filtered[combined_pip_filtered$combined_pip > 0.8,]
+combined_pip_NOTfiltered_sig <- combined_pip_NOTfiltered[combined_pip_NOTfiltered$combined_pip > 0.8,]
+combined_pip_NOTfiltered_sig_plot <- combined_pip_NOTfiltered_plot[combined_pip_NOTfiltered_plot$combined_pip > 0.8,]
+
+df_merge <- merge(combined_pip_NOTfiltered_sig_plot, combined_pip_filtered_plot, by = "gene_name", all.x = T)
+df_merge$combined_pip_csfiltered[is.na(df_merge$combined_pip_csfiltered)] <- 1.1
+
+p <-ggplot(data = df_merge,aes(x = combined_pip_csfiltered, y = combined_pip_csNOTfiltered)) +
+  #p[[trait]] <-ggplot(data = df_merge,aes(x = combined_pip_csfiltered, y = combined_pip_csNOTfiltered)) +
+  geom_point() + 
+  labs(x = "Combined PIP -- CS filtered", y = "Combined PIP -- CS NOT filtered") +
+  geom_abline(slope = 1, intercept = 0, col = "Red") +
+  ggtitle(trait) +
+  theme_minimal()
+
+print("PIP = 1.1 means PIP = NA when filtering CS")
+print(p)
+
+# Merge the two data frames by 'gene_name' with suffixes to distinguish columns
+merged_df <- merge(combined_pip_NOTfiltered_sig, combined_pip_filtered, 
+                   by = "gene_name", suffixes = c("_NOTfiltered", "_filtered"),all.x=T)
+
+# List of columns to process (excluding 'gene_name')
+original_cols <- setdiff(names(combined_pip_NOTfiltered_sig), "gene_name")
+
+# Iterate over each column and concatenate values from both data frames
+for (col in original_cols) {
+  notfiltered_col <- paste0(col, "_NOTfiltered")
+  filtered_col <- paste0(col, "_filtered")
+  merged_df[[col]] <- paste(round(merged_df[[notfiltered_col]],digits = 5), round(merged_df[[filtered_col]],digits = 5), sep = "-")
+}
+
+# Select the relevant columns to match the original structure
+df <- merged_df[, c("gene_name", original_cols)]
+
+DT::datatable(df, caption = htmltools::tags$caption( style = 'font-size: 150%; caption-side: topleft; text-align = left; color:black;', trait),options = list(pageLength = 5))
+
+
+```
+
+
+
+
+<!-- ```{r results='asis',warning=F, message=FALSE, fig.height=4, fig.width=4} -->
+<!-- traits <- c("LDL-ukb-d-30780_irnt","IBD-ebi-a-GCST004131","BMI-panukb","RBC-panukb","SCZ-ieu-b-5102","aFib-ebi-a-GCST006414","T2D-panukb") -->
+
+<!-- p <- list() -->
+<!-- for (trait in traits) { -->
+
+<!--   combined_pip_filtered <- readRDS(paste0(folder_results,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L, ".combined_pip_bygroup_final_csincluded.RDS")) -->
+<!--   combined_pip_filtered_plot <- combined_pip_filtered[,c("gene_name","combined_pip")] -->
+<!--   colnames(combined_pip_filtered_plot) <- c("gene_name","combined_pip_csfiltered") -->
+
+<!--   combined_pip_NOTfiltered <- readRDS(paste0(folder_results,"/",trait,"/",trait,".",st,".thin",thin,".",var_struc,".L",L, ".combined_pip_bygroup_final_csF.RDS")) -->
+<!--   combined_pip_NOTfiltered_plot <- combined_pip_NOTfiltered[,c("gene_name","combined_pip")] -->
+<!--   colnames(combined_pip_NOTfiltered_plot) <- c("gene_name","combined_pip_csNOTfiltered") -->
+
+<!--   combined_pip_filtered_sig <- combined_pip_filtered[combined_pip_filtered$combined_pip > 0.8,] -->
+<!--   combined_pip_NOTfiltered_sig <- combined_pip_NOTfiltered[combined_pip_NOTfiltered$combined_pip > 0.8,] -->
+<!--   combined_pip_NOTfiltered_sig_plot <- combined_pip_NOTfiltered_plot[combined_pip_NOTfiltered_plot$combined_pip > 0.8,] -->
+
+<!--   df_merge <- merge(combined_pip_NOTfiltered_sig_plot, combined_pip_filtered_plot, by = "gene_name", all.x = T) -->
+<!--   df_merge$combined_pip_csfiltered[is.na(df_merge$combined_pip_csfiltered)] <- 1.1 -->
+
+<!--   p <-ggplot(data = df_merge,aes(x = combined_pip_csfiltered, y = combined_pip_csNOTfiltered)) + -->
+<!--   #p[[trait]] <-ggplot(data = df_merge,aes(x = combined_pip_csfiltered, y = combined_pip_csNOTfiltered)) + -->
+<!--     geom_point() +  -->
+<!--     labs(x = "Combined PIP -- CS filtered", y = "Combined PIP -- CS NOT filtered") + -->
+<!--     geom_abline(slope = 1, intercept = 0, col = "Red") + -->
+<!--     ggtitle(trait) + -->
+<!--     theme_minimal() -->
+
+<!--   print("PIP = 1.1 means PIP = NA when filtering CS") -->
+<!--   print(p) -->
+
+<!--   # Merge the two data frames by 'gene_name' with suffixes to distinguish columns -->
+<!--   merged_df <- merge(combined_pip_NOTfiltered_sig, combined_pip_filtered,  -->
+<!--                      by = "gene_name", suffixes = c("_NOTfiltered", "_filtered"),all.x=T) -->
+
+<!--   # List of columns to process (excluding 'gene_name') -->
+<!--   original_cols <- setdiff(names(combined_pip_NOTfiltered_sig), "gene_name") -->
+
+<!--   # Iterate over each column and concatenate values from both data frames -->
+<!--   for (col in original_cols) { -->
+<!--     notfiltered_col <- paste0(col, "_NOTfiltered") -->
+<!--     filtered_col <- paste0(col, "_filtered") -->
+<!--     merged_df[[col]] <- paste(round(merged_df[[notfiltered_col]],digits = 5), round(merged_df[[filtered_col]],digits = 5), sep = "-") -->
+<!--   } -->
+
+<!--   # Select the relevant columns to match the original structure -->
+<!--   df <- merged_df[, c("gene_name", original_cols)] -->
+
+<!--   cat("\n\n") -->
+<!--   cat(knitr::knit_print(DT::datatable(df, caption = htmltools::tags$caption( style = 'font-size: 150%; caption-side: topleft; text-align = left; color:black;', trait),options = list(pageLength = 5)))) -->
+<!--   cat("\n\n") -->
+
+
+<!-- } -->
+
+<!-- #wrap_plots(lapply(p, wrap_elements), ncol = 4) -->
+<!-- ``` -->
+
 
