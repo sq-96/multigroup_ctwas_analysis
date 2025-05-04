@@ -19,38 +19,47 @@ source("/project/xinhe/shengqian/cTWAS_simulation/code/simulation_help_functions
 source("/project/xinhe/shengqian/cTWAS_simulation/code/summarize_basic_plots.R")
 source("/project/xinhe/shengqian/cTWAS_simulation/code/summarize_ctwas_plots.R")
 
-plot_prior_inclusion <- function(results_dir,runtag,simutags,thins,group_prior_var_structures,null_methods, file_name, true_value_gene,true_value_SNP){
-  par(mfrow = c(1, 2))
-  for(group_prior_var_structure in group_prior_var_structures){
-    for(thin in thins){
-      param_df_ctwas <- load_parameters(results_dir, runtag, simutags, thin, group_prior_var_structure, "ctwas", file_name)
-      y1 <- param_df_ctwas$`prior_liver|expression`
-      y2 <- param_df_ctwas$prior_SNP
-      param_df_susie <- load_parameters(results_dir, runtag, simutags, thin, group_prior_var_structure, "susie", file_name)
-      y3 <- param_df_susie$`prior_liver|expression`
-      y4 <- param_df_susie$prior_SNP
-      truth <- rbind(c(1,true_value_gene),c(2,true_value_SNP),c(3,true_value_gene),c(4,true_value_SNP))
-      est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4))
-      plot_par_4(truth,est,xlabels = c("Gene (ctwas)", "SNP (ctwas)", "Gene (susie)","SNP (susie)"),ylim=c(0,max(est[,2],truth[,2])),ylab="Prior inclusion", main=group_prior_var_structure)
-    }
+plot_prior <- function(results_dir, runtag, simutags, group_prior_var_structures, null_methods, file_name, prior_true) {
+  plot_df <- data.frame()
+  
+  for (i in 1:length(names(simutags))) {
+    param_df_ctwas <- load_parameters(results_dir, runtag, simutags[[names(simutags)[i]]], 1, group_prior_var_structures, null_methods, file_name)
+    df <- data.frame(
+      group = rep(names(simutags)[i], each = 10),
+      pos = rep(i, 10),
+      prior = c(param_df_ctwas$`prior_Whole_Blood|expression`),
+      se = c(0,10)
+    )
+    
+    df$pos <- jitter(df$pos, amount = 0.2)
+    plot_df <- rbind(plot_df, df)
   }
-}
-
-plot_prior_variance <- function(results_dir,runtag,thins,group_prior_var_structures,null_methods,file_name,true_value_gene,true_value_SNP){
-  par(mfrow = c(1, 2))
-  for(group_prior_var_structure in group_prior_var_structures){
-    for(thin in thins){
-      param_df_ctwas <- load_parameters(results_dir, runtag, simutags, thin, group_prior_var_structure, "ctwas", file_name)
-      y1 <- param_df_ctwas$`prior_var_liver|expression`
-      y2 <- param_df_ctwas$prior_var_SNP
-      param_df_susie <- load_parameters(results_dir, runtag, simutags, thin, group_prior_var_structure, "susie", file_name)
-      y3 <- param_df_susie$`prior_var_liver|expression`
-      y4 <- param_df_susie$prior_var_SNP
-      truth <- rbind(c(1,true_value_gene),c(2,true_value_SNP),c(3,true_value_gene),c(4,true_value_SNP))
-      est <- rbind(cbind(1,y1),cbind(2,y2),cbind(3,y3),cbind(4,y4))
-      plot_par_4(truth,est,xlabels = c("Gene (ctwas)", "SNP (ctwas)", "Gene (susie)","SNP (susie)"),ylim=c(0,max(est[,2],truth[,2])),ylab="Prior variance", main=group_prior_var_structure)
-    }
-  }
+  
+  # Prepare hline data: start and end x for each group
+  hline_df <- data.frame(
+    group = names(prior_true),
+    pos = 1:length(prior_true),
+    yintercept = unlist(prior_true)
+  )
+  
+  # Plot
+  p <- ggplot(plot_df, aes(x = pos, y = prior, group = group, color = group)) +
+    geom_point() +
+    geom_segment(data = hline_df,
+                 aes(x = pos - 0.3, xend = pos + 0.3, 
+                     y = yintercept, yend = yintercept, color = group),
+                 linetype = "dashed", inherit.aes = FALSE) +
+    labs(x = "", y = "Prior") +
+    scale_x_continuous(breaks = 1:5, labels = names(simutags)) +
+    ylim(c(0,0.4)) +
+    theme_minimal() +
+    theme(
+      legend.position = "none",
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor.x = element_blank()
+    )
+  
+  print(p)
 }
 
 plot_enrichment <- function(results_dir, runtag, simutags, group_prior_var_structures, null_methods, file_name, enrichment_true) {
@@ -97,6 +106,49 @@ plot_enrichment <- function(results_dir, runtag, simutags, group_prior_var_struc
   print(p)
 }
 
+plot_prop_PVE <- function(results_dir, runtag, simutags, group_prior_var_structures, null_methods, file_name, prop_pve_true) {
+  plot_df <- data.frame()
+  
+  for (i in 1:length(names(simutags))) {
+    param_df_ctwas <- load_parameters(results_dir, runtag, simutags[[names(simutags)[i]]], 1, group_prior_var_structures, null_methods, file_name)
+    df <- data.frame(
+      group = rep(names(simutags)[i], each = 10),
+      pos = rep(i, 10),
+      prop_pve = c(param_df_ctwas$`prop_heritability_Whole_Blood|expression`),
+      se = c(0,10)
+    )
+    
+    df$pos <- jitter(df$pos, amount = 0.2)
+    plot_df <- rbind(plot_df, df)
+  }
+  
+  # Prepare hline data: start and end x for each group
+  hline_df <- data.frame(
+    group = names(prop_pve_true),
+    pos = 1:length(prop_pve_true),
+    yintercept = unlist(prop_pve_true)
+  )
+  
+  # Plot
+  p <- ggplot(plot_df, aes(x = pos, y = prop_pve, group = group, color = group)) +
+    geom_point() +
+    geom_segment(data = hline_df,
+                 aes(x = pos - 0.3, xend = pos + 0.3, 
+                     y = yintercept, yend = yintercept, color = group),
+                 linetype = "dashed", inherit.aes = FALSE) +
+    labs(x = "", y = "Proportion of PVE") +
+    scale_x_continuous(breaks = 1:5, labels = names(simutags)) +
+    ylim(c(0,1)) +
+    theme_minimal() +
+    theme(
+      legend.position = "none",
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor.x = element_blank()
+    )
+  
+  print(p)
+}
+
 plot_PVE <- function(results_dir, runtag, simutags, group_prior_var_structures, null_methods, file_name, pve_true) {
   plot_df <- data.frame()
   
@@ -127,7 +179,7 @@ plot_PVE <- function(results_dir, runtag, simutags, group_prior_var_structures, 
                  aes(x = pos - 0.3, xend = pos + 0.3, 
                      y = yintercept, yend = yintercept, color = group),
                  linetype = "dashed", inherit.aes = FALSE) +
-    labs(x = "", y = "PVE", title = "PVE Plot") +
+    labs(x = "", y = "PVE") +
     scale_x_continuous(breaks = 1:5, labels = names(simutags)) +
     ylim(c(0,0.4)) +
     theme_minimal() +
@@ -141,18 +193,13 @@ plot_PVE <- function(results_dir, runtag, simutags, group_prior_var_structures, 
 }
 ```
 
-## Simulation Settings
-This is an one-tissue simulation to test the enrichment and PVE parameters. Expression traits are from whole blood There are five simulations with different enrichment parameters and each has 10 replicates. Gene and SNP variance are fixed to be the same.
-
-True PVE is calculated in two ways and compared. The first way is calculating PVE when simulating the phenotype. It is simply var.gene <- var(X.g %*% e.beta). The second way is calculating PVE using the per-SNP heribility formula in paper given prior inclusion probablity, group size and variance of effect size. 
-
 ## Simulation Parameters
 ```{r eval=FALSE}
-sigma_gene =  c(0.0155,   0.0155,   0.0155,    0.0155,    0.0155)
+pve_gene <-   c(0.005,    0.05,     0.1,       0.2,       0.4)
 pi_gene =     c(0.0025,   0.025,    0.05,      0.1,       0.2)
 size_gene =   c(8170,     8170,     8170,      8170,      8170)
 
-sigma_snp =   c(0.0155,   0.0155,   0.0155,    0.0155,    0.0155)
+pve_snp <-    c(0.3,      0.3,      0.3,       0.3,       0.3)
 pi_snp =      c(0.0025,   0.0025,   0.0025,    0.0025,    0.0025)
 size_snp =    c(500000,   500000,   500000,    500000,    500000)
 ```
@@ -161,8 +208,8 @@ size_snp =    c(500000,   500000,   500000,    500000,    500000)
 simutags <- list("enrichment 1"=paste(1, 1:10, sep = "-"),
                  "enrichment 10"=paste(2, 1:10, sep = "-"),
                  "enrichment 20"=paste(3, 1:10, sep = "-"),
-                 "enrichment 40"=paste(4, 1:10, sep = "-"),
-                 "enrichment 80"=paste(5, 1:10, sep = "-"))
+                 "enrichment 40"=paste(4, 1:10, sep = "-"))#,
+                 #"enrichment 80"=paste(5, 1:10, sep = "-"))
 
 enrichment_true <- list("1"=0,
                         "2"=log(10,base=exp(1)),
@@ -170,100 +217,115 @@ enrichment_true <- list("1"=0,
                         "4"=log(40,base=exp(1)),
                         "5"=log(80,base=exp(1)))
 
-pi <- c(0.0025,   0.025,    0.05,      0.1,       0.2)
-sigma_beta <- c(0.0155,   0.0155,   0.0155,    0.0155,    0.0155)
-gene_size <- 8170
-pve <- sigma_beta^2 * pi * gene_size
+#pi <- c(0.0025,   0.025,    0.05,      0.1,       0.2)
+#pve_gene <- c(0.005,      0.05,      0.1,       0.2,       0.4)
+#pve_snp <- c(0.3,      0.3,      0.3,       0.3,       0.3)
+#sigma_beta <- c(0.0155,   0.0155,   0.0155,    0.0155,    0.0155)
+#gene_size <- 8170
+#pve <- sigma_beta^2 * pi * gene_size
 
-pve_true <- list("1"=pve[1],
-                 "2"=pve[2],
-                 "3"=pve[3],
-                 "4"=pve[4],
-                 "5"=pve[5])
+prior_true <- list("1"= 0.0025,
+                 "2"= 0.025,
+                 "3"= 0.05,
+                 "4"= 0.1,
+                 "5"= 0.2)
 
-pve_data <- c()
-for(i in names(simutags)){
-  tmp_pve <- c()
-  for(j in simutags[[i]]){
-    pve <- get(load(paste0("/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue_expression_enrichment/one_tissue_simu",j,"-pheno.Rd")))
-    pve <- pve$param$pve.gene.truth
-    tmp_pve <- c(tmp_pve,pve)
-  }
-  pve_data <- c(pve_data,mean(tmp_pve))
-}
+pve_true <- list("1"= 0.005,
+                 "2"= 0.05,
+                 "3"= 0.1,
+                 "4"= 0.2,
+                 "5"= 0.4)
 
-pve_data <- list("1"=pve_data[1],
-                 "2"=pve_data[2],
-                 "3"=pve_data[3],
-                 "4"=pve_data[4],
-                 "5"=pve_data[5])
+prop_pve_true <- list("1"= 0.01639344,
+                      "2"= 0.14285714,
+                      "3"= 0.25000000,
+                      "4"= 0.40000000,
+                      "5"= 0.57142857)
+
+#pve_data <- c()
+#for(i in names(simutags)){
+#  tmp_pve <- c()
+#  for(j in simutags[[i]]){
+#    pve <- get(load(paste0("/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue_expression_PVE/one_tissue_simu",j,"-pheno.Rd")))
+#    pve <- pve$param$pve.gene.truth
+#    tmp_pve <- c(tmp_pve,pve)
+#  }
+#  pve_data <- c(pve_data,mean(tmp_pve))
+#}
+
+#pve_data <- list("1"=pve_data[1],
+#                 "2"=pve_data[2],
+#                 "3"=pve_data[3],
+#                 "4"=pve_data[4],
+#                 "5"=pve_data[5])
+
+#prop_data <- c()
+#for(i in names(simutags)){
+#  tmp_prop <- c()
+#  for(j in simutags[[i]]){
+#    prop <- get(load(paste0("/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue_expression_PVE/one_tissue_simu",j,"-pheno.Rd")))
+#    gene_pve <- prop$param$pve.gene.truth
+#    snp_pve <- prop$param$pve.snp.truth
+#    tmp_prop <- c(tmp_prop,gene_pve/(gene_pve+snp_pve))
+#  }
+#  prop_data <- c(prop_data,mean(tmp_prop))
+#}
+
+#prop_data <- list("1"=prop_data[1],
+#                 "2"=prop_data[2],
+##                 "3"=prop_data[3],
+#                 "4"=prop_data[4],
+#                 "5"=prop_data[5])
 ```
 
 ## shared_all, ctwas null weight
+
+### Prior
 ```{r,echo=FALSE,fig.width= 8, fig.height= 4}
-results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue_expression_enrichment/"
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue_expression_PVE/"
+runtag = "one_tissue"
+plot_prior(results_dir,runtag,simutags,"shared_all","ctwas",".Gtest.minp08.mingene1.parameters.RDS",prior_true)
+```
+
+### Enrichment
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue_expression_PVE/"
 runtag = "one_tissue"
 plot_enrichment(results_dir,runtag,simutags,"shared_all","ctwas",".Gtest.minp08.mingene1.parameters.RDS",enrichment_true)
 ```
 
-### PVE calculated with the per-SNP heritability formula
+### PVE
 ```{r echo=FALSE}
 plot_PVE(results_dir,runtag,simutags,"shared_all","ctwas",".Gtest.minp08.mingene1.parameters.RDS",pve_true)
 ```
 
-### PVE calculated from simulated data var.gene <- var(X.g %*% e.beta)
+### Proportion of PVE
 ```{r echo=FALSE}
-plot_PVE(results_dir,runtag,simutags,"shared_all","ctwas",".Gtest.minp08.mingene1.parameters.RDS",pve_data)
+plot_prop_PVE(results_dir,runtag,simutags,"shared_all","ctwas",".Gtest.minp08.mingene1.parameters.RDS",prop_pve_true)
 ```
-
-## shared_type, ctwas null weight
-```{r,echo=FALSE,fig.width= 8, fig.height= 4}
-results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue_expression_enrichment/"
-runtag = "one_tissue"
-plot_enrichment(results_dir,runtag,simutags,"shared_type","ctwas",".Gtest.minp08.mingene1.parameters.RDS",enrichment_true)
-```
-
-### PVE calculated with the per-SNP heritability formula
-```{r echo=FALSE}
-plot_PVE(results_dir,runtag,simutags,"shared_type","ctwas",".Gtest.minp08.mingene1.parameters.RDS",pve_true)
-```
-
-### PVE calculated from simulated data var.gene <- var(X.g %*% e.beta)
-```{r echo=FALSE}
-plot_PVE(results_dir,runtag,simutags,"shared_type","ctwas",".Gtest.minp08.mingene1.parameters.RDS",pve_data)
-```
-
 
 ## shared_all, susie null weight
+
+### Prior
 ```{r,echo=FALSE,fig.width= 8, fig.height= 4}
-results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue_expression_enrichment/"
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue_expression_PVE/"
+runtag = "one_tissue"
+plot_prior(results_dir,runtag,simutags,"shared_all","susie",".Gtest.minp08.mingene1.parameters.RDS",prior_true)
+```
+
+### Enrichment
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue_expression_PVE/"
 runtag = "one_tissue"
 plot_enrichment(results_dir,runtag,simutags,"shared_all","susie",".Gtest.minp08.mingene1.parameters.RDS",enrichment_true)
 ```
 
-### PVE calculated with the per-SNP heritability formula
+### PVE
 ```{r echo=FALSE}
 plot_PVE(results_dir,runtag,simutags,"shared_all","susie",".Gtest.minp08.mingene1.parameters.RDS",pve_true)
 ```
 
-### PVE calculated from simulated data var.gene <- var(X.g %*% e.beta)
+### Proportion of PVE
 ```{r echo=FALSE}
-plot_PVE(results_dir,runtag,simutags,"shared_all","susie",".Gtest.minp08.mingene1.parameters.RDS",pve_data)
-```
-
-## shared_type, susie null weight
-```{r,echo=FALSE,fig.width= 8, fig.height= 4}
-results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue_expression_enrichment/"
-runtag = "one_tissue"
-plot_enrichment(results_dir,runtag,simutags,"shared_type","susie",".Gtest.minp08.mingene1.parameters.RDS",enrichment_true)
-```
-
-### PVE calculated with the per-SNP heritability formula
-```{r echo=FALSE}
-plot_PVE(results_dir,runtag,simutags,"shared_type","susie",".Gtest.minp08.mingene1.parameters.RDS",pve_true)
-```
-
-### PVE calculated from simulated data var.gene <- var(X.g %*% e.beta)
-```{r echo=FALSE}
-plot_PVE(results_dir,runtag,simutags,"shared_type","susie",".Gtest.minp08.mingene1.parameters.RDS",pve_data)
+plot_prop_PVE(results_dir,runtag,simutags,"shared_all","susie",".Gtest.minp08.mingene1.parameters.RDS",prop_pve_true)
 ```
