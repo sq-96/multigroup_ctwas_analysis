@@ -49,7 +49,7 @@ plot_prior <- function(results_dir, runtag, simutags, group_prior_var_structures
                  aes(x = pos - 0.3, xend = pos + 0.3, 
                      y = yintercept, yend = yintercept, color = group),
                  linetype = "dashed", inherit.aes = FALSE) +
-    labs(x = "", y = "Prior") +
+    labs(x = "", y = "Prior", title = "") +
     scale_x_continuous(breaks = 1:5, labels = names(simutags)) +
     ylim(c(0,0.4)) +
     theme_minimal() +
@@ -93,7 +93,7 @@ plot_enrichment <- function(results_dir, runtag, simutags, group_prior_var_struc
                  aes(x = pos - 0.3, xend = pos + 0.3, 
                      y = yintercept, yend = yintercept, color = group),
                  linetype = "dashed", inherit.aes = FALSE) +
-    labs(x = "", y = "log(Enrichment)", title = "Enrichment Plot") +
+    labs(x = "", y = "log(Enrichment)", title = "") +
     scale_x_continuous(breaks = 1:5, labels = names(simutags)) +
     ylim(c(-5,5)) +
     theme_minimal() +
@@ -136,7 +136,7 @@ plot_prop_PVE <- function(results_dir, runtag, simutags, group_prior_var_structu
                  aes(x = pos - 0.3, xend = pos + 0.3, 
                      y = yintercept, yend = yintercept, color = group),
                  linetype = "dashed", inherit.aes = FALSE) +
-    labs(x = "", y = "Proportion of PVE") +
+    labs(x = "", y = "Proportion of PVE", title = "") +
     scale_x_continuous(breaks = 1:5, labels = names(simutags)) +
     ylim(c(0,1)) +
     theme_minimal() +
@@ -179,7 +179,7 @@ plot_PVE <- function(results_dir, runtag, simutags, group_prior_var_structures, 
                  aes(x = pos - 0.3, xend = pos + 0.3, 
                      y = yintercept, yend = yintercept, color = group),
                  linetype = "dashed", inherit.aes = FALSE) +
-    labs(x = "", y = "PVE") +
+    labs(x = "", y = "PVE", title = "") +
     scale_x_continuous(breaks = 1:5, labels = names(simutags)) +
     ylim(c(0,0.4)) +
     theme_minimal() +
@@ -208,8 +208,8 @@ size_snp =    c(500000,   500000,   500000,    500000,    500000)
 simutags <- list("enrichment 1"=paste(1, 1:10, sep = "-"),
                  "enrichment 10"=paste(2, 1:10, sep = "-"),
                  "enrichment 20"=paste(3, 1:10, sep = "-"),
-                 "enrichment 40"=paste(4, 1:10, sep = "-"))#,
-                 #"enrichment 80"=paste(5, 1:10, sep = "-"))
+                 "enrichment 40"=paste(4, 1:10, sep = "-"),
+                 "enrichment 80"=paste(5, 1:10, sep = "-"))
 
 enrichment_true <- list("1"=0,
                         "2"=log(10,base=exp(1)),
