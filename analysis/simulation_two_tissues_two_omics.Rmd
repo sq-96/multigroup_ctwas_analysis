@@ -193,11 +193,20 @@ plot_PHE <- function(results_dir, runtag, simutags, thin, group_prior_var_struct
     print(plots[[1]])
   }
 }
+```
 
-plot_PIP_shared_all_ctwas <- function(results_dir, runtag,  simutags, ...){
+```{r echo=FALSE}
+plot_molecular_PIPs <- function(results_dir, runtag,  simutags, group_prior_var_structure, null_method, ...){
   phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
-  susieIfs <- paste0(results_dir, runtag, "_simu",simutags, ".thin1.shared_all.ctwas.Gtest.minp08.mingene1.estimated_parameter.finemap_regions_res.RDS")
+  susieIfs <- paste0(results_dir, runtag, "_simu",simutags, ".thin1.",group_prior_var_structure,".",null_method,".Gtest.minp08.mingene0.estimated_parameter.finemap_regions_res.RDS")
   f1 <- caliPIP_plot(phenofs, susieIfs, ...) 
+  return(f1)
+}
+
+plot_gene_PIPs <- function(results_dir, runtag,  simutags, group_prior_var_structure, null_method, mapping_table, ...){
+  phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
+  susieIfs <- paste0(results_dir, runtag, "_simu",simutags, ".thin1.",group_prior_var_structure,".",null_method,".Gtest.minp08.mingene0.estimated_parameter.finemap_regions_res.RDS")
+  f1 <- caliPIP_plot_multi_omics(phenofs, susieIfs, mapping_table, ...) 
   return(f1)
 }
 ```
@@ -261,68 +270,109 @@ plot_enrichment(results_dir,runtag,simutags,1,"shared_all","ctwas",".Gtest.minp0
 ```
 
 ## PVE
-```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+```{r,echo=FALSE,fig.width= 16, fig.height= 4}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_two_tissues_two_omics_PVE/"
 runtag = "two_tissues_two_omics"
 plot_PVE(results_dir,runtag,simutags,1,"shared_all","ctwas",".Gtest.minp08.mingene0.parameters.RDS",pve_true)
 ```
 
 ## PHE
-```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+```{r,echo=FALSE,fig.width= 16, fig.height= 4}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_two_tissues_two_omics_PVE/"
 runtag = "two_tissues_two_omics"
 plot_PHE(results_dir,runtag,simutags,1,"shared_all","ctwas",".Gtest.minp08.mingene1.parameters.RDS",phe_true)
 ```
 
-```{r echo=FALSE}
-plot_molecular_PIPs <- function(results_dir, runtag,  simutags, group_prior_var_structure, null_method, ...){
-  phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
-  susieIfs <- paste0(results_dir, runtag, "_simu",simutags, ".thin1.",group_prior_var_structure,".",null_method,".Gtest.minp08.mingene1.estimated_parameter.finemap_regions_res.RDS")
-  f1 <- caliPIP_plot(phenofs, susieIfs, ...) 
-  return(f1)
-}
-
-plot_gene_PIPs <- function(results_dir, runtag,  simutags, group_prior_var_structure, null_method, mapping_table, ...){
-  phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
-  susieIfs <- paste0(results_dir, runtag, "_simu",simutags, ".thin1.",group_prior_var_structure,".",null_method,".Gtest.minp08.mingene1.estimated_parameter.finemap_regions_res.RDS")
-  f1 <- caliPIP_plot_multi_omics(phenofs, susieIfs, mapping_table, ...) 
-  return(f1)
-}
-```
-
-```{r}
+### Molecular level PIP
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=16, fig.height=4}
 simutags <- list("enrichment 1"=  paste(1, 1:10, sep = "-"),
                  "enrichment 10"= paste(2, 1:10, sep = "-"),
                  "enrichment 20"= paste(3, 1:10, sep = "-"),
-                 "enrichment 40"= paste(4, 1:10, sep = "-"),
-                 "enrichment 80"= paste(5, 1:10, sep = "-"))
+                 "enrichment 40"= paste(4, 1:10, sep = "-"))
 molecular_PIPs <- list()
 for(i in names(simutags)){
   print(i)
-  f1 <- plot_molecular_PIPs(results_dir, runtag, simutags[[i]], "shared_all", "ctwas", main = i)
+  f1 <- plot_molecular_PIPs(results_dir, runtag, simutags[[i]], "shared_all", "susie", main = i)
   molecular_PIPs[[i]] <- f1
 }
-do.call(grid.arrange, c(molecular_PIPs, ncol = 5))
+do.call(grid.arrange, c(molecular_PIPs, ncol = 4))
 ```
 
-```{r}
+### Gene level PIP
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=16, fig.height=4}
 mapping_table <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_E_S_M_mapping.RDS")
 simutags <- list("enrichment 1"=  paste(1, 1:10, sep = "-"),
                  "enrichment 10"= paste(2, 1:10, sep = "-"),
                  "enrichment 20"= paste(3, 1:10, sep = "-"),
-                 "enrichment 40"= paste(4, 1:10, sep = "-"),
-                 "enrichment 80"= paste(5, 1:10, sep = "-"))
+                 "enrichment 40"= paste(4, 1:10, sep = "-"))
 gene_PIPs <- list()
 for(i in names(simutags)){
   print(i)
   f1 <- plot_gene_PIPs(results_dir, runtag, simutags[[i]], "shared_all", "susie", mapping_table, main = i)
   gene_PIPs[[i]] <- f1
 }
-do.call(grid.arrange, c(gene_PIPs, ncol = 5))
+do.call(grid.arrange, c(gene_PIPs, ncol = 4))
 ```
 
-```{r}
+## shared_all, susie null weight
 
+### Prior
+```{r,echo=FALSE,fig.width= 16, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_two_tissues_two_omics_PVE/"
+runtag = "two_tissues_two_omics"
+plot_Prior(results_dir,runtag,simutags,1,"shared_all","susie",".Gtest.minp08.mingene0.parameters.RDS",prior_true)
+```
+
+### Enrichment
+```{r,echo=FALSE,fig.width= 16, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_two_tissues_two_omics_PVE/"
+runtag = "two_tissues_two_omics"
+plot_enrichment(results_dir,runtag,simutags,1,"shared_all","susie",".Gtest.minp08.mingene0.parameters.RDS",enrichment_true)
+```
+
+## PVE
+```{r,echo=FALSE,fig.width= 16, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_two_tissues_two_omics_PVE/"
+runtag = "two_tissues_two_omics"
+plot_PVE(results_dir,runtag,simutags,1,"shared_all","susie",".Gtest.minp08.mingene0.parameters.RDS",pve_true)
+```
+
+## PHE
+```{r,echo=FALSE,fig.width= 16, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_two_tissues_two_omics_PVE/"
+runtag = "two_tissues_two_omics"
+plot_PHE(results_dir,runtag,simutags,1,"shared_all","susie",".Gtest.minp08.mingene0.parameters.RDS",phe_true)
+```
+
+### Molecular level PIP
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=16, fig.height=4}
+simutags <- list("enrichment 1"=  paste(1, 1:10, sep = "-"),
+                 "enrichment 10"= paste(2, 1:10, sep = "-"),
+                 "enrichment 20"= paste(3, 1:10, sep = "-"),
+                 "enrichment 40"= paste(4, 1:10, sep = "-"))
+molecular_PIPs <- list()
+for(i in names(simutags)){
+  print(i)
+  f1 <- plot_molecular_PIPs(results_dir, runtag, simutags[[i]], "shared_all", "susie", main = i)
+  molecular_PIPs[[i]] <- f1
+}
+do.call(grid.arrange, c(molecular_PIPs, ncol = 4))
+```
+
+### Gene level PIP
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=16, fig.height=4}
+mapping_table <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_E_S_M_mapping.RDS")
+simutags <- list("enrichment 1"=  paste(1, 1:10, sep = "-"),
+                 "enrichment 10"= paste(2, 1:10, sep = "-"),
+                 "enrichment 20"= paste(3, 1:10, sep = "-"),
+                 "enrichment 40"= paste(4, 1:10, sep = "-"))
+gene_PIPs <- list()
+for(i in names(simutags)){
+  print(i)
+  f1 <- plot_gene_PIPs(results_dir, runtag, simutags[[i]], "shared_all", "susie", mapping_table, main = i)
+  gene_PIPs[[i]] <- f1
+}
+do.call(grid.arrange, c(gene_PIPs, ncol = 4))
 ```
 
 
