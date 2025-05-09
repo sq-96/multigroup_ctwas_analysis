@@ -115,6 +115,9 @@ plot_prop_PVE <- function(results_dir, runtag, simutags, group_prior_var_structu
       group = rep(names(simutags)[i], each = 10),
       pos = rep(i, 10),
       prop_pve = c(param_df_ctwas$`prop_heritability_Whole_Blood|expression`),
+      #gene_prior <- param_df_ctwas$`prior_Whole_Blood|expression`,
+      #snp_prior <- param_df_ctwas$`prior_SNP`,
+      #prop_pve = c((gene_prior/snp_prior)/((gene_prior/snp_prior)+500000/8170)),
       se = c(0,10)
     )
     
@@ -284,24 +287,24 @@ prop_pve_true <- list("1"= 0.01639344,
 ```{r,echo=FALSE,fig.width= 8, fig.height= 4}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue_expression_PVE/"
 runtag = "one_tissue"
-plot_prior(results_dir,runtag,simutags,"shared_all","ctwas",".Gtest.minp08.mingene1.parameters.RDS",prior_true)
+plot_prior(results_dir,runtag,simutags,"shared_all","ctwas",".Gtest.minp08.mingene0.parameters.RDS",prior_true)
 ```
 
 ### Enrichment
 ```{r,echo=FALSE,fig.width= 8, fig.height= 4}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue_expression_PVE/"
 runtag = "one_tissue"
-plot_enrichment(results_dir,runtag,simutags,"shared_all","ctwas",".Gtest.minp08.mingene1.parameters.RDS",enrichment_true)
+plot_enrichment(results_dir,runtag,simutags,"shared_all","ctwas",".Gtest.minp08.mingene0.parameters.RDS",enrichment_true)
 ```
 
 ### PVE
 ```{r echo=FALSE}
-plot_PVE(results_dir,runtag,simutags,"shared_all","ctwas",".Gtest.minp08.mingene1.parameters.RDS",pve_true)
+plot_PVE(results_dir,runtag,simutags,"shared_all","ctwas",".Gtest.minp08.mingene0.parameters.RDS",pve_true)
 ```
 
 ### Proportion of PVE
 ```{r echo=FALSE}
-plot_prop_PVE(results_dir,runtag,simutags,"shared_all","ctwas",".Gtest.minp08.mingene1.parameters.RDS",prop_pve_true)
+plot_prop_PVE(results_dir,runtag,simutags,"shared_all","ctwas",".Gtest.minp08.mingene0.parameters.RDS",prop_pve_true)
 ```
 
 ## shared_all, susie null weight
@@ -310,22 +313,20 @@ plot_prop_PVE(results_dir,runtag,simutags,"shared_all","ctwas",".Gtest.minp08.mi
 ```{r,echo=FALSE,fig.width= 8, fig.height= 4}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue_expression_PVE/"
 runtag = "one_tissue"
-plot_prior(results_dir,runtag,simutags,"shared_all","susie",".Gtest.minp08.mingene1.parameters.RDS",prior_true)
+plot_prior(results_dir,runtag,simutags,"shared_all","susie",".Gtest.minp08.mingene0.parameters.RDS",prior_true)
 ```
 
 ### Enrichment
 ```{r,echo=FALSE,fig.width= 8, fig.height= 4}
-results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue_expression_PVE/"
-runtag = "one_tissue"
-plot_enrichment(results_dir,runtag,simutags,"shared_all","susie",".Gtest.minp08.mingene1.parameters.RDS",enrichment_true)
+plot_enrichment(results_dir,runtag,simutags,"shared_all","susie",".Gtest.minp08.mingene0.parameters.RDS",enrichment_true)
 ```
 
 ### PVE
 ```{r echo=FALSE}
-plot_PVE(results_dir,runtag,simutags,"shared_all","susie",".Gtest.minp08.mingene1.parameters.RDS",pve_true)
+plot_PVE(results_dir,runtag,simutags,"shared_all","susie",".Gtest.minp08.mingene0.parameters.RDS",pve_true)
 ```
 
 ### Proportion of PVE
 ```{r echo=FALSE}
-plot_prop_PVE(results_dir,runtag,simutags,"shared_all","susie",".Gtest.minp08.mingene1.parameters.RDS",prop_pve_true)
+plot_prop_PVE(results_dir,runtag,simutags,"shared_all","susie",".Gtest.minp08.mingene0.parameters.RDS",prop_pve_true)
 ```
