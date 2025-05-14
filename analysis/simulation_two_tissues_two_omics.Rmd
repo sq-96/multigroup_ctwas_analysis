@@ -1,0 +1,379 @@
+---
+title: "simulation_one_tissue_enrichment"
+output: html_document
+date: '2024-4-28'
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(ctwas)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+library(data.table)
+library(ggbreak) 
+library(ggpubr)
+library(gridExtra)
+source("/project/xinhe/shengqian/cTWAS_simulation/code/simulation_help_functions.R")
+source("/project/xinhe/shengqian/cTWAS_simulation/code/summarize_basic_plots.R")
+source("/project/xinhe/shengqian/cTWAS_simulation/code/summarize_ctwas_plots.R")
+
+plot_Prior <- function(results_dir, runtag, simutags, thin, group_prior_var_structure, null_method, file_name, prior_true) {
+  plots <- list()  # Store plots in a list
+  plot_idx <- 1
+  
+  for (simutag in names(simutags)) {
+    param_df_ctwas <- load_parameters(results_dir, runtag, simutags[[simutag]], thin, group_prior_var_structure, null_method, file_name)
+      
+    df <- data.frame(null_method = rep(c("blood E", "blood S", "heart E", "heart S"), each = 10),
+                       pos = c(rep(1, 10), rep(2, 10), rep(3, 10), rep(4, 10)),
+                       prior = c(param_df_ctwas$`prior_Whole_Blood|expression`, param_df_ctwas$`prior_Whole_Blood|splicing`,
+                               param_df_ctwas$`prior_Heart_Left_Ventricle|expression`,param_df_ctwas$`prior_Heart_Left_Ventricle|splicing`)) 
+      
+    df$pos <- jitter(df$pos, amount = 0.2)
+    
+    # Prepare hline data: start and end x for each group
+    hline_df <- data.frame(
+      pos = 1:length(prior_true[[simutag]]),
+      yintercept = unlist(prior_true[[simutag]])
+    )
+      
+    p <- ggplot(df, aes(x = pos, y = prior, group = null_method, color = null_method)) +
+        geom_point() +
+        geom_segment(data = hline_df,
+                 aes(x = pos - 0.3, xend = pos + 0.3, 
+                     y = yintercept, yend = yintercept),
+                 linetype = "dashed", inherit.aes = FALSE) +
+        labs(x = "", y = "Prior", title = simutag) +
+        scale_x_continuous(breaks = c(1, 2, 3, 4), labels = c("blood E", "blood S", "heart E", "heart S")) +
+        ylim(c(0,0.1)) +
+        theme_minimal()+
+        theme(legend.position = "none")
+      
+    plots[[plot_idx]] <- p  # Store plot in the list
+    plot_idx <- plot_idx + 1
+  }
+  
+  if (length(plots) > 1) {
+    grid.arrange(grobs = plots, ncol = length(plots))  # Using gridExtra
+  } else {
+    print(plots[[1]])
+  }
+}
+
+plot_enrichment <- function(results_dir, runtag, simutags, thin, group_prior_var_structure, null_method, file_name, enrichment_true) {
+  plots <- list()  # Store plots in a list
+  plot_idx <- 1
+  
+  for (simutag in names(simutags)) {
+    param_df_ctwas <- load_parameters(results_dir, runtag, simutags[[simutag]], thin, group_prior_var_structure, null_method, file_name)
+      
+    df <- data.frame(null_method = rep(c("blood E", "blood S", "heart E", "heart S"), each = 10),
+                       pos = c(rep(1, 10), rep(2, 10), rep(3, 10), rep(4, 10)),
+                       enrichment = c(param_df_ctwas$`enrichment_Whole_Blood|expression`, param_df_ctwas$`enrichment_Whole_Blood|splicing`,
+                                      param_df_ctwas$`enrichment_Heart_Left_Ventricle|expression`,param_df_ctwas$`enrichment_Heart_Left_Ventricle|splicing`),
+                       se = c(param_df_ctwas$`enrichment_se_Whole_Blood|expression`, param_df_ctwas$`enrichment_se_Whole_Blood|splicing`,
+                              param_df_ctwas$`enrichment_se_Heart_Left_Ventricle|expression`,param_df_ctwas$`enrichment_se_Heart_Left_Ventricle|splicing`)) 
+      
+    df$pos <- jitter(df$pos, amount = 0.2)
+    
+    # Prepare hline data: start and end x for each group
+    hline_df <- data.frame(
+      pos = 1:length(enrichment_true[[simutag]]),
+      yintercept = unlist(enrichment_true[[simutag]])
+    )
+      
+    p <- ggplot(df, aes(x = pos, y = enrichment, group = null_method, color = null_method)) +
+        geom_point() +
+        geom_errorbar(aes(ymin = enrichment - 1.96 * se, ymax = enrichment + 1.96 * se), width = 0.01) +
+        geom_segment(data = hline_df,
+                 aes(x = pos - 0.3, xend = pos + 0.3, 
+                     y = yintercept, yend = yintercept),
+                 linetype = "dashed", inherit.aes = FALSE) +
+        labs(x = "", y = "log(Enrichment)", title = simutag) +
+        scale_x_continuous(breaks = c(1, 2, 3, 4), labels = c("blood E", "blood S", "heart E", "heart S")) +
+        ylim(c(-5,5)) +
+        theme_minimal()+
+        theme(legend.position = "none")
+      
+    plots[[plot_idx]] <- p  # Store plot in the list
+    plot_idx <- plot_idx + 1
+  }
+  
+  if (length(plots) > 1) {
+    grid.arrange(grobs = plots, ncol = length(plots))  # Using gridExtra
+  } else {
+    print(plots[[1]])
+  }
+}
+
+plot_PVE <- function(results_dir, runtag, simutags, thin, group_prior_var_structure, null_method, file_name, PVE_true) {
+  plots <- list()  # Store plots in a list
+  plot_idx <- 1
+  
+  for (simutag in names(simutags)) {
+    param_df_ctwas <- load_parameters(results_dir, runtag, simutags[[simutag]], thin, group_prior_var_structure, null_method, file_name)
+      
+    df <- data.frame(null_method = rep(c("blood E", "blood S", "heart E", "heart S"), each = 10),
+                       pos = c(rep(1, 10), rep(2, 10), rep(3, 10), rep(4, 10)),
+                       pve = c(param_df_ctwas$`pve_Whole_Blood|expression`, param_df_ctwas$`pve_Whole_Blood|splicing`,
+                               param_df_ctwas$`pve_Heart_Left_Ventricle|expression`,param_df_ctwas$`pve_Heart_Left_Ventricle|splicing`)) 
+      
+    df$pos <- jitter(df$pos, amount = 0.2)
+    
+    # Prepare hline data: start and end x for each group
+    hline_df <- data.frame(
+      pos = 1:length(PVE_true[[simutag]]),
+      yintercept = unlist(PVE_true[[simutag]])
+    )
+      
+    p <- ggplot(df, aes(x = pos, y = pve, group = null_method, color = null_method)) +
+        geom_point() +
+        geom_segment(data = hline_df,
+                 aes(x = pos - 0.3, xend = pos + 0.3, 
+                     y = yintercept, yend = yintercept),
+                 linetype = "dashed", inherit.aes = FALSE) +
+        labs(x = "", y = "PVE", title = simutag) +
+        scale_x_continuous(breaks = c(1, 2, 3, 4), labels = c("blood E", "blood S", "heart E", "heart S")) +
+        ylim(c(0,0.5)) +
+        theme_minimal()+
+        theme(legend.position = "none")
+      
+    plots[[plot_idx]] <- p  # Store plot in the list
+    plot_idx <- plot_idx + 1
+  }
+  
+  if (length(plots) > 1) {
+    grid.arrange(grobs = plots, ncol = length(plots))  # Using gridExtra
+  } else {
+    print(plots[[1]])
+  }
+}
+
+plot_PHE <- function(results_dir, runtag, simutags, thin, group_prior_var_structure, null_method, file_name, PHE_true) {
+  plots <- list()  # Store plots in a list
+  plot_idx <- 1
+  
+  for (simutag in names(simutags)) {
+    param_df_ctwas <- load_parameters(results_dir, runtag, simutags[[simutag]], thin, group_prior_var_structure, null_method, file_name)
+      
+    df <- data.frame(null_method = rep(c("blood E", "blood S", "heart E", "heart S"), each = 10),
+                       pos = c(rep(1, 10), rep(2, 10), rep(3, 10), rep(4, 10)),
+                       phe = c(param_df_ctwas$`prop_heritability_Whole_Blood|expression`, param_df_ctwas$`prop_heritability_Whole_Blood|splicing`,
+                               param_df_ctwas$`prop_heritability_Heart_Left_Ventricle|expression`,param_df_ctwas$`prop_heritability_Heart_Left_Ventricle|splicing`)) 
+      
+    df$pos <- jitter(df$pos, amount = 0.2)
+    
+    # Prepare hline data: start and end x for each group
+    hline_df <- data.frame(
+      pos = 1:length(PHE_true[[simutag]]),
+      yintercept = unlist(PHE_true[[simutag]])
+    )
+      
+    p <- ggplot(df, aes(x = pos, y = phe, group = null_method, color = null_method)) +
+        geom_point() +
+        geom_segment(data = hline_df,
+                 aes(x = pos - 0.3, xend = pos + 0.3, 
+                     y = yintercept, yend = yintercept),
+                 linetype = "dashed", inherit.aes = FALSE) +
+        labs(x = "", y = "PHE", title = simutag) +
+        scale_x_continuous(breaks = c(1, 2, 3, 4), labels = c("blood E", "blood S", "heart E", "heart S")) +
+        ylim(c(0,1)) +
+        theme_minimal()+
+        theme(legend.position = "none")
+      
+    plots[[plot_idx]] <- p  # Store plot in the list
+    plot_idx <- plot_idx + 1
+  }
+  
+  if (length(plots) > 1) {
+    grid.arrange(grobs = plots, ncol = length(plots))  # Using gridExtra
+  } else {
+    print(plots[[1]])
+  }
+}
+```
+
+```{r echo=FALSE}
+plot_molecular_PIPs <- function(results_dir, runtag,  simutags, group_prior_var_structure, null_method, ...){
+  phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
+  susieIfs <- paste0(results_dir, runtag, "_simu",simutags, ".thin1.",group_prior_var_structure,".",null_method,".Gtest.minp08.mingene0.estimated_parameter.finemap_regions_res.RDS")
+  f1 <- caliPIP_plot(phenofs, susieIfs, ...) 
+  return(f1)
+}
+
+plot_gene_PIPs <- function(results_dir, runtag,  simutags, group_prior_var_structure, null_method, mapping_table, ...){
+  phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
+  susieIfs <- paste0(results_dir, runtag, "_simu",simutags, ".thin1.",group_prior_var_structure,".",null_method,".Gtest.minp08.mingene0.estimated_parameter.finemap_regions_res.RDS")
+  f1 <- caliPIP_plot_multi_omics(phenofs, susieIfs, mapping_table, ...) 
+  return(f1)
+}
+```
+
+## Simulation Parameters
+```{r eval=FALSE}
+pve_gene <-   c(0.005,    0.05,     0.1,       0.2)
+pi_gene =     c(0.0025,   0.025,    0.05,      0.1)
+size_gene =   c(8170,     8170,     8170,      8170)
+
+pve_gene <-   c(0.008,    0.08,     0.16,       0.32)
+pi_gene =     c(0.0025,   0.025,    0.05,      0.1)
+size_gene =   c(13273,     13273,     13273,      13273)
+
+pve_snp <-    c(0.3,      0.3,      0.3,       0.3)
+pi_snp =      c(0.0025,   0.0025,   0.0025,    0.0025)
+size_snp =    c(500000,   500000,   500000,    500000)
+```
+
+```{r echo=FALSE}
+simutags <- list("enrichment 1"=paste(1, 1:10, sep = "-"),
+                 "enrichment 10"=paste(2, 1:10, sep = "-"),
+                 "enrichment 20"=paste(3, 1:10, sep = "-"),
+                 "enrichment 40"=paste(4, 1:10, sep = "-"))
+
+prior_true <- list("enrichment 1"=c(0.0025,0.0025,0,0),
+                   "enrichment 10"=c(0.005,0.005,0,0),
+                   "enrichment 20"=c(0.01,0.01,0,0),
+                   "enrichment 40"=c(0.02,0.02,0,0))
+
+enrichment_true <- list("enrichment 1"=c(0,0,0,0),
+                        "enrichment 10"=c(log(10,base=exp(1)),log(10,base=exp(1)),0,0),
+                        "enrichment 20"=c(log(20,base=exp(1)),log(20,base=exp(1)),0,0),
+                        "enrichment 40"=c(log(40,base=exp(1)),log(40,base=exp(1)),0,0))
+
+pve_true <- list("enrichment 1"=c(0.005,0.008,0,0),
+                 "enrichment 10"=c(0.05,0.08,0,0),
+                 "enrichment 20"=c(0.1,0.16,0,0),
+                 "enrichment 40"=c(0.2,0.32,0,0))
+
+phe_true <- list("enrichment 1"=c(0.01597444,0.02555911,0,0),
+                 "enrichment 10"=c(0.11627907,0.18604651,0,0),
+                 "enrichment 20"=c(0.17857143,0.28571429,0,0),
+                 "enrichment 40"=c(0.24390244,0.39024390,0,0))
+```
+
+## shared_all, ctwas null weight
+
+### Prior
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_two_tissues_two_omics_PVE/"
+runtag = "two_tissues_two_omics"
+plot_Prior(results_dir,runtag,simutags,1,"shared_all","ctwas",".Gtest.minp08.mingene0.parameters.RDS",prior_true)
+```
+
+### Enrichment
+```{r,echo=FALSE,fig.width= 8, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_two_tissues_two_omics_PVE/"
+runtag = "two_tissues_two_omics"
+plot_enrichment(results_dir,runtag,simutags,1,"shared_all","ctwas",".Gtest.minp08.mingene0.parameters.RDS",enrichment_true)
+```
+
+## PVE
+```{r,echo=FALSE,fig.width= 16, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_two_tissues_two_omics_PVE/"
+runtag = "two_tissues_two_omics"
+plot_PVE(results_dir,runtag,simutags,1,"shared_all","ctwas",".Gtest.minp08.mingene0.parameters.RDS",pve_true)
+```
+
+## PHE
+```{r,echo=FALSE,fig.width= 16, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_two_tissues_two_omics_PVE/"
+runtag = "two_tissues_two_omics"
+plot_PHE(results_dir,runtag,simutags,1,"shared_all","ctwas",".Gtest.minp08.mingene1.parameters.RDS",phe_true)
+```
+
+### Molecular level PIP
+```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.width=16, fig.height=4}
+simutags <- list("enrichment 1"=  paste(1, 1:10, sep = "-"),
+                 "enrichment 10"= paste(2, 1:10, sep = "-"),
+                 "enrichment 20"= paste(3, 1:10, sep = "-"),
+                 "enrichment 40"= paste(4, 1:10, sep = "-"))
+molecular_PIPs <- list()
+for(i in names(simutags)){
+  print(i)
+  f1 <- plot_molecular_PIPs(results_dir, runtag, simutags[[i]], "shared_all", "ctwas", main = i)
+  molecular_PIPs[[i]] <- f1
+}
+do.call(grid.arrange, c(molecular_PIPs, ncol = 4))
+```
+
+### Gene level PIP
+```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.width=16, fig.height=4}
+mapping_table <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_E_S_M_mapping.RDS")
+simutags <- list("enrichment 1"=  paste(1, 1:10, sep = "-"),
+                 "enrichment 10"= paste(2, 1:10, sep = "-"),
+                 "enrichment 20"= paste(3, 1:10, sep = "-"),
+                 "enrichment 40"= paste(4, 1:10, sep = "-"))
+gene_PIPs <- list()
+for(i in names(simutags)){
+  print(i)
+  f1 <- plot_gene_PIPs(results_dir, runtag, simutags[[i]], "shared_all", "ctwas", mapping_table, main = i)
+  gene_PIPs[[i]] <- f1
+}
+do.call(grid.arrange, c(gene_PIPs, ncol = 4))
+```
+
+## shared_all, susie null weight
+
+### Prior
+```{r,echo=FALSE,fig.width= 16, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_two_tissues_two_omics_PVE/"
+runtag = "two_tissues_two_omics"
+plot_Prior(results_dir,runtag,simutags,1,"shared_all","susie",".Gtest.minp08.mingene0.parameters.RDS",prior_true)
+```
+
+### Enrichment
+```{r,echo=FALSE,fig.width= 16, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_two_tissues_two_omics_PVE/"
+runtag = "two_tissues_two_omics"
+plot_enrichment(results_dir,runtag,simutags,1,"shared_all","susie",".Gtest.minp08.mingene0.parameters.RDS",enrichment_true)
+```
+
+## PVE
+```{r,echo=FALSE,fig.width= 16, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_two_tissues_two_omics_PVE/"
+runtag = "two_tissues_two_omics"
+plot_PVE(results_dir,runtag,simutags,1,"shared_all","susie",".Gtest.minp08.mingene0.parameters.RDS",pve_true)
+```
+
+## PHE
+```{r,echo=FALSE,fig.width= 16, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_two_tissues_two_omics_PVE/"
+runtag = "two_tissues_two_omics"
+plot_PHE(results_dir,runtag,simutags,1,"shared_all","susie",".Gtest.minp08.mingene0.parameters.RDS",phe_true)
+```
+
+### Molecular level PIP
+```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.width=16, fig.height=4}
+simutags <- list("enrichment 1"=  paste(1, 1:10, sep = "-"),
+                 "enrichment 10"= paste(2, 1:10, sep = "-"),
+                 "enrichment 20"= paste(3, 1:10, sep = "-"),
+                 "enrichment 40"= paste(4, 1:10, sep = "-"))
+molecular_PIPs <- list()
+for(i in names(simutags)){
+  print(i)
+  f1 <- plot_molecular_PIPs(results_dir, runtag, simutags[[i]], "shared_all", "susie", main = i)
+  molecular_PIPs[[i]] <- f1
+}
+do.call(grid.arrange, c(molecular_PIPs, ncol = 4))
+```
+
+### Gene level PIP
+```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.width=16, fig.height=4}
+mapping_table <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_E_S_M_mapping.RDS")
+simutags <- list("enrichment 1"=  paste(1, 1:10, sep = "-"),
+                 "enrichment 10"= paste(2, 1:10, sep = "-"),
+                 "enrichment 20"= paste(3, 1:10, sep = "-"),
+                 "enrichment 40"= paste(4, 1:10, sep = "-"))
+gene_PIPs <- list()
+for(i in names(simutags)){
+  print(i)
+  f1 <- plot_gene_PIPs(results_dir, runtag, simutags[[i]], "shared_all", "susie", mapping_table, main = i)
+  gene_PIPs[[i]] <- f1
+}
+do.call(grid.arrange, c(gene_PIPs, ncol = 4))
+```
+
+
+
