@@ -101,12 +101,13 @@ for (trait in trait_psy){
   cat(knitr::knit_print(DT::datatable(param_df, caption = htmltools::tags$caption( style = 'font-size: 40px; caption-side: topleft; text-align = left; color:black;',trait),options = list(pageLength = 10))))
   cat("<br>")
   
-  threshold <- 0.05/(nrow(param_df)-1)
+  
+  param_df_qtl <- param_df[-nrow(param_df),]
+  threshold <- 0.05/(nrow(param_df_qtl)-1)
   
   cat("<br>")
-  cat(paste0("Selected tissue:\n"))
+  cat(paste0("Number of selected tissue = ",min(10,sum(param_df_qtl$enrichment_pval < threshold)),"\n"))
   cat("<br>")
-  param_df_qtl <- param_df[-nrow(param_df),]
   cat(paste0(
     head(param_df_qtl$group[param_df_qtl$enrichment_pval < threshold], 10), 
     collapse = " "
@@ -122,8 +123,12 @@ for (trait in trait_psy){
 
 ## EM convergence
 
-```{r}
+```{r results='asis'}
+
 
 colnames(converge_df) <- c("trait","num_EM_iter","converge")
+cat("<br>")
+cat("<br>")
+cat("<br>")
 DT::datatable(converge_df,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','EM convergence '),options = list(pageLength = 30) )
 ```
