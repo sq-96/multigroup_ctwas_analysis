@@ -212,6 +212,17 @@ plot_gene_PIPs <- function(results_dir, runtag,  simutags, group_prior_var_struc
 ```
 
 ## Simulation Parameters
+```{r eval=FALSE}
+pve_gene <- c(0.02, 0.01, 0.003)
+group_size <- c(8170,13273,3479)
+pve_snp <- 0.3
+sigma_theta <- 0.02
+sigma_beta <- 0.02
+gene_prior <- c(0.009175339,0.002823872,0.003232072)
+snp_prior <- 0.0002248876
+```
+
+
 ```{r echo=FALSE}
 pve_gene <- c(0.02, 0.01, 0.003)
 group_size <- c(8170,13273,3479)
@@ -241,14 +252,14 @@ phe_true <- list("group1"=pve_gene/(sum(pve_gene)+pve_snp))
 ```{r,echo=FALSE,fig.width= 4, fig.height= 4}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue_three_omics/"
 runtag = "one_tissues_three_omics"
-plot_Prior(results_dir,runtag,simutags,1,"shared_all","ctwas",".minp08.mingene0.parameters.RDS",prior_true)
+plot_Prior(results_dir,runtag,simutags,1,"shared_all","ctwas",".niter_prefit10.minp08.mingene0.parameters.RDS",prior_true)
 ```
 
 ### Enrichment
 ```{r,echo=FALSE,fig.width= 4, fig.height= 4}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue_three_omics/"
 runtag = "one_tissues_three_omics"
-plot_enrichment(results_dir,runtag,simutags,1,"shared_all","ctwas",".minp08.mingene0.parameters.RDS",enrichment_true)
+plot_enrichment(results_dir,runtag,simutags,1,"shared_all","ctwas",".niter_prefit10.minp08.mingene0.parameters.RDS",enrichment_true)
 ```
 
 ## PVE
@@ -262,7 +273,7 @@ plot_PVE(results_dir,runtag,simutags,1,"shared_all","ctwas",".minp08.mingene0.pa
 ```{r,echo=FALSE,fig.width= 4, fig.height= 4}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_one_tissue_three_omics/"
 runtag = "one_tissues_three_omics"
-plot_PHE(results_dir,runtag,simutags,1,"shared_all","ctwas",".minp08.mingene0.parameters.RDS",phe_true)
+plot_PHE(results_dir,runtag,simutags,1,"shared_all","ctwas",".niter_prefit10.minp08.mingene0.parameters.RDS",phe_true)
 ```
 
 ### Molecular level PIP
