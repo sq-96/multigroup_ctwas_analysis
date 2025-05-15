@@ -10,9 +10,11 @@ output:
 
 # Introduction
 
-For each non-psychiatric trait, we conducted a single eQTL cTWAS analysis jointly across all 49 GTEx tissues. For psychiatric traits, we performed a single eQTL cTWAS analysis using only the 9 GTEx brain tissues. We then ranked tissues by their G-test p-values and selected tissues that passed the Bonferroni-corrected significance threshold (0.05/total number of tissues) for inclusion in the subsequent multi-group cTWAS analysis. 
+- For non-psychiatric traits, we ran a cTWAS analysis using eQTL data from all 49 GTEx tissues.
+- For psychiatric traits, we used only the 9 GTEx brain tissues.
+- We ranked tissues by their G-test p-values & Fisher p-values and selected those passing the Bonferroni threshold (0.05 divided by the number of tissues) for the multi-group cTWAS analysis.
 
-When running this selection, we used default settings for computing z-scores, assembling data and estimating parameters:
+- Default settings were used for computing z-scores, assembling input data, and estimating model parameters.
 
 ```
 z_gene <- compute_gene_z(z_snp, weights, ncore=10)
@@ -47,8 +49,6 @@ param <- est_param(region_data,
 
 ```{r}
 library(ctwas)
-# library(ggplot2)
-# library(gridExtra)
 
 source("/project/xinhe/xsun/multi_group_ctwas/data/samplesize.R")
 
@@ -60,60 +60,76 @@ trait_psy <- c("SCZ-ieu-b-5102","ASD-ieu-a-1185","BIP-ieu-b-5110","MDD-ieu-b-102
 
 DT::datatable(matrix())
 
-folder_results <- "/project/xinhe/xsun/multi_group_ctwas/21.tissue_selection_0511/results/E_thin1_shared_all/"
+folder_results <- "/project/xinhe/xsun/multi_group_ctwas/21.tissue_selection_0511/results/E_thin1_shared_all_mingene1/"
 
 ```
 
-# Psychiatric traits
+# Non-Psychiatric traits
 
 ## Tissue selection
 
-```{r results='asis'}
+```{r results='asis', warning=FALSE, message=FALSE}
 converge_df <- c()
-for (trait in trait_psy){
+for (trait in trait_nopsy){
   
   param <- readRDS(paste0(folder_results,trait,"/",trait,".thin1.shared_all.param.RDS"))
   
   gwas_n <- samplesize[trait]
-  param_summarized <- summarize_param(param = param,gwas_n = gwas_n,enrichment_test = "fisher",alternative = "greater")
+
+  param_summarized_fisher <- summarize_param(param = param,gwas_n = gwas_n,enrichment_test = "fisher",alternative = "greater")
+  param_summarized_G <- summarize_param(param = param,gwas_n = gwas_n,enrichment_test = "G")
   
-  # Convert named vectors in param_summarized to a data frame
   param_df <- data.frame(
-    group = names(param_summarized$group_size),
-    group_size = as.numeric(param_summarized$group_size[names(param_summarized$group_size)]),
-    group_pve = as.numeric(param_summarized$group_pve[names(param_summarized$group_size)]),
-    prop_heritability = as.numeric(param_summarized$prop_heritability[names(param_summarized$group_size)]),
-    #group_prior = as.numeric(param_summarized$group_prior[names(param_summarized$group_size)]),
-    #group_prior_var = as.numeric(param_summarized$group_prior_var[names(param_summarized$group_size)]),
-    log_enrichment = as.numeric(param_summarized$log_enrichment[names(param_summarized$group_size)]),
-    log_enrichment_se = as.numeric(param_summarized$log_enrichment_se[names(param_summarized$group_size)]),
-    enrichment_pval = as.numeric(param_summarized$enrichment_pval[names(param_summarized$group_size)])
+    group = names(param_summarized_fisher$group_size),
+    group_size = as.numeric(param_summarized_fisher$group_size[names(param_summarized_fisher$group_size)]),
+    group_pve = as.numeric(param_summarized_fisher$group_pve[names(param_summarized_fisher$group_size)]),
+    prop_heritability = as.numeric(param_summarized_fisher$prop_heritability[names(param_summarized_fisher$group_size)]),
+    log_enrichment = as.numeric(param_summarized_fisher$log_enrichment[names(param_summarized_fisher$group_size)]),
+    log_enrichment_se = as.numeric(param_summarized_fisher$log_enrichment_se[names(param_summarized_fisher$group_size)]),
+    enrichment_pval_fisher = as.numeric(param_summarized_fisher$enrichment_pval[names(param_summarized_fisher$group_size)]),
+    enrichment_pval_G = as.numeric(param_summarized_G$enrichment_pval[names(param_summarized_G$group_size)])
   )
 
-  param_df$total_pve <- param_summarized$total_pve
+  param_df$total_pve <- param_summarized_fisher$total_pve
   
-  #param_df[ , 4:ncol(param_df)] <- round(param_df[ , 4:ncol(param_df)], 5)
   param_df$prop_heritability <- paste0(round(param_df$prop_heritability * 100, 5), "%")
   
-  param_df <- param_df[order(param_df$enrichment_pval,decreasing = F),]
-  
-  cat("<br>")
-  cat(knitr::knit_print(DT::datatable(param_df, caption = htmltools::tags$caption( style = 'font-size: 40px; caption-side: topleft; text-align = left; color:black;',trait),options = list(pageLength = 10))))
-  cat("<br>")
-  
+  param_df <- param_df[order(param_df$enrichment_pval_fisher,decreasing = F),]
   
   param_df_qtl <- param_df[-nrow(param_df),]
   threshold <- 0.05/(nrow(param_df_qtl)-1)
   
+  
+  
   cat("<br>")
-  cat(paste0("Number of selected tissue = ",min(10,sum(param_df_qtl$enrichment_pval < threshold)),"\n"))
+  cat(knitr::knit_print(DT::datatable(param_df, caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;',trait,options = list(pageLength = 10)))))
+  cat("<br>")
+  
+  
+  cat("<br>")
+  cat("<br>")
+  print(paste0("p-value cutoff(0.05/num_tissue) = ",threshold))
+  cat("<br>")
+  cat("<br>")
+  cat(paste0("Number of selected tissue -- fisher = ",min(10,sum(param_df_qtl$enrichment_pval_fisher < threshold)),"\n"))
   cat("<br>")
   cat(paste0(
-    head(param_df_qtl$group[param_df_qtl$enrichment_pval < threshold], 10), 
+    head(param_df_qtl$group[param_df_qtl$enrichment_pval_fisher < threshold], 10), 
     collapse = " "
   ))
   cat("<br>")
-  
+  cat("<br>")
+  cat("<br>")
+    cat(paste0("Number of selected tissue -- G = ",min(10,sum(param_df_qtl$enrichment_pval_G < threshold)),"\n"))
+  cat("<br>")
+  cat(paste0(
+    head(param_df_qtl$group[param_df_qtl$enrichment_pval_G < threshold], 10), 
+    collapse = " "
+  ))
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+ 
   EM_iter <- length(param$loglik_iters)
   converge <- param$converged
   converge_df <- rbind(converge_df,c(trait,EM_iter,converge))
@@ -125,10 +141,93 @@ for (trait in trait_psy){
 
 ```{r results='asis'}
 
+colnames(converge_df) <- c("trait","num_EM_iter","converge")
+cat("<br>")
+DT::datatable(converge_df,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','EM convergence '),options = list(pageLength = 30) )
+cat("<br>")
+```
+
+
+
+# Psychiatric traits
+
+## Tissue selection
+
+```{r results='asis', warning=FALSE, message=FALSE}
+converge_df <- c()
+for (trait in trait_psy){
+  
+  param <- readRDS(paste0(folder_results,trait,"/",trait,".thin1.shared_all.param.RDS"))
+  
+  gwas_n <- samplesize[trait]
+
+  param_summarized_fisher <- summarize_param(param = param,gwas_n = gwas_n,enrichment_test = "fisher",alternative = "greater")
+  param_summarized_G <- summarize_param(param = param,gwas_n = gwas_n,enrichment_test = "G")
+  
+  param_df <- data.frame(
+    group = names(param_summarized_fisher$group_size),
+    group_size = as.numeric(param_summarized_fisher$group_size[names(param_summarized_fisher$group_size)]),
+    group_pve = as.numeric(param_summarized_fisher$group_pve[names(param_summarized_fisher$group_size)]),
+    prop_heritability = as.numeric(param_summarized_fisher$prop_heritability[names(param_summarized_fisher$group_size)]),
+    log_enrichment = as.numeric(param_summarized_fisher$log_enrichment[names(param_summarized_fisher$group_size)]),
+    log_enrichment_se = as.numeric(param_summarized_fisher$log_enrichment_se[names(param_summarized_fisher$group_size)]),
+    enrichment_pval_fisher = as.numeric(param_summarized_fisher$enrichment_pval[names(param_summarized_fisher$group_size)]),
+    enrichment_pval_G = as.numeric(param_summarized_G$enrichment_pval[names(param_summarized_G$group_size)])
+  )
+
+  param_df$total_pve <- param_summarized_fisher$total_pve
+  
+  param_df$prop_heritability <- paste0(round(param_df$prop_heritability * 100, 5), "%")
+  
+  param_df <- param_df[order(param_df$enrichment_pval_fisher,decreasing = F),]
+  
+  param_df_qtl <- param_df[-nrow(param_df),]
+  threshold <- 0.05/(nrow(param_df_qtl)-1)
+  
+  
+  
+  cat("<br>")
+  cat(knitr::knit_print(DT::datatable(param_df, caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;',trait,options = list(pageLength = 10)))))
+  cat("<br>")
+  
+  
+  cat("<br>")
+  cat("<br>")
+  print(paste0("p-value cutoff(0.05/num_tissue) = ",threshold))
+  cat("<br>")
+  cat("<br>")
+  cat(paste0("Number of selected tissue -- fisher = ",min(10,sum(param_df_qtl$enrichment_pval_fisher < threshold)),"\n"))
+  cat("<br>")
+  cat(paste0(
+    head(param_df_qtl$group[param_df_qtl$enrichment_pval_fisher < threshold], 10), 
+    collapse = " "
+  ))
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+    cat(paste0("Number of selected tissue -- G = ",min(10,sum(param_df_qtl$enrichment_pval_G < threshold)),"\n"))
+  cat("<br>")
+  cat(paste0(
+    head(param_df_qtl$group[param_df_qtl$enrichment_pval_G < threshold], 10), 
+    collapse = " "
+  ))
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+ 
+  EM_iter <- length(param$loglik_iters)
+  converge <- param$converged
+  converge_df <- rbind(converge_df,c(trait,EM_iter,converge))
+}
+
+```
+
+## EM convergence
+
+```{r results='asis'}
 
 colnames(converge_df) <- c("trait","num_EM_iter","converge")
 cat("<br>")
-cat("<br>")
-cat("<br>")
 DT::datatable(converge_df,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','EM convergence '),options = list(pageLength = 30) )
+cat("<br>")
 ```
