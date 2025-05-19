@@ -16,6 +16,7 @@ library(data.table)
 ```{r,echo=FALSE,fig.width=10,fig.height=4}
 # Example: Load three different heritability proportion datasets
 prop1 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/SCZ_eQTL/SCZ_eQTL.parameters.RDS")$prop_heritability
+prop1 <- c(sum(prop1[1:5]),prop1[6])
 prop2 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/SCZ_caQTL/SCZ_caQTL.parameters.RDS")$prop_heritability
 prop3 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/SCZ_mQTL/SCZ_mQTL.parameters.RDS")$prop_heritability
 
@@ -53,7 +54,9 @@ pie(
 ```{r,echo=FALSE,fig.width=10,fig.height=4}
 # Example: Load three different heritability proportion datasets
 prop1 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/SCZ_eQTL_caQTL/SCZ_eQTL_caQTL.parameters.RDS")$prop_heritability
+prop1 <- c(sum(prop1[1:5]),prop1[6],prop1[7])
 prop2 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/SCZ_eQTL_mQTL/SCZ_eQTL_mQTL.parameters.RDS")$prop_heritability
+prop2 <- c(sum(prop2[1:5]),prop2[6],prop2[7])
 prop3 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/SCZ_caQTL_mQTL/SCZ_caQTL_mQTL.parameters.RDS")$prop_heritability
 
 # Set up layout for 3 plots in one row
@@ -90,6 +93,7 @@ pie(
 ```{r,echo=FALSE}
 prop_heritability <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/SCZ_eQTL_caQTL_mQTL/SCZ_eQTL_caQTL_mQTL.parameters.RDS")
 prop_heritability <- prop_heritability$prop_heritability
+prop_heritability <- c(sum(prop_heritability[1:5]),prop_heritability[6],prop_heritability[7],prop_heritability[8])
 colors <- brewer.pal(n = 4, name = "Set2")  # Alternatives: "Pastel1", "Dark2", "Set3"
 
 # Draw pie chart
@@ -123,7 +127,7 @@ aa <- finemap_res_multi[finemap_res_multi$type!="SNP" & finemap_res_multi$susie_
 dim(aa)
 
 setDT(finemap_res_multi)
-bb <- finemap_res_multi[grepl("^L[0-9]+$", cs) & type %in% c("mQTL", "caQTL")]
+bb <- finemap_res_multi[grepl("^L[0-9]+$", cs) & type %in% c("mQTL", "caQTL", "eQTL")]
 result <- bb[, .(total_susie_pip = sum(susie_pip),
                           context = first(context),
                           group = first(group)),
@@ -135,11 +139,11 @@ result <- result[result$total_susie_pip>0.8,]
 dim(result)
 ```
 
-```{r, fig.width=8,fig.height=6, eval=FALSE}
+```{r, fig.width=16,fig.height=4, eval=FALSE}
 library(EnsDb.Hsapiens.v86)
 ens_db <- EnsDb.Hsapiens.v86
 make_locusplot(finemap_res_multi,
-               region_id = "1_114331223_115337972",
+               region_id = "19_11173352_13360313",
                locus_range = c(115297972,115337972),
                ens_db = ens_db,
                weights = weights,
