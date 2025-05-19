@@ -106,7 +106,7 @@ pie(
 ```
 
 
-```{r}
+```{r,echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
 mapping_table <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/weights/gene_mapping.RDS")
 predictdb_mapping_table <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
 mapping_table <- rbind(mapping_table,predictdb_mapping_table)
@@ -139,12 +139,11 @@ result <- result[result$total_susie_pip>0.8,]
 dim(result)
 ```
 
-```{r, fig.width=16,fig.height=4, eval=FALSE}
+```{r, fig.width=16,fig.height=4,echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
 library(EnsDb.Hsapiens.v86)
 ens_db <- EnsDb.Hsapiens.v86
 make_locusplot(finemap_res_multi,
                region_id = "19_11173352_13360313",
-               locus_range = c(115297972,115337972),
                ens_db = ens_db,
                weights = weights,
                highlight_pip = 0.8,
