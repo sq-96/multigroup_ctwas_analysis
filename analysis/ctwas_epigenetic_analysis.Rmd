@@ -139,7 +139,7 @@ result <- result[result$total_susie_pip>0.8,]
 dim(result)
 ```
 
-```{r, fig.width=16,fig.height=4,echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
+```{r, fig.width=16,fig.height=8,echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
 library(EnsDb.Hsapiens.v86)
 ens_db <- EnsDb.Hsapiens.v86
 make_locusplot(finemap_res_multi,
@@ -153,3 +153,24 @@ make_locusplot(finemap_res_multi,
                color_pip_by = "cs",
                panel.heights = c(4, 4, 1, 4))
 ```
+
+
+```{r, fig.width=16,fig.height=4,echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
+library(EnsDb.Hsapiens.v86)
+for(i in result$region_id){
+  ens_db <- EnsDb.Hsapiens.v86
+  p <- make_locusplot(finemap_res_multi,
+                 region_id = i,
+                 #locus_range = c(115237972,115337972),
+                 ens_db = ens_db,
+                 weights = weights,
+                 highlight_pip = 0.8,
+                 filter_protein_coding_genes = FALSE,
+                 filter_cs = FALSE,
+                 color_pval_by = "cs",
+                 color_pip_by = "cs",
+                 panel.heights = c(4, 4, 1, 4))
+  print(p)
+}
+```
+
