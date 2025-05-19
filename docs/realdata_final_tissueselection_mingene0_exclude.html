@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="XSun" />
+
+<meta name="date" content="2025-05-19" />
+
+<title>Tissue selection – expression, irrelevant tissue removed</title>
+
+<script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/htmlwidgets-1.5.4/htmlwidgets.js"></script>
+<link href="site_libs/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet" />
+<script src="site_libs/datatables-binding-0.22/datatables.js"></script>
+<link href="site_libs/dt-core-1.11.3/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="site_libs/dt-core-1.11.3/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="site_libs/dt-core-1.11.3/js/jquery.dataTables.min.js"></script>
+<link href="site_libs/crosstalk-1.2.0/css/crosstalk.min.css" rel="stylesheet" />
+<script src="site_libs/crosstalk-1.2.0/js/crosstalk.min.js"></script>
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">multigroup_ctwas_analysis</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/sq-96/multigroup_ctwas_analysis">
+    <span class="fab fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Tissue selection – expression, irrelevant
+tissue removed</h1>
+<h4 class="author">XSun</h4>
+<h4 class="date">2025-05-19</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span
+class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2025-05-19
+</p>
+<p>
+<strong>Checks:</strong> <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> 1
+</p>
+<p>
+<strong>Knit directory:</strong> <code>multigroup_ctwas_analysis/</code>
+<span class="glyphicon glyphicon-question-sign" aria-hidden="true"
+title="This is the local directory in which the code in this file was executed.">
+</span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version
+1.7.0). The <em>Checks</em> tab describes the reproducibility checks
+that were applied when the results were created. The <em>Past
+versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges">
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted
+changes </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguncommittedchanges"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The R Markdown is untracked by Git. To know which version of the R
+Markdown file created these results, you’ll want to first commit it to
+the Git repo. If you’re still working on the analysis, you can ignore
+this warning. When you’re finished, you can run
+<code>wflow_publish</code> to commit the R Markdown file and build the
+HTML.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the
+global environment can affect the analysis in your R Markdown file in
+unknown ways. For reproduciblity it’s best to always run the code in an
+empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20231112code">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Seed:</strong>
+<code>set.seed(20231112)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20231112code"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20231112)</code> was run prior to running
+the code in the R Markdown file. Setting a seed ensures that any results
+that rely on randomness, e.g. subsampling or permutations, are
+reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Session information:</strong>
+recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package
+versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be
+confident that you successfully produced the results during this
+run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr
+project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistreecb95caa9ef89a3493c24254a11403eceec03d08ftargetblankcb95caaa">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/cb95caa9ef89a3493c24254a11403eceec03d08f" target="_blank">cb95caa</a>
+</a>
+</p>
+</div>
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistreecb95caa9ef89a3493c24254a11403eceec03d08ftargetblankcb95caaa"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development
+and connecting the code version to the results is critical for
+reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/cb95caa9ef89a3493c24254a11403eceec03d08f" target="_blank">cb95caa</a>.
+See the <em>Past versions</em> tab to see a history of the changes made
+to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for
+the analysis have been committed to Git prior to generating the results
+(you can use <code>wflow_publish</code> or
+<code>wflow_git_commit</code>). workflowr only checks the R Markdown
+file, but you know if there are other scripts or data files that it
+depends on. Below is the status of the Git repository when the results
+were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .Rhistory
+    Ignored:    cv/
+
+Untracked files:
+    Untracked:  analysis/realdata_final_tissueselection_mingene0_exclude.Rmd
+    Untracked:  analysis/realdata_final_tissueselection_mingene0_splicing_exclude.Rmd
+
+Unstaged changes:
+    Modified:   analysis/index.Rmd
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not
+included in this status report because it is ok for generated content to
+have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+<p>
+There are no past versions. Publish this analysis with
+<code>wflow_publish()</code> to start tracking its development.
+</p>
+<hr>
+</div>
+</div>
+</div>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<ul>
+<li><p>For non-psychiatric traits, we ran a cTWAS analysis using eQTL
+data from all 49 GTEx tissues.</p></li>
+<li><p>For psychiatric traits, we used only the 9 GTEx brain
+tissues.</p></li>
+<li><p>We ranked tissues by their G-test p-values &amp; Fisher p-values
+and selected those passing the Bonferroni threshold (0.05 divided by the
+number of tissues) for the multi-group cTWAS analysis.</p></li>
+<li><p>Default settings were used for computing z-scores, assembling
+input data, and estimating model parameters.</p></li>
+</ul>
+<p>Mem: 50g/node got killed, 100g/node</p>
+<ol style="list-style-type: decimal">
+<li>Remove tissues with &lt;200 samples. (2) Remove some tissues that
+are not related to our traits, including Testis, Nerve Tibial, Ovary,
+Prostate, Uterus, Vagina, Breast Mammary Tissue.</li>
+</ol>
+<pre><code>z_gene &lt;- compute_gene_z(z_snp, weights, ncore=10)</code></pre>
+<pre><code>res &lt;- assemble_region_data(region_info, 
+                                z_snp, 
+                                z_gene, 
+                                weights,
+                                snp_map,
+                                maxSNP = Inf,
+                                min_group_size = 100,
+                                thin = 1,
+                                adjust_boundary_genes = TRUE,
+                                ncore = 15)</code></pre>
+<pre><code>param &lt;- est_param(region_data, 
+                       group_prior_var_structure = &quot;shared_all&quot;,
+                       null_method = &quot;ctwas&quot;,
+                       niter_prefit = 3,
+                       min_gene = 0,
+                       min_var = 2,                          
+                       min_p_single_effect = 0.8,
+                       niter = 200, 
+                       ncore = 15,
+                       verbose=TRUE)</code></pre>
+<pre class="r"><code>library(ctwas)</code></pre>
+<pre><code>Warning: replacing previous import &#39;utils::download.file&#39; by
+&#39;restfulr::download.file&#39; when loading &#39;rtracklayer&#39;</code></pre>
+<pre class="r"><code>source(&quot;/project/xinhe/xsun/multi_group_ctwas/data/samplesize.R&quot;)
+
+trait_nopsy &lt;- c(&quot;LDL-ukb-d-30780_irnt&quot;,&quot;aFib-ebi-a-GCST006414&quot;,&quot;ATH_gtexukb&quot;,&quot;BMI-panukb&quot;,&quot;HB-panukb&quot;,
+             &quot;Height-panukb&quot;,&quot;HTN-panukb&quot;,&quot;IBD-ebi-a-GCST004131&quot;,&quot;PLT-panukb&quot;,&quot;RA-panukb&quot;,&quot;RBC-panukb&quot;,
+             &quot;SBP-ukb-a-360&quot;,&quot;T1D-GCST90014023&quot;,&quot;WBC-ieu-b-30&quot;,&quot;T2D-panukb&quot;)
+
+trait_psy &lt;- c(&quot;SCZ-ieu-b-5102&quot;,&quot;ASD-ieu-a-1185&quot;,&quot;BIP-ieu-b-5110&quot;,&quot;MDD-ieu-b-102&quot;,&quot;PD-ieu-b-7&quot;,&quot;ADHD-ieu-a-1183&quot;,&quot;NS-ukb-a-230&quot;)
+
+DT::datatable(matrix())</code></pre>
+<div id="htmlwidget-4de263013227ca78a293" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-4de263013227ca78a293">{"x":{"filter":"none","vertical":false,"data":[[null]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>V1<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<pre class="r"><code>folder_results &lt;- &quot;/project/xinhe/xsun/multi_group_ctwas/21.tissue_selection_0511/results/E_thin1_shared_all_mingene0_exclude/&quot;</code></pre>
+</div>
+<div id="non-psychiatric-traits" class="section level1">
+<h1>Non-psychiatric traits</h1>
+<div id="tissue-selection" class="section level2">
+<h2>Tissue selection</h2>
+<pre class="r"><code>converge_df &lt;- c()
+for (trait in trait_nopsy){
+
+  param &lt;- readRDS(paste0(folder_results,trait,&quot;/&quot;,trait,&quot;.thin1.shared_all.param.RDS&quot;))
+
+  gwas_n &lt;- samplesize[trait]
+
+  param_summarized_fisher &lt;- summarize_param(param = param,gwas_n = gwas_n,enrichment_test = &quot;fisher&quot;,alternative = &quot;greater&quot;)
+  param_summarized_G &lt;- summarize_param(param = param,gwas_n = gwas_n,enrichment_test = &quot;G&quot;)
+
+  param_df &lt;- data.frame(
+    group = names(param_summarized_fisher$group_size),
+    group_size = as.numeric(param_summarized_fisher$group_size[names(param_summarized_fisher$group_size)]),
+    group_pve = as.numeric(param_summarized_fisher$group_pve[names(param_summarized_fisher$group_size)]),
+    prop_heritability = as.numeric(param_summarized_fisher$prop_heritability[names(param_summarized_fisher$group_size)]),
+    log_enrichment = as.numeric(param_summarized_fisher$log_enrichment[names(param_summarized_fisher$group_size)]),
+    log_enrichment_se = as.numeric(param_summarized_fisher$log_enrichment_se[names(param_summarized_fisher$group_size)]),
+    enrichment_pval_fisher = as.numeric(param_summarized_fisher$enrichment_pval[names(param_summarized_fisher$group_size)]),
+    enrichment_pval_G = as.numeric(param_summarized_G$enrichment_pval[names(param_summarized_G$group_size)])
+  )
+
+  param_df$total_pve &lt;- param_summarized_fisher$total_pve
+
+  param_df$prop_heritability &lt;- paste0(round(param_df$prop_heritability * 100, 5), &quot;%&quot;)
+
+  param_df &lt;- param_df[order(param_df$enrichment_pval_fisher,decreasing = F),]
+
+  param_df_qtl &lt;- param_df[-nrow(param_df),]
+  threshold &lt;- 0.05/(nrow(param_df_qtl)-1)
+
+
+
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(knitr::knit_print(DT::datatable(param_df, caption = htmltools::tags$caption( style = &#39;caption-side: left; text-align: left; color:black;  font-size:150% ;&#39;,trait,options = list(pageLength = 10)))))
+  cat(&quot;&lt;br&gt;&quot;)
+
+
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  print(paste0(&quot;p-value cutoff(0.05/num_tissue) = &quot;,threshold))
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(paste0(&quot;Number of selected tissue -- fisher = &quot;,min(10,sum(param_df_qtl$enrichment_pval_fisher &lt; threshold)),&quot;\n&quot;))
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(paste0(
+    head(param_df_qtl$group[param_df_qtl$enrichment_pval_fisher &lt; threshold], 10),
+    collapse = &quot; &quot;
+  ))
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+    cat(paste0(&quot;Number of selected tissue -- G = &quot;,min(10,sum(param_df_qtl$enrichment_pval_G &lt; threshold)),&quot;\n&quot;))
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(paste0(
+    head(param_df_qtl$group[param_df_qtl$enrichment_pval_G &lt; threshold], 10),
+    collapse = &quot; &quot;
+  ))
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+
+  EM_iter &lt;- length(param$loglik_iters)
+  converge &lt;- param$converged
+  converge_df &lt;- rbind(converge_df,c(trait,EM_iter,converge))
+}</code></pre>
+<p><br></p>
+<div id="htmlwidget-20575149739a71fc930f" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-20575149739a71fc930f">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\" options=\"10\">LDL-ukb-d-30780_irnt<\/caption>","data":[["23","33","24","8","30","18","9","17","19","5","15","7","26","4","2","14","11","25","21","16","1","32","3","6","10","12","13","20","22","27","28","29","31","34"],["Liver|eQTL","Whole_Blood|eQTL","Lung|eQTL","Brain_Cerebellar_Hemisphere|eQTL","Spleen|eQTL","Esophagus_Gastroesophageal_Junction|eQTL","Brain_Cerebellum|eQTL","Colon_Transverse|eQTL","Esophagus_Mucosa|eQTL","Artery_Coronary|eQTL","Cells_Cultured_fibroblasts|eQTL","Brain_Caudate_basal_ganglia|eQTL","Pancreas|eQTL","Artery_Aorta|eQTL","Adipose_Visceral_Omentum|eQTL","Brain_Putamen_basal_ganglia|eQTL","Brain_Frontal_Cortex_BA9|eQTL","Muscle_Skeletal|eQTL","Heart_Atrial_Appendage|eQTL","Colon_Sigmoid|eQTL","Adipose_Subcutaneous|eQTL","Thyroid|eQTL","Adrenal_Gland|eQTL","Artery_Tibial|eQTL","Brain_Cortex|eQTL","Brain_Hypothalamus|eQTL","Brain_Nucleus_accumbens_basal_ganglia|eQTL","Esophagus_Muscularis|eQTL","Heart_Left_Ventricle|eQTL","Pituitary|eQTL","Skin_Not_Sun_Exposed_Suprapubic|eQTL","Skin_Sun_Exposed_Lower_leg|eQTL","Stomach|eQTL","SNP"],[8775,9336,10692,9532,9749,10059,9685,10221,10580,9504,10310,9561,9739,10411,10384,9393,9475,9969,10003,10025,10538,11040,9433,10599,9739,9118,9503,10564,9447,9966,10760,10998,9799,7410963],[0.0117811714518508,0.00472293894346798,0.00311979028635592,0.00249349458433602,0.00256160825379891,0.00253854055957847,0.00209236280732641,0.00213976416659569,0.0020973572153191,0.00178630910153656,0.00167003518733632,0.00137987826335277,0.001370714317749,0.0013577054652838,0.00115335287134627,0.00069126760768878,0.000662141077689845,0.000531815491329114,0.000602456462618357,0.000521181778426222,0.000470916262822225,0.000306898458077881,1.20866461198676e-14,1.62710226739566e-18,2.34560533336131e-15,4.39276193541506e-13,1.6227938415741e-07,1.60939558341006e-05,5.97622616608006e-21,4.22032849556271e-16,6.17988305294038e-09,3.94517374134068e-11,9.20399427561392e-08,0.0599448705238667],["11.11296%","4.45506%","2.94284%","2.35207%","2.41632%","2.39456%","1.97369%","2.0184%","1.9784%","1.68499%","1.57531%","1.30161%","1.29297%","1.2807%","1.08794%","0.65206%","0.62459%","0.50165%","0.56829%","0.49162%","0.44421%","0.28949%","0%","0%","0%","0%","0.00015%","0.01518%","0%","0%","1e-05%","0%","9e-05%","56.54487%"],[5.11188620217571,4.13584372247534,3.58556033949256,3.47632096897111,3.48076092385285,3.44041193101763,3.2850060144899,3.25354154720719,3.19900301098508,3.14572912814717,2.99702075255758,2.88159331033136,2.85648391491459,2.78022353164056,2.61969743488843,2.20809736888027,2.15635696569334,1.88635140547125,2.00766542867281,1.86055198577402,1.70922759561981,1.23452697171631,-22.5658437247764,-31.5954450151556,-24.2373256983088,-18.9388528858897,-6.16050829868224,-1.66947313182462,-37.0871492577173,-25.9755821870946,-9.5527564107613,-14.6286108336939,-6.75827790027796,null],[0.157338281323341,0.236270691199179,0.287192173288156,0.31965915710096,0.315552051281969,0.31693042176861,0.347865203872214,0.344126609153713,0.347476985798985,0.375578376317187,0.388086746100091,0.425952251165545,0.427344840926392,0.4293505497817,0.465077270827051,0.598503607521884,0.611383208542824,0.681483365832055,0.640649389929872,0.688341799640988,0.723856891351239,0.895471365468123,142335.040473302,12267535.0480883,323100.226404711,23609.9952035615,38.8448661929642,3.90112861902699,202418974.464753,761713.41527809,199.055703623258,2491.33234084229,51.5794714744364,null],[9.47377437104088e-86,2.59213319249241e-27,2.21693487040272e-16,2.47585134438626e-12,3.07950480555425e-12,4.17005112129816e-12,8.69809322771375e-11,1.38894575079324e-10,1.87389397593753e-10,5.07371264248462e-08,8.75584771188815e-08,1.14447747477756e-06,1.27180085019267e-06,1.86116384376052e-06,3.15780832344911e-05,0.00404611172255873,0.00414455832073264,0.044165240815787,0.0444342417287754,0.0446086258969637,0.0487461555867785,0.30664760735121,1,1,1,1,1,1,1,1,1,1,1,null],[3.35197677093442e-86,5.97782947565188e-28,4.60049619363369e-16,1.09800922534582e-12,5.21171912507926e-13,9.97538674854949e-13,3.43484986898879e-10,2.85873217488345e-10,6.75356461543406e-10,1.76970055445183e-08,1.38233883310034e-07,3.15403192675276e-06,3.90227099707174e-06,6.56087997717696e-06,6.80315725204141e-05,0.00646742286159052,0.00883486086150674,0.0340037298320441,0.0179567488571096,0.0378422795029838,0.0646542118308759,0.25167909215062,0.430010958215867,0.402877266435974,0.422632448396941,0.437812385484914,0.431820032011949,0.555997598773461,0.429669147315882,0.417280911360153,0.399506850737183,0.39417042488112,0.423308783145447,null],[0.106012925632703,0.106012925632703,0.106012925632703,0.106012925632703,0.106012925632703,0.106012925632703,0.106012925632703,0.106012925632703,0.106012925632703,0.106012925632703,0.106012925632703,0.106012925632703,0.106012925632703,0.106012925632703,0.106012925632703,0.106012925632703,0.106012925632703,0.106012925632703,0.106012925632703,0.106012925632703,0.106012925632703,0.106012925632703,0.106012925632703,0.106012925632703,0.106012925632703,0.106012925632703,0.106012925632703,0.106012925632703,0.106012925632703,0.106012925632703,0.106012925632703,0.106012925632703,0.106012925632703,0.106012925632703]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>group<\/th>\n      <th>group_size<\/th>\n      <th>group_pve<\/th>\n      <th>prop_heritability<\/th>\n      <th>log_enrichment<\/th>\n      <th>log_enrichment_se<\/th>\n      <th>enrichment_pval_fisher<\/th>\n      <th>enrichment_pval_G<\/th>\n      <th>total_pve<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[2,3,5,6,7,8,9]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<p><br><br><br>[1] “p-value cutoff(0.05/num_tissue) = 0.0015625”
+<br><br>Number of selected tissue – fisher = 10 <br>Liver|eQTL
+Whole_Blood|eQTL Lung|eQTL Brain_Cerebellar_Hemisphere|eQTL Spleen|eQTL
+Esophagus_Gastroesophageal_Junction|eQTL Brain_Cerebellum|eQTL
+Colon_Transverse|eQTL Esophagus_Mucosa|eQTL
+Artery_Coronary|eQTL<br><br><br>Number of selected tissue – G = 10
+<br>Liver|eQTL Whole_Blood|eQTL Lung|eQTL
+Brain_Cerebellar_Hemisphere|eQTL Spleen|eQTL
+Esophagus_Gastroesophageal_Junction|eQTL Brain_Cerebellum|eQTL
+Colon_Transverse|eQTL Esophagus_Mucosa|eQTL
+Artery_Coronary|eQTL<br><br><br><br></p>
+<div id="htmlwidget-a23c348805048a1f64c7" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-a23c348805048a1f64c7">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\" options=\"10\">aFib-ebi-a-GCST006414<\/caption>","data":[["21","22","20","4","25","6","32","30","15","9","24","23","3","11","10","29","1","2","5","7","8","12","13","14","16","17","18","19","26","27","28","31","33","34"],["Heart_Atrial_Appendage|eQTL","Heart_Left_Ventricle|eQTL","Esophagus_Muscularis|eQTL","Artery_Aorta|eQTL","Muscle_Skeletal|eQTL","Artery_Tibial|eQTL","Thyroid|eQTL","Spleen|eQTL","Cells_Cultured_fibroblasts|eQTL","Brain_Cerebellum|eQTL","Lung|eQTL","Liver|eQTL","Adrenal_Gland|eQTL","Brain_Frontal_Cortex_BA9|eQTL","Brain_Cortex|eQTL","Skin_Sun_Exposed_Lower_leg|eQTL","Adipose_Subcutaneous|eQTL","Adipose_Visceral_Omentum|eQTL","Artery_Coronary|eQTL","Brain_Caudate_basal_ganglia|eQTL","Brain_Cerebellar_Hemisphere|eQTL","Brain_Hypothalamus|eQTL","Brain_Nucleus_accumbens_basal_ganglia|eQTL","Brain_Putamen_basal_ganglia|eQTL","Colon_Sigmoid|eQTL","Colon_Transverse|eQTL","Esophagus_Gastroesophageal_Junction|eQTL","Esophagus_Mucosa|eQTL","Pancreas|eQTL","Pituitary|eQTL","Skin_Not_Sun_Exposed_Suprapubic|eQTL","Stomach|eQTL","Whole_Blood|eQTL","SNP"],[9894,9352,10455,10287,9888,10493,10944,9643,10227,9580,10578,8666,9324,9362,9630,10905,10432,10274,9393,9432,9437,9009,9380,9274,9927,10116,9944,10469,9638,9839,10653,9690,9239,7059851],[0.00153939942127235,0.00104885882538744,0.000368462559921082,0.000314937362690363,0.000283453679364785,0.000228107116436371,0.000221319150925941,0.000188335569862788,0.000148813488010677,0.000133214150103077,0.000125657088369033,8.33378255273387e-05,8.75022525050755e-05,8.20108505698831e-05,4.10869681230191e-05,6.53291967940907e-05,1.21810442834298e-05,6.34562768043466e-20,2.66778613827761e-22,1.38278932284973e-16,1.18975254817854e-11,3.8467278775753e-19,1.36052553400618e-06,1.53671170922172e-13,6.66654601772039e-16,1.80159097421671e-13,1.21214729859947e-14,1.96025814272923e-11,1.03353607568505e-13,4.61580865776268e-08,1.86243363552666e-08,9.58983867113021e-12,7.98551063763679e-13,0.00898326196362951],["11.02983%","7.5151%","2.64004%","2.25653%","2.03095%","1.63439%","1.58576%","1.34943%","1.06625%","0.95448%","0.90034%","0.59712%","0.62696%","0.58761%","0.29439%","0.46809%","0.08728%","0%","0%","0%","0%","0%","0.00975%","0%","0%","0%","0%","0%","0%","0.00033%","0.00013%","0%","0%","64.36526%"],[4.80628000284168,4.47892867747694,3.32131965477809,3.18055369079242,3.11478770310982,2.83816784187516,2.76587530322397,2.73105393674791,2.43672336419083,2.39134127497709,2.23384118584686,2.02255609324229,1.99813369726456,1.92925350214599,1.20986865060442,1.54927853701891,-0.0859361265312848,-32.958980829991,-38.3410163696527,-25.1867955030481,-13.8247573727255,-31.0255465191014,-2.17164783335788,-18.1566046746681,-23.6649464776772,-18.0844829481955,-20.7661958019096,-13.4292069217726,-18.5917623808321,-5.6029763069922,-6.5900668074217,-14.0668400352366,-16.5048396939238,null],[0.142541686441532,0.168716037346444,0.275174644838999,0.296811877814437,0.312341962605174,0.347179894378909,0.35234350652016,0.381272098654274,0.428037028664257,0.452023519785665,0.465241805840353,0.569977483555578,0.556379054697045,0.574537264185883,0.809944469369682,0.643164975877044,1.48522871270527,20564279.9791502,317157726.306404,440527.264998405,1501.83589483365,8352280.46250927,4.44149484861966,13214.6176351263,200632.073214107,12204.5761885199,47051.4598403491,1170.022379492,16113.4294307866,24.1117082791993,37.958656647809,1672.8043579404,5796.94867606272,null],[3.47387564375742e-94,5.34810932691919e-60,5.3231393055748e-16,3.03524642915648e-13,4.76432975039199e-12,3.75179164687801e-09,9.12720013320587e-08,6.03414934889623e-07,1.26766141456532e-05,0.000115448769435872,0.000182096380859386,0.00866987634348254,0.0105509472239668,0.0106661953706406,0.0779632960782069,0.0961532636592987,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,null],[4.09276875033375e-95,2.55060897305849e-60,1.12090112984205e-15,6.23254720456675e-13,1.68806390354302e-11,1.50282393666178e-08,4.35758689660526e-08,5.49863090204549e-07,4.09667775482364e-05,0.000128765721624974,0.00040592725796934,0.00749379983926608,0.00663547649617054,0.0105083509596656,0.21278802764628,0.0545005034313565,0.953194021930196,0.323784092212551,0.34543165950177,0.344432883383148,0.344308664004013,0.355479489655514,0.451267702329866,0.348503661441662,0.332087668118294,0.327530419192941,0.331674310409444,0.319243391237872,0.339221579843551,0.34019510416168,0.317563614558392,0.337925705042793,0.349414463436367,null],[0.0139566938640718,0.0139566938640718,0.0139566938640718,0.0139566938640718,0.0139566938640718,0.0139566938640718,0.0139566938640718,0.0139566938640718,0.0139566938640718,0.0139566938640718,0.0139566938640718,0.0139566938640718,0.0139566938640718,0.0139566938640718,0.0139566938640718,0.0139566938640718,0.0139566938640718,0.0139566938640718,0.0139566938640718,0.0139566938640718,0.0139566938640718,0.0139566938640718,0.0139566938640718,0.0139566938640718,0.0139566938640718,0.0139566938640718,0.0139566938640718,0.0139566938640718,0.0139566938640718,0.0139566938640718,0.0139566938640718,0.0139566938640718,0.0139566938640718,0.0139566938640718]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>group<\/th>\n      <th>group_size<\/th>\n      <th>group_pve<\/th>\n      <th>prop_heritability<\/th>\n      <th>log_enrichment<\/th>\n      <th>log_enrichment_se<\/th>\n      <th>enrichment_pval_fisher<\/th>\n      <th>enrichment_pval_G<\/th>\n      <th>total_pve<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[2,3,5,6,7,8,9]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<p><br><br><br>[1] “p-value cutoff(0.05/num_tissue) = 0.0015625”
+<br><br>Number of selected tissue – fisher = 10
+<br>Heart_Atrial_Appendage|eQTL Heart_Left_Ventricle|eQTL
+Esophagus_Muscularis|eQTL Artery_Aorta|eQTL Muscle_Skeletal|eQTL
+Artery_Tibial|eQTL Thyroid|eQTL Spleen|eQTL
+Cells_Cultured_fibroblasts|eQTL Brain_Cerebellum|eQTL<br><br><br>Number
+of selected tissue – G = 10 <br>Heart_Atrial_Appendage|eQTL
+Heart_Left_Ventricle|eQTL Esophagus_Muscularis|eQTL Artery_Aorta|eQTL
+Muscle_Skeletal|eQTL Artery_Tibial|eQTL Thyroid|eQTL Spleen|eQTL
+Cells_Cultured_fibroblasts|eQTL
+Brain_Cerebellum|eQTL<br><br><br><br></p>
+<div id="htmlwidget-93928d62269dcef60a51" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-93928d62269dcef60a51">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\" options=\"10\">ATH_gtexukb<\/caption>","data":[["30","32","22","21","20","17","28","6","11","23","13","19","25","29","14","7","15","2","1","3","4","5","8","9","10","12","16","18","24","26","27","31","33","34"],["Spleen|eQTL","Thyroid|eQTL","Heart_Left_Ventricle|eQTL","Heart_Atrial_Appendage|eQTL","Esophagus_Muscularis|eQTL","Colon_Transverse|eQTL","Skin_Not_Sun_Exposed_Suprapubic|eQTL","Artery_Tibial|eQTL","Brain_Frontal_Cortex_BA9|eQTL","Liver|eQTL","Brain_Nucleus_accumbens_basal_ganglia|eQTL","Esophagus_Mucosa|eQTL","Muscle_Skeletal|eQTL","Skin_Sun_Exposed_Lower_leg|eQTL","Brain_Putamen_basal_ganglia|eQTL","Brain_Caudate_basal_ganglia|eQTL","Cells_Cultured_fibroblasts|eQTL","Adipose_Visceral_Omentum|eQTL","Adipose_Subcutaneous|eQTL","Adrenal_Gland|eQTL","Artery_Aorta|eQTL","Artery_Coronary|eQTL","Brain_Cerebellar_Hemisphere|eQTL","Brain_Cerebellum|eQTL","Brain_Cortex|eQTL","Brain_Hypothalamus|eQTL","Colon_Sigmoid|eQTL","Esophagus_Gastroesophageal_Junction|eQTL","Lung|eQTL","Pancreas|eQTL","Pituitary|eQTL","Stomach|eQTL","Whole_Blood|eQTL","SNP"],[9753,11047,9449,10004,10569,10229,10761,10614,9476,8778,9506,10583,9977,11000,9396,9564,10315,10388,10541,9433,10415,9510,9530,9686,9739,9126,10030,10064,10700,9747,9969,9800,9342,6601263],[0.00145133552649657,0.00104528736050831,0.000884967421294759,0.000769584436698324,0.00080263847833103,0.000621736167135377,0.000492354212754196,0.000441065161386128,0.00029736483996116,0.000202025678513077,0.000219499375134606,0.000234461742492041,0.000140976004337109,0.00017690621701651,0.000110290870160924,0.000136516943115894,0.000119359570847494,3.47319707154911e-05,8.61109727573367e-06,3.30257566388513e-09,2.02952653378905e-05,3.32880089055126e-11,5.71220890834452e-18,2.81490121249213e-09,1.70103558334629e-14,2.65138852286128e-13,1.01710936805663e-09,8.29268935707704e-07,1.80652056045423e-07,2.4670692888613e-06,1.21968965776649e-09,1.88372011688707e-12,9.37383922802837e-06,0.0173230912111173],["5.68127%","4.09179%","3.46422%","3.01255%","3.14194%","2.43379%","1.92733%","1.72656%","1.16404%","0.79083%","0.85923%","0.9178%","0.55185%","0.6925%","0.43174%","0.5344%","0.46723%","0.13596%","0.03371%","1e-05%","0.07945%","0%","0%","1e-05%","0%","0%","0%","0.00325%","0.00071%","0.00966%","0%","0%","0.03669%","67.81147%"],[4.03788516503151,3.5851088455987,3.57486254719287,3.37808629430564,3.36519984151771,3.14250964144605,2.85849054561992,2.76223936913049,2.48141814675584,2.17136685016713,2.17464683831151,2.1332641202012,1.68352788071721,1.81294510275172,1.49805771400319,1.69366331347651,1.4837620252385,0.242229946000447,-1.16700003218092,-8.92204615964549,-0.297638819695956,-13.5274365645524,-29.1076394048771,-9.10828902448121,-21.1303613239023,-18.3189190290398,-10.1611505990335,-3.46095483587497,-5.04620555078662,-2.33870799115947,-9.97341847875794,-16.4294237056787,-0.96137698280688,null],[0.20429942176504,0.238216666905369,0.257764650980636,0.275574142133698,0.270089139693856,0.305379572604838,0.341970010826138,0.360798592460956,0.437668480343411,0.529590454675277,0.508326770866511,0.492053595079553,0.632917299030276,0.565570711997682,0.714952264669914,0.64308780117929,0.687435240477087,1.27136789425181,2.55146414006092,130.252966586668,1.66250631811519,1297.38855495385,3131929.16060166,141.085514617481,57392.7813961546,14537.0835172913,234.709223518501,8.22008574801924,17.6114338594045,4.76599122720246,214.333134686753,5453.88258175142,2.44550637689889,null],[6.73081135741912e-36,3.27107270178832e-23,1.03311073402513e-19,2.4978916845025e-16,5.25017125207746e-16,5.98837730728179e-12,4.18332893552028e-09,6.59095465492118e-08,0.000103395663312569,0.000881342170299529,0.00117944875861951,0.00174018331410401,0.0121989368136863,0.0157799229686893,0.0730697422847121,0.0753216656332009,0.0856480749448794,0.385827788999696,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,null],[7.70088703756425e-36,9.31087114832682e-23,1.79989946194119e-19,5.29057964482418e-16,1.53386780498353e-16,3.9784896105263e-12,7.33530479532774e-09,9.08916209265026e-08,4.78016884050142e-05,0.0023740573979139,0.00152046784012793,0.00123947550045497,0.0367887669381847,0.0132106981397036,0.0923406071831141,0.0389542089434095,0.0823318016152895,0.854678302182863,0.57105441739082,0.347717885729211,0.850611927751432,0.345444157444279,0.344933128210864,0.341288382186607,0.339701298972189,0.355360780622518,0.33269746247315,0.368133711251986,0.326568642931544,0.431633432465168,0.334190274679565,0.338194801412406,0.640143853938699,null],[0.0255459587698684,0.0255459587698684,0.0255459587698684,0.0255459587698684,0.0255459587698684,0.0255459587698684,0.0255459587698684,0.0255459587698684,0.0255459587698684,0.0255459587698684,0.0255459587698684,0.0255459587698684,0.0255459587698684,0.0255459587698684,0.0255459587698684,0.0255459587698684,0.0255459587698684,0.0255459587698684,0.0255459587698684,0.0255459587698684,0.0255459587698684,0.0255459587698684,0.0255459587698684,0.0255459587698684,0.0255459587698684,0.0255459587698684,0.0255459587698684,0.0255459587698684,0.0255459587698684,0.0255459587698684,0.0255459587698684,0.0255459587698684,0.0255459587698684,0.0255459587698684]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>group<\/th>\n      <th>group_size<\/th>\n      <th>group_pve<\/th>\n      <th>prop_heritability<\/th>\n      <th>log_enrichment<\/th>\n      <th>log_enrichment_se<\/th>\n      <th>enrichment_pval_fisher<\/th>\n      <th>enrichment_pval_G<\/th>\n      <th>total_pve<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[2,3,5,6,7,8,9]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<p><br><br><br>[1] “p-value cutoff(0.05/num_tissue) = 0.0015625”
+<br><br>Number of selected tissue – fisher = 10 <br>Spleen|eQTL
+Thyroid|eQTL Heart_Left_Ventricle|eQTL Heart_Atrial_Appendage|eQTL
+Esophagus_Muscularis|eQTL Colon_Transverse|eQTL
+Skin_Not_Sun_Exposed_Suprapubic|eQTL Artery_Tibial|eQTL
+Brain_Frontal_Cortex_BA9|eQTL Liver|eQTL<br><br><br>Number of selected
+tissue – G = 10 <br>Spleen|eQTL Thyroid|eQTL Heart_Left_Ventricle|eQTL
+Heart_Atrial_Appendage|eQTL Esophagus_Muscularis|eQTL
+Colon_Transverse|eQTL Skin_Not_Sun_Exposed_Suprapubic|eQTL
+Artery_Tibial|eQTL Brain_Frontal_Cortex_BA9|eQTL
+Brain_Nucleus_accumbens_basal_ganglia|eQTL<br><br><br><br></p>
+<div id="htmlwidget-16707cd634e93674753d" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-16707cd634e93674753d">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\" options=\"10\">BMI-panukb<\/caption>","data":[["15","8","4","10","19","22","9","25","14","30","3","1","2","12","13","24","5","6","7","11","16","17","18","20","21","23","26","27","28","29","31","32","33","34"],["Cells_Cultured_fibroblasts|eQTL","Brain_Cerebellar_Hemisphere|eQTL","Artery_Aorta|eQTL","Brain_Cortex|eQTL","Esophagus_Mucosa|eQTL","Heart_Left_Ventricle|eQTL","Brain_Cerebellum|eQTL","Muscle_Skeletal|eQTL","Brain_Putamen_basal_ganglia|eQTL","Spleen|eQTL","Adrenal_Gland|eQTL","Adipose_Subcutaneous|eQTL","Adipose_Visceral_Omentum|eQTL","Brain_Hypothalamus|eQTL","Brain_Nucleus_accumbens_basal_ganglia|eQTL","Lung|eQTL","Artery_Coronary|eQTL","Artery_Tibial|eQTL","Brain_Caudate_basal_ganglia|eQTL","Brain_Frontal_Cortex_BA9|eQTL","Colon_Sigmoid|eQTL","Colon_Transverse|eQTL","Esophagus_Gastroesophageal_Junction|eQTL","Esophagus_Muscularis|eQTL","Heart_Atrial_Appendage|eQTL","Liver|eQTL","Pancreas|eQTL","Pituitary|eQTL","Skin_Not_Sun_Exposed_Suprapubic|eQTL","Skin_Sun_Exposed_Lower_leg|eQTL","Stomach|eQTL","Thyroid|eQTL","Whole_Blood|eQTL","SNP"],[10317,9534,10419,9744,10587,9454,9689,9978,9401,9758,9437,10547,10391,9130,9510,10702,9514,10614,9570,9481,10034,10234,10067,10574,10009,8781,9748,9972,10767,11005,9805,11052,9343,8021061],[0.00275908207788294,0.00162539398025109,0.00137202688676944,0.00132455878776237,0.0012462529546519,0.000888563558958296,0.000897115058737491,0.000814045778484186,0.000769612995489407,0.000758188469564052,0.000691729060028046,0.000723856771267351,0.000638066585480058,0.000573798032246404,0.000265797805527135,0.000159770790252405,1.40895742981435e-16,1.58927559066791e-07,1.60241294686404e-05,4.42080386328832e-23,1.2248278777507e-20,2.42448118876585e-15,1.91976890083311e-08,8.42674111114386e-13,2.70462023186048e-14,5.15264354338603e-11,1.7978705585842e-09,2.23967164087672e-14,3.25110705838976e-23,6.23003313544828e-11,8.30831661254089e-13,1.13886218371259e-08,6.36676459496702e-23,0.125896398161623],["1.95098%","1.14933%","0.97018%","0.93661%","0.88124%","0.62831%","0.63436%","0.57562%","0.5442%","0.53612%","0.48913%","0.51185%","0.45118%","0.40574%","0.18795%","0.11298%","0%","0.00011%","0.01133%","0%","0%","0%","1e-05%","0%","0%","0%","0%","0%","0%","0%","0%","1e-05%","0%","89.02275%"],[2.83547167827439,2.38525253345617,2.12702471791028,2.15879435710694,2.0148812342218,1.78977962326563,1.7748042785161,1.64824530938219,1.65168309411924,1.59945590940439,1.54116758963431,1.47536345925491,1.36411397246052,1.38732315507325,0.577003389057964,-0.0500790371984027,-27.6891539330634,-6.95486929286408,-2.23792615198768,-42.6603034522832,-37.092758926337,-24.9167524131301,-9.01561674361367,-19.0984723183322,-22.4825925491473,-14.7993944934995,-11.3516030977001,-22.6675212679105,-43.0948255345666,-14.8352821529961,-19.0371197204858,-9.63114053804768,-42.2808711775592,null],[0.16000474505019,0.207686136052364,0.225887954639548,0.229849961166334,0.23691883759455,0.28023323557405,0.278906622399775,0.292718577982259,0.300996467480759,0.303251094354279,0.317411448942917,0.310337293535275,0.330447539076059,0.348370287692213,0.511356951401964,0.659339778256648,701746.677327533,20.8944008092807,2.08096352973775,1252791151.28099,75264775.31242,169168.653031983,60.1180453731365,9074.0146262722,50649.6157010094,1160.41745060274,196.449122385569,55659.2212047836,1460877045.95298,1055.31988772408,9138.45508507141,78.0537424447302,1043926457.29606,null],[1.05346638116241e-34,2.69989320823018e-16,1.35805595530754e-12,3.72010807334249e-12,1.18473266830511e-10,4.54091033582842e-07,5.9476659627781e-07,4.76013150221889e-06,1.49584178882779e-05,2.09425674747232e-05,8.08546717320358e-05,0.000196241395060724,0.000757986318400578,0.00135730887336619,0.171436047353436,0.696051342915187,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,null],[1.97293252174679e-34,1.0252846022722e-16,2.44367407790253e-12,3.3601884933548e-12,1.45225506050052e-10,7.70054093651567e-07,8.05601690118815e-07,9.21741860409271e-06,1.56416916441952e-05,2.92445868602092e-05,0.000106388959459828,0.000129526059232809,0.000747256102482654,0.00118629247728328,0.303233423275476,0.938962310369822,0.0380810854568522,0.0290954550917996,0.0924187930697769,0.0384164907706896,0.0331823076258644,0.03147786573093,0.0330012065354319,0.0287867738952778,0.0334020437522625,0.0463134775714444,0.0358025033012106,0.0337300475581454,0.0273669017711864,0.0257161156074509,0.0352529622798589,0.0254533201271824,0.0398530333410075,null],[0.141420473311737,0.141420473311737,0.141420473311737,0.141420473311737,0.141420473311737,0.141420473311737,0.141420473311737,0.141420473311737,0.141420473311737,0.141420473311737,0.141420473311737,0.141420473311737,0.141420473311737,0.141420473311737,0.141420473311737,0.141420473311737,0.141420473311737,0.141420473311737,0.141420473311737,0.141420473311737,0.141420473311737,0.141420473311737,0.141420473311737,0.141420473311737,0.141420473311737,0.141420473311737,0.141420473311737,0.141420473311737,0.141420473311737,0.141420473311737,0.141420473311737,0.141420473311737,0.141420473311737,0.141420473311737]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>group<\/th>\n      <th>group_size<\/th>\n      <th>group_pve<\/th>\n      <th>prop_heritability<\/th>\n      <th>log_enrichment<\/th>\n      <th>log_enrichment_se<\/th>\n      <th>enrichment_pval_fisher<\/th>\n      <th>enrichment_pval_G<\/th>\n      <th>total_pve<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[2,3,5,6,7,8,9]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<p><br><br><br>[1] “p-value cutoff(0.05/num_tissue) = 0.0015625”
+<br><br>Number of selected tissue – fisher = 10
+<br>Cells_Cultured_fibroblasts|eQTL Brain_Cerebellar_Hemisphere|eQTL
+Artery_Aorta|eQTL Brain_Cortex|eQTL Esophagus_Mucosa|eQTL
+Heart_Left_Ventricle|eQTL Brain_Cerebellum|eQTL Muscle_Skeletal|eQTL
+Brain_Putamen_basal_ganglia|eQTL Spleen|eQTL<br><br><br>Number of
+selected tissue – G = 10 <br>Cells_Cultured_fibroblasts|eQTL
+Brain_Cerebellar_Hemisphere|eQTL Artery_Aorta|eQTL Brain_Cortex|eQTL
+Esophagus_Mucosa|eQTL Heart_Left_Ventricle|eQTL Brain_Cerebellum|eQTL
+Muscle_Skeletal|eQTL Brain_Putamen_basal_ganglia|eQTL
+Spleen|eQTL<br><br><br><br></p>
+<div id="htmlwidget-37e46cf92521dcbed3f8" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-37e46cf92521dcbed3f8">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\" options=\"10\">HB-panukb<\/caption>","data":[["15","1","21","33","28","18","32","16","23","29","3","24","2","20","6","11","9","10","30","13","25","4","5","7","8","12","14","17","19","22","26","27","31","34"],["Cells_Cultured_fibroblasts|eQTL","Adipose_Subcutaneous|eQTL","Heart_Atrial_Appendage|eQTL","Whole_Blood|eQTL","Skin_Not_Sun_Exposed_Suprapubic|eQTL","Esophagus_Gastroesophageal_Junction|eQTL","Thyroid|eQTL","Colon_Sigmoid|eQTL","Liver|eQTL","Skin_Sun_Exposed_Lower_leg|eQTL","Adrenal_Gland|eQTL","Lung|eQTL","Adipose_Visceral_Omentum|eQTL","Esophagus_Muscularis|eQTL","Artery_Tibial|eQTL","Brain_Frontal_Cortex_BA9|eQTL","Brain_Cerebellum|eQTL","Brain_Cortex|eQTL","Spleen|eQTL","Brain_Nucleus_accumbens_basal_ganglia|eQTL","Muscle_Skeletal|eQTL","Artery_Aorta|eQTL","Artery_Coronary|eQTL","Brain_Caudate_basal_ganglia|eQTL","Brain_Cerebellar_Hemisphere|eQTL","Brain_Hypothalamus|eQTL","Brain_Putamen_basal_ganglia|eQTL","Colon_Transverse|eQTL","Esophagus_Mucosa|eQTL","Heart_Left_Ventricle|eQTL","Pancreas|eQTL","Pituitary|eQTL","Stomach|eQTL","SNP"],[10317,10547,10009,9343,10767,10067,11052,10034,8781,11005,9437,10702,10391,10574,10614,9481,9689,9744,9758,9510,9978,10419,9514,9570,9534,9130,9401,10234,10587,9454,9748,9972,9805,8021061],[0.00351229379714994,0.00355129346582186,0.00274679225745182,0.00224778674820204,0.00203887946936065,0.00161090525294749,0.00160052886421371,0.00129835425573473,0.00116031082880696,0.00112017864822748,0.00108178867547652,0.00107809933522354,0.00091731044846439,0.000937663386412219,0.000904662878654199,0.000666006475526515,0.000506730164269409,0.000403070231418148,0.000415555124290665,0.000163187431365273,0.00015486647084592,7.76728423507935e-06,8.88767126447096e-21,8.48291343150434e-17,1.86966304857926e-08,1.18229233156563e-13,5.03044764573787e-07,8.10991210526308e-14,6.3407674933063e-12,1.39773539519706e-18,7.21154339176589e-06,6.82487531426487e-20,4.27360687879364e-13,0.0936784063736061],["2.88342%","2.91543%","2.25498%","1.84532%","1.67382%","1.32247%","1.31395%","1.06588%","0.95256%","0.91961%","0.88809%","0.88507%","0.75307%","0.76977%","0.74268%","0.54676%","0.416%","0.3309%","0.34115%","0.13397%","0.12714%","0.00638%","0%","0%","2e-05%","0%","0.00041%","0%","0%","0%","0.00592%","0%","0%","76.90524%"],[3.37243458599404,3.36142871301404,3.15690736938485,3.02527694343479,2.78587275500139,2.61749182076002,2.51768098631517,2.40507645789102,2.42605590732811,2.16509674356798,2.28393599775174,2.15472725466846,2.0227089156665,2.02719586331746,1.98759147975211,1.79421259720133,1.49919041976411,1.26466210693593,1.29373081350621,0.38475854894507,0.28438359741245,-2.75150747881015,-37.0646727280819,-27.9068122729334,-8.6920733164343,-20.620003138099,-5.38568918463088,-21.1111062244575,-16.7859345748452,-32.0004026965931,-2.75917614508476,-35.0731953960147,-19.4063269380015,null],[0.167998740088336,0.167110495530004,0.189282918794545,0.208733500614447,0.218984410170263,0.245846804490278,0.246648245084003,0.273436803184281,0.289030735685757,0.294146404475126,0.299239655530461,0.299766885080175,0.324723503446771,0.321213860290035,0.32696878310718,0.380623110702946,0.436032967039953,0.488655495594213,0.481287851343743,0.767096491573889,0.787406686771014,3.51346773595862,103862856.842347,1063118.65234877,71.6098265602003,28476.8415680846,13.8054950124508,34383.1911530015,3888.51108329117,8282124.86580456,3.64632338902497,37480631.0738618,14978.1084411384,null],[2.07472681095822e-40,4.55335484713936e-40,1.7019305140593e-29,3.37090434932627e-22,2.08894234636156e-18,3.28767630303576e-14,1.4310226063281e-13,6.73632340554945e-11,1.88365587461869e-09,2.19611939048653e-08,4.31364348901694e-08,1.49258667848344e-07,9.70849958336988e-07,1.13276013187885e-06,9.08801885629675e-06,0.000204233398248954,0.00732122102500477,0.0328574588265333,0.0330034067799011,0.322710730627929,0.343357420539384,1,1,1,1,1,1,1,1,1,1,1,1,null],[6.13583693911537e-40,3.45211920819116e-40,4.62437077254835e-29,8.13782381020189e-23,9.60740355952738e-19,5.51748357353201e-14,3.16423325461079e-13,2.14464092200881e-10,1.51228466099848e-09,4.82050632985459e-08,2.37909730991119e-08,9.53240482776651e-08,2.69173200959573e-06,2.00759213069971e-06,4.24818770210823e-06,0.000264531662158459,0.00577786293404145,0.0321773880006196,0.0266636734709595,0.637362751824924,0.730225888784443,0.164874177351222,0.128018243941365,0.126901968891883,0.12792880102819,0.13597449587502,0.136067210199917,0.11445827610134,0.108396751532277,0.12922640698393,0.178749298473785,0.119199121207568,0.122334209935705,null],[0.121810171159459,0.121810171159459,0.121810171159459,0.121810171159459,0.121810171159459,0.121810171159459,0.121810171159459,0.121810171159459,0.121810171159459,0.121810171159459,0.121810171159459,0.121810171159459,0.121810171159459,0.121810171159459,0.121810171159459,0.121810171159459,0.121810171159459,0.121810171159459,0.121810171159459,0.121810171159459,0.121810171159459,0.121810171159459,0.121810171159459,0.121810171159459,0.121810171159459,0.121810171159459,0.121810171159459,0.121810171159459,0.121810171159459,0.121810171159459,0.121810171159459,0.121810171159459,0.121810171159459,0.121810171159459]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>group<\/th>\n      <th>group_size<\/th>\n      <th>group_pve<\/th>\n      <th>prop_heritability<\/th>\n      <th>log_enrichment<\/th>\n      <th>log_enrichment_se<\/th>\n      <th>enrichment_pval_fisher<\/th>\n      <th>enrichment_pval_G<\/th>\n      <th>total_pve<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[2,3,5,6,7,8,9]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<p><br><br><br>[1] “p-value cutoff(0.05/num_tissue) = 0.0015625”
+<br><br>Number of selected tissue – fisher = 10
+<br>Cells_Cultured_fibroblasts|eQTL Adipose_Subcutaneous|eQTL
+Heart_Atrial_Appendage|eQTL Whole_Blood|eQTL
+Skin_Not_Sun_Exposed_Suprapubic|eQTL
+Esophagus_Gastroesophageal_Junction|eQTL Thyroid|eQTL Colon_Sigmoid|eQTL
+Liver|eQTL Skin_Sun_Exposed_Lower_leg|eQTL<br><br><br>Number of selected
+tissue – G = 10 <br>Cells_Cultured_fibroblasts|eQTL
+Adipose_Subcutaneous|eQTL Heart_Atrial_Appendage|eQTL Whole_Blood|eQTL
+Skin_Not_Sun_Exposed_Suprapubic|eQTL
+Esophagus_Gastroesophageal_Junction|eQTL Thyroid|eQTL Colon_Sigmoid|eQTL
+Liver|eQTL Skin_Sun_Exposed_Lower_leg|eQTL<br><br><br><br></p>
+<div id="htmlwidget-99e959167faff8d1fc37" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-99e959167faff8d1fc37">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\" options=\"10\">Height-panukb<\/caption>","data":[["15","6","16","28","21","33","9","12","25","2","8","24","27","4","32","1","26","14","10","3","5","7","11","13","17","18","19","20","22","23","29","30","31","34"],["Cells_Cultured_fibroblasts|eQTL","Artery_Tibial|eQTL","Colon_Sigmoid|eQTL","Skin_Not_Sun_Exposed_Suprapubic|eQTL","Heart_Atrial_Appendage|eQTL","Whole_Blood|eQTL","Brain_Cerebellum|eQTL","Brain_Hypothalamus|eQTL","Muscle_Skeletal|eQTL","Adipose_Visceral_Omentum|eQTL","Brain_Cerebellar_Hemisphere|eQTL","Lung|eQTL","Pituitary|eQTL","Artery_Aorta|eQTL","Thyroid|eQTL","Adipose_Subcutaneous|eQTL","Pancreas|eQTL","Brain_Putamen_basal_ganglia|eQTL","Brain_Cortex|eQTL","Adrenal_Gland|eQTL","Artery_Coronary|eQTL","Brain_Caudate_basal_ganglia|eQTL","Brain_Frontal_Cortex_BA9|eQTL","Brain_Nucleus_accumbens_basal_ganglia|eQTL","Colon_Transverse|eQTL","Esophagus_Gastroesophageal_Junction|eQTL","Esophagus_Mucosa|eQTL","Esophagus_Muscularis|eQTL","Heart_Left_Ventricle|eQTL","Liver|eQTL","Skin_Sun_Exposed_Lower_leg|eQTL","Spleen|eQTL","Stomach|eQTL","SNP"],[10317,10614,10034,10767,10009,9343,9689,9130,9978,10391,9534,10702,9972,10419,11052,10547,9748,9401,9744,9437,9514,9570,9481,9510,10234,10067,10587,10574,9454,8781,11005,9758,9805,8021061],[0.00801059838651184,0.00745992994851458,0.00611962050609591,0.00438791019534124,0.0033975143229333,0.00256166072876522,0.00269220468276706,0.00238354338572504,0.00229918527475293,0.00201728182086729,0.00195989387602613,0.00199547324404819,0.00167955309528032,0.00171769136803932,0.00168592334662436,0.00139630496589585,0.000997925035450787,0.000311414802473401,0.000374682033325189,1.9918775607412e-07,6.48216816864251e-22,1.75733997068448e-06,1.1404571781857e-41,6.06769779048889e-33,4.96487062227642e-21,6.02728372699828e-25,3.20086817763631e-05,1.00373621401492e-37,5.33381907258094e-17,4.21048667180043e-33,9.95508114267857e-27,2.02277708242248e-18,1.55785066333766e-05,0.363097408454222],["1.92287%","1.79069%","1.46896%","1.05328%","0.81554%","0.6149%","0.64624%","0.57215%","0.5519%","0.48423%","0.47046%","0.479%","0.40316%","0.41232%","0.40469%","0.33517%","0.23954%","0.07475%","0.08994%","5e-05%","0%","0.00042%","0%","0%","0%","0%","0.00768%","0%","0%","0%","0%","0%","0.00374%","87.15831%"],[2.84212728836291,2.74252698474467,2.60067560499003,2.19752202066232,2.01471423978297,1.80118321578363,1.81452406646487,1.75217734867635,1.62732700763262,1.45596577038951,1.51318081536761,1.41560544264176,1.31390142290991,1.29250494417484,1.21485683210767,1.07314282339125,0.816015589224679,-0.312290706811154,-0.163174389533733,-7.67074596797508,-41.0376712713122,-5.50743235371881,-86.520939268941,-66.431762564683,-39.0747050998101,-48.074683498974,-2.70622009557065,-77.5474072226487,-29.7134068834959,-66.7174100009252,-52.2671540131471,-33.0172376505175,-3.34960070903982,null],[0.148944668866685,0.15426107192507,0.17005358420271,0.200467682066943,0.227556591604903,0.261814293585435,0.255430750407416,0.271364424229115,0.276290010781928,0.294880488058847,0.299133277687601,0.296485115157058,0.323045121458669,0.319458629212009,0.322451657153706,0.354197746402103,0.418780681260497,0.749103934922823,0.682985447412407,29.609803470937,519046903.684557,9.96872648646269,3.91315688691776e+18,169650358044621,187548149.604278,17021817647.6245,2.3358676647399,4.17116101572812e+16,1809454.26937422,203657591365154,132447678172.319,9291647.79595315,3.34819835164096,null],[1.03079131206933e-39,1.43522915183388e-35,3.57387399841797e-27,7.139422883847e-16,5.63105976697771e-11,4.85255589805493e-08,7.69648551251685e-08,2.30100564099991e-07,3.54626437257069e-06,2.65779375801901e-05,5.70420228465832e-05,0.000154634294774437,0.00036574548224157,0.000511314988170775,0.000796765114423682,0.00717682161176859,0.0440486853740778,0.699543659427053,0.717980923814269,1,1,1,1,1,1,1,1,1,1,1,1,1,1,null],[1.4246272069765e-39,3.03692710041927e-35,3.21288808333287e-27,5.88582294764413e-16,2.53497675788295e-11,1.06055750308286e-07,4.23306863335229e-08,5.19322923466446e-07,3.31283899152631e-06,6.76361636928834e-05,5.08402086270617e-05,0.000107332968760278,0.000827309604609293,0.000851142173395951,0.00169664875681174,0.0100750671998967,0.0861426823060068,0.660209666327597,0.806054223242585,0.0273415547456027,0.0264133313947739,0.0280204069045023,0.0266758385327102,0.0264450068841224,0.021306871548187,0.0223920831129567,0.0422238910060681,0.0192624566977754,0.0268926345544377,0.0329335451533076,0.0169586961157262,0.0245537957076748,0.0380304751144407,null],[0.416595263189797,0.416595263189797,0.416595263189797,0.416595263189797,0.416595263189797,0.416595263189797,0.416595263189797,0.416595263189797,0.416595263189797,0.416595263189797,0.416595263189797,0.416595263189797,0.416595263189797,0.416595263189797,0.416595263189797,0.416595263189797,0.416595263189797,0.416595263189797,0.416595263189797,0.416595263189797,0.416595263189797,0.416595263189797,0.416595263189797,0.416595263189797,0.416595263189797,0.416595263189797,0.416595263189797,0.416595263189797,0.416595263189797,0.416595263189797,0.416595263189797,0.416595263189797,0.416595263189797,0.416595263189797]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>group<\/th>\n      <th>group_size<\/th>\n      <th>group_pve<\/th>\n      <th>prop_heritability<\/th>\n      <th>log_enrichment<\/th>\n      <th>log_enrichment_se<\/th>\n      <th>enrichment_pval_fisher<\/th>\n      <th>enrichment_pval_G<\/th>\n      <th>total_pve<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[2,3,5,6,7,8,9]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<p><br><br><br>[1] “p-value cutoff(0.05/num_tissue) = 0.0015625”
+<br><br>Number of selected tissue – fisher = 10
+<br>Cells_Cultured_fibroblasts|eQTL Artery_Tibial|eQTL
+Colon_Sigmoid|eQTL Skin_Not_Sun_Exposed_Suprapubic|eQTL
+Heart_Atrial_Appendage|eQTL Whole_Blood|eQTL Brain_Cerebellum|eQTL
+Brain_Hypothalamus|eQTL Muscle_Skeletal|eQTL
+Adipose_Visceral_Omentum|eQTL<br><br><br>Number of selected tissue – G =
+10 <br>Cells_Cultured_fibroblasts|eQTL Artery_Tibial|eQTL
+Colon_Sigmoid|eQTL Skin_Not_Sun_Exposed_Suprapubic|eQTL
+Heart_Atrial_Appendage|eQTL Whole_Blood|eQTL Brain_Cerebellum|eQTL
+Brain_Hypothalamus|eQTL Muscle_Skeletal|eQTL
+Adipose_Visceral_Omentum|eQTL<br><br><br><br></p>
+<div id="htmlwidget-4a6133f685aa29daac40" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-4a6133f685aa29daac40">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\" options=\"10\">HTN-panukb<\/caption>","data":[["2","25","1","21","4","33","26","32","8","28","29","24","30","10","6","3","7","15","20","5","9","11","12","13","14","16","17","18","19","22","23","27","31","34"],["Adipose_Visceral_Omentum|eQTL","Muscle_Skeletal|eQTL","Adipose_Subcutaneous|eQTL","Heart_Atrial_Appendage|eQTL","Artery_Aorta|eQTL","Whole_Blood|eQTL","Pancreas|eQTL","Thyroid|eQTL","Brain_Cerebellar_Hemisphere|eQTL","Skin_Not_Sun_Exposed_Suprapubic|eQTL","Skin_Sun_Exposed_Lower_leg|eQTL","Lung|eQTL","Spleen|eQTL","Brain_Cortex|eQTL","Artery_Tibial|eQTL","Adrenal_Gland|eQTL","Brain_Caudate_basal_ganglia|eQTL","Cells_Cultured_fibroblasts|eQTL","Esophagus_Muscularis|eQTL","Artery_Coronary|eQTL","Brain_Cerebellum|eQTL","Brain_Frontal_Cortex_BA9|eQTL","Brain_Hypothalamus|eQTL","Brain_Nucleus_accumbens_basal_ganglia|eQTL","Brain_Putamen_basal_ganglia|eQTL","Colon_Sigmoid|eQTL","Colon_Transverse|eQTL","Esophagus_Gastroesophageal_Junction|eQTL","Esophagus_Mucosa|eQTL","Heart_Left_Ventricle|eQTL","Liver|eQTL","Pituitary|eQTL","Stomach|eQTL","SNP"],[10391,9978,10547,10009,10419,9343,9748,11052,9534,10767,11005,10702,9758,9744,10614,9437,9570,10317,10574,9514,9689,9481,9130,9510,9401,10034,10234,10067,10587,9454,8781,9972,9805,8021061],[0.00119815940591654,0.00104922791395401,0.000947813036357936,0.000782415876903158,0.000735580836594704,0.000721153902146107,0.000716126668015517,0.000602916866756764,0.000501729643359569,0.000507168385331568,0.000493163906342264,0.000333793923071592,0.000284030697460113,0.000260672319315185,0.000180071807011085,0.000126649628561083,0.000107967321986919,0.000120138093586351,0.000133644622695959,9.98142495397124e-10,1.8349121436457e-08,5.89827751694617e-18,4.96144143349687e-09,1.18737141948334e-13,4.65843694319451e-13,1.6608695871236e-14,2.2337975155108e-15,7.3503745572864e-10,1.01490761521854e-11,1.7773753887753e-08,5.36376167567026e-09,9.13366386504859e-10,2.6696230679987e-06,0.0274706445676057],["3.21431%","2.81477%","2.5427%","2.09899%","1.97335%","1.93464%","1.92116%","1.61745%","1.34599%","1.36058%","1.32301%","0.89547%","0.76197%","0.69931%","0.48308%","0.33976%","0.28964%","0.3223%","0.35853%","0%","5e-05%","0%","1e-05%","0%","0%","0%","0%","0%","0%","5e-05%","1e-05%","0%","0.00716%","73.69568%"],[3.51655452612486,3.42437992632972,3.26726854761978,3.1278544659844,3.02598212170813,3.11517791435003,3.06574766932822,2.76812065722777,2.73214980193058,2.62130991172838,2.57144461417615,2.20904590901627,2.13994760371576,2.05556516916808,1.60013455791449,1.36573905374696,1.19214814482053,1.22380158405162,1.3057387928794,-10.3934261657549,-7.50021206201168,-29.3366978067164,-8.74867192033826,-19.4297448116401,-18.0512790024572,-21.4503660140003,-23.4763255452896,-10.755899104481,-15.0888019663282,-7.50751759974792,-8.63172729812383,-10.5292018808214,-2.53200242709502,null],[0.190855885156623,0.203443964052798,0.21370748916451,0.234558519963327,0.241730917590073,0.244055647304029,0.244899526885546,0.266424887461303,0.291536820493292,0.290016414979865,0.294039625272578,0.356442721544109,0.386071515981272,0.402839543232225,0.484032660980482,0.576625404502112,0.624329014408711,0.591988499909317,0.561408601944228,204.960378664761,47.8033880425282,2666266.6414184,91.9310630545241,18791.9948523029,9487.37506087852,50245.6436602275,137007.480062815,238.842413265867,2032.60469697436,48.5709647679053,88.4161261991036,214.261269953105,3.96333604550592,null],[8.20326703679036e-34,2.87301629012396e-28,8.24146914822228e-25,1.08611258990773e-19,4.89726368250667e-18,1.72759773655233e-17,3.43997678121235e-17,1.36593012027163e-12,5.65186586890814e-11,2.2115924104161e-10,2.82284540478911e-10,4.08492670367038e-06,2.09948931280079e-05,0.00018399051185077,0.0120117090713596,0.0435719377691544,0.0450846782123629,0.0540547832901737,0.0573232683319256,1,1,1,1,1,1,1,1,1,1,1,1,1,1,null],[3.07391359095217e-33,2.28666288538386e-28,2.65004588715421e-24,2.85936214027618e-19,1.81431696152045e-17,8.44746793089691e-18,2.4733267947585e-17,4.61744918208367e-13,6.04060057401211e-11,1.70606820107042e-10,5.27456016427591e-10,4.79682615924077e-06,3.77826171307114e-05,0.000128177579662934,0.00876820848848769,0.0530374366558718,0.110461565031379,0.0852861896302348,0.0554820308660484,0.212746023832018,0.209584131229587,0.213460672567132,0.222492363757621,0.212762282536526,0.215401559026411,0.200597176200852,0.196171510775204,0.199915319314331,0.188637150153081,0.215186946884585,0.231581634604857,0.202062485128674,0.28332473977589,null],[0.0372757881514174,0.0372757881514174,0.0372757881514174,0.0372757881514174,0.0372757881514174,0.0372757881514174,0.0372757881514174,0.0372757881514174,0.0372757881514174,0.0372757881514174,0.0372757881514174,0.0372757881514174,0.0372757881514174,0.0372757881514174,0.0372757881514174,0.0372757881514174,0.0372757881514174,0.0372757881514174,0.0372757881514174,0.0372757881514174,0.0372757881514174,0.0372757881514174,0.0372757881514174,0.0372757881514174,0.0372757881514174,0.0372757881514174,0.0372757881514174,0.0372757881514174,0.0372757881514174,0.0372757881514174,0.0372757881514174,0.0372757881514174,0.0372757881514174,0.0372757881514174]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>group<\/th>\n      <th>group_size<\/th>\n      <th>group_pve<\/th>\n      <th>prop_heritability<\/th>\n      <th>log_enrichment<\/th>\n      <th>log_enrichment_se<\/th>\n      <th>enrichment_pval_fisher<\/th>\n      <th>enrichment_pval_G<\/th>\n      <th>total_pve<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[2,3,5,6,7,8,9]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<p><br><br><br>[1] “p-value cutoff(0.05/num_tissue) = 0.0015625”
+<br><br>Number of selected tissue – fisher = 10
+<br>Adipose_Visceral_Omentum|eQTL Muscle_Skeletal|eQTL
+Adipose_Subcutaneous|eQTL Heart_Atrial_Appendage|eQTL Artery_Aorta|eQTL
+Whole_Blood|eQTL Pancreas|eQTL Thyroid|eQTL
+Brain_Cerebellar_Hemisphere|eQTL
+Skin_Not_Sun_Exposed_Suprapubic|eQTL<br><br><br>Number of selected
+tissue – G = 10 <br>Adipose_Visceral_Omentum|eQTL Muscle_Skeletal|eQTL
+Adipose_Subcutaneous|eQTL Heart_Atrial_Appendage|eQTL Artery_Aorta|eQTL
+Whole_Blood|eQTL Pancreas|eQTL Thyroid|eQTL
+Brain_Cerebellar_Hemisphere|eQTL
+Skin_Not_Sun_Exposed_Suprapubic|eQTL<br><br><br><br></p>
+<div id="htmlwidget-d72b6eff4afa454a8832" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-d72b6eff4afa454a8832">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\" options=\"10\">IBD-ebi-a-GCST004131<\/caption>","data":[["33","15","28","17","1","23","22","20","13","19","32","5","9","6","25","2","24","26","3","4","7","8","10","11","12","14","16","18","21","27","29","30","31","34"],["Whole_Blood|eQTL","Cells_Cultured_fibroblasts|eQTL","Skin_Not_Sun_Exposed_Suprapubic|eQTL","Colon_Transverse|eQTL","Adipose_Subcutaneous|eQTL","Liver|eQTL","Heart_Left_Ventricle|eQTL","Esophagus_Muscularis|eQTL","Brain_Nucleus_accumbens_basal_ganglia|eQTL","Esophagus_Mucosa|eQTL","Thyroid|eQTL","Artery_Coronary|eQTL","Brain_Cerebellum|eQTL","Artery_Tibial|eQTL","Muscle_Skeletal|eQTL","Adipose_Visceral_Omentum|eQTL","Lung|eQTL","Pancreas|eQTL","Adrenal_Gland|eQTL","Artery_Aorta|eQTL","Brain_Caudate_basal_ganglia|eQTL","Brain_Cerebellar_Hemisphere|eQTL","Brain_Cortex|eQTL","Brain_Frontal_Cortex_BA9|eQTL","Brain_Hypothalamus|eQTL","Brain_Putamen_basal_ganglia|eQTL","Colon_Sigmoid|eQTL","Esophagus_Gastroesophageal_Junction|eQTL","Heart_Atrial_Appendage|eQTL","Pituitary|eQTL","Skin_Sun_Exposed_Lower_leg|eQTL","Spleen|eQTL","Stomach|eQTL","SNP"],[8784,9791,10145,9577,9944,8130,8896,9900,8818,9984,10450,8833,9035,9991,9382,9711,10049,9180,8750,9763,8878,8906,9075,8762,8434,8711,9407,9421,9364,9309,10397,9108,9121,6427836],[0.0080141916737754,0.00757240283330089,0.00701399350790888,0.0042886878734599,0.00399264827844528,0.00366983288549569,0.00383851674314471,0.00329181749496701,0.00278486608231006,0.0024390337396054,0.00270793930578281,0.00194965607405941,0.00174533291971595,0.00204518903556041,0.00150905825914145,0.00131429147993244,0.0014775531266411,0.000238902495455731,7.28218092454685e-13,5.60128227099012e-09,2.80281338555743e-12,5.23018197478639e-10,3.43447668438332e-10,7.8256519025922e-13,2.79888184312258e-14,9.96192882536356e-10,4.12089361243206e-08,4.78915271566245e-09,2.5596318003787e-08,1.2639322780052e-07,1.54470157897039e-08,2.02583390251746e-07,9.55067972374496e-06,0.15774626830684],["3.68214%","3.47916%","3.2226%","1.97045%","1.83443%","1.68612%","1.76362%","1.51244%","1.27951%","1.12062%","1.24417%","0.89578%","0.8019%","0.93967%","0.69334%","0.60386%","0.67887%","0.10976%","0%","0%","0%","0%","0%","0%","0%","0%","2e-05%","0%","1e-05%","6e-05%","1e-05%","9e-05%","0.00439%","72.47698%"],[3.61568741227985,3.45045220369571,3.33833162060192,2.90402180636685,2.79489075320894,2.91199056993527,2.86688965741843,2.60631045293712,2.55481006769344,2.29802350864013,2.35699133120957,2.19656364473256,2.06324476610313,2.12121090315116,1.88009819466768,1.70744382603551,1.7903196674549,0.0586783840231389,-19.5020688676656,-10.6637093719629,-18.1688130823224,-12.9429694182195,-13.3823490973574,-19.4314627083881,-22.7240818148252,-12.2765061680301,-8.63090415414327,-10.7846929205846,-9.10252922667618,-7.49968896159618,-9.71220666129017,-7.00610673292217,-3.15431703120655,null],[0.220797254429556,0.226883682835409,0.235367858122184,0.298591769721892,0.309199178895835,0.32216845416319,0.315183035254342,0.339818101739939,0.368881242974146,0.393778708110775,0.374022388627566,0.439775369100259,0.464524364980524,0.429518948747825,0.4992191449366,0.534622591378552,0.504472714017357,1.24989316799124,22622.4195535699,257.944375638182,11531.1519072249,844.133985654098,1041.6924083088,21822.7522351551,115392.478730094,611.643083280832,95.0986031139224,278.959045378488,120.664931294251,54.3010276210958,155.327198748886,42.8911937138659,6.24690900472289,null],[5.33061312358999e-27,5.46445753437303e-23,3.10919504203409e-21,5.45081662219306e-12,1.49849203577455e-10,3.68486948019262e-10,8.64787751736826e-10,3.57556034397947e-08,2.81354078940589e-06,6.26953153121532e-06,8.39701123816644e-06,0.000352360958683253,0.00039018477455644,0.00061222461636456,0.00378515802855553,0.00427081447624529,0.00481174882854489,0.454010345273263,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,null],[2.65835725927483e-26,1.57849915903261e-23,4.94819116384286e-21,2.18928594592943e-11,3.24562768469707e-10,5.44196068559782e-10,3.45860164271743e-10,5.54425432612119e-08,8.32534156411073e-07,1.96806970375988e-05,4.61549298831436e-06,0.000222664243469547,0.000859821236499063,0.000230503777967123,0.00389100450102874,0.0124322650583206,0.00595667561093835,0.962919540018212,0.283224783038719,0.257079619719358,0.279733462294317,0.278984957252627,0.274470752735573,0.282895134165638,0.292084007250195,0.284314403324792,0.266277581480405,0.265569225079973,0.267230062841277,0.269497887581574,0.242286220685741,0.275343692362407,0.320356021899024,null],[0.21765015628159,0.21765015628159,0.21765015628159,0.21765015628159,0.21765015628159,0.21765015628159,0.21765015628159,0.21765015628159,0.21765015628159,0.21765015628159,0.21765015628159,0.21765015628159,0.21765015628159,0.21765015628159,0.21765015628159,0.21765015628159,0.21765015628159,0.21765015628159,0.21765015628159,0.21765015628159,0.21765015628159,0.21765015628159,0.21765015628159,0.21765015628159,0.21765015628159,0.21765015628159,0.21765015628159,0.21765015628159,0.21765015628159,0.21765015628159,0.21765015628159,0.21765015628159,0.21765015628159,0.21765015628159]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>group<\/th>\n      <th>group_size<\/th>\n      <th>group_pve<\/th>\n      <th>prop_heritability<\/th>\n      <th>log_enrichment<\/th>\n      <th>log_enrichment_se<\/th>\n      <th>enrichment_pval_fisher<\/th>\n      <th>enrichment_pval_G<\/th>\n      <th>total_pve<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[2,3,5,6,7,8,9]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<p><br><br><br>[1] “p-value cutoff(0.05/num_tissue) = 0.0015625”
+<br><br>Number of selected tissue – fisher = 10 <br>Whole_Blood|eQTL
+Cells_Cultured_fibroblasts|eQTL Skin_Not_Sun_Exposed_Suprapubic|eQTL
+Colon_Transverse|eQTL Adipose_Subcutaneous|eQTL Liver|eQTL
+Heart_Left_Ventricle|eQTL Esophagus_Muscularis|eQTL
+Brain_Nucleus_accumbens_basal_ganglia|eQTL
+Esophagus_Mucosa|eQTL<br><br><br>Number of selected tissue – G = 10
+<br>Whole_Blood|eQTL Cells_Cultured_fibroblasts|eQTL
+Skin_Not_Sun_Exposed_Suprapubic|eQTL Colon_Transverse|eQTL
+Adipose_Subcutaneous|eQTL Liver|eQTL Heart_Left_Ventricle|eQTL
+Esophagus_Muscularis|eQTL Brain_Nucleus_accumbens_basal_ganglia|eQTL
+Esophagus_Mucosa|eQTL<br><br><br><br></p>
+<div id="htmlwidget-73d12cd98287c4e0164c" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-73d12cd98287c4e0164c">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\" options=\"10\">PLT-panukb<\/caption>","data":[["30","33","6","23","19","32","24","26","13","28","11","7","21","25","20","1","27","29","2","9","15","22","31","18","3","4","5","8","10","12","14","16","17","34"],["Spleen|eQTL","Whole_Blood|eQTL","Artery_Tibial|eQTL","Liver|eQTL","Esophagus_Mucosa|eQTL","Thyroid|eQTL","Lung|eQTL","Pancreas|eQTL","Brain_Nucleus_accumbens_basal_ganglia|eQTL","Skin_Not_Sun_Exposed_Suprapubic|eQTL","Brain_Frontal_Cortex_BA9|eQTL","Brain_Caudate_basal_ganglia|eQTL","Heart_Atrial_Appendage|eQTL","Muscle_Skeletal|eQTL","Esophagus_Muscularis|eQTL","Adipose_Subcutaneous|eQTL","Pituitary|eQTL","Skin_Sun_Exposed_Lower_leg|eQTL","Adipose_Visceral_Omentum|eQTL","Brain_Cerebellum|eQTL","Cells_Cultured_fibroblasts|eQTL","Heart_Left_Ventricle|eQTL","Stomach|eQTL","Esophagus_Gastroesophageal_Junction|eQTL","Adrenal_Gland|eQTL","Artery_Aorta|eQTL","Artery_Coronary|eQTL","Brain_Cerebellar_Hemisphere|eQTL","Brain_Cortex|eQTL","Brain_Hypothalamus|eQTL","Brain_Putamen_basal_ganglia|eQTL","Colon_Sigmoid|eQTL","Colon_Transverse|eQTL","SNP"],[9758,9343,10614,8781,10587,11052,10702,9748,9510,10767,9481,9570,10009,9978,10574,10547,9972,11005,10391,9689,10317,9454,9805,10067,9437,10419,9514,9534,9744,9130,9401,10034,10234,8021061],[0.00636550691803498,0.00562363232770516,0.00423495225488014,0.00390709074082124,0.00329042596946679,0.00336736195112597,0.00317916116837639,0.0029323077608307,0.00240369178365399,0.00233027443649169,0.00221701818970146,0.00213390060187893,0.00178390202544423,0.00133741328327663,0.00142088164649107,0.00122414519921258,0.00106943528725927,0.00101033763900591,0.000857483909005161,0.000637662385588314,0.000729246559859601,0.000230619615363526,0.000240864465753408,0.000193071469246269,3.33078881812172e-20,3.41317806956294e-13,1.78767087507477e-08,2.46896497963102e-17,7.77277540008403e-06,1.91745468764384e-24,1.9712144773203e-06,2.81759468925468e-12,3.64086072979161e-12,0.177382966779751],["2.76625%","2.44386%","1.84038%","1.6979%","1.42992%","1.46335%","1.38156%","1.27429%","1.04457%","1.01266%","0.96345%","0.92733%","0.77523%","0.5812%","0.61747%","0.53198%","0.46474%","0.43906%","0.37264%","0.27711%","0.31691%","0.10022%","0.10467%","0.0839%","0%","0%","1e-05%","0%","0.00338%","0%","0.00086%","0%","0%","77.08512%"],[3.38432134593364,3.30386531398142,2.89271310670536,3.00171768162319,2.64290513404387,2.62303316393882,2.59770167558335,2.6102425459366,2.43617685910838,2.28101508071687,2.35838827631808,2.31083330502318,2.0868333629467,1.80186963032075,1.80439433595245,1.65791628157453,1.57886451158371,1.42344979306254,1.31682202500963,1.09057740370959,1.16197852927543,0.0980913921586179,0.105101590904576,-0.142442662388948,-36.3738606186722,-20.3303232128878,-9.37326134050892,-29.7757416954596,-3.32226475799402,-46.1033390874499,-4.65840656982185,-18.1818466520908,-17.9452462923986,null],[0.15015425287363,0.159455649789571,0.183178141169667,0.19050544976102,0.207334716926768,0.205000636895967,0.210876835834147,0.219420376733161,0.242034723185344,0.245799349229178,0.251904360097568,0.256713862224459,0.28054061893177,0.323649194573423,0.314072088026927,0.338205740600707,0.36169755915898,0.372084487471009,0.403729083095048,0.467913450089888,0.437650955941399,0.777284732698156,0.760596197181262,0.849437493379789,64641382.1723194,20193.1796841558,88.2349044357556,2374251.48386309,4.23159789736395,8519647538.14743,8.40270909822327,7028.21313058318,6182.75659990764,null],[5.68276207069912e-50,4.18629648745417e-42,6.91775471166645e-27,1.34442686321977e-26,1.07348550387734e-19,2.79912578389552e-19,1.8962309070775e-18,5.25834038252757e-17,8.52114295824326e-13,5.80290644538254e-12,9.08970737237511e-12,1.08792645609406e-10,1.64346410768021e-08,6.86659424956865e-06,1.1256616037261e-05,6.63605630904444e-05,0.000250187809268646,0.00222975742790314,0.00708048940217399,0.0206817962760733,0.0261358823927488,0.44343755400461,0.461908647587117,0.798204011460324,1,1,1,1,1,1,1,1,1,null],[1.16808507541456e-49,9.54281723417966e-43,1.88180202744495e-27,9.90839888060712e-27,2.7270139084186e-19,1.65574122049655e-19,2.83364593105904e-18,4.3448814738905e-17,4.5044842936379e-13,1.11173555021758e-11,1.12057419376036e-11,5.28578926488619e-11,2.67416154802834e-08,1.67678253387562e-05,8.96138074414951e-06,0.000114522025470608,0.000522908632808629,0.00192603662755987,0.00733832636254469,0.0482612124321524,0.0258700355216123,0.901195215738992,0.891989310968352,0.863646908664416,0.0834191706728225,0.0689159158619719,0.0823059479553772,0.0818499018350458,0.106071159409052,0.0886041501816518,0.0927883200779608,0.0742502190391927,0.071425983203878,null],[0.23011311624161,0.23011311624161,0.23011311624161,0.23011311624161,0.23011311624161,0.23011311624161,0.23011311624161,0.23011311624161,0.23011311624161,0.23011311624161,0.23011311624161,0.23011311624161,0.23011311624161,0.23011311624161,0.23011311624161,0.23011311624161,0.23011311624161,0.23011311624161,0.23011311624161,0.23011311624161,0.23011311624161,0.23011311624161,0.23011311624161,0.23011311624161,0.23011311624161,0.23011311624161,0.23011311624161,0.23011311624161,0.23011311624161,0.23011311624161,0.23011311624161,0.23011311624161,0.23011311624161,0.23011311624161]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>group<\/th>\n      <th>group_size<\/th>\n      <th>group_pve<\/th>\n      <th>prop_heritability<\/th>\n      <th>log_enrichment<\/th>\n      <th>log_enrichment_se<\/th>\n      <th>enrichment_pval_fisher<\/th>\n      <th>enrichment_pval_G<\/th>\n      <th>total_pve<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[2,3,5,6,7,8,9]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<p><br><br><br>[1] “p-value cutoff(0.05/num_tissue) = 0.0015625”
+<br><br>Number of selected tissue – fisher = 10 <br>Spleen|eQTL
+Whole_Blood|eQTL Artery_Tibial|eQTL Liver|eQTL Esophagus_Mucosa|eQTL
+Thyroid|eQTL Lung|eQTL Pancreas|eQTL
+Brain_Nucleus_accumbens_basal_ganglia|eQTL
+Skin_Not_Sun_Exposed_Suprapubic|eQTL<br><br><br>Number of selected
+tissue – G = 10 <br>Spleen|eQTL Whole_Blood|eQTL Artery_Tibial|eQTL
+Liver|eQTL Esophagus_Mucosa|eQTL Thyroid|eQTL Lung|eQTL Pancreas|eQTL
+Brain_Nucleus_accumbens_basal_ganglia|eQTL
+Skin_Not_Sun_Exposed_Suprapubic|eQTL<br><br><br><br></p>
+<div id="htmlwidget-0796cbf5802287e6981e" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-0796cbf5802287e6981e">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\" options=\"10\">RA-panukb<\/caption>","data":[["30","21","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","22","23","24","25","26","27","28","29","31","32","33","34"],["Spleen|eQTL","Heart_Atrial_Appendage|eQTL","Adipose_Subcutaneous|eQTL","Adipose_Visceral_Omentum|eQTL","Adrenal_Gland|eQTL","Artery_Aorta|eQTL","Artery_Coronary|eQTL","Artery_Tibial|eQTL","Brain_Caudate_basal_ganglia|eQTL","Brain_Cerebellar_Hemisphere|eQTL","Brain_Cerebellum|eQTL","Brain_Cortex|eQTL","Brain_Frontal_Cortex_BA9|eQTL","Brain_Hypothalamus|eQTL","Brain_Nucleus_accumbens_basal_ganglia|eQTL","Brain_Putamen_basal_ganglia|eQTL","Cells_Cultured_fibroblasts|eQTL","Colon_Sigmoid|eQTL","Colon_Transverse|eQTL","Esophagus_Gastroesophageal_Junction|eQTL","Esophagus_Mucosa|eQTL","Esophagus_Muscularis|eQTL","Heart_Left_Ventricle|eQTL","Liver|eQTL","Lung|eQTL","Muscle_Skeletal|eQTL","Pancreas|eQTL","Pituitary|eQTL","Skin_Not_Sun_Exposed_Suprapubic|eQTL","Skin_Sun_Exposed_Lower_leg|eQTL","Stomach|eQTL","Thyroid|eQTL","Whole_Blood|eQTL","SNP"],[9758,10009,10547,10391,9437,10419,9514,10614,9570,9534,9689,9744,9481,9130,9510,9401,10317,10034,10234,10067,10587,10574,9454,8781,10702,9978,9748,9972,10767,11005,9805,11052,9343,8021061],[0.00077446909816326,0.0005667396183615,2.36630346770328e-14,7.25210606254472e-21,4.25793475438259e-17,1.23093540439979e-07,4.31154557115611e-18,4.47561433861134e-18,1.24235413229064e-15,2.47696474408147e-17,1.84822021167002e-18,3.99457363628923e-17,1.44213243897918e-17,1.01129604328613e-17,8.18597651869796e-17,2.07347433379247e-20,5.81109006905457e-12,4.13998661538034e-11,1.14509568428634e-11,8.51611069733575e-17,5.77357633271487e-21,4.87928612234785e-05,2.3574098705065e-15,5.81397114703663e-20,1.5999462585561e-08,6.15980004542941e-17,1.33954163681764e-22,1.34057337628336e-12,4.2665337864859e-12,1.27618017778362e-14,6.25363410755324e-20,1.61307996981553e-16,3.75888760375553e-07,0.00274454964032906],["18.7293%","13.7057%","0%","0%","0%","0.00298%","0%","0%","0%","0%","0%","0%","0%","0%","0%","0%","0%","0%","0%","0%","0%","1.17998%","0%","0%","0.00039%","0%","0%","0%","0%","0%","0%","0%","0.00909%","66.37257%"],[5.44654400993348,5.10886899448351,-18.84273947265,-33.8259708123683,-25.0518362013411,-3.36598807233961,-27.3500353615635,-27.4220976643133,-21.692437257528,-25.6038127512799,-28.2153354977068,-25.1476971733671,-26.1391492289274,-26.4563152867804,-24.4059036785513,-32.6753280347448,-13.3170816940131,-11.325758524855,-12.6306990634309,-24.423285313642,-34.0726578133841,2.60163956928607,-21.0396865541398,-31.5760640474949,-5.43317707425275,-24.7383206641671,-37.7536424189526,-14.7497405970887,-13.6687410094725,-19.5027053674719,-31.6134672982436,-23.8778632494313,-2.14063571789509,null],[0.419013567635713,0.475178517163171,66964.793180752,120962200.40579,1578636.90267066,29.3612022790979,4960954.70210984,4869175.45005592,292253.046828517,2069768.81600503,7577132.71917468,1629845.86973357,2712558.91161397,3239236.05590827,1138535.31132731,71537279.4531806,4273.19733608062,1600.96665566226,3044.11365987615,1116249.05168029,135568657.676886,1.48771885804219,212160.34021405,42721384.2191554,81.4386033773802,1312497.3783925,890027946.056855,8896.85386245097,4987.05499801292,91185.4938651943,41192250.3350937,811061.530271612,16.8028030781917,null],[1.62955309120386e-14,4.97991457648607e-10,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,null],[1.97151561114028e-15,5.6683387076083e-11,0.794308467450188,0.795800431688955,0.805196375051585,0.811262937169476,0.804419758671689,0.793671296038622,0.803857040267168,0.804218584399037,0.802667056375399,0.802119690484468,0.80475218269616,0.808326704734024,0.804460022344745,0.805560622215961,0.796514692016534,0.799275028218378,0.797318527338056,0.798937863124086,0.793927802009458,0.215488416074827,0.805024627489835,0.811953866232824,0.795705808075678,0.799809091285291,0.802079946289158,0.799868582053594,0.792226040561888,0.789995190357085,0.801514530664736,0.789558041370586,0.845489736540449,null],[0.00413506626415027,0.00413506626415027,0.00413506626415027,0.00413506626415027,0.00413506626415027,0.00413506626415027,0.00413506626415027,0.00413506626415027,0.00413506626415027,0.00413506626415027,0.00413506626415027,0.00413506626415027,0.00413506626415027,0.00413506626415027,0.00413506626415027,0.00413506626415027,0.00413506626415027,0.00413506626415027,0.00413506626415027,0.00413506626415027,0.00413506626415027,0.00413506626415027,0.00413506626415027,0.00413506626415027,0.00413506626415027,0.00413506626415027,0.00413506626415027,0.00413506626415027,0.00413506626415027,0.00413506626415027,0.00413506626415027,0.00413506626415027,0.00413506626415027,0.00413506626415027]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>group<\/th>\n      <th>group_size<\/th>\n      <th>group_pve<\/th>\n      <th>prop_heritability<\/th>\n      <th>log_enrichment<\/th>\n      <th>log_enrichment_se<\/th>\n      <th>enrichment_pval_fisher<\/th>\n      <th>enrichment_pval_G<\/th>\n      <th>total_pve<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[2,3,5,6,7,8,9]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<p><br><br><br>[1] “p-value cutoff(0.05/num_tissue) = 0.0015625”
+<br><br>Number of selected tissue – fisher = 2 <br>Spleen|eQTL
+Heart_Atrial_Appendage|eQTL<br><br><br>Number of selected tissue – G = 2
+<br>Spleen|eQTL Heart_Atrial_Appendage|eQTL<br><br><br><br></p>
+<div id="htmlwidget-35c46d2ddbc1fab8b4dc" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-35c46d2ddbc1fab8b4dc">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\" options=\"10\">RBC-panukb<\/caption>","data":[["1","33","8","16","15","20","23","29","9","32","25","12","21","2","22","6","7","11","28","24","26","3","4","5","10","13","14","17","18","19","27","30","31","34"],["Adipose_Subcutaneous|eQTL","Whole_Blood|eQTL","Brain_Cerebellar_Hemisphere|eQTL","Colon_Sigmoid|eQTL","Cells_Cultured_fibroblasts|eQTL","Esophagus_Muscularis|eQTL","Liver|eQTL","Skin_Sun_Exposed_Lower_leg|eQTL","Brain_Cerebellum|eQTL","Thyroid|eQTL","Muscle_Skeletal|eQTL","Brain_Hypothalamus|eQTL","Heart_Atrial_Appendage|eQTL","Adipose_Visceral_Omentum|eQTL","Heart_Left_Ventricle|eQTL","Artery_Tibial|eQTL","Brain_Caudate_basal_ganglia|eQTL","Brain_Frontal_Cortex_BA9|eQTL","Skin_Not_Sun_Exposed_Suprapubic|eQTL","Lung|eQTL","Pancreas|eQTL","Adrenal_Gland|eQTL","Artery_Aorta|eQTL","Artery_Coronary|eQTL","Brain_Cortex|eQTL","Brain_Nucleus_accumbens_basal_ganglia|eQTL","Brain_Putamen_basal_ganglia|eQTL","Colon_Transverse|eQTL","Esophagus_Gastroesophageal_Junction|eQTL","Esophagus_Mucosa|eQTL","Pituitary|eQTL","Spleen|eQTL","Stomach|eQTL","SNP"],[10547,9343,9534,10034,10317,10574,8781,11005,9689,11052,9978,9130,10009,10391,9454,10614,9570,9481,10767,10702,9748,9437,10419,9514,9744,9510,9401,10234,10067,10587,9972,9758,9805,8021061],[0.00493821280069744,0.00443309406369829,0.00372649141761109,0.00303595960046177,0.00273654981891223,0.0023356484220874,0.00205060554939689,0.00207998537493013,0.00189351628975569,0.00176878036871127,0.00156916970661017,0.00127432520230935,0.00131435766437443,0.00135931154499083,0.00120084263952091,0.00115093257522103,0.00109066928674215,0.000980314793947976,0.00070514603562892,0.000562899258972805,0.000311762764983852,2.36809447432632e-05,1.28912233600489e-12,3.86652129192035e-23,9.00180951963489e-16,1.8267098708348e-05,1.25738498896721e-06,2.34236501088241e-19,2.38927889753851e-07,8.05551104534589e-09,2.83408482299339e-17,6.46576335921657e-07,6.29281607369607e-08,0.136360166501369],["2.79117%","2.50566%","2.10628%","1.71598%","1.54675%","1.32015%","1.15904%","1.17565%","1.07025%","0.99975%","0.88692%","0.72027%","0.7429%","0.76831%","0.67874%","0.65053%","0.61647%","0.55409%","0.39856%","0.31816%","0.17621%","0.01338%","0%","0%","0%","0.01032%","0.00071%","0%","0.00014%","0%","0%","0.00037%","4e-05%","77.07321%"],[3.31568834327463,3.32899669276117,3.13512911354795,2.87907454461524,2.74743123472086,2.56441770964565,2.62007116116637,2.40853746548972,2.44197066796997,2.24220516285349,2.22469027880161,2.10537740887219,2.04438970796032,2.04056462585114,2.01111189566012,1.85292498237738,1.90268464493757,1.80535498154459,1.34869006234475,1.12944107521555,0.631951433259258,-1.91319638848546,-18.7384089541755,-42.8775847280075,-25.9383059869629,-2.18047128055319,-4.84501086877213,-34.2413895728452,-6.57408519775348,-10.0142546141585,-29.4197270782095,-5.54738043438161,-7.88188292956363,null],[0.157322742361542,0.165741481890619,0.18037974791639,0.199421671666236,0.209854315198179,0.226865231238663,0.241857877933523,0.240213771770538,0.251587337742671,0.260228114721776,0.276087570231646,0.306061446695816,0.301418715252656,0.296441746877904,0.315219067686759,0.321947863517153,0.330642453500168,0.34863187376689,0.410717990019631,0.459479265344075,0.616890531921255,2.23623022771498,9583.75843340977,1749938241.98394,362675.330598754,2.54608969069786,9.70399459931256,22483071.3646067,22.2612649351123,121.237336810163,2043979.34534924,13.5323720705207,43.377098067542,null],[1.35518145852368e-44,1.96525690672041e-39,8.53019498067067e-31,1.12081527329898e-23,1.00121330874072e-19,4.91036423839824e-16,5.0325097429244e-14,1.52371326651813e-13,2.85801495655926e-12,1.94758373497485e-10,4.92087034072686e-09,1.57006185508882e-07,3.84175051340307e-07,5.51498548789762e-07,1.79177078735972e-06,4.899138088032e-06,1.45847768234065e-05,9.04951228258618e-05,0.00521084193659018,0.0205387564402659,0.166935408446768,1,1,1,1,1,1,1,1,1,1,1,1,null],[3.07237877656031e-44,3.95895455065445e-40,1.75010810748372e-31,2.96730687575709e-23,7.09516261469599e-20,9.95729253178573e-16,2.15553164119308e-14,4.51899035623542e-13,2.98841119924498e-12,2.39194450928883e-10,2.98839101759107e-09,2.88078171779937e-07,3.46610830893928e-07,2.27986885846322e-07,1.49912335972066e-06,9.72348725415077e-06,1.10624942523362e-05,6.29486015320302e-05,0.007183993839436,0.038247877878814,0.353862667889193,0.214124627486382,0.0837938583143724,0.0984669768648904,0.0944902523180138,0.186117498171759,0.10865487692326,0.0865883312293426,0.090907441023737,0.0814156242299353,0.0907201165522943,0.0985604539050589,0.0940167683946616,null],[0.176922903598561,0.176922903598561,0.176922903598561,0.176922903598561,0.176922903598561,0.176922903598561,0.176922903598561,0.176922903598561,0.176922903598561,0.176922903598561,0.176922903598561,0.176922903598561,0.176922903598561,0.176922903598561,0.176922903598561,0.176922903598561,0.176922903598561,0.176922903598561,0.176922903598561,0.176922903598561,0.176922903598561,0.176922903598561,0.176922903598561,0.176922903598561,0.176922903598561,0.176922903598561,0.176922903598561,0.176922903598561,0.176922903598561,0.176922903598561,0.176922903598561,0.176922903598561,0.176922903598561,0.176922903598561]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>group<\/th>\n      <th>group_size<\/th>\n      <th>group_pve<\/th>\n      <th>prop_heritability<\/th>\n      <th>log_enrichment<\/th>\n      <th>log_enrichment_se<\/th>\n      <th>enrichment_pval_fisher<\/th>\n      <th>enrichment_pval_G<\/th>\n      <th>total_pve<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[2,3,5,6,7,8,9]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<p><br><br><br>[1] “p-value cutoff(0.05/num_tissue) = 0.0015625”
+<br><br>Number of selected tissue – fisher = 10
+<br>Adipose_Subcutaneous|eQTL Whole_Blood|eQTL
+Brain_Cerebellar_Hemisphere|eQTL Colon_Sigmoid|eQTL
+Cells_Cultured_fibroblasts|eQTL Esophagus_Muscularis|eQTL Liver|eQTL
+Skin_Sun_Exposed_Lower_leg|eQTL Brain_Cerebellum|eQTL
+Thyroid|eQTL<br><br><br>Number of selected tissue – G = 10
+<br>Adipose_Subcutaneous|eQTL Whole_Blood|eQTL
+Brain_Cerebellar_Hemisphere|eQTL Colon_Sigmoid|eQTL
+Cells_Cultured_fibroblasts|eQTL Esophagus_Muscularis|eQTL Liver|eQTL
+Skin_Sun_Exposed_Lower_leg|eQTL Brain_Cerebellum|eQTL
+Thyroid|eQTL<br><br><br><br></p>
+<div id="htmlwidget-2a1b6e0e6b8a75d77da4" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-2a1b6e0e6b8a75d77da4">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\" options=\"10\">SBP-ukb-a-360<\/caption>","data":[["6","33","25","3","4","30","29","26","21","9","2","28","10","1","5","17","19","24","7","32","8","11","12","13","14","15","16","18","20","22","23","27","31","34"],["Artery_Tibial|eQTL","Whole_Blood|eQTL","Muscle_Skeletal|eQTL","Adrenal_Gland|eQTL","Artery_Aorta|eQTL","Spleen|eQTL","Skin_Sun_Exposed_Lower_leg|eQTL","Pancreas|eQTL","Heart_Atrial_Appendage|eQTL","Brain_Cerebellum|eQTL","Adipose_Visceral_Omentum|eQTL","Skin_Not_Sun_Exposed_Suprapubic|eQTL","Brain_Cortex|eQTL","Adipose_Subcutaneous|eQTL","Artery_Coronary|eQTL","Colon_Transverse|eQTL","Esophagus_Mucosa|eQTL","Lung|eQTL","Brain_Caudate_basal_ganglia|eQTL","Thyroid|eQTL","Brain_Cerebellar_Hemisphere|eQTL","Brain_Frontal_Cortex_BA9|eQTL","Brain_Hypothalamus|eQTL","Brain_Nucleus_accumbens_basal_ganglia|eQTL","Brain_Putamen_basal_ganglia|eQTL","Cells_Cultured_fibroblasts|eQTL","Colon_Sigmoid|eQTL","Esophagus_Gastroesophageal_Junction|eQTL","Esophagus_Muscularis|eQTL","Heart_Left_Ventricle|eQTL","Liver|eQTL","Pituitary|eQTL","Stomach|eQTL","SNP"],[10137,8903,9543,8881,9879,9234,10466,9230,9496,9166,9855,10220,9201,10071,8972,9698,10051,10168,9003,10528,9029,8919,8571,8942,8876,9874,9527,9550,10037,8977,8253,9435,9221,6396527],[0.00250222446334622,0.00135028059917879,0.00133552521615991,0.0012503853001257,0.00107645582079422,0.000991722616777215,0.000917070323167128,0.000908219344495257,0.000853187570721837,0.000676437154683133,0.000659962129242233,0.000654065031610274,0.00055805133768346,0.000369165020444714,0.000282802590899124,0.000270499770260173,0.000256075579651408,0.00010832045571553,5.66921855534358e-05,5.47477516076568e-05,6.59507674089766e-08,1.06446173306124e-08,6.28982100066731e-08,3.33421116553564e-08,5.21176421341152e-08,1.09375431592786e-05,3.63612497052486e-17,1.75492864993255e-10,1.43152574873923e-11,1.16260900806122e-10,1.28890633449803e-06,3.20378333132036e-06,1.388731093325e-11,0.0418889326331163],["4.38706%","2.3674%","2.34153%","2.19226%","1.88731%","1.73875%","1.60787%","1.59235%","1.49586%","1.18597%","1.15709%","1.14675%","0.97841%","0.64724%","0.49583%","0.47426%","0.44897%","0.18991%","0.0994%","0.09599%","0.00012%","2e-05%","0.00011%","6e-05%","9e-05%","0.01918%","0%","0%","0%","0%","0.00226%","0.00562%","0%","73.44235%"],[3.62947683659149,3.1424129349077,3.06200554479553,3.0680263920456,2.81175151665026,2.79728465633609,2.59378578208301,2.70976040216214,2.61884229376843,2.42207209189621,2.32493704525477,2.27959373087238,2.22587231978731,1.72231727970455,1.57137401133898,1.44908510270886,1.35853403429887,0.486582014811939,-0.0391879423965813,-0.230568540835134,-6.79855485056651,-8.61015122982065,-6.79388845293968,-7.4709598120624,-7.01686923957448,-1.77697030974825,-28.1709138171819,-12.7837197932652,-15.3397293647427,-13.133605965871,-3.73604918211836,-2.9593602439116,-15.2852849763943,null],[0.157232852890044,0.211400181247621,0.212549068836774,0.219447777945983,0.236097290937302,0.245736844891782,0.255362357425965,0.256553960691406,0.264547161290174,0.296530352207966,0.300167841439135,0.301504583108466,0.326053194351421,0.400068292501842,0.456643375770892,0.466858620728109,0.479754783957773,0.736444605837627,1.01737887980595,1.03527366401993,29.8101631462057,74.2008685438366,30.5249611940134,41.925434582559,33.5337276977525,2.31508348506113,1269563.89836069,577.888741530074,2023.36569649825,709.99799702727,6.74325196782315,4.27718212853224,2054.30482019631,null],[4.4075859937449e-51,1.94944438424373e-23,8.94856193113159e-23,8.92649078530637e-21,4.10478871712049e-16,2.22968215330895e-15,2.3352696372852e-13,5.44423564808128e-13,8.1013249689169e-13,1.20147751469124e-09,2.88005429996308e-08,4.13687714337937e-08,1.53903556238726e-07,0.00111254166118274,0.00376303328346565,0.00519611088529204,0.0277631174785239,0.314915255145635,0.634724891497936,0.691963423122976,1,1,1,1,1,1,1,1,1,1,1,1,1,null],[1.064874225008e-50,1.53633320362656e-23,1.54904614974355e-22,2.9023102022861e-21,1.390711239261e-16,2.64806754940526e-15,5.82001947424996e-13,1.37477667947313e-13,2.58089191594496e-12,3.82747326589788e-09,1.63302027789712e-08,3.01829983272893e-08,4.92386617321908e-07,0.000770708766692794,0.00617918942385278,0.0121138686810298,0.0205614059872368,0.540982891722769,0.969076256212766,0.816877919989197,0.157433114494051,0.158526999400942,0.168378018491451,0.158633181702169,0.160675189356931,0.279634506202169,0.144687532643611,0.14421167357509,0.134379290885159,0.156822818662222,0.201036496363619,0.195704754603728,0.151299984963695,null],[0.0570364784013637,0.0570364784013637,0.0570364784013637,0.0570364784013637,0.0570364784013637,0.0570364784013637,0.0570364784013637,0.0570364784013637,0.0570364784013637,0.0570364784013637,0.0570364784013637,0.0570364784013637,0.0570364784013637,0.0570364784013637,0.0570364784013637,0.0570364784013637,0.0570364784013637,0.0570364784013637,0.0570364784013637,0.0570364784013637,0.0570364784013637,0.0570364784013637,0.0570364784013637,0.0570364784013637,0.0570364784013637,0.0570364784013637,0.0570364784013637,0.0570364784013637,0.0570364784013637,0.0570364784013637,0.0570364784013637,0.0570364784013637,0.0570364784013637,0.0570364784013637]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>group<\/th>\n      <th>group_size<\/th>\n      <th>group_pve<\/th>\n      <th>prop_heritability<\/th>\n      <th>log_enrichment<\/th>\n      <th>log_enrichment_se<\/th>\n      <th>enrichment_pval_fisher<\/th>\n      <th>enrichment_pval_G<\/th>\n      <th>total_pve<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[2,3,5,6,7,8,9]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<p><br><br><br>[1] “p-value cutoff(0.05/num_tissue) = 0.0015625”
+<br><br>Number of selected tissue – fisher = 10 <br>Artery_Tibial|eQTL
+Whole_Blood|eQTL Muscle_Skeletal|eQTL Adrenal_Gland|eQTL
+Artery_Aorta|eQTL Spleen|eQTL Skin_Sun_Exposed_Lower_leg|eQTL
+Pancreas|eQTL Heart_Atrial_Appendage|eQTL
+Brain_Cerebellum|eQTL<br><br><br>Number of selected tissue – G = 10
+<br>Artery_Tibial|eQTL Whole_Blood|eQTL Muscle_Skeletal|eQTL
+Adrenal_Gland|eQTL Artery_Aorta|eQTL Spleen|eQTL
+Skin_Sun_Exposed_Lower_leg|eQTL Pancreas|eQTL
+Heart_Atrial_Appendage|eQTL Brain_Cerebellum|eQTL<br><br><br><br></p>
+<div id="htmlwidget-f41426fe0b90d0c09df4" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-f41426fe0b90d0c09df4">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\" options=\"10\">T1D-GCST90014023<\/caption>","data":[["33","26","15","2","24","4","32","6","28","20","29","17","27","18","1","3","5","7","8","9","10","11","12","13","14","16","19","21","22","23","25","30","31","34"],["Whole_Blood|eQTL","Pancreas|eQTL","Cells_Cultured_fibroblasts|eQTL","Adipose_Visceral_Omentum|eQTL","Lung|eQTL","Artery_Aorta|eQTL","Thyroid|eQTL","Artery_Tibial|eQTL","Skin_Not_Sun_Exposed_Suprapubic|eQTL","Esophagus_Muscularis|eQTL","Skin_Sun_Exposed_Lower_leg|eQTL","Colon_Transverse|eQTL","Pituitary|eQTL","Esophagus_Gastroesophageal_Junction|eQTL","Adipose_Subcutaneous|eQTL","Adrenal_Gland|eQTL","Artery_Coronary|eQTL","Brain_Caudate_basal_ganglia|eQTL","Brain_Cerebellar_Hemisphere|eQTL","Brain_Cerebellum|eQTL","Brain_Cortex|eQTL","Brain_Frontal_Cortex_BA9|eQTL","Brain_Hypothalamus|eQTL","Brain_Nucleus_accumbens_basal_ganglia|eQTL","Brain_Putamen_basal_ganglia|eQTL","Colon_Sigmoid|eQTL","Esophagus_Mucosa|eQTL","Heart_Atrial_Appendage|eQTL","Heart_Left_Ventricle|eQTL","Liver|eQTL","Muscle_Skeletal|eQTL","Spleen|eQTL","Stomach|eQTL","SNP"],[9332,9737,10312,10385,10689,10410,11045,10609,10763,10565,10999,10225,9966,10061,10539,9422,9506,9562,9528,9684,9731,9475,9121,9500,9393,10026,10577,10004,9444,8774,9971,9748,9794,7539915],[0.00217037635614143,0.00201238926257379,0.00146679235755242,0.00151051643618543,0.00144440780914938,0.00120554855755889,0.00124707363533817,0.00116658566030161,0.0010786989350496,0.000864442554450846,0.00097609303411584,0.000741815990934644,0.000205864098660242,0.00012920008595757,1.73235950071991e-05,9.62685334120039e-14,1.91966760238566e-06,2.0278538216355e-16,2.85186828782381e-11,1.92841004745768e-13,1.34989479956281e-11,6.74662142590493e-18,9.62090227224304e-10,4.41907856030113e-19,1.04072917887917e-19,2.28625451713139e-17,2.72033451681581e-17,1.82260624957895e-18,6.77245503980088e-11,5.08703491096705e-10,4.0294867915999e-05,6.74032819294532e-10,4.45941724864361e-14,0.0345497310016843],["4.26995%","3.95913%","2.88573%","2.97176%","2.8417%","2.37177%","2.45347%","2.29511%","2.12221%","1.70069%","1.92034%","1.45943%","0.40501%","0.25419%","0.03408%","0%","0.00378%","0%","0%","0%","0%","0%","0%","0%","0%","0%","0%","0%","0%","0%","0.07928%","0%","0%","67.97238%"],[3.92701765767922,3.80895606530643,3.43533610459297,3.4576555690597,3.38405066492973,3.22973423853111,3.20438830138739,3.17794496922673,3.0852077221775,2.8823493467302,2.96356468846758,2.76207666416194,1.50584808031328,1.03050683767695,-1.02520207209757,-19.9213605633305,-3.12195998656494,-26.0988586927424,-14.2413748335953,-19.2540636919101,-15.0104043233136,-29.4928248724826,-10.679170623269,-32.2211556593603,-33.655838194591,-28.3288917009406,-28.2085518540787,-30.8559275026015,-13.3676302835475,-11.2776269017898,-0.125645621668571,-11.1014827463528,-20.7296214571443,null],[0.299231331895485,0.31010607335929,0.360567935953404,0.355523809742799,0.363244889796204,0.396303071008329,0.389878469574017,0.402653324818264,0.418230211303538,0.465809465758234,0.439042525909105,0.501978985192513,0.945758661094185,1.19252890508996,3.25156833773851,43607.6635344454,9.76570954670291,950137.968252872,2533.61291494178,30810.9651793964,3682.60411345855,5209089.5722975,436.211489399896,20353501.5599566,41940744.0160672,2829715.06994431,2594142.56629349,10022096.2296392,1644.11401372417,599.891405636042,2.13269348174117,521.152083654384,64071.6548727269,null],[6.71902230522886e-17,5.12714525429333e-15,4.70553208942408e-10,4.97015596140051e-10,6.21589371782022e-10,1.49586360197448e-08,2.23130077902086e-08,4.3396111184116e-07,4.71531870085083e-07,9.37220521986704e-06,1.13555015930387e-05,0.000153835194639762,0.221971135348758,0.223828963539454,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,null],[9.09997983848146e-17,4.14215194854978e-15,3.7826836828442e-10,1.74107970190179e-10,7.65214015497429e-10,5.10938186231806e-08,3.59088164235895e-08,1.15799697402876e-07,5.90242415075738e-07,1.98919545380455e-05,3.81976875319596e-06,0.000125038626501889,0.201362388431619,0.460115812275955,0.704191576586142,0.492356222483672,0.532745408211269,0.48916038969994,0.489935486362579,0.486403584375501,0.485349446821914,0.491142267953057,0.499404995383815,0.490571391045145,0.493022575208214,0.478810909259541,0.466978765714267,0.479293441609988,0.491856572419583,0.507651525103993,0.95202057983333,0.48500755428977,0.483939941831477,null],[0.0508290761610824,0.0508290761610824,0.0508290761610824,0.0508290761610824,0.0508290761610824,0.0508290761610824,0.0508290761610824,0.0508290761610824,0.0508290761610824,0.0508290761610824,0.0508290761610824,0.0508290761610824,0.0508290761610824,0.0508290761610824,0.0508290761610824,0.0508290761610824,0.0508290761610824,0.0508290761610824,0.0508290761610824,0.0508290761610824,0.0508290761610824,0.0508290761610824,0.0508290761610824,0.0508290761610824,0.0508290761610824,0.0508290761610824,0.0508290761610824,0.0508290761610824,0.0508290761610824,0.0508290761610824,0.0508290761610824,0.0508290761610824,0.0508290761610824,0.0508290761610824]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>group<\/th>\n      <th>group_size<\/th>\n      <th>group_pve<\/th>\n      <th>prop_heritability<\/th>\n      <th>log_enrichment<\/th>\n      <th>log_enrichment_se<\/th>\n      <th>enrichment_pval_fisher<\/th>\n      <th>enrichment_pval_G<\/th>\n      <th>total_pve<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[2,3,5,6,7,8,9]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<p><br><br><br>[1] “p-value cutoff(0.05/num_tissue) = 0.0015625”
+<br><br>Number of selected tissue – fisher = 10 <br>Whole_Blood|eQTL
+Pancreas|eQTL Cells_Cultured_fibroblasts|eQTL
+Adipose_Visceral_Omentum|eQTL Lung|eQTL Artery_Aorta|eQTL Thyroid|eQTL
+Artery_Tibial|eQTL Skin_Not_Sun_Exposed_Suprapubic|eQTL
+Esophagus_Muscularis|eQTL<br><br><br>Number of selected tissue – G = 10
+<br>Whole_Blood|eQTL Pancreas|eQTL Cells_Cultured_fibroblasts|eQTL
+Adipose_Visceral_Omentum|eQTL Lung|eQTL Artery_Aorta|eQTL Thyroid|eQTL
+Artery_Tibial|eQTL Skin_Not_Sun_Exposed_Suprapubic|eQTL
+Esophagus_Muscularis|eQTL<br><br><br><br></p>
+<div id="htmlwidget-35e1d0e81f5ada6ecac0" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-35e1d0e81f5ada6ecac0">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\" options=\"10\">WBC-ieu-b-30<\/caption>","data":[["33","15","20","28","24","25","23","4","21","8","30","17","1","31","19","32","22","2","7","6","9","26","3","5","10","11","12","13","14","16","18","27","29","34"],["Whole_Blood|eQTL","Cells_Cultured_fibroblasts|eQTL","Esophagus_Muscularis|eQTL","Skin_Not_Sun_Exposed_Suprapubic|eQTL","Lung|eQTL","Muscle_Skeletal|eQTL","Liver|eQTL","Artery_Aorta|eQTL","Heart_Atrial_Appendage|eQTL","Brain_Cerebellar_Hemisphere|eQTL","Spleen|eQTL","Colon_Transverse|eQTL","Adipose_Subcutaneous|eQTL","Stomach|eQTL","Esophagus_Mucosa|eQTL","Thyroid|eQTL","Heart_Left_Ventricle|eQTL","Adipose_Visceral_Omentum|eQTL","Brain_Caudate_basal_ganglia|eQTL","Artery_Tibial|eQTL","Brain_Cerebellum|eQTL","Pancreas|eQTL","Adrenal_Gland|eQTL","Artery_Coronary|eQTL","Brain_Cortex|eQTL","Brain_Frontal_Cortex_BA9|eQTL","Brain_Hypothalamus|eQTL","Brain_Nucleus_accumbens_basal_ganglia|eQTL","Brain_Putamen_basal_ganglia|eQTL","Colon_Sigmoid|eQTL","Esophagus_Gastroesophageal_Junction|eQTL","Pituitary|eQTL","Skin_Sun_Exposed_Lower_leg|eQTL","SNP"],[8455,9443,9541,9736,9701,9110,7782,9402,9025,8521,8721,9218,9589,8728,9570,10070,8514,9372,8481,9648,8691,8757,8428,8460,8686,8414,8073,8475,8353,8999,9049,8865,9943,6013866],[0.00689409362852147,0.00328010976350387,0.00243832637736671,0.00236138338590281,0.0022046281101936,0.00213978961757586,0.00166114099208595,0.00162902075253842,0.00155992498487175,0.0015021823474394,0.00141106873585848,0.00129263123521564,0.00118572297234068,0.000790810512998661,0.000692281522342027,0.000570741048114479,0.00050305641406231,0.000475099843846352,0.000451661718072666,0.000425451819265151,0.000182537140600092,0.000168297326676417,7.91495252357042e-05,1.00026942214009e-22,1.81760060455637e-31,1.7676354216208e-15,1.55154496783191e-15,2.41613112431788e-06,1.41136992508114e-29,1.09567476401472e-15,3.20994401915473e-25,4.25305956962308e-24,1.90570507806283e-05,0.0778914996967814],["6.16579%","2.93359%","2.18074%","2.11192%","1.97173%","1.91374%","1.48565%","1.45693%","1.39513%","1.34349%","1.262%","1.15607%","1.06046%","0.70727%","0.61915%","0.51045%","0.44991%","0.42491%","0.40395%","0.38051%","0.16325%","0.15052%","0.07079%","0%","0%","0%","0%","0.00216%","0%","0%","0%","0%","0.01704%","69.66286%"],[4.14241331998782,3.28910941321335,2.98221984445087,2.92992352525819,2.86483611736209,2.89784105656047,2.80219758949832,2.59356288954636,2.5911454824409,2.61089149739145,2.52511972890126,2.38202801707318,2.25624233679458,1.94527311100129,1.72011046580909,1.47612586832465,1.51774142579145,1.36454943306508,1.41385609510256,1.22515204259098,0.483416629192465,0.394629810448054,-0.32146973372526,-41.5376903014773,-61.6900716026136,-24.8447691144607,-24.9337888352239,-3.81620212716318,-57.2987661096584,-25.3902579264795,-47.3467665495885,-44.7422530165575,-1.91068065899148,null],[0.113935288283922,0.162028130199276,0.187046667425334,0.189992795443939,0.196456325177171,0.199320686192293,0.22557122302603,0.227792288277496,0.23268180486884,0.237020501659071,0.244433458575064,0.25522777244947,0.266331549389313,0.325368245399276,0.347572257933608,0.382535106352585,0.407275926628063,0.419033740480404,0.429697810536177,0.442685960068462,0.674886629257533,0.702801833089657,1.02429460196426,910740380.122685,21365047355686.1,216649.026107888,231244.230224947,5.86001634670835,2424558457169,275177.08104674,16076975864.6117,4416745306.48952,2.08676402483783,null],[3.45369588601506e-114,3.89844919332055e-42,4.4271997860707e-27,1.42880418005077e-25,2.33364922992319e-24,8.67078649933874e-24,7.94260567817618e-18,2.71678097337179e-16,1.77008109114841e-15,9.01016274108389e-15,1.72763092172283e-13,4.79319771881109e-12,8.94710446595152e-10,1.86624795159681e-06,0.000170173253862212,0.0012362232938816,0.00252980777005521,0.00402177742982122,0.0115934811016009,0.0190688059241753,0.393694028897685,0.397288063102255,0.731920970236314,1,1,1,1,1,1,1,1,1,1,null],[1.74631275988007e-114,1.54408493176007e-41,1.2884529448334e-27,3.4692909828158e-26,7.48465641046267e-24,1.48836969883846e-23,7.14325752660901e-18,7.0136924556523e-16,2.95359308547003e-15,6.77418380752205e-15,1.70963241145637e-13,1.37199856028672e-11,4.91520929107688e-10,5.46613503832221e-06,0.000110366877341197,0.00188116637043636,0.00283570648608934,0.00779503804286848,0.00756417400577858,0.0212503331300598,0.507326015677735,0.598260542110273,0.740253552692873,0.104248440822667,0.0997352861531532,0.105194175687475,0.112506012822859,0.124197543123347,0.106462846718589,0.0938335538603779,0.0929265520419711,0.0963122027236981,0.183973313002176,null],[0.111812082653319,0.111812082653319,0.111812082653319,0.111812082653319,0.111812082653319,0.111812082653319,0.111812082653319,0.111812082653319,0.111812082653319,0.111812082653319,0.111812082653319,0.111812082653319,0.111812082653319,0.111812082653319,0.111812082653319,0.111812082653319,0.111812082653319,0.111812082653319,0.111812082653319,0.111812082653319,0.111812082653319,0.111812082653319,0.111812082653319,0.111812082653319,0.111812082653319,0.111812082653319,0.111812082653319,0.111812082653319,0.111812082653319,0.111812082653319,0.111812082653319,0.111812082653319,0.111812082653319,0.111812082653319]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>group<\/th>\n      <th>group_size<\/th>\n      <th>group_pve<\/th>\n      <th>prop_heritability<\/th>\n      <th>log_enrichment<\/th>\n      <th>log_enrichment_se<\/th>\n      <th>enrichment_pval_fisher<\/th>\n      <th>enrichment_pval_G<\/th>\n      <th>total_pve<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[2,3,5,6,7,8,9]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<p><br><br><br>[1] “p-value cutoff(0.05/num_tissue) = 0.0015625”
+<br><br>Number of selected tissue – fisher = 10 <br>Whole_Blood|eQTL
+Cells_Cultured_fibroblasts|eQTL Esophagus_Muscularis|eQTL
+Skin_Not_Sun_Exposed_Suprapubic|eQTL Lung|eQTL Muscle_Skeletal|eQTL
+Liver|eQTL Artery_Aorta|eQTL Heart_Atrial_Appendage|eQTL
+Brain_Cerebellar_Hemisphere|eQTL<br><br><br>Number of selected tissue –
+G = 10 <br>Whole_Blood|eQTL Cells_Cultured_fibroblasts|eQTL
+Esophagus_Muscularis|eQTL Skin_Not_Sun_Exposed_Suprapubic|eQTL Lung|eQTL
+Muscle_Skeletal|eQTL Liver|eQTL Artery_Aorta|eQTL
+Heart_Atrial_Appendage|eQTL
+Brain_Cerebellar_Hemisphere|eQTL<br><br><br><br></p>
+<div id="htmlwidget-a41f9b9304ecbba20fc2" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-a41f9b9304ecbba20fc2">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\" options=\"10\">T2D-panukb<\/caption>","data":[["27","6","9","1","32","21","25","15","2","33","3","10","4","31","12","11","18","5","7","8","13","14","16","17","19","20","22","23","24","26","28","29","30","34"],["Pituitary|eQTL","Artery_Tibial|eQTL","Brain_Cerebellum|eQTL","Adipose_Subcutaneous|eQTL","Thyroid|eQTL","Heart_Atrial_Appendage|eQTL","Muscle_Skeletal|eQTL","Cells_Cultured_fibroblasts|eQTL","Adipose_Visceral_Omentum|eQTL","Whole_Blood|eQTL","Adrenal_Gland|eQTL","Brain_Cortex|eQTL","Artery_Aorta|eQTL","Stomach|eQTL","Brain_Hypothalamus|eQTL","Brain_Frontal_Cortex_BA9|eQTL","Esophagus_Gastroesophageal_Junction|eQTL","Artery_Coronary|eQTL","Brain_Caudate_basal_ganglia|eQTL","Brain_Cerebellar_Hemisphere|eQTL","Brain_Nucleus_accumbens_basal_ganglia|eQTL","Brain_Putamen_basal_ganglia|eQTL","Colon_Sigmoid|eQTL","Colon_Transverse|eQTL","Esophagus_Mucosa|eQTL","Esophagus_Muscularis|eQTL","Heart_Left_Ventricle|eQTL","Liver|eQTL","Lung|eQTL","Pancreas|eQTL","Skin_Not_Sun_Exposed_Suprapubic|eQTL","Skin_Sun_Exposed_Lower_leg|eQTL","Spleen|eQTL","SNP"],[9961,10605,9679,10538,11040,10000,9969,10311,10381,9334,9431,9733,10411,9797,9123,9470,10058,9507,9561,9523,9500,9389,10025,10224,10578,10562,9446,8774,10693,9738,10758,10995,9750,8015736],[0.000778090462010502,0.000667446493182989,0.000587731716899257,0.000565790328525671,0.00054597138364687,0.000461570579442022,0.000398118571028904,0.000386649171063559,0.000393502856866974,0.000348209701683727,0.000167279162125824,0.000171432538011853,0.00013826507863875,0.000120675947792489,4.32015426637488e-05,4.16969678739119e-05,2.68932072994009e-05,2.23348383570483e-12,2.93358788940818e-06,9.40842716136579e-10,6.87262961110605e-06,1.01310313517041e-05,7.39989262441454e-07,5.31715464285062e-13,2.15794361556534e-14,1.81034426727871e-05,2.44417510841771e-09,8.34455990806663e-17,4.64811021031468e-11,8.51410935702625e-11,7.89258591270711e-14,1.64285451020557e-09,6.86866211967367e-08,0.0145230383780562],["3.81334%","3.27109%","2.88041%","2.77288%","2.67575%","2.26211%","1.95114%","1.89493%","1.92852%","1.70654%","0.81982%","0.84017%","0.67762%","0.59142%","0.21173%","0.20435%","0.1318%","0%","0.01438%","0%","0.03368%","0.04965%","0.00363%","0%","0%","0.08872%","1e-05%","0%","0%","0%","0%","1e-05%","0.00034%","71.17595%"],[3.76383569180913,3.54780400649471,3.51198235731034,3.38890616095914,3.30671189009472,3.2377202515999,3.09293996750884,3.02997682809882,3.04078148324021,3.02481160928239,2.28133227820889,2.27433801888664,1.99198013034918,1.91670298672011,0.960747874533574,0.887969873582659,0.389175767694828,-15.8583059352859,-1.77579574709698,-9.81677413553039,-0.918074630869166,-0.518265299103488,-3.20053120882065,-17.3662248624127,-20.6046310107237,-0.0554901637073994,-8.85396859594915,-25.9729486396799,-12.9403836886595,-12.2415661435548,-19.3247362135768,-9.40309025168439,-5.54979775865851,null],[0.222453260681713,0.23936064133102,0.254413231864218,0.259134757948977,0.263637348960737,0.285937161820965,0.307253506790382,0.311667464227512,0.309010758708987,0.327996795173447,0.470460600123805,0.464793118458824,0.516992961091787,0.553064063811813,0.921995467197156,0.93843826752046,1.16795482197269,4049.2076607546,3.53349061154867,197.289038668521,2.30886440813877,1.90186484615903,7.03492340729159,8298.92444973839,41194.7062355344,1.42311900725128,122.403921928134,662460.118858165,887.612171331757,655.830856057506,21540.302483342,149.300728947646,23.0901293161111,null],[7.76354843493667e-27,1.33288951233622e-21,3.30127628905003e-19,3.63992352410209e-17,7.13732581135e-17,1.36283804284281e-14,7.93293044949955e-12,1.1312650297286e-11,1.21465472278904e-11,9.20963799725135e-11,0.000130089195097295,0.000150397585630246,0.0019984687291422,0.0134544032563337,0.364128672941087,0.374977746926162,0.392939821793378,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,null],[2.43664838288359e-27,4.93343479995797e-22,2.30200988735413e-19,6.76081493518882e-18,8.27976427141235e-17,4.31706428289248e-14,1.06041826588539e-11,3.97808420624103e-11,2.39968618471047e-11,3.79294314105024e-10,0.000386724792939783,0.000337796790161417,0.00356483095319431,0.00819464650716514,0.368497139204556,0.409321926390696,0.75430022541171,0.332240159293362,0.479087239189701,0.331976061865922,0.639124736610363,0.765575109568052,0.364703263548331,0.314661684989936,0.306432412217027,0.968608865834104,0.334135202619082,0.351592347636332,0.303827506889788,0.326453087729903,0.302355283137736,0.297300682373073,0.332381009515087,null],[0.0204044186165816,0.0204044186165816,0.0204044186165816,0.0204044186165816,0.0204044186165816,0.0204044186165816,0.0204044186165816,0.0204044186165816,0.0204044186165816,0.0204044186165816,0.0204044186165816,0.0204044186165816,0.0204044186165816,0.0204044186165816,0.0204044186165816,0.0204044186165816,0.0204044186165816,0.0204044186165816,0.0204044186165816,0.0204044186165816,0.0204044186165816,0.0204044186165816,0.0204044186165816,0.0204044186165816,0.0204044186165816,0.0204044186165816,0.0204044186165816,0.0204044186165816,0.0204044186165816,0.0204044186165816,0.0204044186165816,0.0204044186165816,0.0204044186165816,0.0204044186165816]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>group<\/th>\n      <th>group_size<\/th>\n      <th>group_pve<\/th>\n      <th>prop_heritability<\/th>\n      <th>log_enrichment<\/th>\n      <th>log_enrichment_se<\/th>\n      <th>enrichment_pval_fisher<\/th>\n      <th>enrichment_pval_G<\/th>\n      <th>total_pve<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[2,3,5,6,7,8,9]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<p><br><br><br>[1] “p-value cutoff(0.05/num_tissue) = 0.0015625”
+<br><br>Number of selected tissue – fisher = 10 <br>Pituitary|eQTL
+Artery_Tibial|eQTL Brain_Cerebellum|eQTL Adipose_Subcutaneous|eQTL
+Thyroid|eQTL Heart_Atrial_Appendage|eQTL Muscle_Skeletal|eQTL
+Cells_Cultured_fibroblasts|eQTL Adipose_Visceral_Omentum|eQTL
+Whole_Blood|eQTL<br><br><br>Number of selected tissue – G = 10
+<br>Pituitary|eQTL Artery_Tibial|eQTL Brain_Cerebellum|eQTL
+Adipose_Subcutaneous|eQTL Thyroid|eQTL Heart_Atrial_Appendage|eQTL
+Muscle_Skeletal|eQTL Cells_Cultured_fibroblasts|eQTL
+Adipose_Visceral_Omentum|eQTL Whole_Blood|eQTL<br><br><br></p>
+</div>
+<div id="em-convergence" class="section level2">
+<h2>EM convergence</h2>
+<pre class="r"><code>colnames(converge_df) &lt;- c(&quot;trait&quot;,&quot;num_EM_iter&quot;,&quot;converge&quot;)
+cat(&quot;&lt;br&gt;&quot;)</code></pre>
+<p><br></p>
+<pre class="r"><code>DT::datatable(converge_df,caption = htmltools::tags$caption( style = &#39;caption-side: left; text-align: left; color:black;  font-size:150% ;&#39;,&#39;EM convergence &#39;),options = list(pageLength = 30) )</code></pre>
+<div id="htmlwidget-80db18273cfc4a9b8682" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-80db18273cfc4a9b8682">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">EM convergence <\/caption>","data":[["LDL-ukb-d-30780_irnt","aFib-ebi-a-GCST006414","ATH_gtexukb","BMI-panukb","HB-panukb","Height-panukb","HTN-panukb","IBD-ebi-a-GCST004131","PLT-panukb","RA-panukb","RBC-panukb","SBP-ukb-a-360","T1D-GCST90014023","WBC-ieu-b-30","T2D-panukb"],["90","100","100","74","100","88","100","88","64","69","91","100","100","100","100"],["TRUE","FALSE","FALSE","TRUE","FALSE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","FALSE","FALSE","FALSE","FALSE"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>trait<\/th>\n      <th>num_EM_iter<\/th>\n      <th>converge<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":30,"columnDefs":[],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[10,25,30,50,100]}},"evals":[],"jsHooks":[]}</script>
+<pre class="r"><code>cat(&quot;&lt;br&gt;&quot;)</code></pre>
+<p><br></p>
+</div>
+</div>
+<div id="psychiatric-traits" class="section level1">
+<h1>Psychiatric traits</h1>
+<div id="tissue-selection-1" class="section level2">
+<h2>Tissue selection</h2>
+<pre class="r"><code>folder_results &lt;- &quot;/project/xinhe/xsun/multi_group_ctwas/21.tissue_selection_0511/results/E_thin1_shared_all_mingene0/&quot;
+
+converge_df &lt;- c()
+for (trait in trait_psy){
+  
+  param &lt;- readRDS(paste0(folder_results,trait,&quot;/&quot;,trait,&quot;.thin1.shared_all.param.RDS&quot;))
+  
+  gwas_n &lt;- samplesize[trait]
+
+  param_summarized_fisher &lt;- summarize_param(param = param,gwas_n = gwas_n,enrichment_test = &quot;fisher&quot;,alternative = &quot;greater&quot;)
+  param_summarized_G &lt;- summarize_param(param = param,gwas_n = gwas_n,enrichment_test = &quot;G&quot;)
+  
+  param_df &lt;- data.frame(
+    group = names(param_summarized_fisher$group_size),
+    group_size = as.numeric(param_summarized_fisher$group_size[names(param_summarized_fisher$group_size)]),
+    group_pve = as.numeric(param_summarized_fisher$group_pve[names(param_summarized_fisher$group_size)]),
+    prop_heritability = as.numeric(param_summarized_fisher$prop_heritability[names(param_summarized_fisher$group_size)]),
+    log_enrichment = as.numeric(param_summarized_fisher$log_enrichment[names(param_summarized_fisher$group_size)]),
+    log_enrichment_se = as.numeric(param_summarized_fisher$log_enrichment_se[names(param_summarized_fisher$group_size)]),
+    enrichment_pval_fisher = as.numeric(param_summarized_fisher$enrichment_pval[names(param_summarized_fisher$group_size)]),
+    enrichment_pval_G = as.numeric(param_summarized_G$enrichment_pval[names(param_summarized_G$group_size)])
+  )
+
+  param_df$total_pve &lt;- param_summarized_fisher$total_pve
+  
+  param_df$prop_heritability &lt;- paste0(round(param_df$prop_heritability * 100, 5), &quot;%&quot;)
+  
+  param_df &lt;- param_df[order(param_df$enrichment_pval_fisher,decreasing = F),]
+  
+  param_df_qtl &lt;- param_df[-nrow(param_df),]
+  threshold &lt;- 0.05/(nrow(param_df_qtl)-1)
+  
+  
+  
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(knitr::knit_print(DT::datatable(param_df, caption = htmltools::tags$caption( style = &#39;caption-side: left; text-align: left; color:black;  font-size:150% ;&#39;,trait,options = list(pageLength = 10)))))
+  cat(&quot;&lt;br&gt;&quot;)
+  
+  
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  print(paste0(&quot;p-value cutoff(0.05/num_tissue) = &quot;,threshold))
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(paste0(&quot;Number of selected tissue -- fisher = &quot;,min(10,sum(param_df_qtl$enrichment_pval_fisher &lt; threshold)),&quot;\n&quot;))
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(paste0(
+    head(param_df_qtl$group[param_df_qtl$enrichment_pval_fisher &lt; threshold], 10), 
+    collapse = &quot; &quot;
+  ))
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+    cat(paste0(&quot;Number of selected tissue -- G = &quot;,min(10,sum(param_df_qtl$enrichment_pval_G &lt; threshold)),&quot;\n&quot;))
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(paste0(
+    head(param_df_qtl$group[param_df_qtl$enrichment_pval_G &lt; threshold], 10), 
+    collapse = &quot; &quot;
+  ))
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+ 
+  EM_iter &lt;- length(param$loglik_iters)
+  converge &lt;- param$converged
+  converge_df &lt;- rbind(converge_df,c(trait,EM_iter,converge))
+}</code></pre>
+<p><br></p>
+<div id="htmlwidget-6f19a3278480c8d45e45" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-6f19a3278480c8d45e45">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\" options=\"10\">SCZ-ieu-b-5102<\/caption>","data":[["6","3","9","2","4","8","5","7","1","10"],["Brain_Hippocampus|eQTL","Brain_Cerebellum|eQTL","Brain_Putamen_basal_ganglia|eQTL","Brain_Cerebellar_Hemisphere|eQTL","Brain_Cortex|eQTL","Brain_Nucleus_accumbens_basal_ganglia|eQTL","Brain_Frontal_Cortex_BA9|eQTL","Brain_Hypothalamus|eQTL","Brain_Caudate_basal_ganglia|eQTL","SNP"],[8053,8675,8325,8499,8663,8450,8391,8037,8458,5919307],[0.00415136930526823,0.00384872266939504,0.00307715297923353,0.00304309335489124,0.00242198973616843,0.00230573545347137,0.00184085179985504,0.00158985083439395,0.00105580576893195,0.132505945708512],["2.66386%","2.46965%","1.97455%","1.9527%","1.55415%","1.47955%","1.18124%","1.02018%","0.67749%","85.02663%"],[3.13674068260714,2.98664313575823,2.80408891876932,2.77227318202247,2.52487546698728,2.50058039546286,2.28241583883938,2.1789314602779,1.71853864090456,null],[0.18400721455247,0.190941494228757,0.212992018129965,0.214162560981174,0.239573055074384,0.245438309543694,0.274264821843842,0.29486862055367,0.36121201108464,null],[6.83655165171052e-30,2.32858274954275e-26,2.83535845002188e-19,4.3442386372399e-19,2.59893920413917e-14,2.20273622467204e-13,3.03941149229751e-09,1.80101601013214e-08,0.000101812913708135,null],[2.06086344181569e-30,1.42678979400662e-26,6.76526999167637e-20,2.10406422820662e-19,5.53121040243033e-14,3.20341535571344e-13,1.12501703838982e-09,4.51995775688933e-08,0.000201803258319618,null],[0.15584051761012,0.15584051761012,0.15584051761012,0.15584051761012,0.15584051761012,0.15584051761012,0.15584051761012,0.15584051761012,0.15584051761012,0.15584051761012]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>group<\/th>\n      <th>group_size<\/th>\n      <th>group_pve<\/th>\n      <th>prop_heritability<\/th>\n      <th>log_enrichment<\/th>\n      <th>log_enrichment_se<\/th>\n      <th>enrichment_pval_fisher<\/th>\n      <th>enrichment_pval_G<\/th>\n      <th>total_pve<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[2,3,5,6,7,8,9]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<p><br><br><br>[1] “p-value cutoff(0.05/num_tissue) = 0.00625”
+<br><br>Number of selected tissue – fisher = 9
+<br>Brain_Hippocampus|eQTL Brain_Cerebellum|eQTL
+Brain_Putamen_basal_ganglia|eQTL Brain_Cerebellar_Hemisphere|eQTL
+Brain_Cortex|eQTL Brain_Nucleus_accumbens_basal_ganglia|eQTL
+Brain_Frontal_Cortex_BA9|eQTL Brain_Hypothalamus|eQTL
+Brain_Caudate_basal_ganglia|eQTL<br><br><br>Number of selected tissue –
+G = 9 <br>Brain_Hippocampus|eQTL Brain_Cerebellum|eQTL
+Brain_Putamen_basal_ganglia|eQTL Brain_Cerebellar_Hemisphere|eQTL
+Brain_Cortex|eQTL Brain_Nucleus_accumbens_basal_ganglia|eQTL
+Brain_Frontal_Cortex_BA9|eQTL Brain_Hypothalamus|eQTL
+Brain_Caudate_basal_ganglia|eQTL<br><br><br><br></p>
+<div id="htmlwidget-81a148ea6c961cf45e2c" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-81a148ea6c961cf45e2c">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\" options=\"10\">ASD-ieu-a-1185<\/caption>","data":[["5","3","9","1","2","4","6","7","8","10"],["Brain_Frontal_Cortex_BA9|eQTL","Brain_Cerebellum|eQTL","Brain_Putamen_basal_ganglia|eQTL","Brain_Caudate_basal_ganglia|eQTL","Brain_Cerebellar_Hemisphere|eQTL","Brain_Cortex|eQTL","Brain_Hippocampus|eQTL","Brain_Hypothalamus|eQTL","Brain_Nucleus_accumbens_basal_ganglia|eQTL","SNP"],[9047,9264,8981,9117,9142,9306,8648,8656,9060,6618275],[0.00139259125242942,0.00102197494224659,0.000507796856366699,4.88666643382909e-07,2.82827421952257e-06,1.02485416404993e-08,3.58670017456011e-06,2.41152472818195e-06,1.85289222088665e-08,0.0325661819462244],["3.92303%","2.87897%","1.4305%","0.00138%","0.00797%","3e-05%","0.0101%","0.00679%","5e-05%","91.74118%"],[3.44304866562797,3.10991670693232,2.44153061952039,-4.51965515980434,-2.76665209504159,-8.40471884026887,-2.47353509631594,-2.87143313170613,-7.7857311494409,null],[0.314595965173378,0.365282456635625,0.514325916635457,16.4555325644004,6.8402616033186,113.627682999043,6.07422416817905,7.40772550470827,84.5065089002414,null],[1.47933342410735e-13,4.14339055830881e-09,0.000411366248160805,1,1,1,1,1,1,null],[6.57010496748542e-13,8.95443432226222e-09,0.000631398292581212,0.424860492135799,0.471488160386569,0.406106602104589,0.50019709061113,0.478497583240638,0.412739388920692,null],[0.0354978889404966,0.0354978889404966,0.0354978889404966,0.0354978889404966,0.0354978889404966,0.0354978889404966,0.0354978889404966,0.0354978889404966,0.0354978889404966,0.0354978889404966]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>group<\/th>\n      <th>group_size<\/th>\n      <th>group_pve<\/th>\n      <th>prop_heritability<\/th>\n      <th>log_enrichment<\/th>\n      <th>log_enrichment_se<\/th>\n      <th>enrichment_pval_fisher<\/th>\n      <th>enrichment_pval_G<\/th>\n      <th>total_pve<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[2,3,5,6,7,8,9]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<p><br><br><br>[1] “p-value cutoff(0.05/num_tissue) = 0.00625”
+<br><br>Number of selected tissue – fisher = 3
+<br>Brain_Frontal_Cortex_BA9|eQTL Brain_Cerebellum|eQTL
+Brain_Putamen_basal_ganglia|eQTL<br><br><br>Number of selected tissue –
+G = 3 <br>Brain_Frontal_Cortex_BA9|eQTL Brain_Cerebellum|eQTL
+Brain_Putamen_basal_ganglia|eQTL<br><br><br><br></p>
+<div id="htmlwidget-425deb884d24b4ea5f7c" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-425deb884d24b4ea5f7c">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\" options=\"10\">BIP-ieu-b-5110<\/caption>","data":[["8","1","2","4","5","7","3","9","6","10"],["Brain_Nucleus_accumbens_basal_ganglia|eQTL","Brain_Caudate_basal_ganglia|eQTL","Brain_Cerebellar_Hemisphere|eQTL","Brain_Cortex|eQTL","Brain_Frontal_Cortex_BA9|eQTL","Brain_Hypothalamus|eQTL","Brain_Cerebellum|eQTL","Brain_Putamen_basal_ganglia|eQTL","Brain_Hippocampus|eQTL","SNP"],[8437,8441,8487,8644,8374,8024,8664,8313,8032,5893416],[0.000913060602683022,0.000694303158952711,0.00058335943573871,0.000468276289978197,0.000454887343824068,0.000407526501357447,0.000376110440050642,0.00022948872428849,3.55493066751247e-07,0.0189250836943894],["3.9608%","3.01184%","2.53057%","2.03135%","1.97327%","1.76782%","1.63154%","0.99551%","0.00154%","82.09575%"],[3.51752303459034,3.24315548243936,3.06361551709524,2.82554062013228,2.82826569855979,2.76101648776646,2.60405388795563,2.15138091595788,-4.28433552183403,null],[0.18476841154725,0.210799625361075,0.229370406071178,0.255311574319766,0.258951475917267,0.273265870830675,0.284252728095985,0.362607990630231,9.1619467400035,null],[5.4680402180125e-36,2.7064525697113e-24,3.85541365226733e-20,7.6460463792909e-15,8.22744652914194e-14,7.66184308361672e-13,3.09958567965869e-11,4.83416272039775e-06,1,null],[1.88436296434026e-35,1.01592863124532e-24,1.4100492440135e-19,1.75358087805247e-14,3.94228152647418e-14,1.9326226480839e-12,8.79923081962842e-11,1.04853645083878e-05,0.205679500419876,null],[0.0230524516843294,0.0230524516843294,0.0230524516843294,0.0230524516843294,0.0230524516843294,0.0230524516843294,0.0230524516843294,0.0230524516843294,0.0230524516843294,0.0230524516843294]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>group<\/th>\n      <th>group_size<\/th>\n      <th>group_pve<\/th>\n      <th>prop_heritability<\/th>\n      <th>log_enrichment<\/th>\n      <th>log_enrichment_se<\/th>\n      <th>enrichment_pval_fisher<\/th>\n      <th>enrichment_pval_G<\/th>\n      <th>total_pve<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[2,3,5,6,7,8,9]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<p><br><br><br>[1] “p-value cutoff(0.05/num_tissue) = 0.00625”
+<br><br>Number of selected tissue – fisher = 8
+<br>Brain_Nucleus_accumbens_basal_ganglia|eQTL
+Brain_Caudate_basal_ganglia|eQTL Brain_Cerebellar_Hemisphere|eQTL
+Brain_Cortex|eQTL Brain_Frontal_Cortex_BA9|eQTL Brain_Hypothalamus|eQTL
+Brain_Cerebellum|eQTL Brain_Putamen_basal_ganglia|eQTL<br><br><br>Number
+of selected tissue – G = 8
+<br>Brain_Nucleus_accumbens_basal_ganglia|eQTL
+Brain_Caudate_basal_ganglia|eQTL Brain_Cerebellar_Hemisphere|eQTL
+Brain_Cortex|eQTL Brain_Frontal_Cortex_BA9|eQTL Brain_Hypothalamus|eQTL
+Brain_Cerebellum|eQTL
+Brain_Putamen_basal_ganglia|eQTL<br><br><br><br></p>
+<div id="htmlwidget-5674f84365e74fcb3e3c" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-5674f84365e74fcb3e3c">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\" options=\"10\">MDD-ieu-b-102<\/caption>","data":[["8","3","1","6","9","2","4","5","7","10"],["Brain_Nucleus_accumbens_basal_ganglia|eQTL","Brain_Cerebellum|eQTL","Brain_Caudate_basal_ganglia|eQTL","Brain_Hippocampus|eQTL","Brain_Putamen_basal_ganglia|eQTL","Brain_Cerebellar_Hemisphere|eQTL","Brain_Cortex|eQTL","Brain_Frontal_Cortex_BA9|eQTL","Brain_Hypothalamus|eQTL","SNP"],[8364,8519,8380,7958,8228,8389,8536,8276,7954,6004761],[0.000691957445968399,0.000180937526672119,8.65101926283434e-05,7.59298295656021e-05,1.82202982315807e-05,1.02462320122401e-05,3.06950176722055e-06,2.42888300607033e-06,1.06949580626082e-11,0.0163270748048596],["3.9776%","1.04009%","0.49729%","0.43647%","0.10474%","0.0589%","0.01764%","0.01396%","0%","93.85332%"],[3.41531557166903,2.05558074589119,1.33414222012957,1.25535980036652,-0.205278817955569,-0.800283400652362,-2.02304936260465,-2.22620038272059,-14.5196851896639,null],[0.188218936746254,0.36295902760947,0.523530081220437,0.558645325581158,1.13858764637599,1.51797734365054,2.77284736397903,3.1170853927334,1485.36387747626,null],[2.87603949663809e-32,9.39661728517054e-06,0.0171329212595923,0.0660744848723158,0.612868607974806,1,1,1,1,null],[8.18047729268115e-33,2.11570398165317e-05,0.0365773365621479,0.0625238192619673,0.851940192563799,0.543318610985234,0.27744137903562,0.265088095354996,0.175920277883751,null],[0.0173963747254061,0.0173963747254061,0.0173963747254061,0.0173963747254061,0.0173963747254061,0.0173963747254061,0.0173963747254061,0.0173963747254061,0.0173963747254061,0.0173963747254061]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>group<\/th>\n      <th>group_size<\/th>\n      <th>group_pve<\/th>\n      <th>prop_heritability<\/th>\n      <th>log_enrichment<\/th>\n      <th>log_enrichment_se<\/th>\n      <th>enrichment_pval_fisher<\/th>\n      <th>enrichment_pval_G<\/th>\n      <th>total_pve<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[2,3,5,6,7,8,9]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<p><br><br><br>[1] “p-value cutoff(0.05/num_tissue) = 0.00625”
+<br><br>Number of selected tissue – fisher = 2
+<br>Brain_Nucleus_accumbens_basal_ganglia|eQTL
+Brain_Cerebellum|eQTL<br><br><br>Number of selected tissue – G = 2
+<br>Brain_Nucleus_accumbens_basal_ganglia|eQTL
+Brain_Cerebellum|eQTL<br><br><br><br></p>
+<div id="htmlwidget-caaf43859fd0889ca800" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-caaf43859fd0889ca800">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\" options=\"10\">PD-ieu-b-7<\/caption>","data":[["3","7","4","1","2","5","6","8","9","10"],["Brain_Cerebellum|eQTL","Brain_Hypothalamus|eQTL","Brain_Cortex|eQTL","Brain_Caudate_basal_ganglia|eQTL","Brain_Cerebellar_Hemisphere|eQTL","Brain_Frontal_Cortex_BA9|eQTL","Brain_Hippocampus|eQTL","Brain_Nucleus_accumbens_basal_ganglia|eQTL","Brain_Putamen_basal_ganglia|eQTL","SNP"],[8587,7956,8565,8355,8416,8292,7955,8375,8211,5925344],[0.000629063144592632,0.000612203105986294,0.00015844653577831,4.60757781419344e-08,2.11216210353836e-12,5.73651278929311e-08,7.57735663320483e-07,4.33053933208938e-08,5.91354243942028e-11,0.0032538972993923],["13.51512%","13.15289%","3.40415%","0.00099%","0%","0.00123%","0.01628%","0.00093%","0%","69.90841%"],[4.89336750628202,4.94252303644076,3.51711838838771,-4.60094275157192,-14.5985478000407,-4.37422458539674,-1.75183604762727,-4.66534387492585,-11.2417698368617,null],[0.222149909436411,0.224684145734448,0.415300247219885,23.7899176764616,3513.68339781581,21.3209247325275,5.86701438035332,24.5390701811213,664.052467042031,null],[2.01723010273708e-41,3.9403615746844e-40,4.85386126898852e-08,1,1,1,1,1,1,null],[7.10473092714013e-42,2.54187333169777e-41,3.05590182545445e-08,0.564568014627235,0.551741051414685,0.568406662871985,0.675734438776095,0.563503988352955,0.556653106775425,null],[0.0046545146289598,0.0046545146289598,0.0046545146289598,0.0046545146289598,0.0046545146289598,0.0046545146289598,0.0046545146289598,0.0046545146289598,0.0046545146289598,0.0046545146289598]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>group<\/th>\n      <th>group_size<\/th>\n      <th>group_pve<\/th>\n      <th>prop_heritability<\/th>\n      <th>log_enrichment<\/th>\n      <th>log_enrichment_se<\/th>\n      <th>enrichment_pval_fisher<\/th>\n      <th>enrichment_pval_G<\/th>\n      <th>total_pve<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[2,3,5,6,7,8,9]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<p><br><br><br>[1] “p-value cutoff(0.05/num_tissue) = 0.00625”
+<br><br>Number of selected tissue – fisher = 3 <br>Brain_Cerebellum|eQTL
+Brain_Hypothalamus|eQTL Brain_Cortex|eQTL<br><br><br>Number of selected
+tissue – G = 3 <br>Brain_Cerebellum|eQTL Brain_Hypothalamus|eQTL
+Brain_Cortex|eQTL<br><br><br><br></p>
+<div id="htmlwidget-28fc46a89962ff28ef30" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-28fc46a89962ff28ef30">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\" options=\"10\">ADHD-ieu-a-1183<\/caption>","data":[["4","8","1","2","3","5","6","7","9","10"],["Brain_Cortex|eQTL","Brain_Nucleus_accumbens_basal_ganglia|eQTL","Brain_Caudate_basal_ganglia|eQTL","Brain_Cerebellar_Hemisphere|eQTL","Brain_Cerebellum|eQTL","Brain_Frontal_Cortex_BA9|eQTL","Brain_Hippocampus|eQTL","Brain_Hypothalamus|eQTL","Brain_Putamen_basal_ganglia|eQTL","SNP"],[8646,8367,8453,8468,8632,8370,7994,7973,8308,5998545],[0.00269307750648029,8.02488651917686e-05,5.42611229173718e-05,1.22187173937863e-14,1.81072422786736e-10,5.5025034504661e-10,7.67548631346653e-09,7.42358323956087e-06,1.87031055188623e-06,0.0591373789145513],["4.34548%","0.12949%","0.08755%","0%","0%","0%","1e-05%","0.01198%","0.00302%","95.42247%"],[3.45299683326147,-0.0275090299268873,-0.429059659418212,-22.6449374551872,-13.0604359624008,-11.9181373485979,-9.23676113809829,-2.35974523013582,-3.77946067201918,null],[0.236629457018295,1.34286505241609,1.63273942098894,108757.434891507,893.399305147523,512.497328823812,137.22045086259,4.41256210667553,8.79065898386631,null],[3.21443555232038e-22,0.435341408696524,1,1,1,1,1,1,1,null],[9.70180761812307e-22,0.983582202083888,0.7772215338896,0.282626651900412,0.278024299169686,0.285448125550729,0.2967477107026,0.389031583876965,0.315153756690607,null],[0.0619742687097535,0.0619742687097535,0.0619742687097535,0.0619742687097535,0.0619742687097535,0.0619742687097535,0.0619742687097535,0.0619742687097535,0.0619742687097535,0.0619742687097535]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>group<\/th>\n      <th>group_size<\/th>\n      <th>group_pve<\/th>\n      <th>prop_heritability<\/th>\n      <th>log_enrichment<\/th>\n      <th>log_enrichment_se<\/th>\n      <th>enrichment_pval_fisher<\/th>\n      <th>enrichment_pval_G<\/th>\n      <th>total_pve<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[2,3,5,6,7,8,9]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<p><br><br><br>[1] “p-value cutoff(0.05/num_tissue) = 0.00625”
+<br><br>Number of selected tissue – fisher = 1
+<br>Brain_Cortex|eQTL<br><br><br>Number of selected tissue – G = 1
+<br>Brain_Cortex|eQTL<br><br><br><br></p>
+<div id="htmlwidget-018aa8438ee3bad3ceee" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-018aa8438ee3bad3ceee">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\" options=\"10\">NS-ukb-a-230<\/caption>","data":[["4","2","1","3","7","5","8","6","9","10"],["Brain_Cortex|eQTL","Brain_Cerebellar_Hemisphere|eQTL","Brain_Caudate_basal_ganglia|eQTL","Brain_Cerebellum|eQTL","Brain_Hypothalamus|eQTL","Brain_Frontal_Cortex_BA9|eQTL","Brain_Nucleus_accumbens_basal_ganglia|eQTL","Brain_Hippocampus|eQTL","Brain_Putamen_basal_ganglia|eQTL","SNP"],[9201,9029,9003,9166,8571,8919,8942,8561,8876,6396527],[0.00150125573096806,0.00115667673143226,0.000995834687960323,0.000733300484790208,0.000171648698804555,0.000142241867703432,0.000160449900421525,1.24870720753447e-08,6.19725854018925e-09,0.0323958595347059],["4.02943%","3.10457%","2.67286%","1.96821%","0.46071%","0.38178%","0.43065%","3e-05%","2e-05%","86.95174%"],[3.47246958138181,3.23058923076701,3.08374797707024,2.75977913445118,1.37479009177393,1.14706963397471,1.26494703345488,-8.15255384526468,-8.88927469639408,null],[0.179353535375769,0.203359507722832,0.218680725695911,0.253913593137964,0.520676341942603,0.571738190787948,0.538459936075072,60.8981241144406,86.4439051826532,null],[3.78398062396499e-36,2.92095266221045e-26,3.56090172999724e-22,2.35062862400353e-14,0.0155766394922189,0.076356594457579,0.0768106539966259,1,1,null],[7.47951570368682e-37,2.73943015097993e-26,1.47715323003551e-21,3.55477224489997e-14,0.0312118211520761,0.0915129759068933,0.0517968939589222,0.171904932373305,0.163957305550071,null],[0.0372572863211169,0.0372572863211169,0.0372572863211169,0.0372572863211169,0.0372572863211169,0.0372572863211169,0.0372572863211169,0.0372572863211169,0.0372572863211169,0.0372572863211169]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>group<\/th>\n      <th>group_size<\/th>\n      <th>group_pve<\/th>\n      <th>prop_heritability<\/th>\n      <th>log_enrichment<\/th>\n      <th>log_enrichment_se<\/th>\n      <th>enrichment_pval_fisher<\/th>\n      <th>enrichment_pval_G<\/th>\n      <th>total_pve<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[2,3,5,6,7,8,9]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<p><br><br><br>[1] “p-value cutoff(0.05/num_tissue) = 0.00625”
+<br><br>Number of selected tissue – fisher = 4 <br>Brain_Cortex|eQTL
+Brain_Cerebellar_Hemisphere|eQTL Brain_Caudate_basal_ganglia|eQTL
+Brain_Cerebellum|eQTL<br><br><br>Number of selected tissue – G = 4
+<br>Brain_Cortex|eQTL Brain_Cerebellar_Hemisphere|eQTL
+Brain_Caudate_basal_ganglia|eQTL Brain_Cerebellum|eQTL<br><br><br></p>
+</div>
+<div id="em-convergence-1" class="section level2">
+<h2>EM convergence</h2>
+<pre class="r"><code>colnames(converge_df) &lt;- c(&quot;trait&quot;,&quot;num_EM_iter&quot;,&quot;converge&quot;)
+cat(&quot;&lt;br&gt;&quot;)</code></pre>
+<p><br></p>
+<pre class="r"><code>DT::datatable(converge_df,caption = htmltools::tags$caption( style = &#39;caption-side: left; text-align: left; color:black;  font-size:150% ;&#39;,&#39;EM convergence &#39;),options = list(pageLength = 30) )</code></pre>
+<div id="htmlwidget-de3a36f80a2aa43a84ec" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-de3a36f80a2aa43a84ec">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">EM convergence <\/caption>","data":[["SCZ-ieu-b-5102","ASD-ieu-a-1185","BIP-ieu-b-5110","MDD-ieu-b-102","PD-ieu-b-7","ADHD-ieu-a-1183","NS-ukb-a-230"],["59","161","80","131","103","141","66"],["TRUE","TRUE","TRUE","TRUE","TRUE","TRUE","TRUE"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>trait<\/th>\n      <th>num_EM_iter<\/th>\n      <th>converge<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":30,"columnDefs":[],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[10,25,30,50,100]}},"evals":[],"jsHooks":[]}</script>
+<pre class="r"><code>cat(&quot;&lt;br&gt;&quot;)</code></pre>
+<p><br></p>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.2.0 (2022-04-22)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: CentOS Linux 7 (Core)
+
+Matrix products: default
+BLAS/LAPACK: /software/openblas-0.3.13-el7-x86_64/lib/libopenblas_haswellp-r0.3.13.so
+
+locale:
+[1] C
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] ctwas_0.5.19
+
+loaded via a namespace (and not attached):
+  [1] colorspace_2.0-3            rjson_0.2.21               
+  [3] ellipsis_0.3.2              rprojroot_2.0.3            
+  [5] XVector_0.36.0              locuszoomr_0.2.1           
+  [7] GenomicRanges_1.48.0        base64enc_0.1-3            
+  [9] fs_1.5.2                    rstudioapi_0.13            
+ [11] DT_0.22                     ggrepel_0.9.1              
+ [13] bit64_4.0.5                 AnnotationDbi_1.58.0       
+ [15] fansi_1.0.3                 xml2_1.3.3                 
+ [17] codetools_0.2-18            logging_0.10-108           
+ [19] cachem_1.0.6                knitr_1.39                 
+ [21] jsonlite_1.8.0              workflowr_1.7.0            
+ [23] Rsamtools_2.12.0            dbplyr_2.1.1               
+ [25] png_0.1-7                   readr_2.1.2                
+ [27] compiler_4.2.0              httr_1.4.3                 
+ [29] assertthat_0.2.1            Matrix_1.5-3               
+ [31] fastmap_1.1.0               lazyeval_0.2.2             
+ [33] cli_3.6.1                   later_1.3.0                
+ [35] htmltools_0.5.2             prettyunits_1.1.1          
+ [37] tools_4.2.0                 gtable_0.3.0               
+ [39] glue_1.6.2                  GenomeInfoDbData_1.2.8     
+ [41] dplyr_1.1.4                 rappdirs_0.3.3             
+ [43] Rcpp_1.0.12                 Biobase_2.56.0             
+ [45] jquerylib_0.1.4             vctrs_0.6.5                
+ [47] Biostrings_2.64.0           rtracklayer_1.56.0         
+ [49] crosstalk_1.2.0             xfun_0.41                  
+ [51] stringr_1.5.1               irlba_2.3.5                
+ [53] lifecycle_1.0.4             restfulr_0.0.14            
+ [55] ensembldb_2.20.2            XML_3.99-0.14              
+ [57] zlibbioc_1.42.0             zoo_1.8-10                 
+ [59] scales_1.3.0                gggrid_0.2-0               
+ [61] hms_1.1.1                   promises_1.2.0.1           
+ [63] MatrixGenerics_1.8.0        ProtGenerics_1.28.0        
+ [65] parallel_4.2.0              SummarizedExperiment_1.26.1
+ [67] AnnotationFilter_1.20.0     LDlinkR_1.2.3              
+ [69] yaml_2.3.5                  curl_4.3.2                 
+ [71] memoise_2.0.1               ggplot2_3.5.1              
+ [73] sass_0.4.1                  biomaRt_2.54.1             
+ [75] stringi_1.7.6               RSQLite_2.3.1              
+ [77] S4Vectors_0.34.0            BiocIO_1.6.0               
+ [79] GenomicFeatures_1.48.3      BiocGenerics_0.42.0        
+ [81] filelock_1.0.2              BiocParallel_1.30.3        
+ [83] repr_1.1.4                  GenomeInfoDb_1.39.9        
+ [85] rlang_1.1.2                 pkgconfig_2.0.3            
+ [87] matrixStats_0.62.0          bitops_1.0-7               
+ [89] evaluate_0.15               lattice_0.20-45            
+ [91] purrr_1.0.2                 GenomicAlignments_1.32.0   
+ [93] htmlwidgets_1.5.4           cowplot_1.1.1              
+ [95] bit_4.0.4                   tidyselect_1.2.0           
+ [97] magrittr_2.0.3              AMR_2.1.1                  
+ [99] R6_2.5.1                    IRanges_2.30.0             
+[101] generics_0.1.2              DelayedArray_0.22.0        
+[103] DBI_1.2.2                   pgenlibr_0.3.3             
+[105] pillar_1.9.0                KEGGREST_1.36.3            
+[107] RCurl_1.98-1.7              mixsqp_0.3-43              
+[109] tibble_3.2.1                crayon_1.5.1               
+[111] utf8_1.2.2                  BiocFileCache_2.4.0        
+[113] plotly_4.10.0               tzdb_0.4.0                 
+[115] rmarkdown_2.25              progress_1.2.2             
+[117] grid_4.2.0                  data.table_1.14.2          
+[119] blob_1.2.3                  git2r_0.30.1               
+[121] digest_0.6.29               tidyr_1.3.0                
+[123] httpuv_1.6.5                stats4_4.2.0               
+[125] munsell_0.5.0               viridisLite_0.4.0          
+[127] skimr_2.1.4                 bslib_0.3.1                </code></pre>
+</div>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
