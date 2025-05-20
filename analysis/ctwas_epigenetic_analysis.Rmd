@@ -128,25 +128,20 @@ dim(aa)
 
 setDT(finemap_res_multi)
 bb <- finemap_res_multi[grepl("^L[0-9]+$", cs) & type %in% c("mQTL", "caQTL", "eQTL")]
-result <- bb[, .(total_susie_pip = sum(susie_pip),
-                          context = first(context),
-                          group = first(group)),
-                      by = .(cs, region_id, type)]
 result <- bb[, .(total_susie_pip = sum(susie_pip)),
-                      by = .(cs, region_id, type)]
+                      by = .(cs, region_id)]
 result <- result[order(-total_susie_pip)]
 result <- result[result$total_susie_pip>0.8,]
 dim(result)
 ```
 
-```{r, fig.width=16,fig.height=8,echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
+```{r, fig.width=16,fig.height=12,echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
 library(EnsDb.Hsapiens.v86)
 for(i in result$region_id){
   print(i)
   ens_db <- EnsDb.Hsapiens.v86
   p <- make_locusplot(finemap_res_multi,
                  region_id = i,
-                 #locus_range = c(115237972,115337972),
                  ens_db = ens_db,
                  weights = weights,
                  highlight_pip = 0.8,
