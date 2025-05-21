@@ -133,9 +133,11 @@ result <- bb[, .(total_susie_pip = sum(susie_pip)),
 result <- result[order(-total_susie_pip)]
 result <- result[result$total_susie_pip>0.8,]
 dim(result)
+result$nearby_gene <- "gene"
+result$molecular_mechanism <- "expression"
 ```
 
-```{r, fig.width=16,fig.height=12,echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
+```{r, fig.width=16,fig.height=16,echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
 library(EnsDb.Hsapiens.v86)
 for(i in result$region_id){
   print(i)
