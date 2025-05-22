@@ -2,9 +2,10 @@
 title: "LDL, IBD: different qtl combination"
 author: "XSun"
 date: "2025-05-20"
-output: workflowr::wflow_html
-editor_options:
-  chunk_output_type: console
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+    toc: true
 ---
 
 ```{r warning=F, message=F}
@@ -319,10 +320,6 @@ p <- grid.arrange(pie1, pie2, pie3,
 
 
 
-
-
-
-
 ## Comparing stQTL and stQTL + sQTL
 
 ```{r warning=F, message=FALSE, fig.height=4, fig.width=9}
@@ -335,7 +332,7 @@ ctwas_parameters <- summarize_param(param, gwas_n)
 
 p1 <- plot_piechart_topn(ctwas_parameters = ctwas_parameters,colors = colors,by = "type",title = NULL)
 
-qtl <- "sts"
+qtl <- "sst"
 
 file_param <- paste0(folder_results_multiqtl, trait, "/", trait, ".", qtl, ".thin", thin, ".", vgs, ".param.RDS")
 param <- readRDS(file_param)
@@ -525,7 +522,7 @@ ctwas_parameters <- summarize_param(param, gwas_n)
 
 p1 <- plot_piechart_topn(ctwas_parameters = ctwas_parameters,colors = colors,by = "type",title = NULL)
 
-qtl <- "sts"
+qtl <- "sst"
 
 file_param <- paste0(folder_results_multiqtl, trait, "/", trait, ".", qtl, ".thin", thin, ".", vgs, ".param.RDS")
 param <- readRDS(file_param)
