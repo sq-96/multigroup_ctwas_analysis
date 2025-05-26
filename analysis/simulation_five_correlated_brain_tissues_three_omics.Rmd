@@ -1,0 +1,460 @@
+---
+title: "simulation_five_correlated_brain_tissues_three_omics"
+output: html_document
+date: '2024-5-17'
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(ctwas)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+library(data.table)
+library(ggbreak) 
+library(ggpubr)
+library(gridExtra)
+source("/project/xinhe/shengqian/cTWAS_simulation/code/simulation_help_functions.R")
+source("/project/xinhe/shengqian/cTWAS_simulation/code/summarize_basic_plots.R")
+source("/project/xinhe/shengqian/cTWAS_simulation/code/summarize_ctwas_plots.R")
+
+plot_Prior <- function(results_dir, runtag, simutags, thins, group_prior_var_structure, null_method, file_name, prior_true) {
+  plots <- list()  # Store plots in a list
+  plot_idx <- 1
+  
+    for (thin in thins) {
+    param_df_ctwas <- load_parameters(results_dir, runtag, simutags, thin, group_prior_var_structure, null_method, file_name)
+      
+    df <- data.frame(null_method = rep(c("Cerebellum E",  "Cortex E",  "Nucleus_accumbens E",  "Caudate E",  "Cerebellar_Hemisphere E",
+                                         "Cerebellum S",  "Cortex S",  "Nucleus_accumbens S",  "Caudate S",  "Cerebellar_Hemisphere S",
+                                         "Cerebellum ST", "Cortex ST", "Nucleus_accumbens ST", "Caudate ST", "Cerebellar_Hemisphere ST"), each = 10),
+                       pos = c(rep(1, 10), rep(2, 10), rep(3, 10), rep(4, 10), rep(5, 10), 
+                               rep(6, 10), rep(7, 10), rep(8, 10), rep(9, 10), rep(10, 10),
+                               rep(11, 10), rep(12, 10), rep(13, 10), rep(14, 10), rep(15, 10)),
+                       prior = c(param_df_ctwas$`prior_Cerebellum|expression`,
+                                 param_df_ctwas$`prior_Cortex|expression`,
+                                 param_df_ctwas$`prior_Nucleus_accumbens|expression`,
+                                 param_df_ctwas$`prior_Caudate|expression`,
+                                 param_df_ctwas$`prior_Cerebellar_Hemisphere|expression`,
+                                 param_df_ctwas$`prior_Cerebellum|splicing`,
+                                 param_df_ctwas$`prior_Cortex|splicing`,
+                                 param_df_ctwas$`prior_Nucleus_accumbens|splicing`,
+                                 param_df_ctwas$`prior_Caudate|splicing`,
+                                 param_df_ctwas$`prior_Cerebellar_Hemisphere|splicing`,
+                                 param_df_ctwas$`prior_Cerebellum|stability`,
+                                 param_df_ctwas$`prior_Cortex|stability`,
+                                 param_df_ctwas$`prior_Nucleus_accumbens|stability`,
+                                 param_df_ctwas$`prior_Caudate|stability`,
+                                 param_df_ctwas$`prior_Cerebellar_Hemisphere|stability`)) 
+      
+    df$pos <- jitter(df$pos, amount = 0.2)
+    
+    # Prepare hline data: start and end x for each group
+    hline_df <- data.frame(
+      pos = 1:15,
+      yintercept = prior_true
+    )
+      
+    p <- ggplot(df, aes(x = pos, y = prior, group = null_method, color = null_method)) +
+        geom_point() +
+        geom_segment(data = hline_df,
+                 aes(x = pos - 0.3, xend = pos + 0.3, 
+                     y = yintercept, yend = yintercept),
+                 linetype = "dashed", inherit.aes = FALSE) +
+        labs(x = "", y = "Prior", title = thin) +
+        scale_x_continuous(breaks = 1:15, labels = c("Cerebellum E",  "Cortex E",  "Nucleus_accumbens E",  "Caudate E",  "Cerebellar_Hemisphere E",
+                                         "Cerebellum S",  "Cortex S",  "Nucleus_accumbens S",  "Caudate S",  "Cerebellar_Hemisphere S",
+                                         "Cerebellum ST", "Cortex ST", "Nucleus_accumbens ST", "Caudate ST", "Cerebellar_Hemisphere ST")) +
+        ylim(c(0,0.015)) +
+        theme_minimal()+
+        theme(legend.position = "none")
+      
+    plots[[plot_idx]] <- p  # Store plot in the list
+    plot_idx <- plot_idx + 1
+  }
+  
+  if (length(plots) > 1) {
+    grid.arrange(grobs = plots, ncol = length(plots))  # Using gridExtra
+  } else {
+    print(plots[[1]])
+  }
+}
+
+plot_enrichment <- function(results_dir, runtag, simutags, thins, group_prior_var_structure, null_method, file_name, enrichment_true) {
+  plots <- list()  # Store plots in a list
+  plot_idx <- 1
+  
+  for (thin in thins) {
+    param_df_ctwas <- load_parameters(results_dir, runtag, simutags, thin, group_prior_var_structure, null_method, file_name)
+      
+    df <- data.frame(null_method = rep(c("Cerebellum E",  "Cortex E",  "Nucleus_accumbens E",  "Caudate E",  "Cerebellar_Hemisphere E",
+                                         "Cerebellum S",  "Cortex S",  "Nucleus_accumbens S",  "Caudate S",  "Cerebellar_Hemisphere S",
+                                         "Cerebellum ST", "Cortex ST", "Nucleus_accumbens ST", "Caudate ST", "Cerebellar_Hemisphere ST"), each = 10),
+                       pos = c(rep(1, 10), rep(2, 10), rep(3, 10), rep(4, 10), rep(5, 10), 
+                               rep(6, 10), rep(7, 10), rep(8, 10), rep(9, 10), rep(10, 10),
+                               rep(11, 10), rep(12, 10), rep(13, 10), rep(14, 10), rep(15, 10)),
+                       enrichment = c(param_df_ctwas$`enrichment_Cerebellum|expression`,
+                                 param_df_ctwas$`enrichment_Cortex|expression`,
+                                 param_df_ctwas$`enrichment_Nucleus_accumbens|expression`,
+                                 param_df_ctwas$`enrichment_Caudate|expression`,
+                                 param_df_ctwas$`enrichment_Cerebellar_Hemisphere|expression`,
+                                 param_df_ctwas$`enrichment_Cerebellum|splicing`,
+                                 param_df_ctwas$`enrichment_Cortex|splicing`,
+                                 param_df_ctwas$`enrichment_Nucleus_accumbens|splicing`,
+                                 param_df_ctwas$`enrichment_Caudate|splicing`,
+                                 param_df_ctwas$`enrichment_Cerebellar_Hemisphere|splicing`,
+                                 param_df_ctwas$`enrichment_Cerebellum|stability`,
+                                 param_df_ctwas$`enrichment_Cortex|stability`,
+                                 param_df_ctwas$`enrichment_Nucleus_accumbens|stability`,
+                                 param_df_ctwas$`enrichment_Caudate|stability`,
+                                 param_df_ctwas$`enrichment_Cerebellar_Hemisphere|stability`),
+                       se = c(param_df_ctwas$`prior_Cerebellum|expression`,
+                                 param_df_ctwas$`enrichment_se_Cortex|expression`,
+                                 param_df_ctwas$`enrichment_se_Nucleus_accumbens|expression`,
+                                 param_df_ctwas$`enrichment_se_Caudate|expression`,
+                                 param_df_ctwas$`enrichment_se_Cerebellar_Hemisphere|expression`,
+                                 param_df_ctwas$`enrichment_se_Cerebellum|splicing`,
+                                 param_df_ctwas$`enrichment_se_Cortex|splicing`,
+                                 param_df_ctwas$`enrichment_se_Nucleus_accumbens|splicing`,
+                                 param_df_ctwas$`enrichment_se_Caudate|splicing`,
+                                 param_df_ctwas$`enrichment_se_Cerebellar_Hemisphere|splicing`,
+                                 param_df_ctwas$`enrichment_se_Cerebellum|stability`,
+                                 param_df_ctwas$`enrichment_se_Cortex|stability`,
+                                 param_df_ctwas$`enrichment_se_Nucleus_accumbens|stability`,
+                                 param_df_ctwas$`enrichment_se_Caudate|stability`,
+                                 param_df_ctwas$`enrichment_se_Cerebellar_Hemisphere|stability`)) 
+      
+    df$pos <- jitter(df$pos, amount = 0.2)
+    
+    # Prepare hline data: start and end x for each group
+    hline_df <- data.frame(
+      pos = 1:15,
+      yintercept = enrichment_true
+    )
+      
+    p <- ggplot(df, aes(x = pos, y = enrichment, group = null_method, color = null_method)) +
+        geom_point() +
+        geom_errorbar(aes(ymin = enrichment - 1.96 * se, ymax = enrichment + 1.96 * se), width = 0.01) +
+        geom_segment(data = hline_df,
+                 aes(x = pos - 0.3, xend = pos + 0.3, 
+                     y = yintercept, yend = yintercept),
+                 linetype = "dashed", inherit.aes = FALSE) +
+        labs(x = "", y = "log(Enrichment)", title = thin) +
+        scale_x_continuous(breaks = 1:15, labels = c("Cerebellum E",  "Cortex E",  "Nucleus_accumbens E",  "Caudate E",  "Cerebellar_Hemisphere E",
+                                         "Cerebellum S",  "Cortex S",  "Nucleus_accumbens S",  "Caudate S",  "Cerebellar_Hemisphere S",
+                                         "Cerebellum ST", "Cortex ST", "Nucleus_accumbens ST", "Caudate ST", "Cerebellar_Hemisphere ST")) +
+        ylim(c(-15,5)) +
+        theme_minimal()+
+        theme(legend.position = "none")
+      
+    plots[[plot_idx]] <- p  # Store plot in the list
+    plot_idx <- plot_idx + 1
+  }
+  
+  if (length(plots) > 1) {
+    grid.arrange(grobs = plots, ncol = length(plots))  # Using gridExtra
+  } else {
+    print(plots[[1]])
+  }
+}
+
+plot_PVE <- function(results_dir, runtag, simutags, thins, group_prior_var_structure, null_method, file_name, PVE_true) {
+  plots <- list()  # Store plots in a list
+  plot_idx <- 1
+  
+  for (thin in thins) {
+    param_df_ctwas <- load_parameters(results_dir, runtag, simutags, thin, group_prior_var_structure, null_method, file_name)
+      
+    df <- data.frame(null_method = rep(c("Cerebellum E",  "Cortex E",  "Nucleus_accumbens E",  "Caudate E",  "Cerebellar_Hemisphere E",
+                                         "Cerebellum S",  "Cortex S",  "Nucleus_accumbens S",  "Caudate S",  "Cerebellar_Hemisphere S",
+                                         "Cerebellum ST", "Cortex ST", "Nucleus_accumbens ST", "Caudate ST", "Cerebellar_Hemisphere ST"), each = 10),
+                       pos = c(rep(1, 10), rep(2, 10), rep(3, 10), rep(4, 10), rep(5, 10), 
+                               rep(6, 10), rep(7, 10), rep(8, 10), rep(9, 10), rep(10, 10),
+                               rep(11, 10), rep(12, 10), rep(13, 10), rep(14, 10), rep(15, 10)),
+                       pve = c(param_df_ctwas$`pve_Cerebellum|expression`,
+                                 param_df_ctwas$`pve_Cortex|expression`,
+                                 param_df_ctwas$`pve_Nucleus_accumbens|expression`,
+                                 param_df_ctwas$`pve_Caudate|expression`,
+                                 param_df_ctwas$`pve_Cerebellar_Hemisphere|expression`,
+                                 param_df_ctwas$`pve_Cerebellum|splicing`,
+                                 param_df_ctwas$`pve_Cortex|splicing`,
+                                 param_df_ctwas$`pve_Nucleus_accumbens|splicing`,
+                                 param_df_ctwas$`pve_Caudate|splicing`,
+                                 param_df_ctwas$`pve_Cerebellar_Hemisphere|splicing`,
+                                 param_df_ctwas$`pve_Cerebellum|stability`,
+                                 param_df_ctwas$`pve_Cortex|stability`,
+                                 param_df_ctwas$`pve_Nucleus_accumbens|stability`,
+                                 param_df_ctwas$`pve_Caudate|stability`,
+                                 param_df_ctwas$`pve_Cerebellar_Hemisphere|stability`)) 
+      
+    df$pos <- jitter(df$pos, amount = 0.2)
+    
+    # Prepare hline data: start and end x for each group
+    hline_df <- data.frame(
+      pos = 1:15,
+      yintercept = PVE_true
+    )
+      
+    p <- ggplot(df, aes(x = pos, y = pve, group = null_method, color = null_method)) +
+        geom_point() +
+        geom_segment(data = hline_df,
+                 aes(x = pos - 0.3, xend = pos + 0.3, 
+                     y = yintercept, yend = yintercept),
+                 linetype = "dashed", inherit.aes = FALSE) +
+        labs(x = "", y = "PVE", title = thin) +
+        scale_x_continuous(breaks = 1:15, labels = c("Cerebellum E",  "Cortex E",  "Nucleus_accumbens E",  "Caudate E",  "Cerebellar_Hemisphere E",
+                                         "Cerebellum S",  "Cortex S",  "Nucleus_accumbens S",  "Caudate S",  "Cerebellar_Hemisphere S",
+                                         "Cerebellum ST", "Cortex ST", "Nucleus_accumbens ST", "Caudate ST", "Cerebellar_Hemisphere ST")) +
+        ylim(c(0,0.1)) +
+        theme_minimal()+
+        theme(legend.position = "none")
+      
+    plots[[plot_idx]] <- p  # Store plot in the list
+    plot_idx <- plot_idx + 1
+  }
+  
+  if (length(plots) > 1) {
+    grid.arrange(grobs = plots, ncol = length(plots))  # Using gridExtra
+  } else {
+    print(plots[[1]])
+  }
+}
+
+plot_PHE <- function(results_dir, runtag, simutags, thins, group_prior_var_structure, null_method, file_name, PHE_true) {
+  plots <- list()  # Store plots in a list
+  plot_idx <- 1
+  
+  for (thin in thins) {
+    param_df_ctwas <- load_parameters(results_dir, runtag, simutags, thin, group_prior_var_structure, null_method, file_name)
+      
+    df <- data.frame(null_method = rep(c("Cerebellum E",  "Cortex E",  "Nucleus_accumbens E",  "Caudate E",  "Cerebellar_Hemisphere E",
+                                         "Cerebellum S",  "Cortex S",  "Nucleus_accumbens S",  "Caudate S",  "Cerebellar_Hemisphere S",
+                                         "Cerebellum ST", "Cortex ST", "Nucleus_accumbens ST", "Caudate ST", "Cerebellar_Hemisphere ST"), each = 10),
+                       pos = c(rep(1, 10), rep(2, 10), rep(3, 10), rep(4, 10), rep(5, 10), 
+                               rep(6, 10), rep(7, 10), rep(8, 10), rep(9, 10), rep(10, 10),
+                               rep(11, 10), rep(12, 10), rep(13, 10), rep(14, 10), rep(15, 10)),
+                       phe = c(param_df_ctwas$`prop_heritability_Cerebellum|expression`,
+                                 param_df_ctwas$`prop_heritability_Cortex|expression`,
+                                 param_df_ctwas$`prop_heritability_Nucleus_accumbens|expression`,
+                                 param_df_ctwas$`prop_heritability_Caudate|expression`,
+                                 param_df_ctwas$`prop_heritability_Cerebellar_Hemisphere|expression`,
+                                 param_df_ctwas$`prop_heritability_Cerebellum|splicing`,
+                                 param_df_ctwas$`prop_heritability_Cortex|splicing`,
+                                 param_df_ctwas$`prop_heritability_Nucleus_accumbens|splicing`,
+                                 param_df_ctwas$`prop_heritability_Caudate|splicing`,
+                                 param_df_ctwas$`prop_heritability_Cerebellar_Hemisphere|splicing`,
+                                 param_df_ctwas$`prop_heritability_Cerebellum|stability`,
+                                 param_df_ctwas$`prop_heritability_Cortex|stability`,
+                                 param_df_ctwas$`prop_heritability_Nucleus_accumbens|stability`,
+                                 param_df_ctwas$`prop_heritability_Caudate|stability`,
+                                 param_df_ctwas$`prop_heritability_Cerebellar_Hemisphere|stability`)) 
+      
+    df$pos <- jitter(df$pos, amount = 0.2)
+    
+    # Prepare hline data: start and end x for each group
+    hline_df <- data.frame(
+      pos = 1:15,
+      yintercept = PHE_true
+    )
+      
+    p <- ggplot(df, aes(x = pos, y = phe, group = null_method, color = null_method)) +
+        geom_point() +
+        geom_segment(data = hline_df,
+                 aes(x = pos - 0.3, xend = pos + 0.3, 
+                     y = yintercept, yend = yintercept),
+                 linetype = "dashed", inherit.aes = FALSE) +
+        labs(x = "", y = "PHE", title = thin) +
+        scale_x_continuous(breaks = 1:15, labels = c("Cerebellum E",  "Cortex E",  "Nucleus_accumbens E",  "Caudate E",  "Cerebellar_Hemisphere E",
+                                         "Cerebellum S",  "Cortex S",  "Nucleus_accumbens S",  "Caudate S",  "Cerebellar_Hemisphere S",
+                                         "Cerebellum ST", "Cortex ST", "Nucleus_accumbens ST", "Caudate ST", "Cerebellar_Hemisphere ST")) +
+        ylim(c(0,0.15)) +
+        theme_minimal()+
+        theme(legend.position = "none")
+      
+    plots[[plot_idx]] <- p  # Store plot in the list
+    plot_idx <- plot_idx + 1
+  }
+  
+  if (length(plots) > 1) {
+    grid.arrange(grobs = plots, ncol = length(plots))  # Using gridExtra
+  } else {
+    print(plots[[1]])
+  }
+}
+
+plot_power <- function(results_dir,runtag,thins){
+  plots <- list()  # Store plots in a list
+  plot_idx <- 1
+  
+  for (thin in thins) {
+    pipfs_all_ctwas <- paste0(results_dir, runtag, "_simu", paste(1, 1:10, sep = "-"),".thin",thin,".shared_all.ctwas.minp08.mingene0.estimated_parameter.finemap_regions_res.RDS")
+    phenofs <- paste0(results_dir, runtag, "_simu", paste(1, 1:10, sep = "-"), "-pheno.Rd")
+    cau <- lapply(phenofs, function(x) {load(x);get_causal_id(phenores)})
+    df_all_ctwas <- NULL
+    for (i in 1:length(pipfs_all_ctwas)) {
+      res <- readRDS(pipfs_all_ctwas[i])
+      res <- res$finemap_res
+      res <- data.frame(res[res$type!="SNP", ])
+      res$runtag <- i
+      res$ifcausal <- ifelse(res$id %in% cau[[i]], 1, 0)
+      df_all_ctwas <- rbind(df_all_ctwas, res)
+    }
+  
+    breaks_ranges = rbind(c(0.5, 1), c(0.8,1))
+    power_df <- data.frame()
+    for(i in 1:nrow(breaks_ranges)){
+      breaks = breaks_ranges[i,]
+      n_all_ctwas = length(which(df_all_ctwas$susie_pip >= breaks[1] & df_all_ctwas$susie_pip < breaks[2]))
+      n_all_ctwas_causal = length(which(df_all_ctwas$susie_pip >= breaks[1] & df_all_ctwas$susie_pip < breaks[2] & df_all_ctwas$ifcausal > 0))
+      tmp_df <- data.frame(
+        "pip_bin" = paste0("PIP: ", breaks[1], "-", breaks[2]),
+        "method" = rep(c("ctwas shared all"), 2),
+        "group" = rep(c("total", "causal"), each = 1),
+        "n_var" = c(n_all_ctwas,n_all_ctwas_causal))
+      power_df <- rbind(power_df, tmp_df)
+    }
+    power_df$method <- factor(power_df$method, levels = c("ctwas shared all"))
+    p <- ggplot(power_df) +
+    geom_bar(aes(x = method, y = n_var, fill = group),position = "identity", stat = "identity", alpha=0.5, width=0.5) +
+    facet_grid(~ pip_bin) +
+    labs(x = paste0("Thin ",thin), y = "number of molecular traits") +
+    scale_fill_manual(values = c("causal" = "red", "total" = "grey")) + 
+    theme_cowplot()+
+    theme(axis.text.x = element_blank(),axis.ticks.x = element_blank())
+    plots[[plot_idx]] <- p  # Store plot in the list
+    plot_idx <- plot_idx + 1
+  }
+  if (length(plots) > 1) {
+    grid.arrange(grobs = plots, ncol = length(plots))  # Using gridExtra
+  } else {
+    print(plots[[1]])
+  }
+}
+```
+
+```{r echo=FALSE}
+plot_molecular_PIPs <- function(results_dir, runtag,  simutags, thin, group_prior_var_structure, null_method, file_name, ...){
+  phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
+  susieIfs <- paste0(results_dir, runtag, "_simu",simutags, ".thin", thin, ".", group_prior_var_structure, ".", null_method,file_name)
+  f1 <- caliPIP_plot(phenofs, susieIfs, ...) 
+  return(f1)
+}
+
+plot_gene_PIPs <- function(results_dir, runtag,  simutags, thin, group_prior_var_structure, null_method, mapping_table, file_name, ...){
+  phenofs <- paste0(results_dir, runtag, "_simu", simutags, "-pheno.Rd")
+  susieIfs <- paste0(results_dir, runtag, "_simu",simutags, ".thin", thin, ".", group_prior_var_structure,".", null_method, file_name)
+  f1 <- caliPIP_plot_multi_omics(phenofs, susieIfs, mapping_table, ...) 
+  return(f1)
+}
+```
+
+## Simulation Parameters
+```{r eval=FALSE}
+pve_gene <- c(0.02, 0.02, 0, 0, 0, 0.01, 0.01, 0, 0, 0, 0.003, 0.003, 0, 0, 0)
+group_size <- c(8798,8772,8478,8596,8542, 22802, 19188, 17467, 17104, 22142, 3561, 2935, 2578, 2659, 3142)
+pve_snp <- 0.3
+sigma_theta <- 0.02
+sigma_beta <- 0.02
+gene_prior <- c(0.008963896, 0.008990464, 0, 0, 0, 0.001729330, 0.002055044, 0, 0, 0, 0.003322003, 0.004030546, 0, 0, 0)
+snp_prior <- 0.0002365931
+```
+
+
+```{r echo=FALSE}
+pve_gene <- c(0.02, 0.02, 0, 0, 0,
+              0.01, 0.01, 0, 0, 0,
+              0.003, 0.003, 0, 0, 0)
+
+group_size <- c(8798,8772,8478,8596,8542, 
+                22802,19188,17467,17104,22142, 
+                3561,2935,2578,2659,3142)
+pve_snp <- 0.3
+sigma_theta <- 0.02
+sigma_beta <- 0.02
+gene_prior <- pve_gene/sigma_beta^2/(1-sum(pve_gene)-pve_snp)/group_size
+snp_prior <- pve_snp/sigma_beta^2/(1-sum(pve_gene)-pve_snp)/5000000
+
+thins <- c(1)
+
+prior_true <- gene_prior
+  
+enrichment_true <- log(gene_prior/snp_prior,base = exp(1))
+
+pve_true <- pve_gene
+
+phe_true <- pve_gene/(sum(pve_gene)+pve_snp)
+```
+
+## shared_all, ctwas null weight
+
+### Prior
+```{r,echo=FALSE,fig.width= 12, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correlated_brain_tissues_three_omics/"
+runtag = "five_correlated_brain_tissues_three_omics"
+plot_Prior(results_dir,runtag,paste(1, 1:10, sep = "-"),c(1),"shared_all","ctwas",".minp08.mingene0.parameters.RDS",prior_true)
+```
+
+### Enrichment
+```{r,echo=FALSE,fig.width= 12, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correlated_brain_tissues_three_omics/"
+runtag = "five_correlated_brain_tissues_three_omics"
+plot_enrichment(results_dir,runtag,paste(1, 1:10, sep = "-"),c(1),"shared_all","ctwas",".minp08.mingene0.parameters.RDS",enrichment_true)
+```
+
+## PVE
+```{r,echo=FALSE,fig.width= 12, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correlated_brain_tissues_three_omics/"
+runtag = "five_correlated_brain_tissues_three_omics"
+plot_PVE(results_dir,runtag,paste(1, 1:10, sep = "-"),c(1),"shared_all","ctwas",".minp08.mingene0.parameters.RDS",pve_true)
+```
+
+## PHE
+```{r,echo=FALSE,fig.width= 12, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correlated_brain_tissues_three_omics/"
+runtag = "five_correlated_brain_tissues_three_omics"
+plot_PHE(results_dir,runtag,paste(1, 1:10, sep = "-"),c(1),"shared_all","ctwas",".minp08.mingene0.parameters.RDS",phe_true)
+```
+
+### Molecular level PIP
+```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.width=4, fig.height=4}
+molecular_PIPs <- list()
+for(i in c(1)){
+  print(i)
+  f1 <- plot_molecular_PIPs(results_dir, runtag, paste(1, 1:10, sep = "-"), i, "shared_all", "ctwas", ".minp08.mingene0.estimated_parameter.finemap_regions_res.RDS", main = paste0("thin ",i))
+  molecular_PIPs[[as.character(i)]] <- f1
+}
+do.call(grid.arrange, c(molecular_PIPs, ncol = 1))
+```
+
+### Gene level PIP
+```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.width=4, fig.height=4}
+mapping_table1 <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
+mapping_table2 <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/Munro_mapping.RDS")
+mapping_table <- rbind(mapping_table1,mapping_table2)
+simutags <- list("group1"=  paste(1, 1:10, sep = "-"))
+gene_PIPs <- list()
+for(i in c(1)){
+  print(i)
+  f1 <- plot_gene_PIPs(results_dir, runtag, paste(1, 1:10, sep = "-"), i, "shared_all", "ctwas", mapping_table, ".minp08.mingene0.estimated_parameter.finemap_regions_res.RDS", main = paste0("thin ",i))
+  gene_PIPs[[as.character(i)]] <- f1
+}
+do.call(grid.arrange, c(gene_PIPs, ncol = 1))
+```
+
+### Power plot
+```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.width=4, fig.height=4}
+plot_power(results_dir,runtag,c(1))
+```
+
+### Power plot
+```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.width=4, fig.height=4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correlated_brain_tissues_three_omics/"
+runtag1 = "five_correlated_brain_tissues_three_omics"
+runtag_list1 <- c(paste0(c("Cerebellum","Cortex","Nucleus_accumbens","Caudate","Cerebellar_Hemisphere"),"_expression"),
+                 paste0(c("Cerebellum","Cortex","Nucleus_accumbens","Caudate","Cerebellar_Hemisphere"),"_splicing"),
+                 paste0(c("Cerebellum","Cortex","Nucleus_accumbens","Caudate","Cerebellar_Hemisphere"),"_stability"))
+
+runtag_list2 <- c(paste0(c("Cerebellum","Cortex","Nucleus_accumbens","Caudate","Cerebellar_Hemisphere"),"_expression"))
+plot_gene_power_compare_method(results_dir,runtag1,runtag_list1,runtag_list2,c(1),mapping_table)
+```
