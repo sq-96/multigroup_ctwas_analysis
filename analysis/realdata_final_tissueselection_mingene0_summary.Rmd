@@ -1,0 +1,77 @@
+---
+title: "Tissue selection summary"
+author: "XSun"
+date: "2025-05-25"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+    toc: true
+---
+
+
+
+```{r}
+library(ctwas)
+
+source("/project/xinhe/xsun/multi_group_ctwas/data/samplesize.R")
+
+trait_nopsy <- c("LDL-ukb-d-30780_irnt","aFib-ebi-a-GCST006414","ATH_gtexukb","BMI-panukb","HB-panukb",
+             "Height-panukb","HTN-panukb","IBD-ebi-a-GCST004131","PLT-panukb","RA-panukb","RBC-panukb",
+             "SBP-ukb-a-360","T1D-GCST90014023","WBC-ieu-b-30","T2D-panukb")
+
+trait_psy <- c("SCZ-ieu-b-5102","ASD-ieu-a-1185","BIP-ieu-b-5110","MDD-ieu-b-102","PD-ieu-b-7","ADHD-ieu-a-1183","NS-ukb-a-230")
+
+traits <- c(trait_nopsy,trait_psy)
+
+```
+
+# Irrelevant tissues/ small sample tissues filtered
+
+To filter the irrelevant tissues, we
+
+- (1) remove tissues with < 200 samples. 
+- (2) remove some tissues that are not related to our traits, including Testis, Nerve Tibial, Ovary, Prostate, Uterus, Vagina, Breast Mammary Tissue.
+
+```{r}
+folder_results_expression <- "/project/xinhe/xsun/multi_group_ctwas/21.tissue_selection_0511/results/E_thin1_shared_all_mingene0_exclude_brainprocess/"
+folder_results_splicing <- "/project/xinhe/xsun/multi_group_ctwas/21.tissue_selection_0511/results/S_thin1_shared_all_mingene0_exclude_brainprocess/"
+
+```
+
+
+```{r}
+
+summary <- c()
+for (trait in traits){
+  
+  gwas_n <- samplesize[trait]
+  
+  param_expression <- readRDS(paste0(folder_results_expression,trait,"/",trait,".thin1.shared_all.param.RDS"))
+  param_splicing <- readRDS(paste0(folder_results_splicing,trait,"/",trait,".thin1.shared_all.param.RDS"))
+
+  param_summarized_fisher_expression <- summarize_param(param = param_expression,gwas_n = gwas_n,enrichment_test = "fisher",alternative = "greater")
+  param_summarized_fisher_splicing <- summarize_param(param = param_splicing,gwas_n = gwas_n,enrichment_test = "fisher",alternative = "greater")
+  
+  threshold <- 0.05/(length(param_summarized_fisher_expression$prop_heritability)-1)
+  
+  enrich_pval_expr <- param_summarized_fisher_expression$enrichment_pval
+  #enrich_pval_expr <- enrich_pval_expr[order(as.numeric(enrich_pval_expr[-length(enrich_pval_expr)]))]
+  tissues_expr <- head(names(enrich_pval_expr)[enrich_pval_expr < threshold], 10)
+  tissues_expr <- c(paste0(length(tissues_expr)," tissues: "),tissues_expr)
+  tissues_expr <- paste0(gsub(x = tissues_expr, pattern = "\\|eQTL", replacement = ""),collapse = ", ")
+  
+  enrich_pval_splicing <- param_summarized_fisher_splicing$enrichment_pval
+  #enrich_pval_splicing <- enrich_pval_splicing[order(as.numeric(enrich_pval_splicing[-length(enrich_pval_splicing)]))]
+  tissues_splicing <- head(names(enrich_pval_splicing)[enrich_pval_splicing < threshold], 10)
+  tissues_splicing <- c(paste0(length(tissues_splicing)," tissues: "),tissues_splicing)
+  tissues_splicing <- paste(gsub(x = tissues_splicing, pattern = "\\|sQTL", replacement = ""),collapse = ", ")
+  
+  
+  summary <- rbind(summary,c(trait, tissues_expr, tissues_splicing))
+}
+
+colnames(summary) <- c("trait", "tissues_expression","tissues_splicing")
+
+DT::datatable(summary,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Tissues selected'),options = list(pageLength = 10) )
+
+```
