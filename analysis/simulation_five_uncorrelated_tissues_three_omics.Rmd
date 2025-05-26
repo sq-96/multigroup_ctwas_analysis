@@ -372,7 +372,7 @@ plot_gene_power_compare_group <- function(results_dir, runtag1, runtag2, thins, 
     }
     
     method1_results <- process_method(pipfs_method1, "Joint")
-    method2_results <- process_method(pipfs_method2, "Single")
+    method2_results <- process_method(pipfs_method2, "Single group")
     
     breaks_ranges = rbind(c(0.5, 1), c(0.8,1))
     power_df <- data.frame()
@@ -409,11 +409,11 @@ plot_gene_power_compare_group <- function(results_dir, runtag1, runtag2, thins, 
     }
     
     power_df <- rbind(
-      calculate_stats(method1_results, "Multi-omics multi tissues"),
-      calculate_stats(method2_results, "Expression from one tissue")
+      calculate_stats(method1_results, "Joint"),
+      calculate_stats(method2_results, "Single group")
     )
     
-    power_df$method <- factor(power_df$method, levels = c("Multi-omics multi tissue", "Expression from one tissue"))
+    power_df$method <- factor(power_df$method, levels = c("Joint", "Single group"))
     power_df$group <- factor(power_df$group, levels = c("total", "causal"))
     
     # Create comparison plot with overlayed bars
@@ -768,7 +768,7 @@ do.call(grid.arrange, c(gene_PIPs, ncol = 1))
 ```
 
 ## Multi-cTWAS increases power of identifying causal genes
-```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.width=6, fig.height=4}
+```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.width=6, fig.height=6}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_uncorrelated_tissues_three_omics/"
 runtag1 <- "five_uncorrelated_tissues_three_omics"
 runtag2 <- "Liver_expression"
@@ -776,7 +776,7 @@ plot_gene_power_compare_group(results_dir,runtag1,runtag2,c(1),mapping_table)
 ```
 
 ## Multi-cTWAS reduces false positive rate
-```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.width=8, fig.height=4}
+```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.width=8, fig.height=6}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_uncorrelated_tissues_three_omics/"
 runtag1 <- "five_uncorrelated_tissues_three_omics"
 runtag_list1 <- c(paste0(c("Whole_Blood","Liver","Heart_Left_Ventricle","Stomach","Lung"),"_expression"),
