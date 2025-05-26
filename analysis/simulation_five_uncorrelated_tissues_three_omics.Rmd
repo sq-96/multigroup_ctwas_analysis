@@ -1,7 +1,7 @@
 ---
-title: "simulation_one_tissue_three_omics"
+title: "simulation_five_uncorrelated_tissues_three_omics"
 output: html_document
-date: '2024-5-17'
+date: '2024-5-26'
 editor_options: 
   chunk_output_type: console
 ---
@@ -331,6 +331,331 @@ plot_power <- function(results_dir,runtag,thins){
     print(plots[[1]])
   }
 }
+
+plot_gene_power_compare_group <- function(results_dir, runtag1, runtag2, thins, mapping_table) {
+  plots <- list()
+  plot_idx <- 1
+  
+  for (thin in thins) {
+    # Method 1 files (original)
+    pipfs_method1 <- paste0(results_dir, runtag1, "_simu", paste(1, 1:10, sep = "-"),".thin",thin,".shared_all.ctwas.minp08.mingene0.estimated_parameter.finemap_regions_res.RDS")
+    
+    # Method 2 files (new comparison method)
+    pipfs_method2 <- paste0(results_dir, runtag2, "_simu", paste(1, 1:10, sep = "-"),".thin",thin,".shared_all.ctwas.minp08.mingene0.estimated_parameter.finemap_regions_res.RDS")
+    
+    phenofs <- paste0(results_dir, runtag1, "_simu", paste(1, 1:10, sep = "-"), "-pheno.Rd")
+    cau <- lapply(phenofs, function(x) {load(x);get_causal_id(phenores)})
+    
+    # Process both methods
+    process_method <- function(pip_files, method_name) {
+      sim_results <- list()
+      for (i in 1:length(pip_files)) {
+        res <- readRDS(pip_files[i])
+        res <- anno_susie_alpha_res(res$susie_alpha_res,
+                                mapping_table = mapping_table,
+                                map_by = "molecular_id",
+                                drop_unmapped = TRUE)
+        
+        res <- combine_gene_pips(res,
+                             group_by = "gene_name",
+                             by = "type",
+                             method = "combine_cs",
+                             filter_cs = FALSE,
+                             include_cs_id = FALSE)
+        res$runtag <- i
+        true_genes <- unique(mapping_table[mapping_table$molecular_id %in% sapply(cau[[i]],function(x){unlist(strsplit(x, "[|]"))[1]}),"gene_name"])
+        res$ifcausal <- ifelse(res$gene_name %in% true_genes, 1, 0)  
+        res$method <- method_name
+        sim_results[[i]] <- res
+      }
+      return(sim_results)
+    }
+    
+    method1_results <- process_method(pipfs_method1, "Joint")
+    method2_results <- process_method(pipfs_method2, "Single group")
+    
+    breaks_ranges = rbind(c(0.5, 1), c(0.8,1))
+    power_df <- data.frame()
+    
+    calculate_stats <- function(sim_results, method_name) {
+      df <- data.frame()
+      for(i in 1:nrow(breaks_ranges)){
+        breaks = breaks_ranges[i,]
+        
+        n_total <- sapply(sim_results, function(df) {
+          length(which(df$combined_pip >= breaks[1] & df$combined_pip < breaks[2]))
+        })
+        
+        n_causal <- sapply(sim_results, function(df) {
+          length(which(df$combined_pip >= breaks[1] & df$combined_pip < breaks[2] & df$ifcausal > 0))
+        })
+        
+        mean_total <- mean(n_total)
+        se_total <- sd(n_total)/sqrt(length(n_total))
+        
+        mean_causal <- mean(n_causal)
+        se_causal <- sd(n_causal)/sqrt(length(n_causal))
+        
+        tmp_df <- data.frame(
+          "pip_bin" = paste0("PIP: ", breaks[1], "-", breaks[2]),
+          "method" = method_name,
+          "group" = c("total", "causal"),
+          "mean" = c(mean_total, mean_causal),
+          "se" = c(se_total, se_causal))
+        
+        df <- rbind(df, tmp_df)
+      }
+      return(df)
+    }
+    
+    power_df <- rbind(
+      calculate_stats(method1_results, "Joint"),
+      calculate_stats(method2_results, "Single group")
+    )
+    
+    power_df$method <- factor(power_df$method, levels = c("Joint", "Single group"))
+    power_df$group <- factor(power_df$group, levels = c("total", "causal"))
+    
+    # Create comparison plot with overlayed bars
+    p <- ggplot(power_df, aes(x = method, y = mean, fill = group)) +
+      # Total genes (background, semi-transparent)
+      geom_col(data = subset(power_df, group == "total"), 
+               position = position_identity(), width = 0.7, alpha = 0.4) +
+      # Causal genes (foreground, more opaque)
+      geom_col(data = subset(power_df, group == "causal"), 
+               position = position_identity(), width = 0.7, alpha = 0.7) +
+      # Error bars for total genes
+      geom_errorbar(data = subset(power_df, group == "total"),
+                   aes(ymin = mean - se, ymax = mean + se),
+                   position = position_identity(),
+                   width = 0.3, linewidth = 0.8, color = "gray40") +
+      # Error bars for causal genes
+      geom_errorbar(data = subset(power_df, group == "causal"),
+                   aes(ymin = mean - se, ymax = mean + se),
+                   position = position_identity(),
+                   width = 0.3, linewidth = 0.8, color = "firebrick") +
+      facet_grid(~ pip_bin) +
+      labs(x = paste0("Thin ", thin), 
+           y = "Average number of molecular traits",
+           fill = "Group") +
+      scale_fill_manual(values = c("total" = "gray70", "causal" = "indianred"),
+                       labels = c("total" = "All genes", "causal" = "Causal genes")) +
+      theme_cowplot() +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1),
+            legend.position = "top",
+            legend.title = element_text(size = 10),
+            legend.text = element_text(size = 9),
+            strip.text = element_text(size = 10),
+            axis.title.y = element_text(size = 10))
+    
+    plots[[plot_idx]] <- p
+    plot_idx <- plot_idx + 1
+  }
+  
+  if (length(plots) > 1) {
+    grid.arrange(grobs = plots, ncol = length(plots))
+  } else {
+    print(plots[[1]])
+  }
+}
+
+plot_gene_power_compare_method <- function(results_dir, runtag1, runtag_list1, runtag_list2, thins, mapping_table) {
+  plots <- list()
+  plot_idx <- 1
+  
+  for (thin in thins) {
+    # Method 1 files (original) - 1 file per simulation
+    pipfs_method1 <- paste0(results_dir, runtag1, "_simu", paste(1, 1:10, sep = "-"),".thin",thin,".shared_all.ctwas.minp08.mingene0.estimated_parameter.finemap_regions_res.RDS")
+    
+    # Method 2 files (new comparison method) - 15 files per simulation
+    pipfs_method2_list <- lapply(1:10, function(sim) {
+      paste0(results_dir, runtag_list1, "_simu", paste(1, sim, sep = "-"),".thin",thin,".shared_all.ctwas.minp08.mingene0.estimated_parameter.finemap_regions_res.RDS")
+    })
+    
+    pipfs_method3_list <- lapply(1:10, function(sim) {
+      paste0(results_dir, runtag_list2, "_simu", paste(1, sim, sep = "-"),".coloc_res.RDS")
+    })
+    
+    phenofs <- paste0(results_dir, runtag1, "_simu", paste(1, 1:10, sep = "-"), "-pheno.Rd")
+    cau <- lapply(phenofs, function(x) {load(x);get_causal_id(phenores)})
+    
+    # Process Method 1 (original method)
+    process_method1 <- function(pip_files) {
+      sim_results <- list()
+      for (i in 1:length(pip_files)) {
+        res <- readRDS(pip_files[i])
+        res <- anno_susie_alpha_res(res$susie_alpha_res,
+                                mapping_table = mapping_table,
+                                map_by = "molecular_id",
+                                drop_unmapped = TRUE)
+        
+        res <- combine_gene_pips(res,
+                             group_by = "gene_name",
+                             by = "type",
+                             method = "combine_cs",
+                             filter_cs = FALSE,
+                             include_cs_id = FALSE)
+        res$runtag <- i
+        true_genes <- unique(mapping_table[mapping_table$molecular_id %in% sapply(cau[[i]],function(x){unlist(strsplit(x, "[|]"))[1]}),"gene_name"])
+        res$ifcausal <- ifelse(res$gene_name %in% true_genes, 1, 0)  
+        res$method <- "Multi-cTWAS"
+        sim_results[[i]] <- res
+      }
+      return(sim_results)
+    }
+    
+    # Process Method 2 (new method with multiple files per simulation)
+    process_method2 <- function(pip_files_list) {
+      sim_results <- list()
+      for (i in 1:length(pip_files_list)) {
+        # Read all 15 files for this simulation
+        res_list <- lapply(pip_files_list[[i]], function(f) {
+          res <- readRDS(f)
+          res <- anno_susie_alpha_res(res$susie_alpha_res,
+                                  mapping_table = mapping_table,
+                                  map_by = "molecular_id",
+                                  drop_unmapped = TRUE)
+          
+          res <- combine_gene_pips(res,
+                               group_by = "gene_name",
+                               by = "type",
+                               method = "combine_cs",
+                               filter_cs = FALSE,
+                               include_cs_id = FALSE)
+          
+          res <- res[,c("gene_name","combined_pip")]
+          return(res)
+        })
+        
+        combined_df <- do.call(rbind, res_list)
+        # For each gene, keep only the row with the highest PIP
+        combined_res <- combined_df %>% group_by(gene_name) %>% arrange(desc(combined_pip)) %>% slice(1) %>% ungroup()
+        
+        # Add other required columns
+        combined_res$runtag <- i
+        true_genes <- unique(mapping_table[mapping_table$molecular_id %in% sapply(cau[[i]],function(x){unlist(strsplit(x, "[|]"))[1]}),"gene_name"])
+        combined_res$ifcausal <- ifelse(combined_res$gene_name %in% true_genes, 1, 0)
+        combined_res$method <- "Single-cTWAS"
+        
+        sim_results[[i]] <- combined_res
+      }
+      return(sim_results)
+    }
+    
+    process_method3 <- function(pip_files_list) {
+      sim_results <- list()
+      for (i in 1:length(pip_files_list)) {
+        print(i)
+        # Read all 15 files for this simulation
+        res_list <- lapply(pip_files_list[[i]], function(f) {
+          res <- readRDS(f)
+          return(res)
+        })
+        
+        combined_df <- do.call(rbind, res_list)
+        # For each gene, keep only the row with the highest PIP
+        combined_res <- combined_df %>% group_by(gene_name) %>% arrange(desc(PP4)) %>% slice(1) %>% ungroup()
+        colnames(combined_res) <- c("id","gene_name","region_id","combined_pip","causalSNP")
+        # Add other required columns
+        combined_res$runtag <- i
+        true_genes <- unique(mapping_table[mapping_table$molecular_id %in% sapply(cau[[i]],function(x){unlist(strsplit(x, "[|]"))[1]}),"gene_name"])
+        combined_res$ifcausal <- ifelse(combined_res$gene_name %in% true_genes, 1, 0)
+        combined_res$method <- "Coloc"
+        
+        sim_results[[i]] <- combined_res
+      }
+      return(sim_results)
+    }
+    
+    method1_results <- process_method1(pipfs_method1)
+    method2_results <- process_method2(pipfs_method2_list)
+    method3_results <- process_method3(pipfs_method3_list)
+    
+    breaks_ranges = rbind(c(0.5, 1), c(0.8,1))
+    power_df <- data.frame()
+    
+    calculate_stats <- function(sim_results, method_name) {
+      df <- data.frame()
+      for(i in 1:nrow(breaks_ranges)){
+        breaks = breaks_ranges[i,]
+        
+        n_total <- sapply(sim_results, function(df) {
+          length(which(df$combined_pip >= breaks[1] & df$combined_pip < breaks[2]))
+        })
+        
+        n_causal <- sapply(sim_results, function(df) {
+          length(which(df$combined_pip >= breaks[1] & df$combined_pip < breaks[2] & df$ifcausal > 0))
+        })
+        
+        mean_total <- mean(n_total)
+        se_total <- sd(n_total)/sqrt(length(n_total))
+        
+        mean_causal <- mean(n_causal)
+        se_causal <- sd(n_causal)/sqrt(length(n_causal))
+        
+        tmp_df <- data.frame(
+          "pip_bin" = paste0("PIP: ", breaks[1], "-", breaks[2]),
+          "method" = method_name,
+          "group" = c("total", "causal"),
+          "mean" = c(mean_total, mean_causal),
+          "se" = c(se_total, se_causal))
+        
+        df <- rbind(df, tmp_df)
+      }
+      return(df)
+    }
+    
+    power_df <- rbind(
+      calculate_stats(method1_results, "Multi-cTWAS"),
+      calculate_stats(method2_results, "Single-cTWAS"),
+      calculate_stats(method3_results, "Coloc")
+    )
+    
+    power_df$method <- factor(power_df$method, levels = c("Multi-cTWAS", "Single-cTWAS", "Coloc"))
+    power_df$group <- factor(power_df$group, levels = c("total", "causal"))
+    
+    # Create comparison plot with overlayed bars
+    p <- ggplot(power_df, aes(x = method, y = mean, fill = group)) +
+      # Total genes (background, semi-transparent)
+      geom_col(data = subset(power_df, group == "total"), 
+               position = position_identity(), width = 0.7, alpha = 0.4) +
+      # Causal genes (foreground, more opaque)
+      geom_col(data = subset(power_df, group == "causal"), 
+               position = position_identity(), width = 0.7, alpha = 0.7) +
+      # Error bars for total genes
+      geom_errorbar(data = subset(power_df, group == "total"),
+                   aes(ymin = mean - se, ymax = mean + se),
+                   position = position_identity(),
+                   width = 0.3, linewidth = 0.8, color = "gray40") +
+      # Error bars for causal genes
+      geom_errorbar(data = subset(power_df, group == "causal"),
+                   aes(ymin = mean - se, ymax = mean + se),
+                   position = position_identity(),
+                   width = 0.3, linewidth = 0.8, color = "firebrick") +
+      facet_grid(~ pip_bin) +
+      labs(x = paste0("Thin ", thin), 
+           y = "Average number of molecular traits",
+           fill = "Group") +
+      scale_fill_manual(values = c("total" = "gray70", "causal" = "indianred"),
+                       labels = c("total" = "All genes", "causal" = "Causal genes")) +
+      theme_cowplot() +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1),
+            legend.position = "top",
+            legend.title = element_text(size = 10),
+            legend.text = element_text(size = 9),
+            strip.text = element_text(size = 10),
+            axis.title.y = element_text(size = 10))
+    
+    plots[[plot_idx]] <- p
+    plot_idx <- plot_idx + 1
+  }
+  
+  if (length(plots) > 1) {
+    grid.arrange(grobs = plots, ncol = length(plots))
+  } else {
+    print(plots[[1]])
+  }
+}
 ```
 
 ```{r echo=FALSE}
@@ -416,7 +741,7 @@ runtag = "five_uncorrelated_tissues_three_omics"
 plot_PHE(results_dir,runtag,paste(1, 1:10, sep = "-"),c(1),"shared_all","ctwas",".minp08.mingene0.parameters.RDS",phe_true)
 ```
 
-### Molecular level PIP
+## Molecular level PIP
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.width=4, fig.height=4}
 molecular_PIPs <- list()
 for(i in c(1)){
@@ -427,7 +752,7 @@ for(i in c(1)){
 do.call(grid.arrange, c(molecular_PIPs, ncol = 1))
 ```
 
-### Gene level PIP
+## Gene level PIP
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.width=4, fig.height=4}
 mapping_table1 <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
 mapping_table2 <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/Munro_mapping.RDS")
@@ -442,8 +767,16 @@ for(i in c(1)){
 do.call(grid.arrange, c(gene_PIPs, ncol = 1))
 ```
 
-### Power plot
-```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.width=4, fig.height=4}
-plot_power(results_dir,runtag,c(1))
-```
+ 
 
+## Multi-cTWAS reduces false positive rate
+```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.width=8, fig.height=6}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_uncorrelated_tissues_three_omics/"
+runtag1 <- "five_uncorrelated_tissues_three_omics"
+runtag_list1 <- c(paste0(c("Whole_Blood","Liver","Heart_Left_Ventricle","Stomach","Lung"),"_expression"),
+                  paste0(c("Whole_Blood","Liver","Heart_Left_Ventricle","Stomach","Lung"),"_splicing"),
+                 paste0(c("Whole_Blood","Liver","Heart_Left_Ventricle","Stomach","Lung"),"_stability"))
+
+runtag_list2 <- c(paste0(c("Whole_Blood","Liver","Heart_Left_Ventricle","Stomach","Lung"),"_expression"))
+plot_gene_power_compare_method(results_dir,runtag1,runtag_list1,runtag_list2,c(1),mapping_table)
+```
