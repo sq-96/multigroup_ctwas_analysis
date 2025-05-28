@@ -332,6 +332,124 @@ plot_power <- function(results_dir,runtag,thins){
   }
 }
 
+
+plot_molecular_power_compare_group <- function(results_dir, runtag1, runtag2, thins) {
+  plots <- list()
+  plot_idx <- 1
+  
+  for (thin in thins) {
+    # Method 1 files (original)
+    pipfs_method1 <- paste0(results_dir, runtag1, "_simu", paste(1, 1:10, sep = "-"),".thin",thin,".shared_all.ctwas.minp08.mingene0.estimated_parameter.finemap_regions_res.RDS")
+    
+    # Method 2 files (new comparison method)
+    pipfs_method2 <- paste0(results_dir, runtag2, "_simu", paste(1, 1:10, sep = "-"),".thin",thin,".shared_all.ctwas.minp08.mingene0.estimated_parameter.finemap_regions_res.RDS")
+    
+    phenofs <- paste0(results_dir, runtag1, "_simu", paste(1, 1:10, sep = "-"), "-pheno.Rd")
+    cau <- lapply(phenofs, function(x) {load(x);get_causal_id(phenores)})
+    
+    # Process both methods
+    process_method <- function(pip_files, method_name) {
+      sim_results <- list()
+      for (i in 1:length(pip_files)) {
+        res <- readRDS(pip_files[i])
+        res <- res$finemap_res
+        res <- data.frame(res[res$type!="SNP", ])
+        res$runtag <- i
+        res$ifcausal <- ifelse(res$id %in% cau[[i]], 1, 0)
+        res$method <- method_name
+        sim_results[[i]] <- res
+      }
+      return(sim_results)
+    }
+    
+    method1_results <- process_method(pipfs_method1, "Joint")
+    method2_results <- process_method(pipfs_method2, "Single group")
+    
+    breaks_ranges = rbind(c(0.5, 1), c(0.8,1))
+    power_df <- data.frame()
+    
+    calculate_stats <- function(sim_results, method_name) {
+      df <- data.frame()
+      for(i in 1:nrow(breaks_ranges)){
+        breaks = breaks_ranges[i,]
+        
+        n_total <- sapply(sim_results, function(df) {
+          length(which(df$susie_pip >= breaks[1] & df$susie_pip < breaks[2]))
+        })
+        
+        n_causal <- sapply(sim_results, function(df) {
+          length(which(df$susie_pip >= breaks[1] & df$susie_pip < breaks[2] & df$ifcausal > 0))
+        })
+        
+        mean_total <- mean(n_total)
+        se_total <- sd(n_total)/sqrt(length(n_total))
+        
+        mean_causal <- mean(n_causal)
+        se_causal <- sd(n_causal)/sqrt(length(n_causal))
+        
+        tmp_df <- data.frame(
+          "pip_bin" = paste0("PIP: ", breaks[1], "-", breaks[2]),
+          "method" = method_name,
+          "group" = c("total", "causal"),
+          "mean" = c(mean_total, mean_causal),
+          "se" = c(se_total, se_causal))
+        
+        df <- rbind(df, tmp_df)
+      }
+      return(df)
+    }
+    
+    power_df <- rbind(
+      calculate_stats(method1_results, "Joint"),
+      calculate_stats(method2_results, "Single group")
+    )
+    
+    power_df$method <- factor(power_df$method, levels = c("Joint", "Single group"))
+    power_df$group <- factor(power_df$group, levels = c("total", "causal"))
+    
+    # Create comparison plot with overlayed bars
+    p <- ggplot(power_df, aes(x = method, y = mean, fill = group)) +
+      # Total genes (background, semi-transparent)
+      geom_col(data = subset(power_df, group == "total"), 
+               position = position_identity(), width = 0.7, alpha = 0.4) +
+      # Causal genes (foreground, more opaque)
+      geom_col(data = subset(power_df, group == "causal"), 
+               position = position_identity(), width = 0.7, alpha = 0.7) +
+      # Error bars for total genes
+      geom_errorbar(data = subset(power_df, group == "total"),
+                   aes(ymin = mean - se, ymax = mean + se),
+                   position = position_identity(),
+                   width = 0.3, linewidth = 0.8, color = "gray40") +
+      # Error bars for causal genes
+      geom_errorbar(data = subset(power_df, group == "causal"),
+                   aes(ymin = mean - se, ymax = mean + se),
+                   position = position_identity(),
+                   width = 0.3, linewidth = 0.8, color = "firebrick") +
+      facet_grid(~ pip_bin) +
+      labs(x = paste0("Thin ", thin), 
+           y = "Average number of molecular traits",
+           fill = "Group") +
+      scale_fill_manual(values = c("total" = "gray70", "causal" = "indianred"),
+                       labels = c("total" = "All genes", "causal" = "Causal genes")) +
+      theme_cowplot() +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1),
+            legend.position = "top",
+            legend.title = element_text(size = 10),
+            legend.text = element_text(size = 9),
+            strip.text = element_text(size = 10),
+            axis.title.y = element_text(size = 10))
+    
+    plots[[plot_idx]] <- p
+    plot_idx <- plot_idx + 1
+  }
+  
+  if (length(plots) > 1) {
+    grid.arrange(grobs = plots, ncol = length(plots))
+  } else {
+    print(plots[[1]])
+  }
+}
+
 plot_gene_power_compare_group <- function(results_dir, runtag1, runtag2, thins, mapping_table) {
   plots <- list()
   plot_idx <- 1
@@ -436,124 +554,7 @@ plot_gene_power_compare_group <- function(results_dir, runtag1, runtag2, thins, 
                    width = 0.3, linewidth = 0.8, color = "firebrick") +
       facet_grid(~ pip_bin) +
       labs(x = paste0("Thin ", thin), 
-           y = "Average number of molecular traits",
-           fill = "Group") +
-      scale_fill_manual(values = c("total" = "gray70", "causal" = "indianred"),
-                       labels = c("total" = "All genes", "causal" = "Causal genes")) +
-      theme_cowplot() +
-      theme(axis.text.x = element_text(angle = 45, hjust = 1),
-            legend.position = "top",
-            legend.title = element_text(size = 10),
-            legend.text = element_text(size = 9),
-            strip.text = element_text(size = 10),
-            axis.title.y = element_text(size = 10))
-    
-    plots[[plot_idx]] <- p
-    plot_idx <- plot_idx + 1
-  }
-  
-  if (length(plots) > 1) {
-    grid.arrange(grobs = plots, ncol = length(plots))
-  } else {
-    print(plots[[1]])
-  }
-}
-
-plot_molecular_power_compare_group <- function(results_dir, runtag1, runtag2, thins) {
-  plots <- list()
-  plot_idx <- 1
-  
-  for (thin in thins) {
-    # Method 1 files (original)
-    pipfs_method1 <- paste0(results_dir, runtag1, "_simu", paste(1, 1:10, sep = "-"),".thin",thin,".shared_all.ctwas.minp08.mingene0.estimated_parameter.finemap_regions_res.RDS")
-    
-    # Method 2 files (new comparison method)
-    pipfs_method2 <- paste0(results_dir, runtag2, "_simu", paste(1, 1:10, sep = "-"),".thin",thin,".shared_all.ctwas.minp08.mingene0.estimated_parameter.finemap_regions_res.RDS")
-    
-    phenofs <- paste0(results_dir, runtag1, "_simu", paste(1, 1:10, sep = "-"), "-pheno.Rd")
-    cau <- lapply(phenofs, function(x) {load(x);get_causal_id(phenores)})
-    
-    # Process both methods
-    process_method <- function(pip_files, method_name) {
-      sim_results <- list()
-      for (i in 1:length(pip_files)) {
-        res <- readRDS(pip_files[i])
-        res <- res$finemap_res
-        res <- data.frame(res[res$type!="SNP", ])
-        res$runtag <- i
-        res$ifcausal <- ifelse(res$id %in% cau[[i]], 1, 0)
-        res$method <- method_name
-        sim_results[[i]] <- res
-      }
-      return(sim_results)
-    }
-    
-    method1_results <- process_method(pipfs_method1, "Joint")
-    method2_results <- process_method(pipfs_method2, "Single group")
-    
-    breaks_ranges = rbind(c(0.5, 1), c(0.8,1))
-    power_df <- data.frame()
-    
-    calculate_stats <- function(sim_results, method_name) {
-      df <- data.frame()
-      for(i in 1:nrow(breaks_ranges)){
-        breaks = breaks_ranges[i,]
-        
-        n_total <- sapply(sim_results, function(df) {
-          length(which(df$susie_pip >= breaks[1] & df$susie_pip < breaks[2]))
-        })
-        
-        n_causal <- sapply(sim_results, function(df) {
-          length(which(df$susie_pip >= breaks[1] & df$susie_pip < breaks[2] & df$ifcausal > 0))
-        })
-        
-        mean_total <- mean(n_total)
-        se_total <- sd(n_total)/sqrt(length(n_total))
-        
-        mean_causal <- mean(n_causal)
-        se_causal <- sd(n_causal)/sqrt(length(n_causal))
-        
-        tmp_df <- data.frame(
-          "pip_bin" = paste0("PIP: ", breaks[1], "-", breaks[2]),
-          "method" = method_name,
-          "group" = c("total", "causal"),
-          "mean" = c(mean_total, mean_causal),
-          "se" = c(se_total, se_causal))
-        
-        df <- rbind(df, tmp_df)
-      }
-      return(df)
-    }
-    
-    power_df <- rbind(
-      calculate_stats(method1_results, "Joint"),
-      calculate_stats(method2_results, "Single group")
-    )
-    
-    power_df$method <- factor(power_df$method, levels = c("Joint", "Single group"))
-    power_df$group <- factor(power_df$group, levels = c("total", "causal"))
-    
-    # Create comparison plot with overlayed bars
-    p <- ggplot(power_df, aes(x = method, y = mean, fill = group)) +
-      # Total genes (background, semi-transparent)
-      geom_col(data = subset(power_df, group == "total"), 
-               position = position_identity(), width = 0.7, alpha = 0.4) +
-      # Causal genes (foreground, more opaque)
-      geom_col(data = subset(power_df, group == "causal"), 
-               position = position_identity(), width = 0.7, alpha = 0.7) +
-      # Error bars for total genes
-      geom_errorbar(data = subset(power_df, group == "total"),
-                   aes(ymin = mean - se, ymax = mean + se),
-                   position = position_identity(),
-                   width = 0.3, linewidth = 0.8, color = "gray40") +
-      # Error bars for causal genes
-      geom_errorbar(data = subset(power_df, group == "causal"),
-                   aes(ymin = mean - se, ymax = mean + se),
-                   position = position_identity(),
-                   width = 0.3, linewidth = 0.8, color = "firebrick") +
-      facet_grid(~ pip_bin) +
-      labs(x = paste0("Thin ", thin), 
-           y = "Average number of molecular traits",
+           y = "Average number of genes",
            fill = "Group") +
       scale_fill_manual(values = c("total" = "gray70", "causal" = "indianred"),
                        labels = c("total" = "All genes", "causal" = "Causal genes")) +
@@ -919,7 +920,7 @@ plot_gene_power_compare_method <- function(results_dir, runtag1, runtag_list1, r
                    width = 0.3, linewidth = 0.8, color = "firebrick") +
       facet_grid(~ pip_bin) +
       labs(x = paste0("Thin ", thin), 
-           y = "Average number of molecular traits",
+           y = "Average number of genes",
            fill = "Group") +
       scale_fill_manual(values = c("total" = "gray70", "causal" = "indianred"),
                        labels = c("total" = "All genes", "causal" = "Causal genes")) +
