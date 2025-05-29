@@ -25,6 +25,9 @@ thin <- 1
 vgs <- "shared_all"
 L <-5
 
+colors <- c("#ff7f0e", "#2ca02c", "#d62728",  "#9467bd", "#8c564b", "#e377c2", "#7f7f7f",  "#bcbd22",  "#17becf",  "#f7b6d2",  "#c5b0d5",  "#9edae5", "#ffbb78",  "#98df8a",  "#ff9896" )
+
+
 fix_panel_size <- function(plot, width = 2.1, height = 2) {
   set_panel_size(plot, 
                  width = unit(width, "in"), 
@@ -175,19 +178,75 @@ plot_piechart_topn <- function(ctwas_parameters, colors, by, title, n_tissue=10)
 }
 
 ```
+# Modality
 
+## LDL-ukb-d-30780_irnt, Liver
 
-# LDL-ukb-d-30780_irnt, Liver
-
-```{r warning=F, message=FALSE, fig.height=4, fig.width=9}
+```{r warning=F, message=FALSE, fig.height=4, fig.width=10}
 trait <- "LDL-ukb-d-30780_irnt"
 
 gwas_n <- samplesize[trait]
 ```
 
-## Comparing eQTL, sQTL and eQTL + sQTL
+### Comparing eQTL, e+s QTL, e+s+st QTL and 4 qtls
 
-```{r warning=F, message=FALSE, fig.height=4, fig.width=9}
+```{r warning=F, message=FALSE, fig.height=4, fig.width=10}
+
+qtl <- "eonly"
+
+file_param <- paste0(folder_results_multiqtl, trait, "/", trait, ".", qtl, ".thin", thin, ".", vgs, ".param.RDS")
+param <- readRDS(file_param)
+ctwas_parameters <- summarize_param(param, gwas_n)
+
+p1 <- plot_piechart_topn(ctwas_parameters = ctwas_parameters,colors = colors,by = "type",title = NULL)
+
+qtl <- "es"
+
+file_param <- paste0(folder_results_multiqtl, trait, "/", trait, ".", qtl, ".thin", thin, ".", vgs, ".param.RDS")
+param <- readRDS(file_param)
+ctwas_parameters <- summarize_param(param, gwas_n)
+
+p2 <- plot_piechart_topn(ctwas_parameters = ctwas_parameters,colors = colors,by = "type",title = NULL)
+
+qtl <- "esst"
+
+file_param <- paste0(folder_results_multiqtl, trait, "/", trait, ".", qtl, ".thin", thin, ".", vgs, ".param.RDS")
+param <- readRDS(file_param)
+ctwas_parameters <- summarize_param(param, gwas_n)
+
+p3 <- plot_piechart_topn(ctwas_parameters = ctwas_parameters,colors = colors,by = "type",title = NULL)
+
+qtl <- "4qtls"
+
+file_param <- paste0(folder_results_multiqtl, trait, "/", trait, ".", qtl, ".thin", thin, ".", vgs, ".param.RDS")
+param <- readRDS(file_param)
+ctwas_parameters <- summarize_param(param, gwas_n)
+
+p4 <- plot_piechart_topn(ctwas_parameters = ctwas_parameters,colors = colors,by = "type",title = NULL)
+
+
+# Convert plots to gtables with fixed panel sizes
+pie1 <- fix_panel_size(p1)
+pie2 <- fix_panel_size(p2)
+pie3 <- fix_panel_size(p3)
+pie4 <- fix_panel_size(p4)
+
+# Calculate widths of each gtable (plot + legend)
+widths <- unit.c(grobWidth(pie1), grobWidth(pie2),grobWidth(pie3), grobWidth(pie4))
+
+# Arrange plots with their natural widths
+p <- grid.arrange(pie1, pie2, pie3, pie4,
+                  ncol = 4, 
+                  widths = widths,
+                  top = paste0(trait)
+)
+
+```
+
+
+### Comparing eQTL, sQTL and eQTL + sQTL
+
+```{r warning=F, message=FALSE, fig.height=4, fig.width=10}
 
 qtl <- "eonly"
 
@@ -232,9 +291,9 @@ p <- grid.arrange(pie1, pie2, pie3,
 ```
 
 
-## Comparing eQTL and eQTL + stQTL + edQTL
+### Comparing eQTL and eQTL + stQTL + edQTL
 
-```{r warning=F, message=FALSE, fig.height=4, fig.width=9}
+```{r warning=F, message=FALSE, fig.height=4, fig.width=10}
 
 qtl <- "eonly"
 
@@ -271,9 +330,9 @@ p <- grid.arrange(pie1, pie2,
 
 
 
-## Comparing stQTL, edQTL and eQTL + stQTL + edQTL
+### Comparing stQTL, edQTL and eQTL + stQTL + edQTL
 
-```{r warning=F, message=FALSE, fig.height=4, fig.width=9}
+```{r warning=F, message=FALSE, fig.height=4, fig.width=10}
 
 qtl <- "stonly"
 
@@ -320,9 +379,9 @@ p <- grid.arrange(pie1, pie2, pie3,
 
 
 
-## Comparing stQTL and stQTL + sQTL
+### Comparing stQTL and stQTL + sQTL
 
-```{r warning=F, message=FALSE, fig.height=4, fig.width=9}
+```{r warning=F, message=FALSE, fig.height=4, fig.width=10}
 
 qtl <- "stonly"
 
@@ -357,23 +416,74 @@ p <- grid.arrange(pie1, pie2,
 ```
 
 
+## IBD-ebi-a-GCST004131, Whole_Blood & Colon_Transverse
 
-
-
-
-
-
-# IBD-ebi-a-GCST004131, Whole_Blood & Colon_Transverse
-
-```{r warning=F, message=FALSE, fig.height=4, fig.width=9}
+```{r warning=F, message=FALSE, fig.height=4, fig.width=10}
 trait <- "IBD-ebi-a-GCST004131"
 
 gwas_n <- samplesize[trait]
 ```
 
-## Comparing eQTL, sQTL and eQTL + sQTL
+### Comparing eQTL, e+s QTL, e+s+st QTL and 4 qtls
 
-```{r warning=F, message=FALSE, fig.height=4, fig.width=9}
+```{r warning=F, message=FALSE, fig.height=4, fig.width=10}
+
+qtl <- "eonly"
+
+file_param <- paste0(folder_results_multiqtl, trait, "/", trait, ".", qtl, ".thin", thin, ".", vgs, ".param.RDS")
+param <- readRDS(file_param)
+ctwas_parameters <- summarize_param(param, gwas_n)
+
+p1 <- plot_piechart_topn(ctwas_parameters = ctwas_parameters,colors = colors,by = "type",title = NULL)
+
+qtl <- "es"
+
+file_param <- paste0(folder_results_multiqtl, trait, "/", trait, ".", qtl, ".thin", thin, ".", vgs, ".param.RDS")
+param <- readRDS(file_param)
+ctwas_parameters <- summarize_param(param, gwas_n)
+
+p2 <- plot_piechart_topn(ctwas_parameters = ctwas_parameters,colors = colors,by = "type",title = NULL)
+
+qtl <- "esst"
+
+file_param <- paste0(folder_results_multiqtl, trait, "/", trait, ".", qtl, ".thin", thin, ".", vgs, ".param.RDS")
+param <- readRDS(file_param)
+ctwas_parameters <- summarize_param(param, gwas_n)
+
+p3 <- plot_piechart_topn(ctwas_parameters = ctwas_parameters,colors = colors,by = "type",title = NULL)
+
+qtl <- "4qtls"
+
+file_param <- paste0(folder_results_multiqtl, trait, "/", trait, ".", qtl, ".thin", thin, ".", vgs, ".param.RDS")
+param <- readRDS(file_param)
+ctwas_parameters <- summarize_param(param, gwas_n)
+
+p4 <- plot_piechart_topn(ctwas_parameters = ctwas_parameters,colors = colors,by = "type",title = NULL)
+
+
+# Convert plots to gtables with fixed panel sizes
+pie1 <- fix_panel_size(p1)
+pie2 <- fix_panel_size(p2)
+pie3 <- fix_panel_size(p3)
+pie4 <- fix_panel_size(p4)
+
+# Calculate widths of each gtable (plot + legend)
+widths <- unit.c(grobWidth(pie1), grobWidth(pie2),grobWidth(pie3), grobWidth(pie4))
+
+# Arrange plots with their natural widths
+p <- grid.arrange(pie1, pie2, pie3, pie4,
+                  ncol = 4, 
+                  widths = widths,
+                  top = paste0(trait)
+)
+
+```
+
+
+
+### Comparing eQTL, sQTL and eQTL + sQTL
+
+```{r warning=F, message=FALSE, fig.height=4, fig.width=10}
 
 qtl <- "eonly"
 
@@ -418,9 +528,9 @@ p <- grid.arrange(pie1, pie2, pie3,
 ```
 
 
-## Comparing eQTL and eQTL + stQTL + edQTL
+### Comparing eQTL and eQTL + stQTL + edQTL
 
-```{r warning=F, message=FALSE, fig.height=4, fig.width=9}
+```{r warning=F, message=FALSE, fig.height=4, fig.width=10}
 
 qtl <- "eonly"
 
@@ -457,9 +567,9 @@ p <- grid.arrange(pie1, pie2,
 
 
 
-## Comparing stQTL, edQTL and eQTL + stQTL + edQTL
+### Comparing stQTL, edQTL and eQTL + stQTL + edQTL
 
-```{r warning=F, message=FALSE, fig.height=4, fig.width=9}
+```{r warning=F, message=FALSE, fig.height=4, fig.width=10}
 
 qtl <- "stonly"
 
@@ -510,9 +620,9 @@ p <- grid.arrange(pie1, pie2, pie3,
 
 
 
-## Comparing stQTL and stQTL + sQTL
+### Comparing stQTL and stQTL + sQTL
 
-```{r warning=F, message=FALSE, fig.height=4, fig.width=9}
+```{r warning=F, message=FALSE, fig.height=4, fig.width=10}
 
 qtl <- "stonly"
 
@@ -546,8 +656,44 @@ p <- grid.arrange(pie1, pie2,
 
 ```
 
+# Tissues
+
+## IBD-ebi-a-GCST004131, Whole_Blood & Colon_Transverse
+
+```{r warning=F, message=FALSE, fig.height=4, fig.width=10}
+trait <- "IBD-ebi-a-GCST004131"
+
+gwas_n <- samplesize[trait]
+```
+
+## Whole_Blood eQTL only and Whole_Blood + Colon_Transverse eQTL
+
+```{r warning=F, message=FALSE, fig.height=4, fig.width=10}
+file_param <- paste0("/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/expression/IBD-ebi-a-GCST004131/IBD-ebi-a-GCST004131_Whole_Blood.thin1.shared_all.param.RDS")
+param <- readRDS(file_param)
+ctwas_parameters <- summarize_param(param, gwas_n)
+
+p1 <- plot_piechart_topn(ctwas_parameters = ctwas_parameters,colors = colors,by = "context",title = NULL)
 
 
+file_param <- paste0("/project/xinhe/xsun/multi_group_ctwas/24.diff_qtls_0519/snakemake_outputs/IBD-ebi-a-GCST004131/IBD-ebi-a-GCST004131.eonly.thin1.shared_all.param.RDS")
+param <- readRDS(file_param)
+ctwas_parameters <- summarize_param(param, gwas_n)
+
+p2 <- plot_piechart_topn(ctwas_parameters = ctwas_parameters,colors = colors,by = "context",title = NULL)
+
+pie1 <- fix_panel_size(p1)
+pie2 <- fix_panel_size(p2)
+
+# Calculate widths of each gtable (plot + legend)
+widths <- unit.c(grobWidth(pie1), grobWidth(pie2))
+
+# Arrange plots with their natural widths
+p <- grid.arrange(pie1, pie2,  
+                  ncol = 2, 
+                  widths = widths,
+                  top = paste0(trait))
+```
 
 
 
