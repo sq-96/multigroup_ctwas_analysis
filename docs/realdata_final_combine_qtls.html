@@ -402,7 +402,7 @@ aria-hidden="true"></span> </a>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2025-05-20
+<strong>Last updated:</strong> 2025-05-29
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -536,15 +536,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree28cd57c8cf3bb2966abf7ccc1a0e502bfd29e18ctargetblank28cd57ca">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree6fc9c34c90414b8133393434e43031fc196d17d4targetblank6fc9c34a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/28cd57c8cf3bb2966abf7ccc1a0e502bfd29e18c" target="_blank">28cd57c</a>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/6fc9c34c90414b8133393434e43031fc196d17d4" target="_blank">6fc9c34</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree28cd57c8cf3bb2966abf7ccc1a0e502bfd29e18ctargetblank28cd57ca"
+id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree6fc9c34c90414b8133393434e43031fc196d17d4targetblank6fc9c34a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -554,7 +554,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/28cd57c8cf3bb2966abf7ccc1a0e502bfd29e18c" target="_blank">28cd57c</a>.
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/6fc9c34c90414b8133393434e43031fc196d17d4" target="_blank">6fc9c34</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -574,6 +574,7 @@ Ignored files:
 
 Unstaged changes:
     Modified:   analysis/realdata_final_combine_qtls.Rmd
+    Modified:   analysis/realdata_final_downstream_enrichment_compare.Rmd
 
 </code></pre>
 <p>
@@ -622,6 +623,57 @@ Message
 <tbody>
 <tr>
 <td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/sq-96/multigroup_ctwas_analysis/6fc9c34c90414b8133393434e43031fc196d17d4/docs/realdata_final_combine_qtls.html" target="_blank">6fc9c34</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-05-28
+</td>
+<td>
+update
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/c791833a53a54625de7b3345b9ddee4069882335/analysis/realdata_final_combine_qtls.Rmd" target="_blank">c791833</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-05-21
+</td>
+<td>
+update
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/sq-96/multigroup_ctwas_analysis/c791833a53a54625de7b3345b9ddee4069882335/docs/realdata_final_combine_qtls.html" target="_blank">c791833</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-05-21
+</td>
+<td>
+update
+</td>
+</tr>
+<tr>
+<td>
 Rmd
 </td>
 <td>
@@ -658,6 +710,9 @@ source(&quot;/project/xinhe/xsun/multi_group_ctwas/data/samplesize.R&quot;)
 thin &lt;- 1
 vgs &lt;- &quot;shared_all&quot;
 L &lt;-5
+
+colors &lt;- c(&quot;#ff7f0e&quot;, &quot;#2ca02c&quot;, &quot;#d62728&quot;,  &quot;#9467bd&quot;, &quot;#8c564b&quot;, &quot;#e377c2&quot;, &quot;#7f7f7f&quot;,  &quot;#bcbd22&quot;,  &quot;#17becf&quot;,  &quot;#f7b6d2&quot;,  &quot;#c5b0d5&quot;,  &quot;#9edae5&quot;, &quot;#ffbb78&quot;,  &quot;#98df8a&quot;,  &quot;#ff9896&quot; )
+
 
 fix_panel_size &lt;- function(plot, width = 2.1, height = 2) {
   set_panel_size(plot, 
@@ -807,13 +862,105 @@ plot_piechart_topn &lt;- function(ctwas_parameters, colors, by, title, n_tissue=
   
   return(pie)
 }</code></pre>
-<div id="ldl-ukb-d-30780_irnt-liver" class="section level1">
-<h1>LDL-ukb-d-30780_irnt, Liver</h1>
+<div id="modality" class="section level1">
+<h1>Modality</h1>
+<div id="ldl-ukb-d-30780_irnt-liver" class="section level2">
+<h2>LDL-ukb-d-30780_irnt, Liver</h2>
 <pre class="r"><code>trait &lt;- &quot;LDL-ukb-d-30780_irnt&quot;
 
 gwas_n &lt;- samplesize[trait]</code></pre>
-<div id="comparing-eqtl-sqtl-and-eqtl-sqtl" class="section level2">
-<h2>Comparing eQTL, sQTL and eQTL + sQTL</h2>
+<div id="comparing-eqtl-es-qtl-esst-qtl-and-4-qtls"
+class="section level3">
+<h3>Comparing eQTL, e+s QTL, e+s+st QTL and 4 qtls</h3>
+<pre class="r"><code>qtl &lt;- &quot;eonly&quot;
+
+file_param &lt;- paste0(folder_results_multiqtl, trait, &quot;/&quot;, trait, &quot;.&quot;, qtl, &quot;.thin&quot;, thin, &quot;.&quot;, vgs, &quot;.param.RDS&quot;)
+param &lt;- readRDS(file_param)
+ctwas_parameters &lt;- summarize_param(param, gwas_n)
+
+p1 &lt;- plot_piechart_topn(ctwas_parameters = ctwas_parameters,colors = colors,by = &quot;type&quot;,title = NULL)
+
+qtl &lt;- &quot;es&quot;
+
+file_param &lt;- paste0(folder_results_multiqtl, trait, &quot;/&quot;, trait, &quot;.&quot;, qtl, &quot;.thin&quot;, thin, &quot;.&quot;, vgs, &quot;.param.RDS&quot;)
+param &lt;- readRDS(file_param)
+ctwas_parameters &lt;- summarize_param(param, gwas_n)
+
+p2 &lt;- plot_piechart_topn(ctwas_parameters = ctwas_parameters,colors = colors,by = &quot;type&quot;,title = NULL)
+
+qtl &lt;- &quot;esst&quot;
+
+file_param &lt;- paste0(folder_results_multiqtl, trait, &quot;/&quot;, trait, &quot;.&quot;, qtl, &quot;.thin&quot;, thin, &quot;.&quot;, vgs, &quot;.param.RDS&quot;)
+param &lt;- readRDS(file_param)
+ctwas_parameters &lt;- summarize_param(param, gwas_n)
+
+p3 &lt;- plot_piechart_topn(ctwas_parameters = ctwas_parameters,colors = colors,by = &quot;type&quot;,title = NULL)
+
+qtl &lt;- &quot;4qtls&quot;
+
+file_param &lt;- paste0(folder_results_multiqtl, trait, &quot;/&quot;, trait, &quot;.&quot;, qtl, &quot;.thin&quot;, thin, &quot;.&quot;, vgs, &quot;.param.RDS&quot;)
+param &lt;- readRDS(file_param)
+ctwas_parameters &lt;- summarize_param(param, gwas_n)
+
+p4 &lt;- plot_piechart_topn(ctwas_parameters = ctwas_parameters,colors = colors,by = &quot;type&quot;,title = NULL)
+
+
+# Convert plots to gtables with fixed panel sizes
+pie1 &lt;- fix_panel_size(p1)
+pie2 &lt;- fix_panel_size(p2)
+pie3 &lt;- fix_panel_size(p3)
+pie4 &lt;- fix_panel_size(p4)
+
+# Calculate widths of each gtable (plot + legend)
+widths &lt;- unit.c(grobWidth(pie1), grobWidth(pie2),grobWidth(pie3), grobWidth(pie4))
+
+# Arrange plots with their natural widths
+p &lt;- grid.arrange(pie1, pie2, pie3, pie4,
+                  ncol = 4, 
+                  widths = widths,
+                  top = paste0(trait)
+)</code></pre>
+<p><img src="figure/realdata_final_combine_qtls.Rmd/unnamed-chunk-3-1.png" width="960" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-3-1">
+Past versions of unnamed-chunk-3-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-3-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/c791833a53a54625de7b3345b9ddee4069882335/docs/figure/realdata_final_combine_qtls.Rmd/unnamed-chunk-3-1.png" target="_blank">c791833</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-05-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="comparing-eqtl-sqtl-and-eqtl-sqtl" class="section level3">
+<h3>Comparing eQTL, sQTL and eQTL + sQTL</h3>
 <pre class="r"><code>qtl &lt;- &quot;eonly&quot;
 
 file_param &lt;- paste0(folder_results_multiqtl, trait, &quot;/&quot;, trait, &quot;.&quot;, qtl, &quot;.thin&quot;, thin, &quot;.&quot;, vgs, &quot;.param.RDS&quot;)
@@ -853,10 +1000,47 @@ p &lt;- grid.arrange(pie1, pie2, pie3,
                   widths = widths,
                   top = paste0(trait)
 )</code></pre>
-<p><img src="figure/realdata_final_combine_qtls.Rmd/unnamed-chunk-3-1.png" width="864" style="display: block; margin: auto;" /></p>
+<p><img src="figure/realdata_final_combine_qtls.Rmd/unnamed-chunk-4-1.png" width="960" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-4-1">
+Past versions of unnamed-chunk-4-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-4-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/c791833a53a54625de7b3345b9ddee4069882335/docs/figure/realdata_final_combine_qtls.Rmd/unnamed-chunk-4-1.png" target="_blank">c791833</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-05-21
+</td>
+</tr>
+</tbody>
+</table>
 </div>
-<div id="comparing-eqtl-and-eqtl-stqtl-edqtl" class="section level2">
-<h2>Comparing eQTL and eQTL + stQTL + edQTL</h2>
+</div>
+</div>
+<div id="comparing-eqtl-and-eqtl-stqtl-edqtl" class="section level3">
+<h3>Comparing eQTL and eQTL + stQTL + edQTL</h3>
 <pre class="r"><code>qtl &lt;- &quot;eonly&quot;
 
 file_param &lt;- paste0(folder_results_multiqtl, trait, &quot;/&quot;, trait, &quot;.&quot;, qtl, &quot;.thin&quot;, thin, &quot;.&quot;, vgs, &quot;.param.RDS&quot;)
@@ -886,11 +1070,48 @@ p &lt;- grid.arrange(pie1, pie2,
                   widths = widths,
                   top = paste0(trait)
 )</code></pre>
-<p><img src="figure/realdata_final_combine_qtls.Rmd/unnamed-chunk-4-1.png" width="864" style="display: block; margin: auto;" /></p>
+<p><img src="figure/realdata_final_combine_qtls.Rmd/unnamed-chunk-5-1.png" width="960" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-5-1">
+Past versions of unnamed-chunk-5-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-5-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/c791833a53a54625de7b3345b9ddee4069882335/docs/figure/realdata_final_combine_qtls.Rmd/unnamed-chunk-5-1.png" target="_blank">c791833</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-05-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="comparing-stqtl-edqtl-and-eqtl-stqtl-edqtl"
-class="section level2">
-<h2>Comparing stQTL, edQTL and eQTL + stQTL + edQTL</h2>
+class="section level3">
+<h3>Comparing stQTL, edQTL and eQTL + stQTL + edQTL</h3>
 <pre class="r"><code>qtl &lt;- &quot;stonly&quot;
 
 file_param &lt;- paste0(folder_results_multiqtl, trait, &quot;/&quot;, trait, &quot;.&quot;, qtl, &quot;.thin&quot;, thin, &quot;.&quot;, vgs, &quot;.param.RDS&quot;)
@@ -930,10 +1151,47 @@ p &lt;- grid.arrange(pie1, pie2, pie3,
                   widths = widths,
                   top = paste0(trait)
 )</code></pre>
-<p><img src="figure/realdata_final_combine_qtls.Rmd/unnamed-chunk-5-1.png" width="864" style="display: block; margin: auto;" /></p>
+<p><img src="figure/realdata_final_combine_qtls.Rmd/unnamed-chunk-6-1.png" width="960" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-6-1">
+Past versions of unnamed-chunk-6-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-6-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/c791833a53a54625de7b3345b9ddee4069882335/docs/figure/realdata_final_combine_qtls.Rmd/unnamed-chunk-6-1.png" target="_blank">c791833</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-05-21
+</td>
+</tr>
+</tbody>
+</table>
 </div>
-<div id="comparing-stqtl-and-stqtl-sqtl" class="section level2">
-<h2>Comparing stQTL and stQTL + sQTL</h2>
+</div>
+</div>
+<div id="comparing-stqtl-and-stqtl-sqtl" class="section level3">
+<h3>Comparing stQTL and stQTL + sQTL</h3>
 <pre class="r"><code>qtl &lt;- &quot;stonly&quot;
 
 file_param &lt;- paste0(folder_results_multiqtl, trait, &quot;/&quot;, trait, &quot;.&quot;, qtl, &quot;.thin&quot;, thin, &quot;.&quot;, vgs, &quot;.param.RDS&quot;)
@@ -963,17 +1221,107 @@ p &lt;- grid.arrange(pie1, pie2,
                   widths = widths,
                   top = paste0(trait)
 )</code></pre>
-<p><img src="figure/realdata_final_combine_qtls.Rmd/unnamed-chunk-6-1.png" width="864" style="display: block; margin: auto;" /></p>
+<p><img src="figure/realdata_final_combine_qtls.Rmd/unnamed-chunk-7-1.png" width="960" style="display: block; margin: auto;" /></p>
 </div>
 </div>
 <div id="ibd-ebi-a-gcst004131-whole_blood-colon_transverse"
-class="section level1">
-<h1>IBD-ebi-a-GCST004131, Whole_Blood &amp; Colon_Transverse</h1>
+class="section level2">
+<h2>IBD-ebi-a-GCST004131, Whole_Blood &amp; Colon_Transverse</h2>
 <pre class="r"><code>trait &lt;- &quot;IBD-ebi-a-GCST004131&quot;
 
 gwas_n &lt;- samplesize[trait]</code></pre>
-<div id="comparing-eqtl-sqtl-and-eqtl-sqtl-1" class="section level2">
-<h2>Comparing eQTL, sQTL and eQTL + sQTL</h2>
+<div id="comparing-eqtl-es-qtl-esst-qtl-and-4-qtls-1"
+class="section level3">
+<h3>Comparing eQTL, e+s QTL, e+s+st QTL and 4 qtls</h3>
+<pre class="r"><code>qtl &lt;- &quot;eonly&quot;
+
+file_param &lt;- paste0(folder_results_multiqtl, trait, &quot;/&quot;, trait, &quot;.&quot;, qtl, &quot;.thin&quot;, thin, &quot;.&quot;, vgs, &quot;.param.RDS&quot;)
+param &lt;- readRDS(file_param)
+ctwas_parameters &lt;- summarize_param(param, gwas_n)
+
+p1 &lt;- plot_piechart_topn(ctwas_parameters = ctwas_parameters,colors = colors,by = &quot;type&quot;,title = NULL)
+
+qtl &lt;- &quot;es&quot;
+
+file_param &lt;- paste0(folder_results_multiqtl, trait, &quot;/&quot;, trait, &quot;.&quot;, qtl, &quot;.thin&quot;, thin, &quot;.&quot;, vgs, &quot;.param.RDS&quot;)
+param &lt;- readRDS(file_param)
+ctwas_parameters &lt;- summarize_param(param, gwas_n)
+
+p2 &lt;- plot_piechart_topn(ctwas_parameters = ctwas_parameters,colors = colors,by = &quot;type&quot;,title = NULL)
+
+qtl &lt;- &quot;esst&quot;
+
+file_param &lt;- paste0(folder_results_multiqtl, trait, &quot;/&quot;, trait, &quot;.&quot;, qtl, &quot;.thin&quot;, thin, &quot;.&quot;, vgs, &quot;.param.RDS&quot;)
+param &lt;- readRDS(file_param)
+ctwas_parameters &lt;- summarize_param(param, gwas_n)
+
+p3 &lt;- plot_piechart_topn(ctwas_parameters = ctwas_parameters,colors = colors,by = &quot;type&quot;,title = NULL)
+
+qtl &lt;- &quot;4qtls&quot;
+
+file_param &lt;- paste0(folder_results_multiqtl, trait, &quot;/&quot;, trait, &quot;.&quot;, qtl, &quot;.thin&quot;, thin, &quot;.&quot;, vgs, &quot;.param.RDS&quot;)
+param &lt;- readRDS(file_param)
+ctwas_parameters &lt;- summarize_param(param, gwas_n)
+
+p4 &lt;- plot_piechart_topn(ctwas_parameters = ctwas_parameters,colors = colors,by = &quot;type&quot;,title = NULL)
+
+
+# Convert plots to gtables with fixed panel sizes
+pie1 &lt;- fix_panel_size(p1)
+pie2 &lt;- fix_panel_size(p2)
+pie3 &lt;- fix_panel_size(p3)
+pie4 &lt;- fix_panel_size(p4)
+
+# Calculate widths of each gtable (plot + legend)
+widths &lt;- unit.c(grobWidth(pie1), grobWidth(pie2),grobWidth(pie3), grobWidth(pie4))
+
+# Arrange plots with their natural widths
+p &lt;- grid.arrange(pie1, pie2, pie3, pie4,
+                  ncol = 4, 
+                  widths = widths,
+                  top = paste0(trait)
+)</code></pre>
+<p><img src="figure/realdata_final_combine_qtls.Rmd/unnamed-chunk-9-1.png" width="960" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-9-1">
+Past versions of unnamed-chunk-9-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-9-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/c791833a53a54625de7b3345b9ddee4069882335/docs/figure/realdata_final_combine_qtls.Rmd/unnamed-chunk-9-1.png" target="_blank">c791833</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-05-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="comparing-eqtl-sqtl-and-eqtl-sqtl-1" class="section level3">
+<h3>Comparing eQTL, sQTL and eQTL + sQTL</h3>
 <pre class="r"><code>qtl &lt;- &quot;eonly&quot;
 
 file_param &lt;- paste0(folder_results_multiqtl, trait, &quot;/&quot;, trait, &quot;.&quot;, qtl, &quot;.thin&quot;, thin, &quot;.&quot;, vgs, &quot;.param.RDS&quot;)
@@ -1013,10 +1361,47 @@ p &lt;- grid.arrange(pie1, pie2, pie3,
                   widths = widths,
                   top = paste0(trait)
 )</code></pre>
-<p><img src="figure/realdata_final_combine_qtls.Rmd/unnamed-chunk-8-1.png" width="864" style="display: block; margin: auto;" /></p>
+<p><img src="figure/realdata_final_combine_qtls.Rmd/unnamed-chunk-10-1.png" width="960" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-10-1">
+Past versions of unnamed-chunk-10-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-10-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/c791833a53a54625de7b3345b9ddee4069882335/docs/figure/realdata_final_combine_qtls.Rmd/unnamed-chunk-10-1.png" target="_blank">c791833</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-05-21
+</td>
+</tr>
+</tbody>
+</table>
 </div>
-<div id="comparing-eqtl-and-eqtl-stqtl-edqtl-1" class="section level2">
-<h2>Comparing eQTL and eQTL + stQTL + edQTL</h2>
+</div>
+</div>
+<div id="comparing-eqtl-and-eqtl-stqtl-edqtl-1" class="section level3">
+<h3>Comparing eQTL and eQTL + stQTL + edQTL</h3>
 <pre class="r"><code>qtl &lt;- &quot;eonly&quot;
 
 file_param &lt;- paste0(folder_results_multiqtl, trait, &quot;/&quot;, trait, &quot;.&quot;, qtl, &quot;.thin&quot;, thin, &quot;.&quot;, vgs, &quot;.param.RDS&quot;)
@@ -1046,11 +1431,48 @@ p &lt;- grid.arrange(pie1, pie2,
                   widths = widths,
                   top = paste0(trait)
 )</code></pre>
-<p><img src="figure/realdata_final_combine_qtls.Rmd/unnamed-chunk-9-1.png" width="864" style="display: block; margin: auto;" /></p>
+<p><img src="figure/realdata_final_combine_qtls.Rmd/unnamed-chunk-11-1.png" width="960" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-11-1">
+Past versions of unnamed-chunk-11-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-11-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/c791833a53a54625de7b3345b9ddee4069882335/docs/figure/realdata_final_combine_qtls.Rmd/unnamed-chunk-11-1.png" target="_blank">c791833</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-05-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="comparing-stqtl-edqtl-and-eqtl-stqtl-edqtl-1"
-class="section level2">
-<h2>Comparing stQTL, edQTL and eQTL + stQTL + edQTL</h2>
+class="section level3">
+<h3>Comparing stQTL, edQTL and eQTL + stQTL + edQTL</h3>
 <pre class="r"><code>qtl &lt;- &quot;stonly&quot;
 
 file_param &lt;- paste0(folder_results_multiqtl, trait, &quot;/&quot;, trait, &quot;.&quot;, qtl, &quot;.thin&quot;, thin, &quot;.&quot;, vgs, &quot;.param.RDS&quot;)
@@ -1090,10 +1512,10 @@ p &lt;- grid.arrange(pie1, pie2, pie3,
                   widths = widths,
                   top = paste0(trait)
 )</code></pre>
-<p><img src="figure/realdata_final_combine_qtls.Rmd/unnamed-chunk-10-1.png" width="864" style="display: block; margin: auto;" /></p>
+<p><img src="figure/realdata_final_combine_qtls.Rmd/unnamed-chunk-12-1.png" width="960" style="display: block; margin: auto;" /></p>
 </div>
-<div id="comparing-stqtl-and-stqtl-sqtl-1" class="section level2">
-<h2>Comparing stQTL and stQTL + sQTL</h2>
+<div id="comparing-stqtl-and-stqtl-sqtl-1" class="section level3">
+<h3>Comparing stQTL and stQTL + sQTL</h3>
 <pre class="r"><code>qtl &lt;- &quot;stonly&quot;
 
 file_param &lt;- paste0(folder_results_multiqtl, trait, &quot;/&quot;, trait, &quot;.&quot;, qtl, &quot;.thin&quot;, thin, &quot;.&quot;, vgs, &quot;.param.RDS&quot;)
@@ -1123,7 +1545,47 @@ p &lt;- grid.arrange(pie1, pie2,
                   widths = widths,
                   top = paste0(trait)
 )</code></pre>
-<p><img src="figure/realdata_final_combine_qtls.Rmd/unnamed-chunk-11-1.png" width="864" style="display: block; margin: auto;" /></p>
+<p><img src="figure/realdata_final_combine_qtls.Rmd/unnamed-chunk-13-1.png" width="960" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+</div>
+<div id="tissues" class="section level1">
+<h1>Tissues</h1>
+<div id="ibd-ebi-a-gcst004131-whole_blood-colon_transverse-1"
+class="section level2">
+<h2>IBD-ebi-a-GCST004131, Whole_Blood &amp; Colon_Transverse</h2>
+<pre class="r"><code>trait &lt;- &quot;IBD-ebi-a-GCST004131&quot;
+
+gwas_n &lt;- samplesize[trait]</code></pre>
+</div>
+<div id="whole_blood-eqtl-only-and-whole_blood-colon_transverse-eqtl"
+class="section level2">
+<h2>Whole_Blood eQTL only and Whole_Blood + Colon_Transverse eQTL</h2>
+<pre class="r"><code>file_param &lt;- paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/expression/IBD-ebi-a-GCST004131/IBD-ebi-a-GCST004131_Whole_Blood.thin1.shared_all.param.RDS&quot;)
+param &lt;- readRDS(file_param)
+ctwas_parameters &lt;- summarize_param(param, gwas_n)
+
+p1 &lt;- plot_piechart_topn(ctwas_parameters = ctwas_parameters,colors = colors,by = &quot;context&quot;,title = NULL)
+
+
+file_param &lt;- paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/24.diff_qtls_0519/snakemake_outputs/IBD-ebi-a-GCST004131/IBD-ebi-a-GCST004131.eonly.thin1.shared_all.param.RDS&quot;)
+param &lt;- readRDS(file_param)
+ctwas_parameters &lt;- summarize_param(param, gwas_n)
+
+p2 &lt;- plot_piechart_topn(ctwas_parameters = ctwas_parameters,colors = colors,by = &quot;context&quot;,title = NULL)
+
+pie1 &lt;- fix_panel_size(p1)
+pie2 &lt;- fix_panel_size(p2)
+
+# Calculate widths of each gtable (plot + legend)
+widths &lt;- unit.c(grobWidth(pie1), grobWidth(pie2))
+
+# Arrange plots with their natural widths
+p &lt;- grid.arrange(pie1, pie2,  
+                  ncol = 2, 
+                  widths = widths,
+                  top = paste0(trait))</code></pre>
+<p><img src="figure/realdata_final_combine_qtls.Rmd/unnamed-chunk-15-1.png" width="960" style="display: block; margin: auto;" /></p>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
@@ -1149,7 +1611,7 @@ attached base packages:
 
 other attached packages:
 [1] egg_0.4.5     gridExtra_2.3 ggrepel_0.9.1 ggplot2_3.5.1 dplyr_1.1.4  
-[6] ctwas_0.5.19 
+[6] ctwas_0.5.21 
 
 loaded via a namespace (and not attached):
   [1] colorspace_2.0-3            rjson_0.2.21               
