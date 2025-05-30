@@ -16,26 +16,32 @@ We did enrichment analysis using fractional model and enrichR. The GO data set w
 
 ```{r}
 library(ggplot2)
+library(gridExtra)
 
-traits <- c("LDL-ukb-d-30780_irnt","aFib-ebi-a-GCST006414","SBP-ukb-a-360", "T1D-GCST90014023"#,  "IBD-ebi-a-GCST004131", "Height-panukb", "HTN-panukb", "PLT-panukb", "RA-panukb", "RBC-panukb", "ATH_gtexukb"
+traits_fractional <- c("LDL-ukb-d-30780_irnt", "IBD-ebi-a-GCST004131", "aFib-ebi-a-GCST006414","SBP-ukb-a-360", "T1D-GCST90014023")
+
+traits <- c("LDL-ukb-d-30780_irnt", "IBD-ebi-a-GCST004131", "aFib-ebi-a-GCST006414","SBP-ukb-a-360", "T1D-GCST90014023",
+            "Height-panukb", "HTN-panukb", "PLT-panukb", "RA-panukb", "RBC-panukb", "ATH_gtexukb",
+            "BMI-panukb", "HB-panukb", "WBC-ieu-b-30", "T2D-panukb", "SCZ-ieu-b-5102", "BIP-ieu-b-5110", "ASD-ieu-a-1185",
+            "ADHD-ieu-a-1183", "PD-ieu-b-7", "NS-ukb-a-230", "MDD-ieu-b-102"
             )
-# "BMI-panukb", "HB-panukb", "WBC-ieu-b-30", "T2D-panukb", "SCZ-ieu-b-5102", "BIP-ieu-b-5110", "ASD-ieu-a-1185", "ADHD-ieu-a-1183", "PD-ieu-b-7", "NS-ukb-a-230", "MDD-ieu-b-102"
+
 
 folder_fractional_multi <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/results_downstream/enrich_fractional_multi_allgenes/"
 folder_fractional_single <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/results_downstream/enrich_fractional_single_allgenes/"
 folder_fractional_multi_csfilter <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/results_downstream/enrich_fractional_multi_allgenes_csfilter/"
-folder_fractional_single_csfilter <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/results_downstream/enrich_fractional_single_allgenes/"
+folder_fractional_single_csfilter <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/results_downstream/enrich_fractional_single_allgenes_csfilter/"
 folder_enrichr_multi <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/results_downstream/enrich_enrichr_multi/"
 folder_enrichr_single <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/results_downstream/enrich_enrichr_single/"
 
 DT::datatable(matrix())
 ```
 
+# Comparing fractional and enrichR
 
+```{r results='asis', fig.height=6,fig.width=8}
 
-```{r results='asis', fig.height=5,fig.width=7}
-
-for (trait in traits){
+for (trait in traits_fractional){
   
   df_frac_multi <- readRDS(paste0(folder_fractional_multi,"enrichment_fractional_calibrated_blgeneset_summary_multigroup_",trait,"_GO_Biological_Process_2023.RDS"))
   
@@ -101,30 +107,124 @@ for (trait in traits){
 
 ```{r results='asis', fig.height=5,fig.width=7}  
   
-for (trait in traits){
+for (trait in traits_fractional){
+  
+  print(trait)
   
   df_frac_multi <- readRDS(paste0(folder_fractional_multi,"enrichment_fractional_calibrated_blgeneset_summary_multigroup_",trait,"_GO_Biological_Process_2023.RDS"))
   
   df_fdr005_multi <- df_frac_multi[df_frac_multi$fdr_combined < 0.05,]
   df_fdr005_multi <- df_fdr005_multi[complete.cases(df_fdr005_multi$fdr_combined),]
-  num_frac_multi <- nrow(df_fdr005_multi)
   
+  cat("<br>")
+  cat(knitr::knit_print(DT::datatable(df_fdr005_multi, caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;',paste0(trait,"- Enriched Go terms, cs not filtered, multi-group")),options = list(pageLength = 5)   )))
+  cat("<br>")
+  
+  df_frac_single <- readRDS(paste0(folder_fractional_single,"enrichment_fractional_calibrated_blgeneset_summary_singlegroup_",trait,"_GO_Biological_Process_2023.RDS"))
+  
+  df_fdr005_single <- df_frac_single[df_frac_single$fdr_combined < 0.05,]
+  df_fdr005_single <- df_fdr005_single[complete.cases(df_fdr005_single$fdr_combined),]
+  
+  cat("<br>")
+  cat(knitr::knit_print(DT::datatable(df_fdr005_single, caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;',paste0(trait,"- Enriched Go terms, cs not filtered, single eqtl")),options = list(pageLength = 5)   )))
+  cat("<br>")
   
   df_frac_multi_csfilter <- readRDS(paste0(folder_fractional_multi_csfilter,"enrichment_fractional_calibrated_blgeneset_summary_multigroup_",trait,"_GO_Biological_Process_2023.RDS"))
   
   df_fdr005_multi_csfilter <- df_frac_multi_csfilter[df_frac_multi_csfilter$fdr_combined < 0.05,]
   df_fdr005_multi_csfilter <- df_fdr005_multi_csfilter[complete.cases(df_fdr005_multi_csfilter$fdr_combined),]
-  num_frac_multi_csfilter <- nrow(df_fdr005_multi_csfilter)
+  
+    cat("<br>")
+  cat(knitr::knit_print(DT::datatable(df_fdr005_multi_csfilter, caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;',paste0(trait,"- Enriched Go terms, cs filtered, multi-group")),options = list(pageLength = 5)   )))
+  cat("<br>")
+  
+  
+  df_frac_single_csfilter <- readRDS(paste0(folder_fractional_single_csfilter,"enrichment_fractional_calibrated_blgeneset_summary_singlegroup_",trait,"_GO_Biological_Process_2023.RDS"))
+  
+  df_fdr005_single_csfilter <- df_frac_single_csfilter[df_frac_single_csfilter$fdr_combined < 0.05,]
+  df_fdr005_single_csfilter <- df_fdr005_single_csfilter[complete.cases(df_fdr005_single_csfilter$fdr_combined),]
   
   cat("<br>")
-  cat(knitr::knit_print(DT::datatable(df_fdr005_multi, caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;',paste0(trait,"- Enriched Go terms, cs not filtered"),options = list(pageLength = 5)))))
+  cat(knitr::knit_print(DT::datatable(df_frac_single_csfilter, caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;',paste0(trait,"- Enriched Go terms, cs filtered, single eqtl")),options = list(pageLength = 5)   )))
   cat("<br>")
+  
+  
+  file_enrichr_multi <- paste0(folder_enrichr_multi,trait,".enrichr_GO_Biological_Process_2023.RDS")
+  if(file.exists(file_enrichr_multi)) {
+    df_enrichr_multi <- readRDS(file_enrichr_multi)
+    df_enrichr_multi <- df_enrichr_multi[df_enrichr_multi$Adjusted.P.value < 0.05,]
 
-  cat("<br>")
-  cat(knitr::knit_print(DT::datatable(df_fdr005_multi_csfilter, caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;',paste0(trait,"- Enriched Go terms, cs filtered"),options = list(pageLength = 5)))))
-  cat("<br>")
+    cat("<br>")
+    cat(knitr::knit_print(DT::datatable(df_enrichr_multi, caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;',paste0(trait,"- Enriched Go terms by enrichR, cs not filtered, multi group")),options = list(pageLength = 5)   )))
+    cat("<br>")
+    
+  }
+  
+  file_enrichr_single <- paste0(folder_enrichr_single,trait,".enrichr_GO_Biological_Process_2023.RDS")
+  if(file.exists(file_enrichr_single)) {
+    df_enrichr_single <- readRDS(file_enrichr_single)
+    df_enrichr_single <- df_enrichr_single[df_enrichr_single$Adjusted.P.value < 0.05,]
+
+    cat("<br>")
+    cat(knitr::knit_print(DT::datatable(df_enrichr_single, caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;',paste0(trait,"- Enriched Go terms by enrichR, cs not filtered, single group")),options = list(pageLength = 5)   )))
+    cat("<br>")
+    
+  }
+
 }
 
 
 
 ```
+
+
+# EnrichR only
+
+```{r results='asis', fig.height=20,fig.width=20}
+
+p <- list()
+for (trait in traits){
+  
+  file_enrichr_multi <- paste0(folder_enrichr_multi,trait,".enrichr_GO_Biological_Process_2023.RDS")
+  if(file.exists(file_enrichr_multi)) {
+    df_enrichr_multi <- readRDS(file_enrichr_multi)
+    df_enrichr_multi <- df_enrichr_multi[df_enrichr_multi$Adjusted.P.value < 0.05,]
+    num_enrichr_multi <- nrow(df_enrichr_multi)
+  }else{
+    num_enrichr_multi <- 0
+  }
+  
+  file_enrichr_single <- paste0(folder_enrichr_single,trait,".enrichr_GO_Biological_Process_2023.RDS")
+  if(file.exists(file_enrichr_single)) {
+    df_enrichr_single <- readRDS(file_enrichr_single)
+    df_enrichr_single <- df_enrichr_single[df_enrichr_single$Adjusted.P.value < 0.05,]
+    num_enrichr_single <- nrow(df_enrichr_single)
+  }else{
+    num_enrichr_single <- 0
+  }
+  
+  df <- data.frame(
+    Category = factor(
+      c("Enrichr \nMulti-group \ncsnotfilter", "Enrichr \nSingle-group \ncsnotfilter"),
+      levels = c("Enrichr \nMulti-group \ncsnotfilter", "Enrichr \nSingle-group \ncsnotfilter")
+    ),
+    Value = c(num_enrichr_multi, num_enrichr_single)
+  )
+  
+  # Generate the bar plot
+  p[[trait]] <- ggplot(df, aes(x = Category, y = Value)) +
+    geom_bar(stat = "identity") +
+    geom_text(aes(label = Value), vjust = -0.5, size = 5) +
+    labs(title = trait, x = "", y = "Count") +
+    theme_minimal(base_size = 14) +
+    theme(axis.text.x = element_text(angle = 20, hjust = 1))
+  
+  
+}
+
+
+grid.arrange(grobs = p, nrow = 5)
+
+
+```
+
