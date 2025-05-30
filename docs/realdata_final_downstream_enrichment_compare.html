@@ -38,6 +38,14 @@
 <script src="site_libs/navigation-1.1/codefolding.js"></script>
 <link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/htmlwidgets-1.5.4/htmlwidgets.js"></script>
+<link href="site_libs/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet" />
+<script src="site_libs/datatables-binding-0.22/datatables.js"></script>
+<link href="site_libs/dt-core-1.11.3/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="site_libs/dt-core-1.11.3/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="site_libs/dt-core-1.11.3/js/jquery.dataTables.min.js"></script>
+<link href="site_libs/crosstalk-1.2.0/css/crosstalk.min.css" rel="stylesheet" />
+<script src="site_libs/crosstalk-1.2.0/js/crosstalk.min.js"></script>
 <link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
 <link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
 
@@ -403,7 +411,7 @@ aria-hidden="true"></span> </a>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2025-05-28
+<strong>Last updated:</strong> 2025-05-29
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -441,10 +449,10 @@ changes </a>
 <div id="strongRMarkdownfilestronguncommittedchanges"
 class="panel-collapse collapse">
 <div class="panel-body">
-<p>The R Markdown is untracked by Git. To know which version of the R
-Markdown file created these results, you’ll want to first commit it to
-the Git repo. If you’re still working on the analysis, you can ignore
-this warning. When you’re finished, you can run
+<p>The R Markdown file has unstaged changes. To know which version of
+the R Markdown file created these results, you’ll want to first commit
+it to the Git repo. If you’re still working on the analysis, you can
+ignore this warning. When you’re finished, you can run
 <code>wflow_publish</code> to commit the R Markdown file and build the
 HTML.</p>
 </div>
@@ -537,15 +545,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistreedb138c3997030e90c14d8775de29d2470210221ftargetblankdb138c3a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistreebd07e5175c4f5da600653789987a199e8becdbd4targetblankbd07e51a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/db138c3997030e90c14d8775de29d2470210221f" target="_blank">db138c3</a>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/bd07e5175c4f5da600653789987a199e8becdbd4" target="_blank">bd07e51</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistreedb138c3997030e90c14d8775de29d2470210221ftargetblankdb138c3a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistreebd07e5175c4f5da600653789987a199e8becdbd4targetblankbd07e51a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -555,7 +563,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/db138c3997030e90c14d8775de29d2470210221f" target="_blank">db138c3</a>.
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/bd07e5175c4f5da600653789987a199e8becdbd4" target="_blank">bd07e51</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -572,12 +580,19 @@ were generated:
 Ignored files:
     Ignored:    .Rhistory
     Ignored:    cv/
+    Ignored:    figures/lz/ADHD-ieu-a-1183/
+    Ignored:    figures/lz/ASD-ieu-a-1185/
+    Ignored:    figures/lz/IBD-ebi-a-GCST004131/single/
+    Ignored:    figures/lz/MDD-ieu-b-102/single/
+    Ignored:    figures/lz/PD-ieu-b-7/single/
+    Ignored:    figures/lz/RA-panukb/single/
 
 Untracked files:
-    Untracked:  analysis/realdata_final_downstream_enrichment_compare.Rmd
+    Untracked:  figures/lz/Height-panukb/
+    Untracked:  figures/lz/WBC-ieu-b-30/
 
 Unstaged changes:
-    Modified:   analysis/index.Rmd
+    Modified:   analysis/realdata_final_downstream_enrichment_compare.Rmd
 
 </code></pre>
 <p>
@@ -592,10 +607,127 @@ have uncommitted changes.
 <hr>
 </div>
 <div id="versions" class="tab-pane fade">
+
 <p>
-There are no past versions. Publish this analysis with
-<code>wflow_publish()</code> to start tracking its development.
+These are the previous versions of the repository in which changes were
+made to the R Markdown
+(<code>analysis/realdata_final_downstream_enrichment_compare.Rmd</code>)
+and HTML
+(<code>docs/realdata_final_downstream_enrichment_compare.html</code>)
+files. If you’ve configured a remote Git repository (see
+<code>?wflow_git_remote</code>), click on the hyperlinks in the table
+below to view the files as they were in that past version.
 </p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/bd07e5175c4f5da600653789987a199e8becdbd4/analysis/realdata_final_downstream_enrichment_compare.Rmd" target="_blank">bd07e51</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-05-29
+</td>
+<td>
+update
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/sq-96/multigroup_ctwas_analysis/bd07e5175c4f5da600653789987a199e8becdbd4/docs/realdata_final_downstream_enrichment_compare.html" target="_blank">bd07e51</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-05-29
+</td>
+<td>
+update
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/1cec5356bc465f19e1b6a4db67a1ae112d1621c6/analysis/realdata_final_downstream_enrichment_compare.Rmd" target="_blank">1cec535</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-05-29
+</td>
+<td>
+update
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/6fc9c34c90414b8133393434e43031fc196d17d4/analysis/realdata_final_downstream_enrichment_compare.Rmd" target="_blank">6fc9c34</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-05-28
+</td>
+<td>
+update
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/sq-96/multigroup_ctwas_analysis/6fc9c34c90414b8133393434e43031fc196d17d4/docs/realdata_final_downstream_enrichment_compare.html" target="_blank">6fc9c34</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-05-28
+</td>
+<td>
+update
+</td>
+</tr>
+</tbody>
+</table>
+</div>
 <hr>
 </div>
 </div>
@@ -606,13 +738,20 @@ There are no past versions. Publish this analysis with
 data set we used is GO_Biological_Process_2023</p>
 <pre class="r"><code>library(ggplot2)
 
-traits &lt;- c(&quot;LDL-ukb-d-30780_irnt&quot;,&quot;aFib-ebi-a-GCST006414&quot;, &quot;IBD-ebi-a-GCST004131&quot;, &quot;SBP-ukb-a-360&quot;, &quot;T1D-GCST90014023&quot;, &quot;Height-panukb&quot;, &quot;HTN-panukb&quot;, &quot;PLT-panukb&quot;, &quot;RA-panukb&quot;, &quot;RBC-panukb&quot;, &quot;ATH_gtexukb&quot;)
+traits &lt;- c(&quot;LDL-ukb-d-30780_irnt&quot;,&quot;aFib-ebi-a-GCST006414&quot;,&quot;SBP-ukb-a-360&quot;, &quot;T1D-GCST90014023&quot;#,  &quot;IBD-ebi-a-GCST004131&quot;, &quot;Height-panukb&quot;, &quot;HTN-panukb&quot;, &quot;PLT-panukb&quot;, &quot;RA-panukb&quot;, &quot;RBC-panukb&quot;, &quot;ATH_gtexukb&quot;
+            )
 # &quot;BMI-panukb&quot;, &quot;HB-panukb&quot;, &quot;WBC-ieu-b-30&quot;, &quot;T2D-panukb&quot;, &quot;SCZ-ieu-b-5102&quot;, &quot;BIP-ieu-b-5110&quot;, &quot;ASD-ieu-a-1185&quot;, &quot;ADHD-ieu-a-1183&quot;, &quot;PD-ieu-b-7&quot;, &quot;NS-ukb-a-230&quot;, &quot;MDD-ieu-b-102&quot;
 
-folder_fractional_multi &lt;- &quot;/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/results_downstream/enrich_fractional_multi/&quot;
-folder_fractional_single &lt;- &quot;/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/results_downstream/enrich_fractional_single/&quot;
+folder_fractional_multi &lt;- &quot;/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/results_downstream/enrich_fractional_multi_allgenes/&quot;
+folder_fractional_single &lt;- &quot;/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/results_downstream/enrich_fractional_single_allgenes/&quot;
+folder_fractional_multi_csfilter &lt;- &quot;/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/results_downstream/enrich_fractional_multi_allgenes_csfilter/&quot;
+folder_fractional_single_csfilter &lt;- &quot;/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/results_downstream/enrich_fractional_single_allgenes/&quot;
 folder_enrichr_multi &lt;- &quot;/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/results_downstream/enrich_enrichr_multi/&quot;
-folder_enrichr_single &lt;- &quot;/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/results_downstream/enrich_enrichr_single/&quot;</code></pre>
+folder_enrichr_single &lt;- &quot;/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/results_downstream/enrich_enrichr_single/&quot;
+
+DT::datatable(matrix())</code></pre>
+<div id="htmlwidget-4de263013227ca78a293" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-4de263013227ca78a293">{"x":{"filter":"none","vertical":false,"data":[[null]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>V1<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 <pre class="r"><code>for (trait in traits){
   
   df_frac_multi &lt;- readRDS(paste0(folder_fractional_multi,&quot;enrichment_fractional_calibrated_blgeneset_summary_multigroup_&quot;,trait,&quot;_GO_Biological_Process_2023.RDS&quot;))
@@ -626,6 +765,18 @@ folder_enrichr_single &lt;- &quot;/project/xinhe/xsun/multi_group_ctwas/23.multi
   df_fdr005_single &lt;- df_frac_single[df_frac_single$fdr_combined &lt; 0.05,]
   df_fdr005_single &lt;- df_fdr005_single[complete.cases(df_fdr005_single$fdr_combined),]
   num_frac_single &lt;- nrow(df_fdr005_single)
+  
+  df_frac_multi_csfilter &lt;- readRDS(paste0(folder_fractional_multi_csfilter,&quot;enrichment_fractional_calibrated_blgeneset_summary_multigroup_&quot;,trait,&quot;_GO_Biological_Process_2023.RDS&quot;))
+  
+  df_fdr005_multi_csfilter &lt;- df_frac_multi_csfilter[df_frac_multi_csfilter$fdr_combined &lt; 0.05,]
+  df_fdr005_multi_csfilter &lt;- df_fdr005_multi_csfilter[complete.cases(df_fdr005_multi_csfilter$fdr_combined),]
+  num_frac_multi_csfilter &lt;- nrow(df_fdr005_multi_csfilter)
+  
+  df_frac_single_csfilter &lt;- readRDS(paste0(folder_fractional_single_csfilter,&quot;enrichment_fractional_calibrated_blgeneset_summary_singlegroup_&quot;,trait,&quot;_GO_Biological_Process_2023.RDS&quot;))
+  
+  df_fdr005_single_csfilter &lt;- df_frac_single_csfilter[df_frac_single_csfilter$fdr_combined &lt; 0.05,]
+  df_fdr005_single_csfilter &lt;- df_fdr005_single_csfilter[complete.cases(df_fdr005_single_csfilter$fdr_combined),]
+  num_frac_single_csfilter &lt;- nrow(df_fdr005_single_csfilter)
   
   file_enrichr_multi &lt;- paste0(folder_enrichr_multi,trait,&quot;.enrichr_GO_Biological_Process_2023.RDS&quot;)
   if(file.exists(file_enrichr_multi)) {
@@ -647,10 +798,10 @@ folder_enrichr_single &lt;- &quot;/project/xinhe/xsun/multi_group_ctwas/23.multi
   
   df &lt;- data.frame(
     Category = factor(
-      c(&quot;Fractional \nMulti-group&quot;, &quot;Fractional \nSingle-group&quot;, &quot;Enrichr \nMulti-group&quot;, &quot;Enrichr \nSingle-group&quot;),
-      levels = c(&quot;Fractional \nMulti-group&quot;, &quot;Fractional \nSingle-group&quot;, &quot;Enrichr \nMulti-group&quot;, &quot;Enrichr \nSingle-group&quot;)
+      c(&quot;Fractional \nMulti-group \ncsnotfilter&quot;, &quot;Fractional \nSingle-group \ncsnotfilter&quot;,&quot;Fractional \nMulti-group \ncsfilter&quot;, &quot;Fractional \nSingle-group \ncsfilter&quot;, &quot;Enrichr \nMulti-group \ncsnotfilter&quot;, &quot;Enrichr \nSingle-group \ncsnotfilter&quot;),
+      levels = c(&quot;Fractional \nMulti-group \ncsnotfilter&quot;, &quot;Fractional \nSingle-group \ncsnotfilter&quot;,&quot;Fractional \nMulti-group \ncsfilter&quot;, &quot;Fractional \nSingle-group \ncsfilter&quot;, &quot;Enrichr \nMulti-group \ncsnotfilter&quot;, &quot;Enrichr \nSingle-group \ncsnotfilter&quot;)
     ),
-    Value = c(num_frac_multi, num_frac_single, num_enrichr_multi, num_enrichr_single)
+    Value = c(num_frac_multi, num_frac_single, num_frac_multi_csfilter, num_frac_single_csfilter, num_enrichr_multi, num_enrichr_single)
   )
   
   # Generate the bar plot
@@ -663,7 +814,250 @@ folder_enrichr_single &lt;- &quot;/project/xinhe/xsun/multi_group_ctwas/23.multi
   
   print(p)
 }</code></pre>
-<p><img src="figure/realdata_final_downstream_enrichment_compare.Rmd/unnamed-chunk-2-1.png" width="480" style="display: block; margin: auto;" /><img src="figure/realdata_final_downstream_enrichment_compare.Rmd/unnamed-chunk-2-2.png" width="480" style="display: block; margin: auto;" /><img src="figure/realdata_final_downstream_enrichment_compare.Rmd/unnamed-chunk-2-3.png" width="480" style="display: block; margin: auto;" /><img src="figure/realdata_final_downstream_enrichment_compare.Rmd/unnamed-chunk-2-4.png" width="480" style="display: block; margin: auto;" /><img src="figure/realdata_final_downstream_enrichment_compare.Rmd/unnamed-chunk-2-5.png" width="480" style="display: block; margin: auto;" /><img src="figure/realdata_final_downstream_enrichment_compare.Rmd/unnamed-chunk-2-6.png" width="480" style="display: block; margin: auto;" /><img src="figure/realdata_final_downstream_enrichment_compare.Rmd/unnamed-chunk-2-7.png" width="480" style="display: block; margin: auto;" /><img src="figure/realdata_final_downstream_enrichment_compare.Rmd/unnamed-chunk-2-8.png" width="480" style="display: block; margin: auto;" /><img src="figure/realdata_final_downstream_enrichment_compare.Rmd/unnamed-chunk-2-9.png" width="480" style="display: block; margin: auto;" /><img src="figure/realdata_final_downstream_enrichment_compare.Rmd/unnamed-chunk-2-10.png" width="480" style="display: block; margin: auto;" /><img src="figure/realdata_final_downstream_enrichment_compare.Rmd/unnamed-chunk-2-11.png" width="480" style="display: block; margin: auto;" /></p>
+<p><img src="figure/realdata_final_downstream_enrichment_compare.Rmd/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-2-1">
+Past versions of unnamed-chunk-2-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-2-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/bd07e5175c4f5da600653789987a199e8becdbd4/docs/figure/realdata_final_downstream_enrichment_compare.Rmd/unnamed-chunk-2-1.png" target="_blank">bd07e51</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-05-29
+</td>
+</tr>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/6fc9c34c90414b8133393434e43031fc196d17d4/docs/figure/realdata_final_downstream_enrichment_compare.Rmd/unnamed-chunk-2-1.png" target="_blank">6fc9c34</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-05-28
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p><img src="figure/realdata_final_downstream_enrichment_compare.Rmd/unnamed-chunk-2-2.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-2-2">
+Past versions of unnamed-chunk-2-2.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-2-2" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/bd07e5175c4f5da600653789987a199e8becdbd4/docs/figure/realdata_final_downstream_enrichment_compare.Rmd/unnamed-chunk-2-2.png" target="_blank">bd07e51</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-05-29
+</td>
+</tr>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/6fc9c34c90414b8133393434e43031fc196d17d4/docs/figure/realdata_final_downstream_enrichment_compare.Rmd/unnamed-chunk-2-2.png" target="_blank">6fc9c34</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-05-28
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p><img src="figure/realdata_final_downstream_enrichment_compare.Rmd/unnamed-chunk-2-3.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-2-3">
+Past versions of unnamed-chunk-2-3.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-2-3" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/bd07e5175c4f5da600653789987a199e8becdbd4/docs/figure/realdata_final_downstream_enrichment_compare.Rmd/unnamed-chunk-2-3.png" target="_blank">bd07e51</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-05-29
+</td>
+</tr>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/6fc9c34c90414b8133393434e43031fc196d17d4/docs/figure/realdata_final_downstream_enrichment_compare.Rmd/unnamed-chunk-2-3.png" target="_blank">6fc9c34</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-05-28
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p><img src="figure/realdata_final_downstream_enrichment_compare.Rmd/unnamed-chunk-2-4.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-2-4">
+Past versions of unnamed-chunk-2-4.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-2-4" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/bd07e5175c4f5da600653789987a199e8becdbd4/docs/figure/realdata_final_downstream_enrichment_compare.Rmd/unnamed-chunk-2-4.png" target="_blank">bd07e51</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-05-29
+</td>
+</tr>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/6fc9c34c90414b8133393434e43031fc196d17d4/docs/figure/realdata_final_downstream_enrichment_compare.Rmd/unnamed-chunk-2-4.png" target="_blank">6fc9c34</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-05-28
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<pre class="r"><code>for (trait in traits){
+  
+  df_frac_multi &lt;- readRDS(paste0(folder_fractional_multi,&quot;enrichment_fractional_calibrated_blgeneset_summary_multigroup_&quot;,trait,&quot;_GO_Biological_Process_2023.RDS&quot;))
+  
+  df_fdr005_multi &lt;- df_frac_multi[df_frac_multi$fdr_combined &lt; 0.05,]
+  df_fdr005_multi &lt;- df_fdr005_multi[complete.cases(df_fdr005_multi$fdr_combined),]
+  num_frac_multi &lt;- nrow(df_fdr005_multi)
+  
+  
+  df_frac_multi_csfilter &lt;- readRDS(paste0(folder_fractional_multi_csfilter,&quot;enrichment_fractional_calibrated_blgeneset_summary_multigroup_&quot;,trait,&quot;_GO_Biological_Process_2023.RDS&quot;))
+  
+  df_fdr005_multi_csfilter &lt;- df_frac_multi_csfilter[df_frac_multi_csfilter$fdr_combined &lt; 0.05,]
+  df_fdr005_multi_csfilter &lt;- df_fdr005_multi_csfilter[complete.cases(df_fdr005_multi_csfilter$fdr_combined),]
+  num_frac_multi_csfilter &lt;- nrow(df_fdr005_multi_csfilter)
+  
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(knitr::knit_print(DT::datatable(df_fdr005_multi, caption = htmltools::tags$caption( style = &#39;caption-side: left; text-align: left; color:black;  font-size:150% ;&#39;,paste0(trait,&quot;- Enriched Go terms, cs not filtered&quot;),options = list(pageLength = 5)))))
+  cat(&quot;&lt;br&gt;&quot;)
+
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(knitr::knit_print(DT::datatable(df_fdr005_multi_csfilter, caption = htmltools::tags$caption( style = &#39;caption-side: left; text-align: left; color:black;  font-size:150% ;&#39;,paste0(trait,&quot;- Enriched Go terms, cs filtered&quot;),options = list(pageLength = 5)))))
+  cat(&quot;&lt;br&gt;&quot;)
+}</code></pre>
+<p><br></p>
+<div id="htmlwidget-20575149739a71fc930f" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-20575149739a71fc930f">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\" options=\"5\">LDL-ukb-d-30780_irnt- Enriched Go terms, cs not filtered<\/caption>","data":[["2191","2012","2212","2312","684","11415","15818","16018","1712","11011","11118","15618","1912","1916","3619","1934","5220","2712","8211","3719","839","575","2401","11919","2431","6410","10519","140","869","375","139","299","14615","20313","15918","12715","146","1841","14519","14113","15217","138","859","1721","13018","57","1469","5813","429","1179","20911","6519","8713","15118","3112"],[3.82094182827509e-10,2.24402089239605e-16,2.89538322089584e-16,6.84835218990953e-22,1.05135243969331e-16,1.74526565767038e-14,3.42230878628873e-16,8.63913127658659e-15,1.89424234409992e-09,1.00790553582734e-09,5.14765521684376e-11,9.63028534754738e-09,8.95357317479283e-09,1.28214148656346e-10,6.64273427099344e-10,9.31033446127252e-10,1.05170322567282e-09,7.91290564356852e-07,7.07473860055979e-07,4.12357864466137e-09,3.08400233842766e-07,6.45653296974375e-10,1.20640240962191e-06,6.00859926873898e-06,2.10311288137487e-08,1.19033846018058e-07,2.84214198107974e-08,2.40668959035368e-07,9.76771812203714e-07,2.85056099955458e-06,2.40668959035368e-07,2.45082348232951e-06,6.26811820822462e-08,3.98333748498675e-07,2.00668483031436e-06,4.39779239632593e-08,2.40668959035368e-07,1.73397169782908e-06,3.81141062994101e-07,7.0716550386291e-07,8.72262333727298e-08,2.40668959035368e-07,4.82830912224992e-06,4.52815081441184e-05,4.81664010932047e-06,3.13967171990747e-06,9.83007423296688e-06,0.000121405812159636,1.67789157030461e-06,2.16960314738148e-06,4.65898835901502e-07,4.9349384607859e-06,1.53295294990433e-07,7.79647467046024e-07,1.35319013027225e-06],[2.06598324654834e-07,3.70088472149263e-13,3.70088472149263e-13,3.70290402908408e-18,2.84233132071085e-13,1.34809305871768e-11,3.70088472149263e-13,7.78529713541729e-12,6.40135522159266e-07,3.79103956080863e-07,3.47917146968428e-08,2.74057646706256e-06,2.68955389756138e-06,7.70282113094289e-08,2.99310535027179e-07,3.79103956080863e-07,3.79103956080863e-07,0.0001097053354225,0.000103386788143856,1.311540572452e-06,5.21100020121199e-05,2.99310535027179e-07,0.000159097995825016,0.000580151718679852,5.68576567479695e-06,2.57446402167856e-05,7.31783890080864e-06,4.19773245646527e-05,0.000132035129714637,0.000308259666491832,4.19773245646527e-05,0.000276075053519909,1.47355283269002e-05,6.33467817097746e-05,0.000235872714728473,1.08085743122429e-05,4.19773245646527e-05,0.000213081476594588,6.24493856851244e-05,0.000103386788143856,1.96513434935979e-05,4.19773245646527e-05,0.000492578630641609,0.00296186426096594,0.000492578630641609,0.000332866764500779,0.000871331334059868,0.00676743532316652,0.000210985109782257,0.000249596685487057,7.19747144491263e-05,0.000494133560323506,3.18795253851258e-05,0.0001097053354225,0.00017420711986624],[9.99990000099999e-06,9.99990000099999e-06,9.99990000099999e-06,9.99990000099999e-06,9.99990000099999e-06,9.99990000099999e-06,9.99990000099999e-06,9.99990000099999e-06,1.9999800002e-05,1.9999800002e-05,1.9999800002e-05,1.9999800002e-05,2.9999700003e-05,2.9999700003e-05,2.9999700003e-05,3.9999600004e-05,3.9999600004e-05,4.99995000049999e-05,4.99995000049999e-05,4.99995000049999e-05,5.99994000059999e-05,6.99993000069999e-05,7.99992000079999e-05,8.99991000089999e-05,9.99990000099999e-05,0.000109998900011,0.000119998800012,0.000149998500015,0.000169998300017,0.000179998200018,0.000189998100019,0.000189998100019,0.00019999800002,0.000209997900021,0.000209997900021,0.000219997800022,0.000229997700023,0.000229997700023,0.000239997600024,0.000269997300027,0.000269997300027,0.000289997100029,0.000319996800032,0.000349996500035,0.000369996300037,0.000379996200038,0.000389996100039,0.000389996100039,0.00039999600004,0.000409995900041,0.000409995900041,0.000409995900041,0.000419995800042,0.000439995600044,0.00049999500005],[0.000964990350096499,0.000964990350096499,0.000964990350096499,0.000964990350096499,0.000964990350096499,0.000964990350096499,0.000964990350096499,0.000964990350096499,0.00128665380012867,0.00128665380012867,0.00128665380012867,0.00128665380012867,0.0015439845601544,0.0015439845601544,0.0015439845601544,0.00181645242371106,0.00181645242371106,0.001929980700193,0.001929980700193,0.001929980700193,0.002205692228792,0.00245633907297291,0.00268519053939895,0.0028949710502895,0.0030879691203088,0.003266121184942,0.00343107680034311,0.004135672928985,0.00452547198665944,0.00458370416295837,0.00458370416295837,0.00458370416295837,0.0046319536804632,0.0046319536804632,0.0046319536804632,0.00467258485309884,0.00467258485309884,0.00467258485309884,0.004750721723552,0.00508385160050838,0.00508385160050838,0.00533042288624733,0.00574505882848148,0.00608686220830099,0.00608686220830099,0.00608686220830099,0.00608686220830099,0.00608686220830099,0.00608686220830099,0.00608686220830099,0.00608686220830099,0.00608686220830099,0.00611767467230988,0.0062903074672957,0.00701811163706545],["Cellular Response To Nutrient Levels (GO:0031669)","Cholesterol Homeostasis (GO:0042632)","Cholesterol Metabolic Process (GO:0008203)","Cholesterol Transport (GO:0030301)","High-Density Lipoprotein Particle Remodeling (GO:0034375)","Regulation Of Cholesterol Transport (GO:0032374)","Sterol Homeostasis (GO:0055092)","Sterol Transport (GO:0015918)","Cholesterol Biosynthetic Process (GO:0006695)","Negative Regulation Of Lipoprotein Particle Clearance (GO:0010985)","Regulation Of Cholesterol Efflux (GO:0010874)","Sterol Biosynthetic Process (GO:0016126)","Cholesterol Efflux (GO:0033344)","Intestinal Cholesterol Absorption (GO:0030299)","Triglyceride Metabolic Process (GO:0006641)","Intestinal Lipid Absorption (GO:0098856)","Secondary Alcohol Biosynthetic Process (GO:1902653)","Endocytosis (GO:0006897)","Peptidyl-Serine Modification (GO:0018209)","Triglyceride-Rich Lipoprotein Particle Remodeling (GO:0034370)","Peptidyl-Serine Phosphorylation (GO:0018105)","Low-Density Lipoprotein Particle Remodeling (GO:0034374)","Cellular Response To Starvation (GO:0009267)","Vesicle-Mediated Transport (GO:0016192)","Cellular Response To Sterol Depletion (GO:0071501)","Positive Regulation Of Cholesterol Transport (GO:0032376)","Very-Low-Density Lipoprotein Particle Assembly (GO:0034379)","Antigen Processing And Presentation Of Endogenous Peptide Antigen Via MHC Class Ib (GO:0002476)","Peptidyl-Threonine Phosphorylation (GO:0018107)","Lipid Transport (GO:0006869)","Antigen Processing And Presentation Of Endogenous Peptide Antigen Via MHC Class I Via ER Pathway, TAP-independent (GO:0002486)","Organonitrogen Compound Biosynthetic Process (GO:1901566)","Regulation Of Lipoprotein Lipase Activity (GO:0051004)","Regulation Of Actin Nucleation (GO:0051125)","Sterol Metabolic Process (GO:0016125)","Regulation Of Lamellipodium Organization (GO:1902743)","Antigen Processing And Presentation Of Peptide Antigen Via MHC Class Ib (GO:0002428)","Cellular Response To Insulin Stimulus (GO:0032869)","Xenobiotic Transport (GO:0042908)","Phospholipid Biosynthetic Process (GO:0008654)","Regulation Of Low-Density Lipoprotein Particle Clearance (GO:0010988)","Antigen Processing And Presentation Of Endogenous Peptide Antigen Via MHC Class I Via ER Pathway (GO:0002484)","Peptidyl-Threonine Modification (GO:0018210)","Cellular Response To Growth Factor Stimulus (GO:0071363)","Sphingolipid Biosynthetic Process (GO:0030148)","Acylglycerol Metabolic Process (GO:0006639)","Phospholipid Metabolic Process (GO:0006644)","Protein Phosphorylation (GO:0006468)","Negative Regulation Of Receptor-Mediated Endocytosis (GO:0048261)","Phosphatidic Acid Biosynthetic Process (GO:0006654)","Positive Regulation Of Protein Export From Nucleus (GO:0046827)","Unsaturated Fatty Acid Metabolic Process (GO:0033559)","Protein poly-ADP-ribosylation (GO:0070212)","Regulation Of Cytoplasmic Transport (GO:1903649)","Negative Regulation Of Signaling (GO:0023057)"],[9.99990000099999e-06,9.99990000099999e-06,9.99990000099999e-06,9.99990000099999e-06,9.99990000099999e-06,9.99990000099999e-06,9.99990000099999e-06,9.99990000099999e-06,1.9999800002e-05,1.9999800002e-05,1.9999800002e-05,1.9999800002e-05,2.9999700003e-05,2.9999700003e-05,2.9999700003e-05,3.9999600004e-05,3.9999600004e-05,4.99995000049999e-05,4.99995000049999e-05,4.99995000049999e-05,5.99994000059999e-05,6.99993000069999e-05,7.99992000079999e-05,8.99991000089999e-05,9.99990000099999e-05,0.000109998900011,0.000119998800012,0.000149998500015,0.000169998300017,0.000179998200018,0.000189998100019,0.000189998100019,0.00019999800002,0.000209997900021,0.000209997900021,0.000219997800022,0.000229997700023,0.000229997700023,0.000239997600024,0.000269997300027,0.000269997300027,0.000289997100029,0.000319996800032,0.000349996500035,0.000369996300037,0.000379996200038,0.000389996100039,0.000389996100039,0.00039999600004,0.000409995900041,0.000409995900041,0.000409995900041,0.000419995800042,0.000439995600044,0.00049999500005],[0.00675868241317587,0.00675868241317587,0.00675868241317587,0.00675868241317587,0.00675868241317587,0.00675868241317587,0.00675868241317587,0.00675868241317587,0.00901157655090116,0.00901157655090116,0.00901157655090116,0.00901157655090116,0.0108138918610814,0.0108138918610814,0.0108138918610814,0.0127222257189193,0.0127222257189193,0.0135173648263517,0.0135173648263517,0.0135173648263517,0.015448416944402,0.0172039188699022,0.0188067684540546,0.0202760472395276,0.0216277837221628,0.0228755404753645,0.0240308708024031,0.0289657817707537,0.0316958899376523,0.0321037414625854,0.0321037414625854,0.0321037414625854,0.0324416755832442,0.0324416755832442,0.0324416755832442,0.0327262516848516,0.0327262516848516,0.0327262516848516,0.033273513418712,0.0356067171035607,0.0356067171035607,0.0373336742823048,0.0402377371575122,0.0426316890677247,0.0426316890677247,0.0426316890677247,0.0426316890677247,0.0426316890677247,0.0426316890677247,0.0426316890677247,0.0426316890677247,0.0426316890677247,0.0428474960533414,0.0440565964710723,0.0491540539140063]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>pvalue_origin<\/th>\n      <th>fdr_origin<\/th>\n      <th>pvalue_calibrated<\/th>\n      <th>fdr_calibrated<\/th>\n      <th>GO<\/th>\n      <th>pvalue_combined<\/th>\n      <th>fdr_combined<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[1,2,3,4,6,7]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<p><br><br></p>
+<div id="htmlwidget-a23c348805048a1f64c7" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-a23c348805048a1f64c7">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\" options=\"5\">LDL-ukb-d-30780_irnt- Enriched Go terms, cs filtered<\/caption>","data":[["2431","2012","2212","2312","684","11011","11415","15818","16018","3619","3719","1912","1916","11118","15217","1712","1934","375","575","8211","839","5220","15618","10519","6410","1489","20911","139","140","15918","57","138","146","2191","22103","17716","1841","56","2712"],[2.51941913023056e-08,1.0443854948343e-15,7.7238805176207e-16,8.51825423886411e-23,1.47580587966863e-16,2.19981315914105e-09,2.68059436496008e-11,1.399393445498e-15,2.08882401227315e-15,3.71651422725975e-11,3.22952025824425e-09,1.38391099822774e-09,2.01932307065432e-10,2.1870874358806e-08,2.99367008586995e-08,6.89173648985355e-09,7.75425648967178e-10,5.53974874507377e-08,2.79321056712052e-10,1.61504309615738e-07,7.758373901734e-08,4.57322003282963e-09,2.14088908531762e-08,4.0882544600626e-08,1.5736072943718e-08,4.531874392054e-07,1.34570631534619e-07,2.20542502849907e-07,2.20542502849907e-07,3.94419144106355e-07,4.22028327354964e-07,2.20542502849907e-07,2.20542502849907e-07,7.20097115004415e-07,3.36806908096258e-07,1.16376050225603e-06,5.67893000296399e-06,2.30197102802904e-06,1.41625463981678e-05],[6.81124961857833e-06,1.41174809264227e-12,1.39210073195917e-12,4.60582006695383e-19,3.98984119568415e-13,9.1495305780582e-07,2.07056767590559e-08,1.51330407196154e-12,1.88237857239348e-12,2.51189905334919e-08,1.24728685973762e-06,6.23567230618117e-07,1.2131644270031e-07,6.223990403056e-06,7.70798769252325e-06,2.32897620003988e-06,3.81156953087776e-07,1.30232267237452e-05,1.51028895364207e-07,3.23427334108257e-05,1.74789698694482e-05,1.64849338116732e-06,6.223990403056e-06,1.00478144843448e-05,5.00499684745196e-06,7.00109852509599e-05,2.91049361883074e-05,3.84668810615951e-05,3.84668810615951e-05,6.46249791570624e-05,6.71149166473026e-05,3.84668810615951e-05,3.84668810615951e-05,0.000108154586134135,5.69098422523896e-05,0.000165590869360482,0.000731094631572055,0.000319147624321872,0.00147263246874795],[9.99990000099999e-06,9.99990000099999e-06,9.99990000099999e-06,9.99990000099999e-06,9.99990000099999e-06,9.99990000099999e-06,9.99990000099999e-06,9.99990000099999e-06,9.99990000099999e-06,9.99990000099999e-06,9.99990000099999e-06,1.9999800002e-05,1.9999800002e-05,1.9999800002e-05,1.9999800002e-05,2.9999700003e-05,2.9999700003e-05,2.9999700003e-05,2.9999700003e-05,2.9999700003e-05,2.9999700003e-05,3.9999600004e-05,3.9999600004e-05,3.9999600004e-05,5.99994000059999e-05,8.99991000089999e-05,8.99991000089999e-05,9.99990000099999e-05,9.99990000099999e-05,9.99990000099999e-05,0.000109998900011,0.000119998800012,0.000119998800012,0.000129998700013,0.000159998400016,0.000209997900021,0.000269997300027,0.000349996500035,0.000349996500035],[0.000554539909146363,0.000554539909146363,0.000554539909146363,0.000554539909146363,0.000554539909146363,0.000554539909146363,0.000554539909146363,0.000554539909146363,0.000554539909146363,0.000554539909146363,0.000554539909146363,0.000813325200081333,0.000813325200081333,0.000813325200081333,0.000813325200081333,0.000871419857229999,0.000871419857229999,0.000871419857229999,0.000871419857229999,0.000871419857229999,0.000871419857229999,0.00101665650010167,0.00101665650010167,0.00101665650010167,0.0014639853601464,0.00203331300020333,0.00203331300020333,0.00203331300020333,0.00203331300020333,0.00203331300020333,0.00216449448408742,0.00221815963658545,0.00221815963658545,0.00233232961788029,0.002788543543136,0.00355829775035583,0.00445130683828297,0.00547430423131666,0.00547430423131666],["Cellular Response To Sterol Depletion (GO:0071501)","Cholesterol Homeostasis (GO:0042632)","Cholesterol Metabolic Process (GO:0008203)","Cholesterol Transport (GO:0030301)","High-Density Lipoprotein Particle Remodeling (GO:0034375)","Negative Regulation Of Lipoprotein Particle Clearance (GO:0010985)","Regulation Of Cholesterol Transport (GO:0032374)","Sterol Homeostasis (GO:0055092)","Sterol Transport (GO:0015918)","Triglyceride Metabolic Process (GO:0006641)","Triglyceride-Rich Lipoprotein Particle Remodeling (GO:0034370)","Cholesterol Efflux (GO:0033344)","Intestinal Cholesterol Absorption (GO:0030299)","Regulation Of Cholesterol Efflux (GO:0010874)","Regulation Of Low-Density Lipoprotein Particle Clearance (GO:0010988)","Cholesterol Biosynthetic Process (GO:0006695)","Intestinal Lipid Absorption (GO:0098856)","Lipid Transport (GO:0006869)","Low-Density Lipoprotein Particle Remodeling (GO:0034374)","Peptidyl-Serine Modification (GO:0018209)","Peptidyl-Serine Phosphorylation (GO:0018105)","Secondary Alcohol Biosynthetic Process (GO:1902653)","Sterol Biosynthetic Process (GO:0016126)","Very-Low-Density Lipoprotein Particle Assembly (GO:0034379)","Positive Regulation Of Cholesterol Transport (GO:0032376)","Phospholipid Transport (GO:0015914)","Positive Regulation Of Protein Export From Nucleus (GO:0046827)","Antigen Processing And Presentation Of Endogenous Peptide Antigen Via MHC Class I Via ER Pathway, TAP-independent (GO:0002486)","Antigen Processing And Presentation Of Endogenous Peptide Antigen Via MHC Class Ib (GO:0002476)","Sterol Metabolic Process (GO:0016125)","Acylglycerol Metabolic Process (GO:0006639)","Antigen Processing And Presentation Of Endogenous Peptide Antigen Via MHC Class I Via ER Pathway (GO:0002484)","Antigen Processing And Presentation Of Peptide Antigen Via MHC Class Ib (GO:0002428)","Cellular Response To Nutrient Levels (GO:0031669)","Reverse Cholesterol Transport (GO:0043691)","Regulation Of Receptor Recycling (GO:0001919)","Cellular Response To Insulin Stimulus (GO:0032869)","Acylglycerol Homeostasis (GO:0055090)","Endocytosis (GO:0006897)"],[9.99990000099999e-06,9.99990000099999e-06,9.99990000099999e-06,9.99990000099999e-06,9.99990000099999e-06,9.99990000099999e-06,9.99990000099999e-06,9.99990000099999e-06,9.99990000099999e-06,9.99990000099999e-06,9.99990000099999e-06,1.9999800002e-05,1.9999800002e-05,1.9999800002e-05,1.9999800002e-05,2.9999700003e-05,2.9999700003e-05,2.9999700003e-05,2.9999700003e-05,2.9999700003e-05,2.9999700003e-05,3.9999600004e-05,3.9999600004e-05,3.9999600004e-05,5.99994000059999e-05,8.99991000089999e-05,8.99991000089999e-05,9.99990000099999e-05,9.99990000099999e-05,9.99990000099999e-05,0.000109998900011,0.000119998800012,0.000119998800012,0.000129998700013,0.000159998400016,0.000209997900021,0.000269997300027,0.000349996500035,0.000349996500035],[0.00491540539140063,0.00491540539140063,0.00491540539140063,0.00491540539140063,0.00491540539140063,0.00491540539140063,0.00491540539140063,0.00491540539140063,0.00491540539140063,0.00491540539140063,0.00491540539140063,0.00720926124072093,0.00720926124072093,0.00720926124072093,0.00720926124072093,0.00772420847220099,0.00772420847220099,0.00772420847220099,0.00772420847220099,0.00772420847220099,0.00772420847220099,0.00901157655090116,0.00901157655090116,0.00901157655090116,0.0129766702332977,0.0180231531018023,0.0180231531018023,0.0180231531018023,0.0180231531018023,0.0180231531018023,0.0191859371728863,0.0196616215656025,0.0196616215656025,0.0206736167932438,0.0247174671110432,0.0315405179281541,0.0394560919255672,0.0485238737356216,0.0485238737356216]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>pvalue_origin<\/th>\n      <th>fdr_origin<\/th>\n      <th>pvalue_calibrated<\/th>\n      <th>fdr_calibrated<\/th>\n      <th>GO<\/th>\n      <th>pvalue_combined<\/th>\n      <th>fdr_combined<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[1,2,3,4,6,7]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<p><br><br></p>
+<div id="htmlwidget-93928d62269dcef60a51" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-93928d62269dcef60a51">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\" options=\"5\">aFib-ebi-a-GCST006414- Enriched Go terms, cs not filtered<\/caption>","data":[["511","551","2816","4216","1706","2187","2207","5014","3014","5118","2726","36","1375","19411","2915","501","19213","7117","601","631","1535","27012","1944","1540","25816","867","17018"],[2.35558603854178e-15,2.05427815375435e-11,1.15395171438413e-10,9.71002222379991e-16,1.09597151680704e-13,1.5978388688462e-13,1.66834204719527e-12,7.93762831001895e-13,2.66929654204862e-09,9.92831748776994e-10,5.50993683570189e-09,1.05618151357526e-08,2.82089672562815e-09,7.50219597479848e-09,9.95788266433699e-10,1.965500994888e-08,2.74555251232656e-08,5.61428493687881e-07,2.10500487682225e-09,1.35432478013339e-07,4.94489558774707e-08,4.99412019200342e-06,1.34535951841973e-06,5.50304483815033e-08,7.13282867569179e-08,3.0348898623932e-08,1.50335734650445e-06],[6.36832685519771e-12,1.5867831396214e-08,7.79927114959371e-08,5.25020901640861e-12,1.97530599712522e-10,2.15987869096285e-10,1.50345424153081e-09,8.58375125445449e-10,1.17327604580549e-06,5.38422715660701e-07,2.12801631933144e-06,3.56923340243841e-06,1.17327604580549e-06,2.70429157571569e-06,5.38422715660701e-07,5.90414659964411e-06,7.81326443902617e-06,9.48638707928241e-05,1.03470557899799e-06,2.71216077265972e-05,1.21532047467947e-05,0.000613709269958238,0.000207838826174157,1.29369406260343e-05,1.6069668603944e-05,7.90655156068429e-06,0.00022579592145971],[9.99990000099999e-06,9.99990000099999e-06,9.99990000099999e-06,9.99990000099999e-06,1.9999800002e-05,1.9999800002e-05,1.9999800002e-05,1.9999800002e-05,4.99995000049999e-05,4.99995000049999e-05,5.99994000059999e-05,6.99993000069999e-05,6.99993000069999e-05,6.99993000069999e-05,7.99992000079999e-05,8.99991000089999e-05,9.99990000099999e-05,9.99990000099999e-05,0.000109998900011,0.000109998900011,0.000109998900011,0.000109998900011,0.000129998700013,0.000149998500015,0.000159998400016,0.000189998100019,0.000209997900021],[0.001229987700123,0.001229987700123,0.001229987700123,0.001229987700123,0.001229987700123,0.001229987700123,0.001229987700123,0.001229987700123,0.002459975400246,0.002459975400246,0.002459975400246,0.002459975400246,0.002459975400246,0.002459975400246,0.002459975400246,0.002459975400246,0.002459975400246,0.002459975400246,0.002459975400246,0.002459975400246,0.002459975400246,0.002459975400246,0.00278084175679982,0.0030749692503075,0.00314876851231488,0.003595348661898,0.00382662840038266],["Cardiac Conduction (GO:0061337)","Cardiac Muscle Cell Action Potential (GO:0086001)","Regulation Of Cardiac Muscle Cell Action Potential Involved In Regulation Of Contraction (GO:0098909)","Regulation Of Heart Rate By Cardiac Conduction (GO:0086091)","Negative Regulation Of Cation Transmembrane Transport (GO:1904063)","Negative Regulation Of Potassium Ion Transmembrane Transport (GO:1901380)","Negative Regulation Of Potassium Ion Transport (GO:0043267)","Regulation Of Cell Communication By Electrical Coupling (GO:0010649)","Regulation Of Cardiac Muscle Cell Contraction (GO:0086004)","Regulation Of Cell Communication By Electrical Coupling Involved In Cardiac Conduction (GO:1901844)","Regulation Of Cardiac Muscle Cell Action Potential (GO:0098901)","Actin Polymerization Or Depolymerization (GO:0008154)","Membrane Depolarization (GO:0051899)","Positive Regulation Of Potassium Ion Transport (GO:0043268)","Regulation Of Cardiac Muscle Cell Apoptotic Process (GO:0010665)","Cardiac Cell Development (GO:0055006)","Positive Regulation Of Potassium Ion Transmembrane Transport (GO:1901381)","Protein Targeting (GO:0006605)","Cardiac Muscle Cell Membrane Repolarization (GO:0099622)","Cardiac Muscle Contraction (GO:0060048)","Membrane Repolarization During Cardiac Muscle Cell Action Potential (GO:0086013)","Protein Localization (GO:0008104)","Intracellular Calcium Ion Homeostasis (GO:0006874)","Positive Regulation Of Cation Transmembrane Transport (GO:1904064)","Regulation Of Striated Muscle Contraction (GO:0006942)","Negative Regulation Of Ion Transmembrane Transporter Activity (GO:0032413)","Striated Muscle Contraction (GO:0006941)"],[9.99990000099999e-06,9.99990000099999e-06,9.99990000099999e-06,9.99990000099999e-06,1.9999800002e-05,1.9999800002e-05,1.9999800002e-05,1.9999800002e-05,4.99995000049999e-05,4.99995000049999e-05,5.99994000059999e-05,6.99993000069999e-05,6.99993000069999e-05,6.99993000069999e-05,7.99992000079999e-05,8.99991000089999e-05,9.99990000099999e-05,9.99990000099999e-05,0.000109998900011,0.000109998900011,0.000109998900011,0.000109998900011,0.000129998700013,0.000149998500015,0.000159998400016,0.000189998100019,0.000209997900021],[0.0135173648263517,0.0135173648263517,0.0135173648263517,0.0135173648263517,0.0135173648263517,0.0135173648263517,0.0135173648263517,0.0135173648263517,0.0270347296527035,0.0270347296527035,0.0270347296527035,0.0270347296527035,0.0270347296527035,0.0270347296527035,0.0270347296527035,0.0270347296527035,0.0270347296527035,0.0270347296527035,0.0270347296527035,0.0270347296527035,0.0270347296527035,0.0270347296527035,0.0305609987378387,0.0337934120658793,0.0346044539554604,0.0395122971847205,0.0420540239042054]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>pvalue_origin<\/th>\n      <th>fdr_origin<\/th>\n      <th>pvalue_calibrated<\/th>\n      <th>fdr_calibrated<\/th>\n      <th>GO<\/th>\n      <th>pvalue_combined<\/th>\n      <th>fdr_combined<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[1,2,3,4,6,7]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<p><br><br></p>
+<div id="htmlwidget-16707cd634e93674753d" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-16707cd634e93674753d">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\" options=\"5\">aFib-ebi-a-GCST006414- Enriched Go terms, cs filtered<\/caption>","data":[["511","1706","2207","5014","4216","1375","2187","2726","2816","2915","3014","501","19213","5118","740","19411","631","551","1540","18815","591","1141","3012","716","1697","581","18710","1606","4119","9419","436","9716","124","9519","5112","9816","3514","4814","5715","8618","12810","9319","14220","25816","27114","26418","9818","2509","10917","8819"],[3.44396071073394e-13,1.35460118795106e-13,2.62144974255811e-12,7.17037391332972e-12,6.56750184606991e-14,1.88288078781153e-09,1.37510576957382e-12,2.81079261556159e-09,3.17982297792818e-10,1.65815900930599e-09,6.27023814247601e-10,7.54666202612031e-09,3.01599735488466e-08,4.00872413680152e-09,7.40015779164001e-08,1.19782817056434e-08,1.86256765235113e-08,4.25686860021612e-09,4.61095830164277e-08,6.3843316343942e-07,9.50295012234493e-07,5.33261898935843e-07,4.51323223691014e-08,1.20083778800235e-05,1.15706031119646e-05,7.22713420827455e-07,1.58290098376409e-05,1.20083778800234e-05,2.62913810771675e-06,1.20083778800233e-05,3.19789415202592e-06,2.1186338338554e-05,2.93720944551772e-05,3.07315296118801e-07,3.94285596007092e-05,4.1507990233385e-06,1.34343200888393e-05,2.93720944552032e-05,3.11991596182499e-05,1.06909234672269e-05,2.93720944551755e-05,4.14801223447644e-07,1.3685785186861e-05,7.69613468558623e-06,2.93720944551772e-05,3.94285596007084e-05,2.95980336553892e-06,2.24222116314974e-05,8.56979729060592e-08,4.32058153071161e-06],[6.20716518764614e-10,3.6621643116257e-10,2.83483575160234e-09,6.46170195822897e-09,3.55104824817e-10,1.01807364196969e-06,1.85879922402141e-09,1.38163233384923e-06,2.45618612023681e-07,9.96185084813057e-07,4.23789720454597e-07,2.91462868394518e-06,9.59264570462432e-06,1.77052988625912e-06,2.00063265896988e-05,4.3177712788276e-06,6.29431456016411e-06,1.77052988625912e-06,1.31218165984118e-05,0.000138080324588678,0.000190305375227848,0.000120139461981088,1.31218165984118e-05,0.00141150650428885,0.00141150650428885,0.000150296594862079,0.0017466827794311,0.00141150650428885,0.000473858324947483,0.00141150650428885,0.000540344177500129,0.00224616728228551,0.00273818818481524,7.55297184597434e-05,0.00336613476026704,0.000680102130884584,0.00154164667719495,0.00273818818481524,0.00285921789925216,0.00141150650428885,0.00273818818481524,9.75143571818005e-05,0.00154164667719495,0.00109507895381486,0.00273818818481524,0.00336613476026704,0.00051624699346674,0.00232294258687017,2.20651875953839e-05,0.000681336656252149],[9.99990000099999e-06,9.99990000099999e-06,9.99990000099999e-06,9.99990000099999e-06,9.99990000099999e-06,1.9999800002e-05,1.9999800002e-05,1.9999800002e-05,1.9999800002e-05,1.9999800002e-05,1.9999800002e-05,3.9999600004e-05,3.9999600004e-05,4.99995000049999e-05,5.99994000059999e-05,6.99993000069999e-05,7.99992000079999e-05,9.99990000099999e-05,0.000109998900011,0.000129998700013,0.000159998400016,0.000159998400016,0.000169998300017,0.000189998100019,0.000189998100019,0.000229997700023,0.000229997700023,0.000239997600024,0.000249997500025,0.000249997500025,0.000289997100029,0.000289997100029,0.000309996900031,0.000319996800032,0.000349996500035,0.000359996400036,0.000369996300037,0.000379996200038,0.000379996200038,0.000379996200038,0.000389996100039,0.000389996100039,0.00039999600004,0.000419995800042,0.000429995700043,0.000429995700043,0.000439995600044,0.000449995500045,0.000449995500045,0.000449995500045],[0.000789083018260726,0.000789083018260726,0.000789083018260726,0.000789083018260726,0.000789083018260726,0.000789083018260726,0.000789083018260726,0.000789083018260726,0.000789083018260726,0.000789083018260726,0.000789083018260726,0.001335371261672,0.001335371261672,0.001549984500155,0.0017359826401736,0.00189873101268987,0.00204233251785129,0.00241108700024111,0.00251260645288284,0.0028209717902821,0.00315633207304291,0.00315633207304291,0.00320779400901643,0.00329836701632984,0.00329836701632984,0.00361663050036166,0.00361663050036166,0.00361663050036166,0.00361663050036166,0.00361663050036166,0.0039059609403906,0.0039059609403906,0.0039059609403906,0.0039059609403906,0.0039059609403906,0.0039059609403906,0.0039059609403906,0.0039059609403906,0.0039059609403906,0.0039059609403906,0.0039059609403906,0.0039059609403906,0.0039059609403906,0.0039059609403906,0.0039059609403906,0.0039059609403906,0.0039059609403906,0.0039059609403906,0.0039059609403906,0.0039059609403906],["Cardiac Conduction (GO:0061337)","Negative Regulation Of Cation Transmembrane Transport (GO:1904063)","Negative Regulation Of Potassium Ion Transport (GO:0043267)","Regulation Of Cell Communication By Electrical Coupling (GO:0010649)","Regulation Of Heart Rate By Cardiac Conduction (GO:0086091)","Membrane Depolarization (GO:0051899)","Negative Regulation Of Potassium Ion Transmembrane Transport (GO:1901380)","Regulation Of Cardiac Muscle Cell Action Potential (GO:0098901)","Regulation Of Cardiac Muscle Cell Action Potential Involved In Regulation Of Contraction (GO:0098909)","Regulation Of Cardiac Muscle Cell Apoptotic Process (GO:0010665)","Regulation Of Cardiac Muscle Cell Contraction (GO:0086004)","Cardiac Cell Development (GO:0055006)","Positive Regulation Of Potassium Ion Transmembrane Transport (GO:1901381)","Regulation Of Cell Communication By Electrical Coupling Involved In Cardiac Conduction (GO:1901844)","Positive Regulation Of Cardiac Muscle Hypertrophy (GO:0010613)","Positive Regulation Of Potassium Ion Transport (GO:0043268)","Cardiac Muscle Contraction (GO:0060048)","Cardiac Muscle Cell Action Potential (GO:0086001)","Positive Regulation Of Cation Transmembrane Transport (GO:1904064)","Regulation Of Membrane Depolarization (GO:0003254)","Cardiac Muscle Cell Differentiation (GO:0055007)","Cell-Cell Signaling Involved In Cardiac Conduction (GO:0086019)","Positive Regulation Of Sodium Ion Transport (GO:0010765)","His-Purkinje System Development (GO:0003164)","Negative Regulation Of Nervous System Process (GO:0031645)","Cardiac Muscle Cell Development (GO:0055013)","Positive Regulation Of Gap Junction Assembly (GO:1903598)","Negative Regulation Of Cardiac Muscle Cell Apoptotic Process (GO:0010667)","Regulation Of Heart Contraction (GO:0008016)","Ventricular Cardiac Muscle Cell Development (GO:0055015)","Muscle Cell Development (GO:0055001)","Regulation Of Potassium Ion Export Across Plasma Membrane (GO:1903764)","Angiotensin-Activated Signaling Pathway (GO:0038166)","Ventricular Cardiac Muscle Cell Membrane Repolarization (GO:0099625)","Negative Regulation Of Striated Muscle Cell Apoptotic Process (GO:0010664)","Regulation Of Potassium Ion Transmembrane Transport (GO:1901379)","Regulation Of Cardiac Muscle Contraction (GO:0055117)","Regulation Of Cell Adhesion Molecule Production (GO:0060353)","Regulation Of Histone Deacetylase Activity (GO:1901725)","Signal Complex Assembly (GO:0007172)","Positive Regulation Of ER-associated Ubiquitin-Dependent Protein Catabolic Process (GO:1903071)","Ventricular Cardiac Muscle Cell Action Potential (GO:0086005)","Spleen Development (GO:0048536)","Regulation Of Striated Muscle Contraction (GO:0006942)","Protein Localization To Basolateral Plasma Membrane (GO:1903361)","Thyroid Gland Development (GO:0030878)","Skeletal Muscle Organ Development (GO:0060538)","Positive Regulation Of Blood Circulation (GO:1903524)","Regulation Of Ventricular Cardiac Muscle Cell Action Potential (GO:0098911)","Vasculogenesis (GO:0001570)"],[9.99990000099999e-06,9.99990000099999e-06,9.99990000099999e-06,9.99990000099999e-06,9.99990000099999e-06,1.9999800002e-05,1.9999800002e-05,1.9999800002e-05,1.9999800002e-05,1.9999800002e-05,1.9999800002e-05,3.9999600004e-05,3.9999600004e-05,4.99995000049999e-05,5.99994000059999e-05,6.99993000069999e-05,7.99992000079999e-05,9.99990000099999e-05,0.000109998900011,0.000129998700013,0.000159998400016,0.000159998400016,0.000169998300017,0.000189998100019,0.000189998100019,0.000229997700023,0.000229997700023,0.000239997600024,0.000249997500025,0.000249997500025,0.000289997100029,0.000289997100029,0.000309996900031,0.000319996800032,0.000349996500035,0.000359996400036,0.000369996300037,0.000379996200038,0.000379996200038,0.000379996200038,0.000389996100039,0.000389996100039,0.00039999600004,0.000419995800042,0.000429995700043,0.000429995700043,0.000439995600044,0.000449995500045,0.000449995500045,0.000449995500045],[0.00983081078280126,0.00983081078280126,0.00983081078280126,0.00983081078280126,0.00983081078280126,0.00983081078280126,0.00983081078280126,0.00983081078280126,0.00983081078280126,0.00983081078280126,0.00983081078280126,0.016636756709356,0.016636756709356,0.0193105211805025,0.0216277837221628,0.0236553884461155,0.0254444514378386,0.0300385885030039,0.0313033711768145,0.0351451485485145,0.0393232431312051,0.0393232431312051,0.039964382964866,0.0410927890721093,0.0410927890721093,0.0450578827545058,0.0450578827545058,0.0450578827545058,0.0450578827545058,0.0450578827545058,0.0486625133748663,0.0486625133748663,0.0486625133748663,0.0486625133748663,0.0486625133748663,0.0486625133748663,0.0486625133748663,0.0486625133748663,0.0486625133748663,0.0486625133748663,0.0486625133748663,0.0486625133748663,0.0486625133748663,0.0486625133748663,0.0486625133748663,0.0486625133748663,0.0486625133748663,0.0486625133748663,0.0486625133748663,0.0486625133748663]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>pvalue_origin<\/th>\n      <th>fdr_origin<\/th>\n      <th>pvalue_calibrated<\/th>\n      <th>fdr_calibrated<\/th>\n      <th>GO<\/th>\n      <th>pvalue_combined<\/th>\n      <th>fdr_combined<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[1,2,3,4,6,7]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<p><br><br></p>
+<div id="htmlwidget-37e46cf92521dcbed3f8" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-37e46cf92521dcbed3f8">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\" options=\"5\">SBP-ukb-a-360- Enriched Go terms, cs not filtered<\/caption>","data":[[],[],[],[],[],[],[],[]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>pvalue_origin<\/th>\n      <th>fdr_origin<\/th>\n      <th>pvalue_calibrated<\/th>\n      <th>fdr_calibrated<\/th>\n      <th>GO<\/th>\n      <th>pvalue_combined<\/th>\n      <th>fdr_combined<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[1,2,3,4,6,7]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<p><br><br></p>
+<div id="htmlwidget-99e959167faff8d1fc37" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-99e959167faff8d1fc37">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\" options=\"5\">SBP-ukb-a-360- Enriched Go terms, cs filtered<\/caption>","data":[[],[],[],[],[],[],[],[]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>pvalue_origin<\/th>\n      <th>fdr_origin<\/th>\n      <th>pvalue_calibrated<\/th>\n      <th>fdr_calibrated<\/th>\n      <th>GO<\/th>\n      <th>pvalue_combined<\/th>\n      <th>fdr_combined<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[1,2,3,4,6,7]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<p><br><br></p>
+<div id="htmlwidget-4a6133f685aa29daac40" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-4a6133f685aa29daac40">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\" options=\"5\">T1D-GCST90014023- Enriched Go terms, cs not filtered<\/caption>","data":[[],[],[],[],[],[],[],[]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>pvalue_origin<\/th>\n      <th>fdr_origin<\/th>\n      <th>pvalue_calibrated<\/th>\n      <th>fdr_calibrated<\/th>\n      <th>GO<\/th>\n      <th>pvalue_combined<\/th>\n      <th>fdr_combined<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[1,2,3,4,6,7]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<p><br><br></p>
+<div id="htmlwidget-d72b6eff4afa454a8832" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-d72b6eff4afa454a8832">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\" options=\"5\">T1D-GCST90014023- Enriched Go terms, cs filtered<\/caption>","data":[[],[],[],[],[],[],[],[]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>pvalue_origin<\/th>\n      <th>fdr_origin<\/th>\n      <th>pvalue_calibrated<\/th>\n      <th>fdr_calibrated<\/th>\n      <th>GO<\/th>\n      <th>pvalue_combined<\/th>\n      <th>fdr_combined<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[1,2,3,4,6,7]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<p><br></p>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
@@ -690,19 +1084,20 @@ other attached packages:
 [1] ggplot2_3.5.1
 
 loaded via a namespace (and not attached):
- [1] Rcpp_1.0.12      highr_0.9        pillar_1.9.0     compiler_4.2.0  
- [5] bslib_0.3.1      later_1.3.0      jquerylib_0.1.4  git2r_0.30.1    
- [9] workflowr_1.7.0  tools_4.2.0      digest_0.6.29    jsonlite_1.8.0  
-[13] evaluate_0.15    lifecycle_1.0.4  tibble_3.2.1     gtable_0.3.0    
-[17] pkgconfig_2.0.3  rlang_1.1.2      cli_3.6.1        rstudioapi_0.13 
-[21] yaml_2.3.5       xfun_0.41        fastmap_1.1.0    withr_2.5.0     
-[25] dplyr_1.1.4      stringr_1.5.1    knitr_1.39       generics_0.1.2  
-[29] fs_1.5.2         vctrs_0.6.5      sass_0.4.1       tidyselect_1.2.0
-[33] rprojroot_2.0.3  grid_4.2.0       glue_1.6.2       R6_2.5.1        
-[37] fansi_1.0.3      rmarkdown_2.25   farver_2.1.0     magrittr_2.0.3  
-[41] scales_1.3.0     promises_1.2.0.1 htmltools_0.5.2  colorspace_2.0-3
-[45] httpuv_1.6.5     labeling_0.4.2   utf8_1.2.2       stringi_1.7.6   
-[49] munsell_0.5.0   </code></pre>
+ [1] Rcpp_1.0.12       highr_0.9         pillar_1.9.0      compiler_4.2.0   
+ [5] bslib_0.3.1       later_1.3.0       jquerylib_0.1.4   git2r_0.30.1     
+ [9] workflowr_1.7.0   tools_4.2.0       digest_0.6.29     jsonlite_1.8.0   
+[13] evaluate_0.15     lifecycle_1.0.4   tibble_3.2.1      gtable_0.3.0     
+[17] pkgconfig_2.0.3   rlang_1.1.2       cli_3.6.1         rstudioapi_0.13  
+[21] crosstalk_1.2.0   yaml_2.3.5        xfun_0.41         fastmap_1.1.0    
+[25] withr_2.5.0       dplyr_1.1.4       stringr_1.5.1     knitr_1.39       
+[29] htmlwidgets_1.5.4 generics_0.1.2    fs_1.5.2          vctrs_0.6.5      
+[33] sass_0.4.1        DT_0.22           tidyselect_1.2.0  rprojroot_2.0.3  
+[37] grid_4.2.0        glue_1.6.2        R6_2.5.1          fansi_1.0.3      
+[41] rmarkdown_2.25    farver_2.1.0      magrittr_2.0.3    whisker_0.4      
+[45] scales_1.3.0      promises_1.2.0.1  htmltools_0.5.2   colorspace_2.0-3 
+[49] httpuv_1.6.5      labeling_0.4.2    utf8_1.2.2        stringi_1.7.6    
+[53] munsell_0.5.0    </code></pre>
 </div>
 </div>
 
