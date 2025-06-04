@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="XSun" />
+
+<meta name="date" content="2025-06-03" />
+
+<title>Summary for multi-group analysis, e + s + st QTLs</title>
+
+<script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">multigroup_ctwas_analysis</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/sq-96/multigroup_ctwas_analysis">
+    <span class="fab fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Summary for multi-group analysis, e + s +
+st QTLs</h1>
+<h4 class="author">XSun</h4>
+<h4 class="date">2025-06-03</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span
+class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2025-06-04
+</p>
+<p>
+<strong>Checks:</strong> <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> 1
+</p>
+<p>
+<strong>Knit directory:</strong> <code>multigroup_ctwas_analysis/</code>
+<span class="glyphicon glyphicon-question-sign" aria-hidden="true"
+title="This is the local directory in which the code in this file was executed.">
+</span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version
+1.7.0). The <em>Checks</em> tab describes the reproducibility checks
+that were applied when the results were created. The <em>Past
+versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges">
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted
+changes </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguncommittedchanges"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The R Markdown file has unstaged changes. To know which version of
+the R Markdown file created these results, you’ll want to first commit
+it to the Git repo. If you’re still working on the analysis, you can
+ignore this warning. When you’re finished, you can run
+<code>wflow_publish</code> to commit the R Markdown file and build the
+HTML.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the
+global environment can affect the analysis in your R Markdown file in
+unknown ways. For reproduciblity it’s best to always run the code in an
+empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20231112code">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Seed:</strong>
+<code>set.seed(20231112)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20231112code"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20231112)</code> was run prior to running
+the code in the R Markdown file. Setting a seed ensures that any results
+that rely on randomness, e.g. subsampling or permutations, are
+reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Session information:</strong>
+recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package
+versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be
+confident that you successfully produced the results during this
+run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr
+project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree00be92fbc4cf62b58cfb5a5be5bcc55f48920bbetargetblank00be92fa">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/00be92fbc4cf62b58cfb5a5be5bcc55f48920bbe" target="_blank">00be92f</a>
+</a>
+</p>
+</div>
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree00be92fbc4cf62b58cfb5a5be5bcc55f48920bbetargetblank00be92fa"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development
+and connecting the code version to the results is critical for
+reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/00be92fbc4cf62b58cfb5a5be5bcc55f48920bbe" target="_blank">00be92f</a>.
+See the <em>Past versions</em> tab to see a history of the changes made
+to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for
+the analysis have been committed to Git prior to generating the results
+(you can use <code>wflow_publish</code> or
+<code>wflow_git_commit</code>). workflowr only checks the R Markdown
+file, but you know if there are other scripts or data files that it
+depends on. Below is the status of the Git repository when the results
+were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .Rhistory
+    Ignored:    cv/
+    Ignored:    figures/lz/ADHD-ieu-a-1183/
+    Ignored:    figures/lz/ASD-ieu-a-1185/
+    Ignored:    figures/lz/IBD-ebi-a-GCST004131/single/
+    Ignored:    figures/lz/MDD-ieu-b-102/single/
+    Ignored:    figures/lz/PD-ieu-b-7/single/
+    Ignored:    figures/lz/RA-panukb/single/
+
+Unstaged changes:
+    Modified:   analysis/realdata_final_multigroup_summary_3qtls.Rmd
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not
+included in this status report because it is ok for generated content to
+have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+
+<p>
+These are the previous versions of the repository in which changes were
+made to the R Markdown
+(<code>analysis/realdata_final_multigroup_summary_3qtls.Rmd</code>) and
+HTML (<code>docs/realdata_final_multigroup_summary_3qtls.html</code>)
+files. If you’ve configured a remote Git repository (see
+<code>?wflow_git_remote</code>), click on the hyperlinks in the table
+below to view the files as they were in that past version.
+</p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/00be92fbc4cf62b58cfb5a5be5bcc55f48920bbe/analysis/realdata_final_multigroup_summary_3qtls.Rmd" target="_blank">00be92f</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-06-03
+</td>
+<td>
+update
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>This is a summary for tissues selected here: <a
+href="https://sq-96.github.io/multigroup_ctwas_analysis/realdata_final_tissueselection_mingene0_splicing_exclude_brainprocessed.html"
+class="uri">https://sq-96.github.io/multigroup_ctwas_analysis/realdata_final_tissueselection_mingene0_splicing_exclude_brainprocessed.html</a></p>
+<pre class="r"><code>library(ctwas)
+
+source(&quot;/project/xinhe/xsun/multi_group_ctwas/functions/0.functions.R&quot;)
+source(&quot;/project/xinhe/xsun/multi_group_ctwas/data/samplesize.R&quot;)
+
+trait_nopsy &lt;- c(&quot;LDL-ukb-d-30780_irnt&quot;,&quot;IBD-ebi-a-GCST004131&quot;,&quot;aFib-ebi-a-GCST006414&quot;,&quot;SBP-ukb-a-360&quot;,
+                 &quot;T1D-GCST90014023&quot;,&quot;T2D-panukb&quot;,&quot;ATH_gtexukb&quot;,&quot;BMI-panukb&quot;,&quot;HB-panukb&quot;,
+                 &quot;Height-panukb&quot;,&quot;HTN-panukb&quot;,&quot;PLT-panukb&quot;,&quot;RA-panukb&quot;,&quot;RBC-panukb&quot;#,
+                 # &quot;WBC-ieu-b-30&quot;
+                 )
+trait_psy &lt;- c(&quot;SCZ-ieu-b-5102&quot;,&quot;ASD-ieu-a-1185&quot;,&quot;BIP-ieu-b-5110&quot;,&quot;MDD-ieu-b-102&quot;,&quot;PD-ieu-b-7&quot;,
+               &quot;ADHD-ieu-a-1183&quot;,&quot;NS-ukb-a-230&quot;)
+traits &lt;- c(trait_nopsy,trait_psy)
+
+colors &lt;- c(&quot;#ff7f0e&quot;, &quot;#2ca02c&quot;, &quot;#d62728&quot;,  &quot;#9467bd&quot;, &quot;#8c564b&quot;, &quot;#e377c2&quot;, &quot;#7f7f7f&quot;,  &quot;#bcbd22&quot;,  &quot;#17becf&quot;,  &quot;#f7b6d2&quot;,  &quot;#c5b0d5&quot;,  &quot;#9edae5&quot;, &quot;#ffbb78&quot;,  &quot;#98df8a&quot;,  &quot;#ff9896&quot; )
+
+
+folder_results_single &lt;- &quot;/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/expression/&quot;
+folder_results_multi &lt;- &quot;/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/&quot;
+
+
+generate_piecharts_for_trait &lt;- function(title_top = NULL, colors = NULL) {
+
+  if(is.null(colors)) {
+    colors &lt;- c(&quot;#ff7f0e&quot;, &quot;#2ca02c&quot;, &quot;#d62728&quot;,  &quot;#9467bd&quot;, &quot;#8c564b&quot;, &quot;#e377c2&quot;, &quot;#7f7f7f&quot;,  &quot;#bcbd22&quot;,  &quot;#17becf&quot;,  &quot;#f7b6d2&quot;,  &quot;#c5b0d5&quot;,  &quot;#9edae5&quot;, &quot;#ffbb78&quot;,  &quot;#98df8a&quot;,  &quot;#ff9896&quot; )
+  }
+  
+  pie_eqtl_single &lt;- plot_piechart_single(ctwas_parameters_single, colors, by = &quot;type&quot;, title = NULL)
+  
+  pie_eqtl_multi_type &lt;- plot_piechart_topn(ctwas_parameters_multi, colors, by = &quot;type&quot;, title = NULL)
+  pie_eqtl_multi_context &lt;- plot_piechart_topn(ctwas_parameters_multi, colors, by = &quot;context&quot;, title = NULL, n_tissue = 10)
+
+  # Function to fix panel size
+  fix_panel_size &lt;- function(plot, width = 2.1, height = 2) {
+    set_panel_size(plot, width = unit(width, &quot;in&quot;), height = unit(height, &quot;in&quot;))
+  }
+
+  # Apply fixed panel size
+  pie1 &lt;- fix_panel_size(pie_eqtl_single)
+  pie2 &lt;- fix_panel_size(pie_eqtl_multi_type)
+  pie3 &lt;- fix_panel_size(pie_eqtl_multi_context)
+
+  # Compute natural widths
+  widths &lt;- unit.c(grobWidth(pie1), grobWidth(pie2), grobWidth(pie3))
+
+  # Arrange
+  p &lt;- grid.arrange(pie1, pie2, pie3,
+                    ncol = 3,
+                    widths = widths,
+                    top = title_top)
+
+  return(p)
+}
+
+
+plot_overlap_barplot &lt;- function(combined_pip_by_group_multi,
+                                 combined_pip_by_group_single,
+                                 PIP_cutoff = 0.8,
+                                 tissue,
+                                 trait,
+                                 return_unique_genes = FALSE) {
+  # Filter genes by PIP cutoff
+  combined_pip_by_group_sig_multi &lt;- combined_pip_by_group_multi[combined_pip_by_group_multi$combined_pip &gt; PIP_cutoff, ]
+  combined_pip_by_group_sig_single &lt;- combined_pip_by_group_single[combined_pip_by_group_single$combined_pip &gt; PIP_cutoff, ]
+  
+  # Extract gene names
+  multi_genes &lt;- combined_pip_by_group_sig_multi$gene_name
+  single_genes &lt;- combined_pip_by_group_sig_single$gene_name
+  
+  # Compute overlap
+  overlap_genes &lt;- intersect(multi_genes, single_genes)
+  single_genes_unique &lt;- setdiff(single_genes, overlap_genes)
+  n_overlap &lt;- length(overlap_genes)
+  n_multi &lt;- length(multi_genes)
+  n_single &lt;- length(single_genes)
+  
+  # Construct data frame for plotting
+  df &lt;- data.frame(
+    group = rep(c(&quot;Multi-group&quot;, paste0(&quot;Single-eQTL - \n&quot;, tissue)), each = 2),
+    part = rep(c(&quot;Overlap&quot;, &quot;Unique&quot;), 2),
+    count = c(n_overlap, n_multi - n_overlap, n_overlap, n_single - n_overlap)
+  )
+  
+  # Ensure proper stacking order
+  df$part &lt;- factor(df$part, levels = c(&quot;Unique&quot;, &quot;Overlap&quot;))
+  
+  # Plot
+  p &lt;- ggplot(df, aes(x = group, y = count, fill = part)) +
+    geom_bar(stat = &quot;identity&quot;, width = 0.6) +
+    geom_text(aes(label = count), position = position_stack(vjust = 0.5), color = &quot;white&quot;, size = 5) +
+    scale_fill_manual(values = c(&quot;Overlap&quot; = &quot;#1f77b4&quot;, &quot;Unique&quot; = &quot;#ff7f0e&quot;)) +
+    labs(
+      x = &quot;&quot;,
+      y = paste0(&quot;Number of Genes at PIP &gt; &quot;, PIP_cutoff),
+      title = trait,
+      fill = &quot;&quot;
+    ) +
+    theme_minimal(base_size = 14)
+  
+  if (return_unique_genes) {
+    return(list(plot = p, single_genes_unique = single_genes_unique))
+  } else {
+    return(p)
+  }
+}
+
+
+get_top_tissue &lt;- function(group_pve) {
+  # Remove QTL type to extract tissue names
+  group_pve &lt;- group_pve[-which(names(group_pve) ==&quot;SNP&quot;)]
+  
+  tissue_names &lt;- sub(&quot;\\|.*&quot;, &quot;&quot;, names(group_pve))
+  
+  # Sum PVE values across tissues
+  tissue_pve &lt;- tapply(group_pve, tissue_names, sum)
+  
+  # Return the tissue name with the highest total PVE
+  top_tissue &lt;- names(which.max(tissue_pve))
+  return(top_tissue)
+}</code></pre>
+<pre class="r"><code>for (trait in traits){
+  
+  cat(&quot;\n&quot;)
+  cat(trait)
+  cat(&quot;\n&quot;)
+  
+  ## parameters
+  gwas_n &lt;- samplesize[trait]
+  
+  param_multi &lt;- readRDS(paste0(folder_results_multi,trait,&quot;/&quot;,trait,&quot;.3qtls.thin1.shared_all.param.RDS&quot;))
+  ctwas_parameters_multi &lt;- summarize_param(param = param_multi,gwas_n = gwas_n)
+  
+  top_tissue &lt;- get_top_tissue(ctwas_parameters_multi$group_pve)
+  
+  param_single &lt;- readRDS(paste0(folder_results_single, trait, &quot;/&quot;, trait, &quot;_&quot;, top_tissue, &quot;.thin1.shared_all.param.RDS&quot;))
+  ctwas_parameters_single &lt;- summarize_param(param_single, gwas_n)
+  
+  title &lt;- paste0(trait, &quot;, top tissue: &quot;, top_tissue)
+  grid.newpage()
+  print(generate_piecharts_for_trait(title_top = title))
+  
+  ## Overlap 
+  
+  PIP_cutoff &lt;- 0.8
+  
+  combined_pip_by_group_single &lt;- readRDS(paste0(folder_results_single, trait, &quot;/&quot;, trait, &quot;_&quot;, top_tissue, &quot;.combined_pip_bygroup_final.RDS&quot;))
+  combined_pip_by_group_multi &lt;- readRDS(paste0(folder_results_multi,trait,&quot;/&quot;,trait,&quot;.3qtls.combined_pip_bygroup_final.RDS&quot;))
+  
+  grid.newpage()
+  print(plot_overlap_barplot(combined_pip_by_group_multi = combined_pip_by_group_multi, combined_pip_by_group_single = combined_pip_by_group_single,PIP_cutoff = PIP_cutoff,tissue = top_tissue,trait = trait,return_unique_genes = T))
+  
+  ## heatmaps
+  
+  combined_pip_by_group_multi_sig &lt;- combined_pip_by_group_multi[combined_pip_by_group_multi$combined_pip &gt; PIP_cutoff,]
+  combined_pip_by_group_single_sig &lt;- combined_pip_by_group_single[combined_pip_by_group_single$combined_pip &gt; PIP_cutoff,]
+  
+  combined_pip_by_group_multi_unique &lt;- combined_pip_by_group_multi_sig[!combined_pip_by_group_multi_sig$gene_name %in% combined_pip_by_group_single_sig$gene_name, ]
+  
+  grid.newpage()
+  if(nrow(combined_pip_by_group_multi_unique) &gt; 0) {
+    print(plot_heatmap(heatmap_data = combined_pip_by_group_multi_unique, main = paste0(&quot;New genes identified by multigroup analysis, PIP&gt;&quot;,PIP_cutoff),showPIP = T))
+  }
+  
+  print(paste0(&quot;Unique genes from multigroup: &quot;, paste0(combined_pip_by_group_multi_unique$gene_name, collapse = &quot;, &quot;)))
+  
+
+}</code></pre>
+<pre><code>
+LDL-ukb-d-30780_irnt</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-1.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>TableGrob (2 x 3) &quot;arrange&quot;: 4 grobs
+  z     cells    name                grob
+1 1 (2-2,1-1) arrange      gtable[layout]
+2 2 (2-2,2-2) arrange      gtable[layout]
+3 3 (2-2,3-3) arrange      gtable[layout]
+4 4 (1-1,1-3) arrange text[GRID.text.157]</code></pre>
+<pre><code>$plot</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-2.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>
+$single_genes_unique
+[1] &quot;PARP9&quot;   &quot;DDX56&quot;   &quot;MZF1&quot;    &quot;CLDN23&quot;  &quot;FUT2&quot;    &quot;VIL1&quot;    &quot;KLHDC7A&quot;
+[8] &quot;WBP1L&quot;  </code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-3.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>[1] &quot;Unique genes from multigroup: LDLR, PCSK9, CETP, CCNJ, PKN3, ABCA8, FCGRT, DNAJC13, LRCH4, HMGCR, ASGR1, APOB, ADH1B, FLT3, ZDHHC18, USP39, TIMD4, ZFYVE1, ACP6, NPC1L1, ERGIC3, MITF, PSRC1, SNX17, GABBR1, HMGN1, KIF13B, R3HDM2, MYPOP, SIPA1, USP3, PGS1, FAM117B, ADRB1, PHC1, WASHC4, TPD52, THOP1, ZFP28, DMTN, PDE4C, XPNPEP3&quot;
+
+IBD-ebi-a-GCST004131</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-4.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>TableGrob (2 x 3) &quot;arrange&quot;: 4 grobs
+  z     cells    name                grob
+1 1 (2-2,1-1) arrange      gtable[layout]
+2 2 (2-2,2-2) arrange      gtable[layout]
+3 3 (2-2,3-3) arrange      gtable[layout]
+4 4 (1-1,1-3) arrange text[GRID.text.372]</code></pre>
+<pre><code>$plot</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-5.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>
+$single_genes_unique
+character(0)</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-6.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>[1] &quot;Unique genes from multigroup: HLA-DQB1, BRD7, PTPN2, SBNO2, FOSL2, ERI3, CD244, ADAM15, TNFRSF6B, IP6K2, FCGR2A, GPR35, SMAD3, MAST2, ACBD3, STAT3, CASC3, RORC, RGS14, ATG16L1, TCF3, ERAP2, AUH&quot;
+
+aFib-ebi-a-GCST006414</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-7.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>TableGrob (2 x 3) &quot;arrange&quot;: 4 grobs
+  z     cells    name                grob
+1 1 (2-2,1-1) arrange      gtable[layout]
+2 2 (2-2,2-2) arrange      gtable[layout]
+3 3 (2-2,3-3) arrange      gtable[layout]
+4 4 (1-1,1-3) arrange text[GRID.text.578]</code></pre>
+<pre><code>$plot</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-8.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>
+$single_genes_unique
+[1] &quot;DLEU1&quot;   &quot;DEK&quot;     &quot;MTSS1&quot;   &quot;C5orf47&quot;</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-9.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>[1] &quot;Unique genes from multigroup: PRRX1, PCM1, PLEC, GMCL1, SCMH1, NACA, RBMS1, NCOR2, KCNH2, DNAJC12, LRRC10, PHLDB2, RUFY3, MYO18B, RBM20, SSPN, PALMD, CAMK2D, XPO7, CCNB1IP1, CCT2, MICAL3, FLNC, AHSA2, CFL2, C21orf2, VPS13A, DDX17, SF3B1&quot;
+
+SBP-ukb-a-360</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-10.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>TableGrob (2 x 3) &quot;arrange&quot;: 4 grobs
+  z     cells    name                grob
+1 1 (2-2,1-1) arrange      gtable[layout]
+2 2 (2-2,2-2) arrange      gtable[layout]
+3 3 (2-2,3-3) arrange      gtable[layout]
+4 4 (1-1,1-3) arrange text[GRID.text.779]</code></pre>
+<pre><code>$plot</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-11.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>
+$single_genes_unique
+[1] &quot;ZNF467&quot; &quot;HFE&quot;    &quot;SHISA8&quot; &quot;SHBG&quot;   &quot;PLK2&quot;  </code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-12.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>[1] &quot;Unique genes from multigroup: BAG6, PKN2, PKP4, ENPEP, FES, RERE, NUDT5, RAB34, SLC9A3R2, TMBIM1, HOXA11, DMWD, UVSSA, TMEM175, MTMR9, ADH1B, SP140L, PPP3R1, NAA60, CCDC163, FHOD3, SGSM3, NPR1, PAQR5, CLCN6, THAP3, CAMK1D, TBX2, FBXO38, REXO1&quot;
+
+T1D-GCST90014023</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-13.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>TableGrob (2 x 3) &quot;arrange&quot;: 4 grobs
+  z     cells    name                grob
+1 1 (2-2,1-1) arrange      gtable[layout]
+2 2 (2-2,2-2) arrange      gtable[layout]
+3 3 (2-2,3-3) arrange      gtable[layout]
+4 4 (1-1,1-3) arrange text[GRID.text.983]</code></pre>
+<pre><code>$plot</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-14.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>
+$single_genes_unique
+[1] &quot;ELMO3&quot;</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-15.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>[1] &quot;Unique genes from multigroup: C1QTNF6, CAMK4, PLEKHM1, EED, TAPBP, CCDC88B, PGM1, ZMYND8, SLC11A1, PRCC, BATF3, RASGRP1, VSIR&quot;
+
+T2D-panukb</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-16.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>TableGrob (2 x 3) &quot;arrange&quot;: 4 grobs
+  z     cells    name                 grob
+1 1 (2-2,1-1) arrange       gtable[layout]
+2 2 (2-2,2-2) arrange       gtable[layout]
+3 3 (2-2,3-3) arrange       gtable[layout]
+4 4 (1-1,1-3) arrange text[GRID.text.1192]</code></pre>
+<pre><code>$plot</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-17.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>
+$single_genes_unique
+[1] &quot;CDKN1C&quot; &quot;JAZF1&quot; </code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-18.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>[1] &quot;Unique genes from multigroup: RREB1, PRKRIP1, ENHO, HLA-DRB5, AP3S2, CEP68, EMC1, CAMK1D&quot;
+
+ATH_gtexukb</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-19.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>TableGrob (2 x 3) &quot;arrange&quot;: 4 grobs
+  z     cells    name                 grob
+1 1 (2-2,1-1) arrange       gtable[layout]
+2 2 (2-2,2-2) arrange       gtable[layout]
+3 3 (2-2,3-3) arrange       gtable[layout]
+4 4 (1-1,1-3) arrange text[GRID.text.1402]</code></pre>
+<pre><code>$plot</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-20.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>
+$single_genes_unique
+[1] &quot;ZDHHC24&quot; &quot;CEP95&quot;  </code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-21.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>[1] &quot;Unique genes from multigroup: GSDMB, IL21R, RNF219, NPNT, TRAPPC2L, AHI1, MRVI1, IL4R, SERPINB7, DCAF1, RAD50, SEPT8, ELP2, INPP5B&quot;
+
+BMI-panukb</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-22.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>TableGrob (2 x 3) &quot;arrange&quot;: 4 grobs
+  z     cells    name                 grob
+1 1 (2-2,1-1) arrange       gtable[layout]
+2 2 (2-2,2-2) arrange       gtable[layout]
+3 3 (2-2,3-3) arrange       gtable[layout]
+4 4 (1-1,1-3) arrange text[GRID.text.1608]</code></pre>
+<pre><code>$plot</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-23.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>
+$single_genes_unique
+[1] &quot;PSORS1C1&quot; &quot;MAPK11&quot;   &quot;OSBPL3&quot;   &quot;ENHO&quot;     &quot;C1QTNF4&quot;  &quot;FAM231B&quot;  &quot;DLG4&quot;    </code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-24.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>[1] &quot;Unique genes from multigroup: MFSD13A, NEGR1, AGAP3, PDIA2, PTOV1, NASP, ADGRB2, GALNT4, ENTPD6, CTBP2, NPY5R, REXO1, RNF187, EEF1A2, PRPF6, FLT3, SNRNP70, CDHR3, ACP7, EI24, TP53, ADH1B, GPR61, PRMT2, MEST, KHSRP, ECE2, KCNC4, ANAPC4, DENND1A, RSPO3, PIK3C3, SLIT1, RALY, EPHA4, PATJ, ATP13A2, R3HDM1, PPM1A&quot;
+
+HB-panukb</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-25.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>TableGrob (2 x 3) &quot;arrange&quot;: 4 grobs
+  z     cells    name                 grob
+1 1 (2-2,1-1) arrange       gtable[layout]
+2 2 (2-2,2-2) arrange       gtable[layout]
+3 3 (2-2,3-3) arrange       gtable[layout]
+4 4 (1-1,1-3) arrange text[GRID.text.1817]</code></pre>
+<pre><code>$plot</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-26.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>
+$single_genes_unique
+[1] &quot;MKRN2OS&quot; &quot;ENTPD6&quot;  &quot;KIFC2&quot;   &quot;PPP5C&quot;   &quot;CCND2&quot;   &quot;SH3GL1&quot;  &quot;PLA2G6&quot; </code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-27.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>[1] &quot;Unique genes from multigroup: FCGRT, FCGR2A, CD36, ACVRL1, EMC10, FAM35A, MKRN2, CAT, PARP6, MAST2, ABHD12, ZMIZ2, REEP3, NOSIP, RGS14, ZNF589, LTBP4, SRSF4, CYP21A2, GMPR, RAB34, FEM1B, TBK1, TMEM176A, RAB8A, DAZAP1, TNPO1, FAM193B, SUMF1, ANKRD9, SLC9A3R2, ASPSCR1, PSMB9, TTC13, HGFAC, TNK2, TOR1B, HLF, GSTM4, TNFAIP8L3, CSF1, TMPRSS6, NT5DC1, EXOC3L2, PPP1R36, LIPA, ZNF384, PAFAH1B3, FBF1, POLI, C11orf84, SLC16A9, APOL3, HOXA7, BET1L, HDDC2, GPRC5A, NOTCH1, HBS1L, ZBTB38, UGT8, OPLAH, CCDC92, PC, BAHCC1, RIPK3, CDK7, ACVR1B, EFHC1, VEGFB, NECAP2, PFKM, NNT, SMG9&quot;
+
+Height-panukb</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-28.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>TableGrob (2 x 3) &quot;arrange&quot;: 4 grobs
+  z     cells    name                 grob
+1 1 (2-2,1-1) arrange       gtable[layout]
+2 2 (2-2,2-2) arrange       gtable[layout]
+3 3 (2-2,3-3) arrange       gtable[layout]
+4 4 (1-1,1-3) arrange text[GRID.text.2019]</code></pre>
+<pre><code>$plot</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-29.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>
+$single_genes_unique
+[1] &quot;RGP1&quot;       &quot;ACHE&quot;       &quot;SRSF12&quot;     &quot;DVL3&quot;       &quot;SPHK2&quot;     
+[6] &quot;PSMB9&quot;      &quot;TOPORS-AS1&quot; &quot;UTP11&quot;      &quot;MYLK4&quot;     </code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-30.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>[1] &quot;Unique genes from multigroup: CD79B, PTH1R, HOMEZ, GNA12, TRIM41, DCAKD, HTR1F, FBLN5, RINT1, CDO1, RAB34, STAT6, CEP192, ACP1, BCS1L, SUPT3H, GALNT5, BRICD5, DBNL, TMEM8B, FHOD3, SCMH1, P2RX4, CBX2, PLAG1, UVSSA, GGPS1, TLE1, LRRC29, TRIM6, CNIH4, SSBP4, PIGC, LMF1, C2orf40, NOS3, IL11RA, GLT8D2, ASPH, CNDP2, HECTD1, SMAD3, KIAA1614, NUP37, MLF2, GDPD3, SPIN1, PPP2R5C, ABCC8, UBE2Q1, SF3A2, ODF2L, USP47, PCSK5, ZCCHC3, ANKS3, DNAJC5G, CRELD1, DKK3, SLC9A1, BAMBI, SLC22A3, CDK11A, ZNF565, ELN, HMGN1, ZC3H13, YAP1, ACTR1B, SRCAP, HYOU1, FBXW8, RFT1, EDEM3, SLC25A30, ITPK1, ZZEF1, ZBTB38, SPSB1, MAP2K2, RCN1, FAM114A1, AKR1C2, FAN1, MCTP2, ZNF438, DCUN1D5, SMCHD1, MYPN, ABHD15, TNS2, MYO7A, CHD1L, EXOSC9, PITRM1, SEL1L, FGFR3, TTLL6, ZNF680, MSRB3, RALGAPA2, FAM134B, MXD4, CKB, DAAM2, PARP12, TPRG1L, CCND3, ZNF484, RBCK1, TRPS1, ARHGAP24, ARL15, EIF3C, ARSJ, GSDMC, NCR3LG1, ZMIZ2, SLC25A32, SEC23IP, ZBP1, FUBP3, KCNJ12, RDH10, VAMP5, LUC7L2, ATP10D, RPS6KA4, PAPD4, RREB1, SAMD4A, CTU2, VMAC, SLC48A1, CCDC57, RPS9, MORC3, SOCS1, FN3KRP, UST, EMC9, SERPINH1, MPHOSPH6, MMAB, PSMF1, HNRNPC, ATP1B3, GATAD2A, ASPSCR1, SERPINF1, CREB3L2&quot;
+
+HTN-panukb</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-31.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>TableGrob (2 x 3) &quot;arrange&quot;: 4 grobs
+  z     cells    name                 grob
+1 1 (2-2,1-1) arrange       gtable[layout]
+2 2 (2-2,2-2) arrange       gtable[layout]
+3 3 (2-2,3-3) arrange       gtable[layout]
+4 4 (1-1,1-3) arrange text[GRID.text.2227]</code></pre>
+<pre><code>$plot</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-32.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>
+$single_genes_unique
+[1] &quot;TAPBP&quot;</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-33.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>[1] &quot;Unique genes from multigroup: FES, PRRT1, EFS, RIN1, TMEM133, SEPT9, FBXO10, ADH1B, FAM212A, CLCN6, CEP170, TCF21, LRRC10B, PIP4K2B, ATP10A, CEP68, GUCY1A3, COLGALT2, CTSF, SLCO3A1, ITGB5, NFRKB, TYMS, CLN8, NAA38, OAF, NMT1, SHISA4, SFXN4, MRAS&quot;
+
+PLT-panukb</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-34.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>TableGrob (2 x 3) &quot;arrange&quot;: 4 grobs
+  z     cells    name                 grob
+1 1 (2-2,1-1) arrange       gtable[layout]
+2 2 (2-2,2-2) arrange       gtable[layout]
+3 3 (2-2,3-3) arrange       gtable[layout]
+4 4 (1-1,1-3) arrange text[GRID.text.2425]</code></pre>
+<pre><code>$plot</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-35.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>
+$single_genes_unique
+[1] &quot;WBP2&quot;     &quot;TRABD&quot;    &quot;HPR&quot;      &quot;HNRNPUL1&quot; &quot;JADE2&quot;   </code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-36.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>[1] &quot;Unique genes from multigroup: CYB5A, FBXO34, CD151, THEMIS2, CRELD2, ARL17B, ARHGEF12, CCDC97, ANPEP, RTEL1, CBL, DFFB, SIRT5, RAB8A, SATB1, ZMIZ2, FARP2, ACVR1C, SEMA3F, TRDMT1, PLCG2, SEPT10, GSTP1, TFR2, FAM120B, LRCH4, MFN2, KIAA1109, ZNF385A, CAND2, REPS1, RAC2, ARIH2, CCDC38, PCIF1, AAMDC, SLC43A3, PRR5L, TRAM2, ALLC, PPP2R5C, ERN1, MAMDC2, DNTTIP2, MORC2, ARHGAP15, ARHGAP45, DLEU1, MFN1, PROSER2, PHF7, IL27, TNPO1, AHR, MS4A7, KMT5C, ARPC2, ZC3HC1, COL11A2, ZNF318, MAPKAP1, ZDHHC18, YWHAZ, C2CD2, HSD17B13, CDCA7L, POR, CFLAR, SYTL1, PDLIM2, SH3D21, TCTEX1D2&quot;
+
+RA-panukb</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-37.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>TableGrob (2 x 3) &quot;arrange&quot;: 4 grobs
+  z     cells    name                 grob
+1 1 (2-2,1-1) arrange       gtable[layout]
+2 2 (2-2,2-2) arrange       gtable[layout]
+3 3 (2-2,3-3) arrange       gtable[layout]
+4 4 (1-1,1-3) arrange text[GRID.text.2616]</code></pre>
+<pre><code>$plot</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-38.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>
+$single_genes_unique
+character(0)</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-39.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>[1] &quot;Unique genes from multigroup: KIFC1, ASIC3, ITPR3, COL6A3&quot;
+
+RBC-panukb</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-40.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>TableGrob (2 x 3) &quot;arrange&quot;: 4 grobs
+  z     cells    name                 grob
+1 1 (2-2,1-1) arrange       gtable[layout]
+2 2 (2-2,2-2) arrange       gtable[layout]
+3 3 (2-2,3-3) arrange       gtable[layout]
+4 4 (1-1,1-3) arrange text[GRID.text.2822]</code></pre>
+<pre><code>$plot</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-41.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>
+$single_genes_unique
+ [1] &quot;HLA-E&quot;   &quot;LRRC37A&quot; &quot;BST1&quot;    &quot;ESRRB&quot;   &quot;JMJD1C&quot;  &quot;PPP1R26&quot; &quot;H1F0&quot;   
+ [8] &quot;PTPA&quot;    &quot;MAPK3&quot;   &quot;ZNF629&quot; </code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-42.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>[1] &quot;Unique genes from multigroup: HIST1H2AC, CD36, UBE2Q2, FCGRT, PARP6, CNIH4, LRCH4, INTS14, EHBP1L1, NOSIP, ABHD12, TFRC, NFE2L1, OSER1, TP53, RTEL1, SRSF4, RGS14, FES, ACSM5, ZMIZ2, MAP2K2, CAT, ROCK1, TAL1, HOXD11, XPC, ADH1B, FHL3, FEM1B, PPP1R21, EDN1, SPPL2A, RAB34, FADS1, POLR2H, CCDC92, PIK3R3, TLE3, PSMB5, FAM200B, TNFRSF10B, ANKRD36C, ELOVL3, PRR5L, RYBP, TST, KANSL1, PCGF3, PARN, TYMS, VLDLR, DAP3, ADSL, TAF8, MN1, PFKM, GPATCH2L, ZFP36L2, SLC9A3R2, ITSN1, TFR2, BAHCC1, ZBTB7A, TRPS1, EXOC3L2, NUDT2, WDR41, PTEN, NPRL3, SLX4IP, ZNF106, ABCC1, MARCH2, DOK1, TMC4, GLCE, RB1, VRK2, HLF, DAZAP1, ZBTB38, PBRM1, CD22, TTC13, CCND3, EMP2, SRPRB, ACTR2, C6orf52, GOSR1, CRNN, RIPK3, SLC25A32, XAF1, ZNF236, METRNL, CFLAR, COL4A2, UFC1, UGT8&quot;
+
+SCZ-ieu-b-5102</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-43.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>TableGrob (2 x 3) &quot;arrange&quot;: 4 grobs
+  z     cells    name                 grob
+1 1 (2-2,1-1) arrange       gtable[layout]
+2 2 (2-2,2-2) arrange       gtable[layout]
+3 3 (2-2,3-3) arrange       gtable[layout]
+4 4 (1-1,1-3) arrange text[GRID.text.3016]</code></pre>
+<pre><code>$plot</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-44.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>
+$single_genes_unique
+[1] &quot;HLA-DMB&quot;  &quot;KLHL20&quot;   &quot;DRD2&quot;     &quot;LY6H&quot;     &quot;TRMT2A&quot;   &quot;MLF2&quot;     &quot;C11orf80&quot;
+[8] &quot;PUF60&quot;   </code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-45.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>[1] &quot;Unique genes from multigroup: SOHLH1, MRPS33, R3HDM2, LPCAT4, ACE, TRPV4, C4B&quot;
+
+ASD-ieu-a-1185</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-46.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>TableGrob (2 x 3) &quot;arrange&quot;: 4 grobs
+  z     cells    name                 grob
+1 1 (2-2,1-1) arrange       gtable[layout]
+2 2 (2-2,2-2) arrange       gtable[layout]
+3 3 (2-2,3-3) arrange       gtable[layout]
+4 4 (1-1,1-3) arrange text[GRID.text.3210]</code></pre>
+<pre><code>$plot</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-47.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>
+$single_genes_unique
+character(0)</code></pre>
+<pre><code>[1] &quot;Unique genes from multigroup: &quot;
+
+BIP-ieu-b-5110</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-48.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>TableGrob (2 x 3) &quot;arrange&quot;: 4 grobs
+  z     cells    name                 grob
+1 1 (2-2,1-1) arrange       gtable[layout]
+2 2 (2-2,2-2) arrange       gtable[layout]
+3 3 (2-2,3-3) arrange       gtable[layout]
+4 4 (1-1,1-3) arrange text[GRID.text.3395]</code></pre>
+<pre><code>$plot</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-49.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>
+$single_genes_unique
+[1] &quot;ZDHHC2&quot;</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-50.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>[1] &quot;Unique genes from multigroup: BLOC1S2, EFL1, KIAA1109, GHITM, HTR6, PTDSS1, CNNM4&quot;
+
+MDD-ieu-b-102</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-51.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>TableGrob (2 x 3) &quot;arrange&quot;: 4 grobs
+  z     cells    name                 grob
+1 1 (2-2,1-1) arrange       gtable[layout]
+2 2 (2-2,2-2) arrange       gtable[layout]
+3 3 (2-2,3-3) arrange       gtable[layout]
+4 4 (1-1,1-3) arrange text[GRID.text.3587]</code></pre>
+<pre><code>$plot</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-52.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>
+$single_genes_unique
+character(0)</code></pre>
+<pre><code>[1] &quot;Unique genes from multigroup: &quot;
+
+PD-ieu-b-7</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-53.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>TableGrob (2 x 3) &quot;arrange&quot;: 4 grobs
+  z     cells    name                 grob
+1 1 (2-2,1-1) arrange       gtable[layout]
+2 2 (2-2,2-2) arrange       gtable[layout]
+3 3 (2-2,3-3) arrange       gtable[layout]
+4 4 (1-1,1-3) arrange text[GRID.text.3771]</code></pre>
+<pre><code>$plot</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-54.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>
+$single_genes_unique
+character(0)</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-55.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>[1] &quot;Unique genes from multigroup: CDHR3, ARSA&quot;
+
+ADHD-ieu-a-1183</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-56.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>TableGrob (2 x 3) &quot;arrange&quot;: 4 grobs
+  z     cells    name                 grob
+1 1 (2-2,1-1) arrange       gtable[layout]
+2 2 (2-2,2-2) arrange       gtable[layout]
+3 3 (2-2,3-3) arrange       gtable[layout]
+4 4 (1-1,1-3) arrange text[GRID.text.3959]</code></pre>
+<pre><code>$plot</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-57.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>
+$single_genes_unique
+character(0)</code></pre>
+<pre><code>[1] &quot;Unique genes from multigroup: &quot;
+
+NS-ukb-a-230</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-58.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>TableGrob (2 x 3) &quot;arrange&quot;: 4 grobs
+  z     cells    name                 grob
+1 1 (2-2,1-1) arrange       gtable[layout]
+2 2 (2-2,2-2) arrange       gtable[layout]
+3 3 (2-2,3-3) arrange       gtable[layout]
+4 4 (1-1,1-3) arrange text[GRID.text.4130]</code></pre>
+<pre><code>$plot</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-59.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>
+$single_genes_unique
+[1] &quot;THRA&quot;</code></pre>
+<p><img src="figure/realdata_final_multigroup_summary_3qtls.Rmd/unnamed-chunk-2-60.png" width="960" style="display: block; margin: auto;" /></p>
+<pre><code>[1] &quot;Unique genes from multigroup: C12orf49&quot;</code></pre>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.2.0 (2022-04-22)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: CentOS Linux 7 (Core)
+
+Matrix products: default
+BLAS/LAPACK: /software/openblas-0.3.13-el7-x86_64/lib/libopenblas_haswellp-r0.3.13.so
+
+locale:
+[1] C
+
+attached base packages:
+[1] grid      stats     graphics  grDevices utils     datasets  methods  
+[8] base     
+
+other attached packages:
+[1] egg_0.4.5       gridExtra_2.3   ggrepel_0.9.1   dplyr_1.1.4    
+[5] ggplot2_3.5.1   pheatmap_1.0.12 ctwas_0.5.21   
+
+loaded via a namespace (and not attached):
+  [1] colorspace_2.0-3            rjson_0.2.21               
+  [3] ellipsis_0.3.2              rprojroot_2.0.3            
+  [5] XVector_0.36.0              locuszoomr_0.2.1           
+  [7] GenomicRanges_1.48.0        base64enc_0.1-3            
+  [9] fs_1.5.2                    rstudioapi_0.13            
+ [11] farver_2.1.0                bit64_4.0.5                
+ [13] AnnotationDbi_1.58.0        fansi_1.0.3                
+ [15] xml2_1.3.3                  codetools_0.2-18           
+ [17] logging_0.10-108            cachem_1.0.6               
+ [19] knitr_1.39                  jsonlite_1.8.0             
+ [21] workflowr_1.7.0             Rsamtools_2.12.0           
+ [23] dbplyr_2.1.1                png_0.1-7                  
+ [25] readr_2.1.2                 compiler_4.2.0             
+ [27] httr_1.4.3                  assertthat_0.2.1           
+ [29] Matrix_1.5-3                fastmap_1.1.0              
+ [31] lazyeval_0.2.2              cli_3.6.1                  
+ [33] later_1.3.0                 htmltools_0.5.2            
+ [35] prettyunits_1.1.1           tools_4.2.0                
+ [37] gtable_0.3.0                glue_1.6.2                 
+ [39] GenomeInfoDbData_1.2.8      rappdirs_0.3.3             
+ [41] Rcpp_1.0.12                 Biobase_2.56.0             
+ [43] jquerylib_0.1.4             vctrs_0.6.5                
+ [45] Biostrings_2.64.0           rtracklayer_1.56.0         
+ [47] xfun_0.41                   stringr_1.5.1              
+ [49] irlba_2.3.5                 lifecycle_1.0.4            
+ [51] restfulr_0.0.14             ensembldb_2.20.2           
+ [53] XML_3.99-0.14               zlibbioc_1.42.0            
+ [55] zoo_1.8-10                  scales_1.3.0               
+ [57] gggrid_0.2-0                hms_1.1.1                  
+ [59] promises_1.2.0.1            MatrixGenerics_1.8.0       
+ [61] ProtGenerics_1.28.0         parallel_4.2.0             
+ [63] SummarizedExperiment_1.26.1 RColorBrewer_1.1-3         
+ [65] AnnotationFilter_1.20.0     LDlinkR_1.2.3              
+ [67] yaml_2.3.5                  curl_4.3.2                 
+ [69] memoise_2.0.1               sass_0.4.1                 
+ [71] biomaRt_2.54.1              stringi_1.7.6              
+ [73] RSQLite_2.3.1               highr_0.9                  
+ [75] S4Vectors_0.34.0            BiocIO_1.6.0               
+ [77] GenomicFeatures_1.48.3      BiocGenerics_0.42.0        
+ [79] filelock_1.0.2              BiocParallel_1.30.3        
+ [81] repr_1.1.4                  GenomeInfoDb_1.39.9        
+ [83] rlang_1.1.2                 pkgconfig_2.0.3            
+ [85] matrixStats_0.62.0          bitops_1.0-7               
+ [87] evaluate_0.15               lattice_0.20-45            
+ [89] purrr_1.0.2                 labeling_0.4.2             
+ [91] GenomicAlignments_1.32.0    htmlwidgets_1.5.4          
+ [93] cowplot_1.1.1               bit_4.0.4                  
+ [95] tidyselect_1.2.0            magrittr_2.0.3             
+ [97] AMR_2.1.1                   R6_2.5.1                   
+ [99] IRanges_2.30.0              generics_0.1.2             
+[101] DelayedArray_0.22.0         DBI_1.2.2                  
+[103] withr_2.5.0                 pgenlibr_0.3.3             
+[105] pillar_1.9.0                whisker_0.4                
+[107] mixsqp_0.3-43               KEGGREST_1.36.3            
+[109] RCurl_1.98-1.7              tibble_3.2.1               
+[111] crayon_1.5.1                utf8_1.2.2                 
+[113] BiocFileCache_2.4.0         plotly_4.10.0              
+[115] tzdb_0.4.0                  rmarkdown_2.25             
+[117] progress_1.2.2              data.table_1.14.2          
+[119] blob_1.2.3                  git2r_0.30.1               
+[121] digest_0.6.29               tidyr_1.3.0                
+[123] httpuv_1.6.5                stats4_4.2.0               
+[125] munsell_0.5.0               viridisLite_0.4.0          
+[127] skimr_2.1.4                 bslib_0.3.1                </code></pre>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
