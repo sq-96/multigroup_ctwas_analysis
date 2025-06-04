@@ -1,0 +1,191 @@
+---
+title: "Summary for multi-group analysis, e + s + st QTLs"
+author: "XSun"
+date: "2025-06-03"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+    toc: true
+---
+
+# Introduction
+
+This is a summary for tissues selected here: https://sq-96.github.io/multigroup_ctwas_analysis/realdata_final_tissueselection_mingene0_splicing_exclude_brainprocessed.html
+
+```{r warning=FALSE, message=FALSE}
+
+library(ctwas)
+
+source("/project/xinhe/xsun/multi_group_ctwas/functions/0.functions.R")
+source("/project/xinhe/xsun/multi_group_ctwas/data/samplesize.R")
+
+trait_nopsy <- c("LDL-ukb-d-30780_irnt","IBD-ebi-a-GCST004131","aFib-ebi-a-GCST006414","SBP-ukb-a-360",
+                 "T1D-GCST90014023","T2D-panukb","ATH_gtexukb","BMI-panukb","HB-panukb",
+                 "Height-panukb","HTN-panukb","PLT-panukb","RA-panukb","RBC-panukb",
+                 "WBC-ieu-b-30")
+trait_psy <- c("SCZ-ieu-b-5102","ASD-ieu-a-1185","BIP-ieu-b-5110","MDD-ieu-b-102","PD-ieu-b-7",
+               "ADHD-ieu-a-1183","NS-ukb-a-230")
+traits <- c(trait_nopsy,trait_psy)
+
+colors <- c("#ff7f0e", "#2ca02c", "#d62728",  "#9467bd", "#8c564b", "#e377c2", "#7f7f7f",  "#bcbd22",  "#17becf",  "#f7b6d2",  "#c5b0d5",  "#9edae5", "#ffbb78",  "#98df8a",  "#ff9896" )
+
+
+folder_results_single <- "/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/expression/"
+folder_results_multi <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/"
+
+
+generate_piecharts_for_trait <- function(title_top = NULL, colors = NULL) {
+
+  if(is.null(colors)) {
+    colors <- c("#ff7f0e", "#2ca02c", "#d62728",  "#9467bd", "#8c564b", "#e377c2", "#7f7f7f",  "#bcbd22",  "#17becf",  "#f7b6d2",  "#c5b0d5",  "#9edae5", "#ffbb78",  "#98df8a",  "#ff9896" )
+  }
+  
+  pie_eqtl_single <- plot_piechart_single(ctwas_parameters_single, colors, by = "type", title = NULL)
+  
+  pie_eqtl_multi_type <- plot_piechart_topn(ctwas_parameters_multi, colors, by = "type", title = NULL)
+  pie_eqtl_multi_context <- plot_piechart_topn(ctwas_parameters_multi, colors, by = "context", title = NULL, n_tissue = 10)
+
+  # Function to fix panel size
+  fix_panel_size <- function(plot, width = 2.1, height = 2) {
+    set_panel_size(plot, width = unit(width, "in"), height = unit(height, "in"))
+  }
+
+  # Apply fixed panel size
+  pie1 <- fix_panel_size(pie_eqtl_single)
+  pie2 <- fix_panel_size(pie_eqtl_multi_type)
+  pie3 <- fix_panel_size(pie_eqtl_multi_context)
+
+  # Compute natural widths
+  widths <- unit.c(grobWidth(pie1), grobWidth(pie2), grobWidth(pie3))
+
+  # Arrange
+  p <- grid.arrange(pie1, pie2, pie3,
+                    ncol = 3,
+                    widths = widths,
+                    top = title_top)
+
+  return(p)
+}
+
+
+plot_overlap_barplot <- function(combined_pip_by_group_multi,
+                                 combined_pip_by_group_single,
+                                 PIP_cutoff = 0.8,
+                                 tissue,
+                                 trait,
+                                 return_unique_genes = FALSE) {
+  # Filter genes by PIP cutoff
+  combined_pip_by_group_sig_multi <- combined_pip_by_group_multi[combined_pip_by_group_multi$combined_pip > PIP_cutoff, ]
+  combined_pip_by_group_sig_single <- combined_pip_by_group_single[combined_pip_by_group_single$combined_pip > PIP_cutoff, ]
+  
+  # Extract gene names
+  multi_genes <- combined_pip_by_group_sig_multi$gene_name
+  single_genes <- combined_pip_by_group_sig_single$gene_name
+  
+  # Compute overlap
+  overlap_genes <- intersect(multi_genes, single_genes)
+  single_genes_unique <- setdiff(single_genes, overlap_genes)
+  n_overlap <- length(overlap_genes)
+  n_multi <- length(multi_genes)
+  n_single <- length(single_genes)
+  
+  # Construct data frame for plotting
+  df <- data.frame(
+    group = rep(c("Multi-group", paste0("Single-eQTL - \n", tissue)), each = 2),
+    part = rep(c("Overlap", "Unique"), 2),
+    count = c(n_overlap, n_multi - n_overlap, n_overlap, n_single - n_overlap)
+  )
+  
+  # Ensure proper stacking order
+  df$part <- factor(df$part, levels = c("Unique", "Overlap"))
+  
+  # Plot
+  p <- ggplot(df, aes(x = group, y = count, fill = part)) +
+    geom_bar(stat = "identity", width = 0.6) +
+    geom_text(aes(label = count), position = position_stack(vjust = 0.5), color = "white", size = 5) +
+    scale_fill_manual(values = c("Overlap" = "#1f77b4", "Unique" = "#ff7f0e")) +
+    labs(
+      x = "",
+      y = paste0("Number of Genes at PIP > ", PIP_cutoff),
+      title = trait,
+      fill = ""
+    ) +
+    theme_minimal(base_size = 14)
+  
+  if (return_unique_genes) {
+    return(list(plot = p, single_genes_unique = single_genes_unique))
+  } else {
+    return(p)
+  }
+}
+
+
+get_top_tissue <- function(group_pve) {
+  # Remove QTL type to extract tissue names
+  group_pve <- group_pve[-which(names(group_pve) =="SNP")]
+  
+  tissue_names <- sub("\\|.*", "", names(group_pve))
+  
+  # Sum PVE values across tissues
+  tissue_pve <- tapply(group_pve, tissue_names, sum)
+  
+  # Return the tissue name with the highest total PVE
+  top_tissue <- names(which.max(tissue_pve))
+  return(top_tissue)
+}
+
+```
+
+
+```{r fig.height=8, fig.width=10}
+
+for (trait in traits){
+  
+  cat("\n")
+  cat(trait)
+  cat("\n")
+  
+  ## parameters
+  gwas_n <- samplesize[trait]
+  
+  param_multi <- readRDS(paste0(folder_results_multi,trait,"/",trait,".3qtls.thin1.shared_all.param.RDS"))
+  ctwas_parameters_multi <- summarize_param(param = param_multi,gwas_n = gwas_n)
+  
+  top_tissue <- get_top_tissue(ctwas_parameters_multi$group_pve)
+  
+  param_single <- readRDS(paste0(folder_results_single, trait, "/", trait, "_", top_tissue, ".thin1.shared_all.param.RDS"))
+  ctwas_parameters_single <- summarize_param(param_single, gwas_n)
+  
+  title <- paste0(trait, ", top tissue: ", top_tissue)
+  grid.newpage()
+  print(generate_piecharts_for_trait(title_top = title))
+  
+  ## Overlap 
+  
+  PIP_cutoff <- 0.8
+  
+  combined_pip_by_group_single <- readRDS(paste0(folder_results_single, trait, "/", trait, "_", top_tissue, ".combined_pip_bygroup_final.RDS"))
+  combined_pip_by_group_multi <- readRDS(paste0(folder_results_multi,trait,"/",trait,".3qtls.combined_pip_bygroup_final.RDS"))
+  
+  grid.newpage()
+  print(plot_overlap_barplot(combined_pip_by_group_multi = combined_pip_by_group_multi, combined_pip_by_group_single = combined_pip_by_group_single,PIP_cutoff = PIP_cutoff,tissue = top_tissue,trait = trait,return_unique_genes = T))
+  
+  ## heatmaps
+  
+  combined_pip_by_group_multi_sig <- combined_pip_by_group_multi[combined_pip_by_group_multi$combined_pip > PIP_cutoff,]
+  combined_pip_by_group_single_sig <- combined_pip_by_group_single[combined_pip_by_group_single$combined_pip > PIP_cutoff,]
+  
+  combined_pip_by_group_multi_unique <- combined_pip_by_group_multi_sig[!combined_pip_by_group_multi_sig$gene_name %in% combined_pip_by_group_single_sig$gene_name, ]
+  
+  grid.newpage()
+  if(nrow(combined_pip_by_group_multi_unique) > 0) {
+    print(plot_heatmap(heatmap_data = combined_pip_by_group_multi_unique, main = paste0("New genes identified by multigroup analysis, PIP>",PIP_cutoff),showPIP = T))
+  }
+  
+  print(paste0("Unique genes from multigroup: ", paste0(combined_pip_by_group_multi_unique$gene_name, collapse = ", ")))
+  
+
+}
+
+```
+
