@@ -1,0 +1,521 @@
+---
+title: "Weighted pathway-based gene set enrichment"
+author: "XSun"
+date: "2025-06-04"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+    toc: true
+---
+
+```{r}
+
+library(kableExtra)
+library(tidyverse)
+
+
+```
+
+
+# Introduction
+
+We validate genes with susie pip > 0.8 here: https://sq-96.github.io/multigroup_ctwas_analysis/realdata_final_multigroup_summary.html
+
+The basic idea is:
+
+Some biological pathways are related to the traits. Genes within these pathways are more likely to be associated with these traits. Our approach involves aggregating these genes into a collective group. This allows us to assess whether the genes identified by cTWAS are overrepresented in this group. 
+
+However, the presence of common genes across multiple pathways presents a challenge to this straightforward aggregation approach. To address this, we propose weighting the pathways, assigning a unique score to each gene. By selecting genes that meet a specific score threshold, we can form a more refined group. We can then evaluate the enrichment of cTWAS-identified genes within this selectively grouped set.
+
+## Model
+
+The model is $y=X*w$
+
+y is an n-dimensional vector representing gene-trait associations (n = number of genes), which can be:
+
+ - z-scores computed by MAGMA
+ - a binary vector indicating gene-trait relationships. 
+
+We tried different settings for the binary vector: 
+ 
+ - genes with FDR 0.05 as per MAGMA are marked 1.
+ - Genes ranked in the top 500 by MAGMA p-values or meeting the FDR 0.05 threshold were labeled as 1.
+ - Genes ranked in the top 1000 by MAGMA p-values or meeting the FDR 0.05 threshold were labeled as 1.
+
+X is an n×m matrix (m = number of pathways) indicating gene membership in specific pathways.
+
+We fitted this model using different models.
+
+If y is a z-score vector, it can be fitted using 
+
+ <!-- - linear Susie -->
+ - XGBoost: regression with squared loss
+
+If y is a binarized vector, the model can be fitted using 
+
+ <!-- - logistic Susie -->
+ - XGBoost: logistic regression for binary classification, output probability
+
+## Benchmarks
+
+The model fitting results in pathway weights, from which we predict gene labels $\hat{y}$. We then categorize genes based on these new labels. 
+
+- For z-score model, we compute the p-values from the new labels(z-scores), then compute FDR. Then we tested different cutoffs for gene selection. The cutoffs are: 0.05,0.1,0.2
+
+- For binarized model. Genes with labels > 0.5/0.6/0.7/0.8 are considered benchmarks.
+
+## Testing genes
+
+Genes from ctwas results are divided into different groups based on their SuSiE PIPs: 
+
+- high (>0.8) 
+- moderate (0.8 > PIP > 0.5)
+- low (<0.5)
+
+## Fisher exact test
+
+We assess whether high-PIP genes are more enriched in our benchmarks than other groups using Fisher exact tests. 
+
+The testing matrix is: 
+
+```{r}
+
+fisher_matrix <- matrix(c("n1","n2","n3","n4"),nrow = 2,ncol = 2)
+rownames(fisher_matrix) <- c("#included","#notincluded")
+colnames(fisher_matrix) <- c("pip08","other group")
+
+print(fisher_matrix)
+```
+
+## Pathways
+
+The pathways are from Go Biological Process (gobp), Go Molecular Function (gomf), Go Cellular Component (gocc) and KEGG.
+
+
+# Results
+
+
+
+## GOBP
+
+### Binary, not truncated 
+
+```{r}
+
+
+df <- readRDS("/project/xinhe/xsun/multi_group_ctwas/25.multi_group_validation_classfier_0602/results/fisher_xgboost_binary/results_y_pred_xgboost_gene_score_bin_prob0.5_gobp.RDS")
+
+df %>%
+  mutate(across(starts_with("pval_"), 
+                ~ifelse(. < 0.05, 
+                        cell_spec(sprintf("%.5f", .), color = "red"), 
+                        sprintf("%.5f", .)))) %>%
+  kable(escape = FALSE, format = "html", 
+        caption = "Benchmark gene cutoff (XGboost prediction): 0.5, sigificant ones are highlighted") %>%
+  kable_styling(full_width = FALSE)
+
+df <- readRDS("/project/xinhe/xsun/multi_group_ctwas/25.multi_group_validation_classfier_0602/results/fisher_xgboost_binary/results_y_pred_xgboost_gene_score_bin_prob0.6_gobp.RDS")
+
+df %>%
+  mutate(across(starts_with("pval_"), 
+                ~ifelse(. < 0.05, 
+                        cell_spec(sprintf("%.5f", .), color = "red"), 
+                        sprintf("%.5f", .)))) %>%
+  kable(escape = FALSE, format = "html", 
+        caption = "Benchmark gene cutoff (XGboost prediction): 0.6, sigificant ones are highlighted") %>%
+  kable_styling(full_width = FALSE)
+
+df <- readRDS("/project/xinhe/xsun/multi_group_ctwas/25.multi_group_validation_classfier_0602/results/fisher_xgboost_binary/results_y_pred_xgboost_gene_score_bin_prob0.7_gobp.RDS")
+
+df %>%
+  mutate(across(starts_with("pval_"), 
+                ~ifelse(. < 0.05, 
+                        cell_spec(sprintf("%.5f", .), color = "red"), 
+                        sprintf("%.5f", .)))) %>%
+  kable(escape = FALSE, format = "html", 
+        caption = "Benchmark gene cutoff (XGboost prediction): 0.7, sigificant ones are highlighted") %>%
+  kable_styling(full_width = FALSE)
+
+
+df <- readRDS("/project/xinhe/xsun/multi_group_ctwas/25.multi_group_validation_classfier_0602/results/fisher_xgboost_binary/results_y_pred_xgboost_gene_score_bin_prob0.8_gobp.RDS")
+
+df %>%
+  mutate(across(starts_with("pval_"), 
+                ~ifelse(. < 0.05, 
+                        cell_spec(sprintf("%.5f", .), color = "red"), 
+                        sprintf("%.5f", .)))) %>%
+  kable(escape = FALSE, format = "html", 
+        caption = "Benchmark gene cutoff (XGboost prediction): 0.8, sigificant ones are highlighted") %>%
+  kable_styling(full_width = FALSE)
+
+
+```
+
+
+
+
+### Binary, truncated top 500 genes
+
+```{r}
+
+
+df <- readRDS("/project/xinhe/xsun/multi_group_ctwas/25.multi_group_validation_classfier_0602/results/fisher_xgboost_binary/results_y_pred_xgboost_gene_score_bin_trunc500_prob0.5_gobp.RDS")
+
+df %>%
+  mutate(across(starts_with("pval_"), 
+                ~ifelse(. < 0.05, 
+                        cell_spec(sprintf("%.5f", .), color = "red"), 
+                        sprintf("%.5f", .)))) %>%
+  kable(escape = FALSE, format = "html", 
+        caption = "Benchmark gene cutoff (XGboost prediction): 0.5, sigificant ones are highlighted") %>%
+  kable_styling(full_width = FALSE)
+
+df <- readRDS("/project/xinhe/xsun/multi_group_ctwas/25.multi_group_validation_classfier_0602/results/fisher_xgboost_binary/results_y_pred_xgboost_gene_score_bin_trunc500_prob0.6_gobp.RDS")
+
+df %>%
+  mutate(across(starts_with("pval_"), 
+                ~ifelse(. < 0.05, 
+                        cell_spec(sprintf("%.5f", .), color = "red"), 
+                        sprintf("%.5f", .)))) %>%
+  kable(escape = FALSE, format = "html", 
+        caption = "Benchmark gene cutoff (XGboost prediction): 0.6, sigificant ones are highlighted") %>%
+  kable_styling(full_width = FALSE)
+
+
+df <- readRDS("/project/xinhe/xsun/multi_group_ctwas/25.multi_group_validation_classfier_0602/results/fisher_xgboost_binary/results_y_pred_xgboost_gene_score_bin_trunc500_prob0.7_gobp.RDS")
+
+df %>%
+  mutate(across(starts_with("pval_"), 
+                ~ifelse(. < 0.05, 
+                        cell_spec(sprintf("%.5f", .), color = "red"), 
+                        sprintf("%.5f", .)))) %>%
+  kable(escape = FALSE, format = "html", 
+        caption = "Benchmark gene cutoff (XGboost prediction): 0.7, sigificant ones are highlighted") %>%
+  kable_styling(full_width = FALSE)
+
+
+df <- readRDS("/project/xinhe/xsun/multi_group_ctwas/25.multi_group_validation_classfier_0602/results/fisher_xgboost_binary/results_y_pred_xgboost_gene_score_bin_trunc500_prob0.8_gobp.RDS")
+
+df %>%
+  mutate(across(starts_with("pval_"), 
+                ~ifelse(. < 0.05, 
+                        cell_spec(sprintf("%.5f", .), color = "red"), 
+                        sprintf("%.5f", .)))) %>%
+  kable(escape = FALSE, format = "html", 
+        caption = "Benchmark gene cutoff (XGboost prediction): 0.8, sigificant ones are highlighted") %>%
+  kable_styling(full_width = FALSE)
+
+
+```
+ 
+
+
+### Binary, truncated top 1000 genes
+
+```{r}
+
+
+df <- readRDS("/project/xinhe/xsun/multi_group_ctwas/25.multi_group_validation_classfier_0602/results/fisher_xgboost_binary/results_y_pred_xgboost_gene_score_bin_trunc1000_prob0.5_gobp.RDS")
+
+df %>%
+  mutate(across(starts_with("pval_"), 
+                ~ifelse(. < 0.05, 
+                        cell_spec(sprintf("%.5f", .), color = "red"), 
+                        sprintf("%.5f", .)))) %>%
+  kable(escape = FALSE, format = "html", 
+        caption = "Benchmark gene cutoff (XGboost prediction): 0.5, sigificant ones are highlighted") %>%
+  kable_styling(full_width = FALSE)
+
+
+df <- readRDS("/project/xinhe/xsun/multi_group_ctwas/25.multi_group_validation_classfier_0602/results/fisher_xgboost_binary/results_y_pred_xgboost_gene_score_bin_trunc500_prob0.6_gobp.RDS")
+
+df %>%
+  mutate(across(starts_with("pval_"), 
+                ~ifelse(. < 0.05, 
+                        cell_spec(sprintf("%.5f", .), color = "red"), 
+                        sprintf("%.5f", .)))) %>%
+  kable(escape = FALSE, format = "html", 
+        caption = "Benchmark gene cutoff (XGboost prediction): 0.6, sigificant ones are highlighted") %>%
+  kable_styling(full_width = FALSE)
+
+df <- readRDS("/project/xinhe/xsun/multi_group_ctwas/25.multi_group_validation_classfier_0602/results/fisher_xgboost_binary/results_y_pred_xgboost_gene_score_bin_trunc1000_prob0.7_gobp.RDS")
+
+df %>%
+  mutate(across(starts_with("pval_"), 
+                ~ifelse(. < 0.05, 
+                        cell_spec(sprintf("%.5f", .), color = "red"), 
+                        sprintf("%.5f", .)))) %>%
+  kable(escape = FALSE, format = "html", 
+        caption = "Benchmark gene cutoff (XGboost prediction): 0.7, sigificant ones are highlighted") %>%
+  kable_styling(full_width = FALSE)
+
+
+df <- readRDS("/project/xinhe/xsun/multi_group_ctwas/25.multi_group_validation_classfier_0602/results/fisher_xgboost_binary/results_y_pred_xgboost_gene_score_bin_trunc1000_prob0.8_gobp.RDS")
+
+df %>%
+  mutate(across(starts_with("pval_"), 
+                ~ifelse(. < 0.05, 
+                        cell_spec(sprintf("%.5f", .), color = "red"), 
+                        sprintf("%.5f", .)))) %>%
+  kable(escape = FALSE, format = "html", 
+        caption = "Benchmark gene cutoff (XGboost prediction): 0.8, sigificant ones are highlighted") %>%
+  kable_styling(full_width = FALSE)
+
+
+```
+
+
+
+
+### Zscores
+
+```{r}
+
+
+df <- readRDS("/project/xinhe/xsun/multi_group_ctwas/25.multi_group_validation_classfier_0602/results/fisher_xgboost_zscore/results_zfdr0.05_gobp.RDS")
+
+df %>%
+  mutate(across(starts_with("pval_"), 
+                ~ifelse(. < 0.05, 
+                        cell_spec(sprintf("%.5f", .), color = "red"), 
+                        sprintf("%.5f", .)))) %>%
+  kable(escape = FALSE, format = "html", 
+        caption = "Benchmark gene cutoff FDR 0.05, sigificant ones are highlighted") %>%
+  kable_styling(full_width = FALSE)
+
+
+df <- readRDS("/project/xinhe/xsun/multi_group_ctwas/25.multi_group_validation_classfier_0602/results/fisher_xgboost_zscore/results_zfdr0.1_gobp.RDS")
+
+df %>%
+  mutate(across(starts_with("pval_"), 
+                ~ifelse(. < 0.05, 
+                        cell_spec(sprintf("%.5f", .), color = "red"), 
+                        sprintf("%.5f", .)))) %>%
+  kable(escape = FALSE, format = "html", 
+        caption = "Benchmark gene cutoff FDR 0.1, sigificant ones are highlighted") %>%
+  kable_styling(full_width = FALSE)
+
+df <- readRDS("/project/xinhe/xsun/multi_group_ctwas/25.multi_group_validation_classfier_0602/results/fisher_xgboost_zscore/results_zfdr0.2_gobp.RDS")
+
+df %>%
+  mutate(across(starts_with("pval_"), 
+                ~ifelse(. < 0.05, 
+                        cell_spec(sprintf("%.5f", .), color = "red"), 
+                        sprintf("%.5f", .)))) %>%
+  kable(escape = FALSE, format = "html", 
+        caption = "Benchmark gene cutoff FDR 0.2, sigificant ones are highlighted") %>%
+  kable_styling(full_width = FALSE)
+
+
+```
+
+## GOBP + GOCC + GOMF + KEGG jointly
+
+### Binary, not truncated 
+
+```{r}
+
+
+df <- readRDS("/project/xinhe/xsun/multi_group_ctwas/25.multi_group_validation_classfier_0602/results/fisher_xgboost_binary/results_y_pred_xgboost_gene_score_bin_prob0.5_all.RDS")
+
+df %>%
+  mutate(across(starts_with("pval_"), 
+                ~ifelse(. < 0.05, 
+                        cell_spec(sprintf("%.5f", .), color = "red"), 
+                        sprintf("%.5f", .)))) %>%
+  kable(escape = FALSE, format = "html", 
+        caption = "Benchmark gene cutoff (XGboost prediction): 0.5, sigificant ones are highlighted") %>%
+  kable_styling(full_width = FALSE)
+
+df <- readRDS("/project/xinhe/xsun/multi_group_ctwas/25.multi_group_validation_classfier_0602/results/fisher_xgboost_binary/results_y_pred_xgboost_gene_score_bin_prob0.6_all.RDS")
+
+df %>%
+  mutate(across(starts_with("pval_"), 
+                ~ifelse(. < 0.05, 
+                        cell_spec(sprintf("%.5f", .), color = "red"), 
+                        sprintf("%.5f", .)))) %>%
+  kable(escape = FALSE, format = "html", 
+        caption = "Benchmark gene cutoff (XGboost prediction): 0.6, sigificant ones are highlighted") %>%
+  kable_styling(full_width = FALSE)
+
+df <- readRDS("/project/xinhe/xsun/multi_group_ctwas/25.multi_group_validation_classfier_0602/results/fisher_xgboost_binary/results_y_pred_xgboost_gene_score_bin_prob0.7_all.RDS")
+
+df %>%
+  mutate(across(starts_with("pval_"), 
+                ~ifelse(. < 0.05, 
+                        cell_spec(sprintf("%.5f", .), color = "red"), 
+                        sprintf("%.5f", .)))) %>%
+  kable(escape = FALSE, format = "html", 
+        caption = "Benchmark gene cutoff (XGboost prediction): 0.7, sigificant ones are highlighted") %>%
+  kable_styling(full_width = FALSE)
+
+
+df <- readRDS("/project/xinhe/xsun/multi_group_ctwas/25.multi_group_validation_classfier_0602/results/fisher_xgboost_binary/results_y_pred_xgboost_gene_score_bin_prob0.8_all.RDS")
+
+df %>%
+  mutate(across(starts_with("pval_"), 
+                ~ifelse(. < 0.05, 
+                        cell_spec(sprintf("%.5f", .), color = "red"), 
+                        sprintf("%.5f", .)))) %>%
+  kable(escape = FALSE, format = "html", 
+        caption = "Benchmark gene cutoff (XGboost prediction): 0.8, sigificant ones are highlighted") %>%
+  kable_styling(full_width = FALSE)
+
+
+```
+
+
+
+
+### Binary, truncated top 500 genes
+
+```{r}
+
+
+df <- readRDS("/project/xinhe/xsun/multi_group_ctwas/25.multi_group_validation_classfier_0602/results/fisher_xgboost_binary/results_y_pred_xgboost_gene_score_bin_trunc500_prob0.5_all.RDS")
+
+df %>%
+  mutate(across(starts_with("pval_"), 
+                ~ifelse(. < 0.05, 
+                        cell_spec(sprintf("%.5f", .), color = "red"), 
+                        sprintf("%.5f", .)))) %>%
+  kable(escape = FALSE, format = "html", 
+        caption = "Benchmark gene cutoff (XGboost prediction): 0.5, sigificant ones are highlighted") %>%
+  kable_styling(full_width = FALSE)
+
+df <- readRDS("/project/xinhe/xsun/multi_group_ctwas/25.multi_group_validation_classfier_0602/results/fisher_xgboost_binary/results_y_pred_xgboost_gene_score_bin_trunc500_prob0.6_all.RDS")
+
+df %>%
+  mutate(across(starts_with("pval_"), 
+                ~ifelse(. < 0.05, 
+                        cell_spec(sprintf("%.5f", .), color = "red"), 
+                        sprintf("%.5f", .)))) %>%
+  kable(escape = FALSE, format = "html", 
+        caption = "Benchmark gene cutoff (XGboost prediction): 0.6, sigificant ones are highlighted") %>%
+  kable_styling(full_width = FALSE)
+
+
+df <- readRDS("/project/xinhe/xsun/multi_group_ctwas/25.multi_group_validation_classfier_0602/results/fisher_xgboost_binary/results_y_pred_xgboost_gene_score_bin_trunc500_prob0.7_all.RDS")
+
+df %>%
+  mutate(across(starts_with("pval_"), 
+                ~ifelse(. < 0.05, 
+                        cell_spec(sprintf("%.5f", .), color = "red"), 
+                        sprintf("%.5f", .)))) %>%
+  kable(escape = FALSE, format = "html", 
+        caption = "Benchmark gene cutoff (XGboost prediction): 0.7, sigificant ones are highlighted") %>%
+  kable_styling(full_width = FALSE)
+
+
+df <- readRDS("/project/xinhe/xsun/multi_group_ctwas/25.multi_group_validation_classfier_0602/results/fisher_xgboost_binary/results_y_pred_xgboost_gene_score_bin_trunc500_prob0.8_all.RDS")
+
+df %>%
+  mutate(across(starts_with("pval_"), 
+                ~ifelse(. < 0.05, 
+                        cell_spec(sprintf("%.5f", .), color = "red"), 
+                        sprintf("%.5f", .)))) %>%
+  kable(escape = FALSE, format = "html", 
+        caption = "Benchmark gene cutoff (XGboost prediction): 0.8, sigificant ones are highlighted") %>%
+  kable_styling(full_width = FALSE)
+
+
+```
+ 
+
+
+### Binary, truncated top 1000 genes
+
+```{r}
+
+
+df <- readRDS("/project/xinhe/xsun/multi_group_ctwas/25.multi_group_validation_classfier_0602/results/fisher_xgboost_binary/results_y_pred_xgboost_gene_score_bin_trunc1000_prob0.5_all.RDS")
+
+df %>%
+  mutate(across(starts_with("pval_"), 
+                ~ifelse(. < 0.05, 
+                        cell_spec(sprintf("%.5f", .), color = "red"), 
+                        sprintf("%.5f", .)))) %>%
+  kable(escape = FALSE, format = "html", 
+        caption = "Benchmark gene cutoff (XGboost prediction): 0.5, sigificant ones are highlighted") %>%
+  kable_styling(full_width = FALSE)
+
+
+df <- readRDS("/project/xinhe/xsun/multi_group_ctwas/25.multi_group_validation_classfier_0602/results/fisher_xgboost_binary/results_y_pred_xgboost_gene_score_bin_trunc500_prob0.6_all.RDS")
+
+df %>%
+  mutate(across(starts_with("pval_"), 
+                ~ifelse(. < 0.05, 
+                        cell_spec(sprintf("%.5f", .), color = "red"), 
+                        sprintf("%.5f", .)))) %>%
+  kable(escape = FALSE, format = "html", 
+        caption = "Benchmark gene cutoff (XGboost prediction): 0.6, sigificant ones are highlighted") %>%
+  kable_styling(full_width = FALSE)
+
+df <- readRDS("/project/xinhe/xsun/multi_group_ctwas/25.multi_group_validation_classfier_0602/results/fisher_xgboost_binary/results_y_pred_xgboost_gene_score_bin_trunc1000_prob0.7_all.RDS")
+
+df %>%
+  mutate(across(starts_with("pval_"), 
+                ~ifelse(. < 0.05, 
+                        cell_spec(sprintf("%.5f", .), color = "red"), 
+                        sprintf("%.5f", .)))) %>%
+  kable(escape = FALSE, format = "html", 
+        caption = "Benchmark gene cutoff (XGboost prediction): 0.7, sigificant ones are highlighted") %>%
+  kable_styling(full_width = FALSE)
+
+
+df <- readRDS("/project/xinhe/xsun/multi_group_ctwas/25.multi_group_validation_classfier_0602/results/fisher_xgboost_binary/results_y_pred_xgboost_gene_score_bin_trunc1000_prob0.8_all.RDS")
+
+df %>%
+  mutate(across(starts_with("pval_"), 
+                ~ifelse(. < 0.05, 
+                        cell_spec(sprintf("%.5f", .), color = "red"), 
+                        sprintf("%.5f", .)))) %>%
+  kable(escape = FALSE, format = "html", 
+        caption = "Benchmark gene cutoff (XGboost prediction): 0.8, sigificant ones are highlighted") %>%
+  kable_styling(full_width = FALSE)
+
+
+```
+
+
+
+### Zscores
+
+```{r}
+
+
+df <- readRDS("/project/xinhe/xsun/multi_group_ctwas/25.multi_group_validation_classfier_0602/results/fisher_xgboost_zscore/results_zfdr0.05_all.RDS")
+
+df %>%
+  mutate(across(starts_with("pval_"), 
+                ~ifelse(. < 0.05, 
+                        cell_spec(sprintf("%.5f", .), color = "red"), 
+                        sprintf("%.5f", .)))) %>%
+  kable(escape = FALSE, format = "html", 
+        caption = "Benchmark gene cutoff (FDR  0.05); significant ones are highlighted") %>%
+  kable_styling(full_width = FALSE)
+
+df <- readRDS("/project/xinhe/xsun/multi_group_ctwas/25.multi_group_validation_classfier_0602/results/fisher_xgboost_zscore/results_zfdr0.1_all.RDS")
+
+df %>%
+  mutate(across(starts_with("pval_"), 
+                ~ifelse(. < 0.05, 
+                        cell_spec(sprintf("%.5f", .), color = "red"), 
+                        sprintf("%.5f", .)))) %>%
+  kable(escape = FALSE, format = "html", 
+        caption = "Benchmark gene cutoff FDR 0.1, sigificant ones are highlighted") %>%
+  kable_styling(full_width = FALSE)
+
+df <- readRDS("/project/xinhe/xsun/multi_group_ctwas/25.multi_group_validation_classfier_0602/results/fisher_xgboost_zscore/results_zfdr0.2_all.RDS")
+
+df %>%
+  mutate(across(starts_with("pval_"), 
+                ~ifelse(. < 0.05, 
+                        cell_spec(sprintf("%.5f", .), color = "red"), 
+                        sprintf("%.5f", .)))) %>%
+  kable(escape = FALSE, format = "html", 
+        caption = "Benchmark gene cutoff FDR 0.2, sigificant ones are highlighted") %>%
+  kable_styling(full_width = FALSE)
+
+
+```

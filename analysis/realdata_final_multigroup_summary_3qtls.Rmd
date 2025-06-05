@@ -21,8 +21,8 @@ source("/project/xinhe/xsun/multi_group_ctwas/data/samplesize.R")
 
 trait_nopsy <- c("LDL-ukb-d-30780_irnt","IBD-ebi-a-GCST004131","aFib-ebi-a-GCST006414","SBP-ukb-a-360",
                  "T1D-GCST90014023","T2D-panukb","ATH_gtexukb","BMI-panukb","HB-panukb",
-                 "Height-panukb","HTN-panukb","PLT-panukb","RA-panukb","RBC-panukb"#,
-                 # "WBC-ieu-b-30"
+                 "Height-panukb","HTN-panukb","PLT-panukb","RA-panukb","RBC-panukb",
+                 "WBC-ieu-b-30"
                  )
 trait_psy <- c("SCZ-ieu-b-5102","ASD-ieu-a-1185","BIP-ieu-b-5110","MDD-ieu-b-102","PD-ieu-b-7",
                "ADHD-ieu-a-1183","NS-ukb-a-230")
@@ -34,6 +34,30 @@ colors <- c("#ff7f0e", "#2ca02c", "#d62728",  "#9467bd", "#8c564b", "#e377c2", "
 folder_results_single <- "/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/expression/"
 folder_results_multi <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/"
 
+
+get_ctwas_file <- function(trait, tissue = NULL, folder_results,thin,var_struc, L) {
+  # Build file paths
+  if (is.null(tissue)) {
+    file_ctwas_res_origin <- paste0(folder_results, "/", trait, "/", trait,".thin",thin,".",var_struc,".L",L, ".finemap_regions_res.RDS")
+    file_ctwas_res_regionmerge <- paste0(folder_results, "/", trait, "/", trait,".thin",thin,".",var_struc,".L",L, ".regionmerge_finemap_regions_res.RDS")
+    file_ctwas_res_ldmismatch <- paste0(folder_results, "/", trait, "/", trait,".thin",thin,".",var_struc,".L",L, ".ldmismatch_finemap_regions_res.RDS")
+  } else {
+    file_ctwas_res_origin <- paste0(folder_results, "/", trait, "/", trait, ".", tissue,".thin",thin,".",var_struc,".L",L, ".finemap_regions_res.RDS")
+    file_ctwas_res_regionmerge <- paste0(folder_results, "/", trait, "/", trait, ".", tissue,".thin",thin,".",var_struc,".L",L, ".regionmerge_finemap_regions_res.RDS")
+    file_ctwas_res_ldmismatch <- paste0(folder_results, "/", trait, "/", trait, ".", tissue,".thin",thin,".",var_struc,".L",L, ".ldmismatch_finemap_regions_res.RDS")
+  }
+  
+  # Determine which file exists
+  file_ctwas_result <- if (file.exists(file_ctwas_res_ldmismatch)) {
+    file_ctwas_res_ldmismatch
+  } else if (file.exists(file_ctwas_res_regionmerge)) {
+    file_ctwas_res_regionmerge
+  } else {
+    file_ctwas_res_origin
+  }
+  
+  return(file_ctwas_result)
+}
 
 generate_piecharts_for_trait <- function(title_top = NULL, colors = NULL) {
 
@@ -160,6 +184,22 @@ for (trait in traits){
   title <- paste0(trait, ", top tissue: ", top_tissue)
   grid.newpage()
   print(generate_piecharts_for_trait(title_top = title))
+  
+  file_ctwas_result <- get_ctwas_file(trait, tissue = "3qtls", folder_results = folder_results_multi, var_struc = "shared_all",L = 5,thin = 1)
+  ctwas_res <- readRDS(file_ctwas_result)
+  
+  finemap_res <- ctwas_res$finemap_res
+  finemap_res_gene <- finemap_res[finemap_res$type != "SNP",]
+  
+  p <- ggplot(finemap_res_gene, aes(x = abs(z), y = susie_pip)) +
+    geom_point(alpha = 0.6) +
+    labs(
+      x = "Absolute Z-score",
+      y = "SuSiE PIP",
+      title = trait,
+    ) +
+    theme_minimal()
+  print(p)
   
   ## Overlap 
   
