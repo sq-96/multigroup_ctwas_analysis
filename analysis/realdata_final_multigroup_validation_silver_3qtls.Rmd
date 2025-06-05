@@ -1,0 +1,62 @@
+---
+title: "Overlap with silver standard genes"
+author: "XSun"
+date: "2025-06-04"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+    toc: true
+---
+
+
+```{r}
+
+traits <- c("LDL-ukb-d-30780_irnt","aFib-ebi-a-GCST006414", "T2D-panukb", "BMI-panukb","RBC-panukb","IBD-ebi-a-GCST004131","SCZ-ieu-b-5102")
+
+traits_silver <- c("T2D","LDL","BMI","RBC","IBD","SCZ","aFib")
+names(traits_silver) <- c("T2D-panukb","LDL-ukb-d-30780_irnt","BMI-panukb","RBC-panukb","IBD-ebi-a-GCST004131","SCZ-ieu-b-5102","aFib-ebi-a-GCST006414")
+
+folder_results_multi <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/"
+
+```
+
+```{r}
+
+traits <- c("LDL-ukb-d-30780_irnt","aFib-ebi-a-GCST006414", "T2D-panukb", "BMI-panukb","RBC-panukb","IBD-ebi-a-GCST004131","SCZ-ieu-b-5102")
+
+traits_silver <- c("T2D","LDL","BMI","RBC","IBD","SCZ","aFib")
+names(traits_silver) <- c("T2D-panukb","LDL-ukb-d-30780_irnt","BMI-panukb","RBC-panukb","IBD-ebi-a-GCST004131","SCZ-ieu-b-5102","aFib-ebi-a-GCST006414")
+
+num_known_all <- c()
+num_bystander_all <- c()
+num_gene_pip08_all <- c()
+num_silver_pip08_all <- c()
+num_bystander_pip08_all <- c()
+for (trait in traits){
+  
+   combined_pip_by_group <- readRDS(paste0(folder_results_multi,trait,"/",trait,".3qtls.combined_pip_bygroup_final.RDS"))
+   combined_pip_sig <- combined_pip_by_group[combined_pip_by_group$combined_pip > 0.8,]
+    
+   num_gene_pip08_all <- c(num_gene_pip08_all, nrow(combined_pip_sig))
+   
+   known <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/data/silverstandard/known_annotations_",traits_silver[trait],".RDS"))
+   bystander <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/data/silverstandard/bystanders_",traits_silver[trait],".RDS"))
+  
+   num_known_all <- c(num_known_all, length(known))
+   num_bystander_all <- c(num_bystander_all,length(bystander))
+   
+   num_silver_pip08_all <- c(num_silver_pip08_all,sum(combined_pip_sig$gene_name %in% known))
+   num_bystander_pip08_all <- c(num_bystander_pip08_all,sum(combined_pip_sig$gene_name %in% bystander))
+    
+}
+
+df <- data.frame(trait = traits, num_silver = num_known_all, num_silver_pip08 = num_silver_pip08_all,
+                 num_bystander = num_bystander_all, num_bystander_pip08 = num_bystander_pip08_all)
+
+df$TP_rate <- df$num_silver_pip08 / (df$num_silver_pip08 + df$num_bystander_pip08)
+
+DT::datatable(df,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Comparing with silver standard genes'),options = list(pageLength = 10) )
+```
+
+
+
