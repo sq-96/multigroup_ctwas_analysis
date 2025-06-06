@@ -35,6 +35,7 @@
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
 <link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
 <link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
@@ -233,6 +234,9 @@ $(document).ready(function () {
 </style>
 
 <!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
 
 
 
@@ -357,6 +361,14 @@ div.tocify {
 
 <div id="header">
 
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
 
 
 <h1 class="title toc-ignore">Examining the results from multi-group
@@ -391,7 +403,7 @@ aria-hidden="true"></span> </a>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2025-06-05
+<strong>Last updated:</strong> 2025-06-06
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -429,10 +441,10 @@ changes </a>
 <div id="strongRMarkdownfilestronguncommittedchanges"
 class="panel-collapse collapse">
 <div class="panel-body">
-<p>The R Markdown is untracked by Git. To know which version of the R
-Markdown file created these results, you’ll want to first commit it to
-the Git repo. If you’re still working on the analysis, you can ignore
-this warning. When you’re finished, you can run
+<p>The R Markdown file has unstaged changes. To know which version of
+the R Markdown file created these results, you’ll want to first commit
+it to the Git repo. If you’re still working on the analysis, you can
+ignore this warning. When you’re finished, you can run
 <code>wflow_publish</code> to commit the R Markdown file and build the
 HTML.</p>
 </div>
@@ -525,15 +537,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree612a153884b44e3c0e1ec542c590a4b9537aab12targetblank612a153a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree3da52c96251075594496be272914cf5e22fb224btargetblank3da52c9a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/612a153884b44e3c0e1ec542c590a4b9537aab12" target="_blank">612a153</a>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/3da52c96251075594496be272914cf5e22fb224b" target="_blank">3da52c9</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree612a153884b44e3c0e1ec542c590a4b9537aab12targetblank612a153a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree3da52c96251075594496be272914cf5e22fb224btargetblank3da52c9a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -543,7 +555,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/612a153884b44e3c0e1ec542c590a4b9537aab12" target="_blank">612a153</a>.
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/3da52c96251075594496be272914cf5e22fb224b" target="_blank">3da52c9</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -560,18 +572,9 @@ were generated:
 Ignored files:
     Ignored:    .Rhistory
     Ignored:    cv/
-    Ignored:    figures/lz/ADHD-ieu-a-1183/
-    Ignored:    figures/lz/ASD-ieu-a-1185/
-    Ignored:    figures/lz/IBD-ebi-a-GCST004131/single/
-    Ignored:    figures/lz/MDD-ieu-b-102/single/
-    Ignored:    figures/lz/PD-ieu-b-7/single/
-    Ignored:    figures/lz/RA-panukb/single/
-
-Untracked files:
-    Untracked:  analysis/realdata_final_multigroup_examine_results_3qtls.Rmd
 
 Unstaged changes:
-    Modified:   analysis/realdata_final_multigroup_summary_3qtls.Rmd
+    Modified:   analysis/realdata_final_multigroup_examine_results_3qtls.Rmd
 
 </code></pre>
 <p>
@@ -586,10 +589,93 @@ have uncommitted changes.
 <hr>
 </div>
 <div id="versions" class="tab-pane fade">
+
 <p>
-There are no past versions. Publish this analysis with
-<code>wflow_publish()</code> to start tracking its development.
+These are the previous versions of the repository in which changes were
+made to the R Markdown
+(<code>analysis/realdata_final_multigroup_examine_results_3qtls.Rmd</code>)
+and HTML
+(<code>docs/realdata_final_multigroup_examine_results_3qtls.html</code>)
+files. If you’ve configured a remote Git repository (see
+<code>?wflow_git_remote</code>), click on the hyperlinks in the table
+below to view the files as they were in that past version.
 </p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/cb09c9c1d6ebf3f42da06e511db1d79c7bf3d981/analysis/realdata_final_multigroup_examine_results_3qtls.Rmd" target="_blank">cb09c9c</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-06-06
+</td>
+<td>
+update
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/4fc641c70813f8d7426cc97839e61d5ba9e21c15/analysis/realdata_final_multigroup_examine_results_3qtls.Rmd" target="_blank">4fc641c</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-06-05
+</td>
+<td>
+update
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/sq-96/multigroup_ctwas_analysis/4fc641c70813f8d7426cc97839e61d5ba9e21c15/docs/realdata_final_multigroup_examine_results_3qtls.html" target="_blank">4fc641c</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-06-05
+</td>
+<td>
+update
+</td>
+</tr>
+</tbody>
+</table>
+</div>
 <hr>
 </div>
 </div>
@@ -649,6 +735,9 @@ plot_finemap_data &lt;- function(data, trait, problematic_genes = NULL, alpha = 
       theme_minimal()
   }
 }</code></pre>
+</div>
+<div id="diagnosis-plots" class="section level1">
+<h1>Diagnosis plots</h1>
 <pre class="r"><code>for (trait in traits){
   
   rm(p_origin,p_regionmerge,p_ldmismatch)
@@ -701,82 +790,983 @@ found
 
 Warning in rm(p_origin, p_regionmerge, p_ldmismatch): object &#39;p_ldmismatch&#39; not
 found</code></pre>
-<p><img src="figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-1.png" width="1152" style="display: block; margin: auto;" /><img src="figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-2.png" width="1152" style="display: block; margin: auto;" /><img src="figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-3.png" width="1152" style="display: block; margin: auto;" /></p>
+<p><img src="figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-1.png" width="1152" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-2-1">
+Past versions of unnamed-chunk-2-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-2-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/4fc641c70813f8d7426cc97839e61d5ba9e21c15/docs/figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-1.png" target="_blank">4fc641c</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-06-05
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p><img src="figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-2.png" width="1152" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-2-2">
+Past versions of unnamed-chunk-2-2.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-2-2" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/4fc641c70813f8d7426cc97839e61d5ba9e21c15/docs/figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-2.png" target="_blank">4fc641c</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-06-05
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p><img src="figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-3.png" width="1152" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-2-3">
+Past versions of unnamed-chunk-2-3.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-2-3" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/4fc641c70813f8d7426cc97839e61d5ba9e21c15/docs/figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-3.png" target="_blank">4fc641c</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-06-05
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>Warning in rm(p_origin, p_regionmerge, p_ldmismatch): object &#39;p_regionmerge&#39; not
 found
 
 Warning in rm(p_origin, p_regionmerge, p_ldmismatch): object &#39;p_ldmismatch&#39; not
 found</code></pre>
 <p><img src="figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-4.png" width="1152" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-2-4">
+Past versions of unnamed-chunk-2-4.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-2-4" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/4fc641c70813f8d7426cc97839e61d5ba9e21c15/docs/figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-4.png" target="_blank">4fc641c</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-06-05
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>Warning in rm(p_origin, p_regionmerge, p_ldmismatch): object &#39;p_regionmerge&#39; not
 found</code></pre>
 <p><img src="figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-5.png" width="1152" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-2-5">
+Past versions of unnamed-chunk-2-5.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-2-5" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/4fc641c70813f8d7426cc97839e61d5ba9e21c15/docs/figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-5.png" target="_blank">4fc641c</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-06-05
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>Warning in rm(p_origin, p_regionmerge, p_ldmismatch): object &#39;p_ldmismatch&#39; not
 found</code></pre>
 <p><img src="figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-6.png" width="1152" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-2-6">
+Past versions of unnamed-chunk-2-6.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-2-6" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/4fc641c70813f8d7426cc97839e61d5ba9e21c15/docs/figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-6.png" target="_blank">4fc641c</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-06-05
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>Warning in rm(p_origin, p_regionmerge, p_ldmismatch): object &#39;p_ldmismatch&#39; not
 found</code></pre>
 <p><img src="figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-7.png" width="1152" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-2-7">
+Past versions of unnamed-chunk-2-7.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-2-7" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/4fc641c70813f8d7426cc97839e61d5ba9e21c15/docs/figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-7.png" target="_blank">4fc641c</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-06-05
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>Warning in rm(p_origin, p_regionmerge, p_ldmismatch): object &#39;p_ldmismatch&#39; not
 found</code></pre>
 <p><img src="figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-8.png" width="1152" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-2-8">
+Past versions of unnamed-chunk-2-8.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-2-8" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/4fc641c70813f8d7426cc97839e61d5ba9e21c15/docs/figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-8.png" target="_blank">4fc641c</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-06-05
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>Warning in rm(p_origin, p_regionmerge, p_ldmismatch): object &#39;p_ldmismatch&#39; not
 found</code></pre>
 <p><img src="figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-9.png" width="1152" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-2-9">
+Past versions of unnamed-chunk-2-9.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-2-9" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/4fc641c70813f8d7426cc97839e61d5ba9e21c15/docs/figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-9.png" target="_blank">4fc641c</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-06-05
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>Warning in rm(p_origin, p_regionmerge, p_ldmismatch): object &#39;p_ldmismatch&#39; not
 found</code></pre>
 <p><img src="figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-10.png" width="1152" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-2-10">
+Past versions of unnamed-chunk-2-10.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-2-10" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/4fc641c70813f8d7426cc97839e61d5ba9e21c15/docs/figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-10.png" target="_blank">4fc641c</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-06-05
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>Warning in rm(p_origin, p_regionmerge, p_ldmismatch): object &#39;p_ldmismatch&#39; not
 found</code></pre>
 <p><img src="figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-11.png" width="1152" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-2-11">
+Past versions of unnamed-chunk-2-11.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-2-11" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/4fc641c70813f8d7426cc97839e61d5ba9e21c15/docs/figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-11.png" target="_blank">4fc641c</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-06-05
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>Warning in rm(p_origin, p_regionmerge, p_ldmismatch): object &#39;p_ldmismatch&#39; not
 found</code></pre>
 <p><img src="figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-12.png" width="1152" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-2-12">
+Past versions of unnamed-chunk-2-12.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-2-12" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/4fc641c70813f8d7426cc97839e61d5ba9e21c15/docs/figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-12.png" target="_blank">4fc641c</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-06-05
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>Warning in rm(p_origin, p_regionmerge, p_ldmismatch): object &#39;p_regionmerge&#39; not
 found
 
 Warning in rm(p_origin, p_regionmerge, p_ldmismatch): object &#39;p_ldmismatch&#39; not
 found</code></pre>
 <p><img src="figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-13.png" width="1152" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-2-13">
+Past versions of unnamed-chunk-2-13.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-2-13" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/4fc641c70813f8d7426cc97839e61d5ba9e21c15/docs/figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-13.png" target="_blank">4fc641c</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-06-05
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>Warning in rm(p_origin, p_regionmerge, p_ldmismatch): object &#39;p_ldmismatch&#39; not
 found</code></pre>
-<p><img src="figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-14.png" width="1152" style="display: block; margin: auto;" /><img src="figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-15.png" width="1152" style="display: block; margin: auto;" /></p>
+<p><img src="figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-14.png" width="1152" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-2-14">
+Past versions of unnamed-chunk-2-14.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-2-14" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/4fc641c70813f8d7426cc97839e61d5ba9e21c15/docs/figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-14.png" target="_blank">4fc641c</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-06-05
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p><img src="figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-15.png" width="1152" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-2-15">
+Past versions of unnamed-chunk-2-15.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-2-15" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/4fc641c70813f8d7426cc97839e61d5ba9e21c15/docs/figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-15.png" target="_blank">4fc641c</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-06-05
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>Warning in rm(p_origin, p_regionmerge, p_ldmismatch): object &#39;p_regionmerge&#39; not
 found
 
 Warning in rm(p_origin, p_regionmerge, p_ldmismatch): object &#39;p_ldmismatch&#39; not
 found</code></pre>
 <p><img src="figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-16.png" width="1152" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-2-16">
+Past versions of unnamed-chunk-2-16.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-2-16" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/4fc641c70813f8d7426cc97839e61d5ba9e21c15/docs/figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-16.png" target="_blank">4fc641c</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-06-05
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>Warning in rm(p_origin, p_regionmerge, p_ldmismatch): object &#39;p_regionmerge&#39; not
 found
 
 Warning in rm(p_origin, p_regionmerge, p_ldmismatch): object &#39;p_ldmismatch&#39; not
 found</code></pre>
 <p><img src="figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-17.png" width="1152" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-2-17">
+Past versions of unnamed-chunk-2-17.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-2-17" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/4fc641c70813f8d7426cc97839e61d5ba9e21c15/docs/figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-17.png" target="_blank">4fc641c</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-06-05
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>Warning in rm(p_origin, p_regionmerge, p_ldmismatch): object &#39;p_regionmerge&#39; not
 found
 
 Warning in rm(p_origin, p_regionmerge, p_ldmismatch): object &#39;p_ldmismatch&#39; not
 found</code></pre>
 <p><img src="figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-18.png" width="1152" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-2-18">
+Past versions of unnamed-chunk-2-18.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-2-18" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/4fc641c70813f8d7426cc97839e61d5ba9e21c15/docs/figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-18.png" target="_blank">4fc641c</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-06-05
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>Warning in rm(p_origin, p_regionmerge, p_ldmismatch): object &#39;p_regionmerge&#39; not
 found
 
 Warning in rm(p_origin, p_regionmerge, p_ldmismatch): object &#39;p_ldmismatch&#39; not
 found</code></pre>
 <p><img src="figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-19.png" width="1152" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-2-19">
+Past versions of unnamed-chunk-2-19.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-2-19" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/4fc641c70813f8d7426cc97839e61d5ba9e21c15/docs/figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-19.png" target="_blank">4fc641c</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-06-05
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>Warning in rm(p_origin, p_regionmerge, p_ldmismatch): object &#39;p_regionmerge&#39; not
 found
 
 Warning in rm(p_origin, p_regionmerge, p_ldmismatch): object &#39;p_ldmismatch&#39; not
 found</code></pre>
 <p><img src="figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-20.png" width="1152" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-2-20">
+Past versions of unnamed-chunk-2-20.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-2-20" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/4fc641c70813f8d7426cc97839e61d5ba9e21c15/docs/figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-20.png" target="_blank">4fc641c</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-06-05
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>Warning in rm(p_origin, p_regionmerge, p_ldmismatch): object &#39;p_regionmerge&#39; not
 found
 
 Warning in rm(p_origin, p_regionmerge, p_ldmismatch): object &#39;p_ldmismatch&#39; not
 found</code></pre>
-<p><img src="figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-21.png" width="1152" style="display: block; margin: auto;" /><img src="figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-22.png" width="1152" style="display: block; margin: auto;" /></p>
+<p><img src="figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-21.png" width="1152" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-2-21">
+Past versions of unnamed-chunk-2-21.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-2-21" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/4fc641c70813f8d7426cc97839e61d5ba9e21c15/docs/figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-21.png" target="_blank">4fc641c</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-06-05
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p><img src="figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-22.png" width="1152" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-2-22">
+Past versions of unnamed-chunk-2-22.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-2-22" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/4fc641c70813f8d7426cc97839e61d5ba9e21c15/docs/figure/realdata_final_multigroup_examine_results_3qtls.Rmd/unnamed-chunk-2-22.png" target="_blank">4fc641c</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-06-05
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="examples" class="section level1">
+<h1>Examples</h1>
+<div id="ibd-ebi-a-gcst004131" class="section level2">
+<h2>IBD-ebi-a-GCST004131</h2>
+<figure class="half">
+<img src="https://github.com/sq-96/multigroup_ctwas_analysis/raw/master/figures/lz_examine/IBD-ebi-a-GCST004131/6_31603441_32714887.png" width="150%">
+</figure>
+<figure class="half">
+<img src="https://github.com/sq-96/multigroup_ctwas_analysis/raw/master/figures/lz_examine_ld/IBD-ebi-a-GCST004131/6_31603441_32714887.png" width="150%">
+</figure>
+</div>
+<div id="wbc-ieu-b-30" class="section level2">
+<h2>WBC-ieu-b-30</h2>
+<p>region 1_22760390_23594100</p>
+<figure class="half">
+<img src="https://github.com/sq-96/multigroup_ctwas_analysis/raw/master/figures/lz_examine/WBC-ieu-b-30/1_22760390_23594100.png" width="150%">
+</figure>
+<figure class="half">
+<img src="https://github.com/sq-96/multigroup_ctwas_analysis/raw/master/figures/lz_examine_ld/WBC-ieu-b-30/1_22760390_23594100.png" width="150%">
+</figure>
+<p>region 1_25190354_27075376</p>
+<figure class="half">
+<img src="https://github.com/sq-96/multigroup_ctwas_analysis/raw/master/figures/lz_examine/WBC-ieu-b-30/1_25190354_27075376.png" width="150%">
+</figure>
+<figure class="half">
+<img src="https://github.com/sq-96/multigroup_ctwas_analysis/raw/master/figures/lz_examine_ld/WBC-ieu-b-30/1_25190354_27075376.png" width="150%">
+</figure>
+<p>region 3_140235755_141620255</p>
+<figure class="half">
+<img src="https://github.com/sq-96/multigroup_ctwas_analysis/raw/master/figures/lz_examine/WBC-ieu-b-30/3_140235755_141620255.png" width="150%">
+</figure>
+<figure class="half">
+<img src="https://github.com/sq-96/multigroup_ctwas_analysis/raw/master/figures/lz_examine_ld/WBC-ieu-b-30/3_140235755_141620255.png" width="150%">
+</figure>
+<p>region 12_12580594_15088550</p>
+<figure class="half">
+<img src="https://github.com/sq-96/multigroup_ctwas_analysis/raw/master/figures/lz_examine/WBC-ieu-b-30/12_12580594_15088550.png" width="150%">
+</figure>
+<figure class="half">
+<img src="https://github.com/sq-96/multigroup_ctwas_analysis/raw/master/figures/lz_examine_ld/WBC-ieu-b-30/12_12580594_15088550.png" width="150%">
+</figure>
+</div>
+<div id="hb-panukb" class="section level2">
+<h2>HB-panukb</h2>
+<p>region 1_3666172_4320751</p>
+<figure class="half">
+<img src="https://github.com/sq-96/multigroup_ctwas_analysis/raw/master/figures/lz_examine/HB-panukb/1_3666172_4320751.png" width="150%">
+</figure>
+<figure class="half">
+<img src="https://github.com/sq-96/multigroup_ctwas_analysis/raw/master/figures/lz_examine_ld/HB-panukb/1_3666172_4320751.png" width="150%">
+</figure>
+<p>region 14_63323296_64753580</p>
+<figure class="half">
+<img src="https://github.com/sq-96/multigroup_ctwas_analysis/raw/master/figures/lz_examine/HB-panukb/14_63323296_64753580.png" width="150%">
+</figure>
+<figure class="half">
+<img src="https://github.com/sq-96/multigroup_ctwas_analysis/raw/master/figures/lz_examine_ld/HB-panukb/14_63323296_64753580.png" width="150%">
+</figure>
+</div>
+<div id="height-panukb" class="section level2">
+<h2>Height-panukb</h2>
+<p>region 6_109983044_112023811</p>
+<figure class="half">
+<img src="https://github.com/sq-96/multigroup_ctwas_analysis/raw/master/figures/lz_examine/Height-panukb/6_109983044_112023811.png" width="150%">
+</figure>
+<figure class="half">
+<img src="https://github.com/sq-96/multigroup_ctwas_analysis/raw/master/figures/lz_examine_ld/Height-panukb/6_109983044_112023811.png" width="150%">
+</figure>
+<p>region 22_40149793_42294812</p>
+<figure class="half">
+<img src="https://github.com/sq-96/multigroup_ctwas_analysis/raw/master/figures/lz_examine/Height-panukb/22_40149793_42294812.png" width="150%">
+</figure>
+<figure class="half">
+<img src="https://github.com/sq-96/multigroup_ctwas_analysis/raw/master/figures/lz_examine_ld/Height-panukb/22_40149793_42294812.png" width="150%">
+</figure>
+<p>region 17_29007226_31459473</p>
+<figure class="half">
+<img src="https://github.com/sq-96/multigroup_ctwas_analysis/raw/master/figures/lz_examine/Height-panukb/17_29007226_31459473.png" width="150%">
+</figure>
+<figure class="half">
+<img src="https://github.com/sq-96/multigroup_ctwas_analysis/raw/master/figures/lz_examine_ld/Height-panukb/17_29007226_31459473.png" width="150%">
+</figure>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
@@ -813,9 +1803,10 @@ loaded via a namespace (and not attached):
 [29] fs_1.5.2         vctrs_0.6.5      sass_0.4.1       tidyselect_1.2.0
 [33] rprojroot_2.0.3  grid_4.2.0       glue_1.6.2       R6_2.5.1        
 [37] fansi_1.0.3      rmarkdown_2.25   farver_2.1.0     magrittr_2.0.3  
-[41] scales_1.3.0     promises_1.2.0.1 htmltools_0.5.2  colorspace_2.0-3
-[45] httpuv_1.6.5     labeling_0.4.2   utf8_1.2.2       stringi_1.7.6   
-[49] munsell_0.5.0   </code></pre>
+[41] whisker_0.4      scales_1.3.0     promises_1.2.0.1 htmltools_0.5.2 
+[45] colorspace_2.0-3 httpuv_1.6.5     labeling_0.4.2   utf8_1.2.2      
+[49] stringi_1.7.6    munsell_0.5.0   </code></pre>
+</div>
 </div>
 </div>
 
@@ -868,6 +1859,11 @@ $(document).ready(function () {
 </script>
 
 <!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
 
 <script>
 $(document).ready(function ()  {
