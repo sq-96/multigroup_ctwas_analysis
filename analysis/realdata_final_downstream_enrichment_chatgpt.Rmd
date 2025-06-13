@@ -1,0 +1,86 @@
+---
+title: "Enrichment test using chatgpt"
+author: "XSun"
+date: "2025-06-13"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+    toc: true
+---
+
+# Introduction
+
+We use chatgpt 4o to generate a list of genes for some traits and use Fisher exact test to check if ctwas high pip genes are enriched in this gene list. 
+
+
+
+```{r}
+
+genes_chatgpt <- list(
+  
+  `LDL-ukb-d-30780_irnt` = c("LDLR", "APOB", "PCSK9", "APOE", "SORT1", "HMGCR", "NPC1L1", "CETP", "LIPA", "LPL", "ANGPTL3", "ABCG5", "ABCG8", "SCARB1","MTTP", "INSIG1", "INSIG2", "SREBF2", "APOC3", "LPIN1", "TNKS"),
+  `IBD-ebi-a-GCST004131` = c("NOD2", "IL23R", "ATG16L1", "IRGM", "TYK2", "STAT3", "JAK2",  "CARD9", "HLA-DQA1", "IL10", "IL10RA", "TNFSF15", "PTGER4", 
+  "RELA", "CCR6", "SLC22A5", "ZBTB40", "GPR65", "PRDM1", "RIPK2"),
+  `aFib-ebi-a-GCST006414` = c("PITX2", "ZFHX3", "KCNN3", "SCN5A", "SCN10A", "KCNQ1", "GJA1","CAV1", "PRRX1", "TTN", "NKX2-5", "TBX5", "MYH6", "GNB4", 
+  "CAMK2D", "RPL3L", "SYNE2", "HCN4", "LMNA", "NPPA"),
+  `SBP-ukb-a-360` = c("AGT", "REN", "ACE", "AGTR1", "NOS3", "ADD1", "SLC12A3", "ATP2B1", "CYP17A1", "CYP11B2", "UMOD", "SH2B3", "GUCY1A3", "NPR3", "PLCE1", 
+  "FURIN", "KCNK3", "CACNB2", "LRP1", "NFAT5"),
+  `T1D-GCST90014023` = c("HLA-DRB1", "HLA-DQB1", "INS", "PTPN22", "IL2RA", "IFIH1", "CTLA4","SH2B3", "BACH2", "TYK2", "STAT4", "IL10", "CLEC16A", "UBASH3A",
+  "PRKCQ", "CD226", "RNLS", "IL7R", "CXCR5", "TNFAIP3")
+  
+)
+
+folder_results <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/"
+
+traits <- c("LDL-ukb-d-30780_irnt","IBD-ebi-a-GCST004131","aFib-ebi-a-GCST006414","SBP-ukb-a-360","T1D-GCST90014023")
+
+```
+
+```{r}
+
+for (trait in traits) {
+  
+  print(trait)
+  
+  combined_pip <- readRDS(paste0(folder_results,trait,"/",trait,".3qtls.combined_pip_bygroup_final.RDS"))
+  
+  gene08p <- combined_pip$gene_name[combined_pip$combined_pip > 0.8]
+  gene08m <- combined_pip$gene_name[combined_pip$combined_pip < 0.8]
+  gene0508 <- combined_pip$gene_name[combined_pip$combined_pip < 0.8 & combined_pip$combined_pip > 0.5]
+  
+  genes <- genes_chatgpt[[trait]]
+  
+  num_gene08p_in_set <- sum(gene08p %in% genes)
+  num_gene08m_in_set <- sum(gene08m %in% genes)
+  num_gene0508_in_set <- sum(gene0508 %in% genes)
+  
+  ## pip > 0.8 vs 0.5–0.8
+  fisher_b_matrix_08p0508 <- matrix(
+    c(num_gene08p_in_set, num_gene0508_in_set,
+      length(gene08p) - num_gene08p_in_set,
+      length(gene0508) - num_gene0508_in_set),
+    nrow = 2, byrow = TRUE,
+    dimnames = list(c("#included", "#notincluded"), c("pip<0.8", "pip0.5~0.8"))
+  )
+  fisher_b_result_08p0508 <- fisher.test(fisher_b_matrix_08p0508)
+  print(fisher_b_matrix_08p0508)
+  print(paste0("FET p-value:",round(fisher_b_result_08p0508$p.value,digits = 4)))
+  
+  ## pip > 0.8 vs < 0.8
+  fisher_b_matrix_08p08m <- matrix(
+    c(num_gene08p_in_set, num_gene08m_in_set,
+      length(gene08p) - num_gene08p_in_set,
+      length(gene08m) - num_gene08m_in_set),
+    nrow = 2, byrow = TRUE,
+    dimnames = list(c("#included", "#notincluded"), c("pip > 0.8", "pip < 0.8"))
+  )
+  fisher_b_result_08p08m <- fisher.test(fisher_b_matrix_08p08m)
+  print(fisher_b_matrix_08p08m)
+  print(paste0("FET p-value:",round(fisher_b_result_08p08m$p.value,digits = 4)))
+  
+}
+
+
+```
+
+
