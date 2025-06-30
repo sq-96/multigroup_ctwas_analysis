@@ -1,0 +1,196 @@
+---
+title: "Comparing the new region merge strategy (with mapping table) with the old one (without mapping table)"
+author: "XSun"
+date: "2025-06-27"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+    toc: true
+---
+
+## Introduction
+
+```{r}
+library(ggplot2)
+library(gridExtra)
+
+trait_nopsy <- c("LDL-ukb-d-30780_irnt","IBD-ebi-a-GCST004131","aFib-ebi-a-GCST006414","SBP-ukb-a-360",
+                 "T1D-GCST90014023","T2D-panukb","ATH_gtexukb","BMI-panukb","HB-panukb",
+                 "Height-panukb","HTN-panukb","PLT-panukb","RA-panukb","RBC-panukb",
+                 "WBC-ieu-b-30"
+                 )
+trait_psy <- c("SCZ-ieu-b-5102","ASD-ieu-a-1185","BIP-ieu-b-5110","MDD-ieu-b-102","PD-ieu-b-7",
+               "ADHD-ieu-a-1183","NS-ukb-a-230")
+traits <- c(trait_nopsy,trait_psy)
+
+plot_overlap_barplot_boundarygene <- function(selected_boundary_genes_old,
+                                 selected_boundary_genes_new, trait) {
+ 
+  # Extract gene names
+  old_genes <- selected_boundary_genes_old$id
+  new_genes <- selected_boundary_genes_new$id
+  
+  # Compute overlap
+  overlap_genes <- intersect(old_genes, new_genes)
+  new_genes_unique <- setdiff(new_genes, overlap_genes)
+  n_overlap <- length(overlap_genes)
+  n_old <- length(old_genes)
+  n_new<- length(new_genes)
+  
+  # Construct data frame for plotting
+  df <- data.frame(
+    group = rep(c("without \nmapping table","with \nmapping table"), each = 2),
+    part = rep(c("Overlap", "Unique"), 2),
+    count = c(n_overlap, n_old - n_overlap, n_overlap, n_new- n_overlap)
+  )
+  
+  # Ensure proper stacking order
+  df$part <- factor(df$part, levels = c("Unique", "Overlap"))
+  
+  # Plot
+  p <- ggplot(df, aes(x = group, y = count, fill = part)) +
+    geom_bar(stat = "identity", width = 0.6) +
+    geom_text(aes(label = count), position = position_stack(vjust = 0.5), color = "white", size = 5) +
+    scale_fill_manual(values = c("Overlap" = "#1f77b4", "Unique" = "#ff7f0e")) +
+    labs(
+      x = "",
+      y = "Number of selected boundary genes",
+      title = trait,
+      fill = ""
+    ) +
+    theme_minimal(base_size = 14)+ 
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  
+  return(p)
+}
+
+
+plot_overlap_barplot_region <- function(region_id_new,
+                                 region_id_old, trait) {
+  
+  # Compute overlap
+  overlap_genes <- intersect(region_id_new, region_id_old)
+  new_genes_unique <- setdiff(region_id_new, region_id_old)
+  n_overlap <- length(overlap_genes)
+  n_old <- length(region_id_old)
+  n_new<- length(region_id_new)
+  
+  # Construct data frame for plotting
+  df <- data.frame(
+    group = rep(c("without \nmapping table","with \nmapping table"), each = 2),
+    part = rep(c("Overlap", "Unique"), 2),
+    count = c(n_overlap, n_old - n_overlap, n_overlap, n_new- n_overlap)
+  )
+  
+  # Ensure proper stacking order
+  df$part <- factor(df$part, levels = c("Unique", "Overlap"))
+  
+  # Plot
+  p <- ggplot(df, aes(x = group, y = count, fill = part)) +
+    geom_bar(stat = "identity", width = 0.6) +
+    geom_text(aes(label = count), position = position_stack(vjust = 0.5), color = "white", size = 5) +
+    scale_fill_manual(values = c("Overlap" = "#1f77b4", "Unique" = "#ff7f0e")) +
+    labs(
+      x = "",
+      y = "Number of merged regions",
+      title = trait,
+      fill = ""
+    ) +
+    theme_minimal(base_size = 14)+ 
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  
+  return(p)
+}
+
+
+plot_overlap_barplot_siggene <- function(combined_pip_by_group_multi_old,
+                                 combined_pip_by_group_multi_new, trait) {
+ 
+  # Extract gene names
+  old_genes <- combined_pip_by_group_multi_old$gene_name[combined_pip_by_group_multi_old$combined_pip > 0.8]
+  new_genes <- combined_pip_by_group_multi_new$gene_name[combined_pip_by_group_multi_new$combined_pip > 0.8]
+  
+  # Compute overlap
+  overlap_genes <- intersect(old_genes, new_genes)
+  new_genes_unique <- setdiff(new_genes, overlap_genes)
+  n_overlap <- length(overlap_genes)
+  n_old <- length(old_genes)
+  n_new<- length(new_genes)
+  
+  # Construct data frame for plotting
+  df <- data.frame(
+    group = rep(c("without \nmapping table","with \nmapping table"), each = 2),
+    part = rep(c("Overlap", "Unique"), 2),
+    count = c(n_overlap, n_old - n_overlap, n_overlap, n_new- n_overlap)
+  )
+  
+  # Ensure proper stacking order
+  df$part <- factor(df$part, levels = c("Unique", "Overlap"))
+  
+  # Plot
+  p <- ggplot(df, aes(x = group, y = count, fill = part)) +
+    geom_bar(stat = "identity", width = 0.6) +
+    geom_text(aes(label = count), position = position_stack(vjust = 0.5), color = "white", size = 5) +
+    scale_fill_manual(values = c("Overlap" = "#1f77b4", "Unique" = "#ff7f0e")) +
+    labs(
+      x = "",
+      y = "Number of gene with PIP > 0.8",
+      title = trait,
+      fill = ""
+    ) +
+    theme_minimal(base_size = 14)+ 
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  
+  return(p)
+}
+
+```
+
+```{r fig.height=4, fig.width=13}
+
+folder_results_old <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/"
+
+for (trait in traits) {
+  # trait <- "LDL-ukb-d-30780_irnt"
+
+  file_old_gene <- paste0(folder_results_old,"/",trait,"/",trait,".3qtls.thin1.shared_all.L5.regionmerge_selected_boundary_genes.RDS")
+  if(file.exists(file_old_gene)){
+    selected_boundary_genes_old <- readRDS(file_old_gene)
+    region_id_old <- unique(selected_boundary_genes_old$region_id)
+  }else{
+    selected_boundary_genes_old <- NULL
+    region_id_old <- NULL
+  }
+  combined_pip_by_group_multi_old <- readRDS(paste0(folder_results_old,trait,"/",trait,".3qtls.combined_pip_bytype_final.RDS"))
+  
+  
+  file_new_genes <- paste0(folder_results_old,"/",trait,"/",trait,".3qtls.thin1.shared_all.L5.regionmerge_with_mappingtable_selected_boundary_genes.RDS")
+  if(file.exists(file_new_genes)){
+    selected_boundary_genes_new <- readRDS(file_new_genes)
+    region_id_new <- unique(selected_boundary_genes_new$region_id)
+  }else{
+    selected_boundary_genes_new <- NULL
+    region_id_new <- NULL
+  }
+  combined_pip_by_group_multi_new <- readRDS(paste0(folder_results_old,trait,"/",trait,".3qtls.combined_pip_rmmapping_bytype_final.RDS"))
+  
+  p1 <- plot_overlap_barplot_boundarygene(selected_boundary_genes_old = selected_boundary_genes_old, selected_boundary_genes_new = selected_boundary_genes_new, trait = trait)
+  
+  p2 <- plot_overlap_barplot_region(region_id_new = region_id_new,region_id_old = region_id_old, trait = trait)
+  
+  p3 <- plot_overlap_barplot_siggene(combined_pip_by_group_multi_old = combined_pip_by_group_multi_old, combined_pip_by_group_multi_new = combined_pip_by_group_multi_new,trait = trait)
+  grid.arrange(p1, p2, p3, ncol = 3)
+  
+  combined_pip_by_group_multi_sig_new <- combined_pip_by_group_multi_new$gene_name[combined_pip_by_group_multi_new$combined_pip > 0.8]
+  combined_pip_by_group_multi_sig_old <- combined_pip_by_group_multi_old$gene_name[combined_pip_by_group_multi_old$combined_pip > 0.8]
+  unique_old <- combined_pip_by_group_multi_sig_old[!combined_pip_by_group_multi_sig_old %in% combined_pip_by_group_multi_sig_new]
+  
+  unique_new <- combined_pip_by_group_multi_sig_new[!combined_pip_by_group_multi_sig_new %in% combined_pip_by_group_multi_sig_old]
+  
+  print(sprintf("Unique genes (with mapping table): %s",paste0(unique_new,collapse = ", ")))
+  print(sprintf("Unique genes (without mapping table): %s",paste0(unique_old,collapse = ", ")))
+  
+}
+
+
+```
