@@ -1,0 +1,214 @@
+---
+title: "Enrichment -- comparing coloc, twas and ctwas results"
+author: "XSun"
+date: "2025-07-11"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+    toc: true
+---
+
+# Introduction
+
+We compared gene set enrichment results (using enrichR) across three analyses: coloc, TWAS, and cTWAS.
+
+- For coloc, we included genes with posterior probability of colocalization (PP4) > 0.8.
+- For TWAS, we applied a Bonferroni correction to the TWAS p-values, using a significance threshold calculated as: qnorm(1 - (0.05 / number_of_TWAS_genes / 2), lower.tail = TRUE).
+- For cTWAS, we selected genes with a posterior inclusion probability (PIP) > 0.8.
+
+EnrichR only returns the GO terms with `p.adjust < 0.05`
+
+# Results
+
+
+```{r results='asis',fig.width=5, fig.height=5, warning=FALSE, message=FALSE} 
+
+DT::datatable(matrix())
+
+library(VennDiagram)
+
+traits <- c("LDL-ukb-d-30780_irnt","IBD-ebi-a-GCST004131","T1D-GCST90014023","SBP-ukb-a-360","BMI-panukb","HB-panukb","Height-panukb")
+# aFib-ebi-a-GCST006414
+
+folder_results <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/results_downstream/enrichr_compare/"
+ctwas_folder_results <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/"
+
+for (trait in traits){
+  
+  print(trait)
+  
+  ctwas_genes <-  readRDS(paste0(ctwas_folder_results,trait,"/",trait,".3qtls.combined_pip_rmmapping_bygroup_final.RDS"))
+  ctwas_genes <- ctwas_genes$gene_name[ctwas_genes$combined_pip > 0.8]
+  
+  coloc_genes <- readRDS(paste0(folder_results,trait,".genes.coloc.RDS"))
+  coloc_genes <- coloc_genes$gene_name[coloc_genes$PP4 > 0.8]
+  
+  twas_genes <- readRDS(paste0(folder_results,trait,".genes.twas_bonf.RDS"))
+  
+  venn.plot <- venn.diagram(
+    x = list(
+      cTWAS = ctwas_genes,
+      TWAS = twas_genes,
+      coloc = coloc_genes
+    ),
+    filename = NULL,
+    output = TRUE,
+    category.names = c("cTWAS", "TWAS", "coloc"),
+    cat.cex = 1.5,
+    cex = 1.5,
+    print.mode = "raw",
+    fill = c("#66c2a5", "#fc8d62", "#8da0cb"),
+    scaled = FALSE
+  )
+  
+  grid::grid.newpage()
+  pushViewport(viewport(layout = grid.layout(10, 1)))
+  
+  # Add title in row 1
+  grid.text(paste0("Gene Overlap Across Methods -\n ", trait), 
+            vp = viewport(layout.pos.row = 1), 
+            gp = gpar(fontsize = 16, fontface = "bold"))
+  
+  # Draw the Venn plot in rows 2–10
+  pushViewport(viewport(layout.pos.row = 2:10))
+  grid.draw(venn.plot)
+  popViewport()
+  
+  file_ctwas <- paste0(folder_results,trait,".enrichr.ctwas_GO_Biological_Process_2023.RDS")
+  if(file.exists(file_ctwas)){
+    df_ctwas <- readRDS(file_ctwas)
+   
+  
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+  cat(knitr::knit_print(DT::datatable(df_ctwas,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Enriched GO terms -- ctwas '),options = list(pageLength = 2) )))
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+    cat("<br>")
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+    
+  }else{
+    df_ctwas <- NULL
+  }
+  
+  file_twas <- paste0(folder_results,trait,".enrichr.twas_GO_Biological_Process_2023.RDS")
+  if(file.exists(file_twas)){
+    df_twas <- readRDS(file_twas)
+    
+    cat("<br>")
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+    cat("<br>")
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+  cat(knitr::knit_print(DT::datatable(df_twas,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Enriched GO terms -- twas '),options = list(pageLength = 2) )))
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+    cat("<br>")
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+  }else{
+    df_twas <- NULL
+  }
+  
+  file_coloc <- paste0(folder_results,trait,".enrichr.coloc_GO_Biological_Process_2023.RDS")
+  if(file.exists(file_coloc)){
+    df_coloc <- readRDS(file_coloc)
+
+      cat("<br>")
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+  cat(knitr::knit_print(DT::datatable(df_coloc,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Enriched GO terms -- coloc '),options = list(pageLength = 2) )))
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+    cat("<br>")
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+  cat("<br>")
+    
+  }else{
+    df_coloc <- NULL
+  }
+  
+  terms_ctwas <- if (!is.null(df_ctwas)) df_ctwas$Term else character(0)
+  terms_twas  <- if (!is.null(df_twas)) df_twas$Term else character(0)
+  terms_coloc <- if (!is.null(df_coloc)) df_coloc$Term else character(0)
+  
+  # Create named list
+  term_lists <- list(
+    cTWAS = terms_ctwas,
+    TWAS = terms_twas,
+    coloc = terms_coloc
+  )
+  
+  # Create Venn diagram
+  venn.plot <- venn.diagram(
+    x = term_lists,
+    filename = NULL,
+    output = TRUE,
+    category.names = c("cTWAS", "TWAS", "coloc"),
+    cat.cex = 1.5,
+    cex = 1.5,
+    print.mode = "raw",
+    fill = c("#66c2a5", "#fc8d62", "#8da0cb"),
+    scaled = FALSE
+  )
+  
+  # Plot with title
+  grid.newpage()
+  pushViewport(viewport(layout = grid.layout(10, 1)))
+  grid.text(paste0("Enriched pathway Overlap Across Methods -\n ", trait), 
+            vp = viewport(layout.pos.row = 1), 
+            gp = gpar(fontsize = 16, fontface = "bold"))
+  pushViewport(viewport(layout.pos.row = 2:10))
+  grid.draw(venn.plot)
+  popViewport()
+  
+}
+
+
+```
+

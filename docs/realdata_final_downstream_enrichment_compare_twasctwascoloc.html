@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="XSun" />
+
+<meta name="date" content="2025-07-11" />
+
+<title>Enrichment – comparing coloc, twas and ctwas results</title>
+
+<script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/htmlwidgets-1.5.4/htmlwidgets.js"></script>
+<link href="site_libs/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet" />
+<script src="site_libs/datatables-binding-0.22/datatables.js"></script>
+<link href="site_libs/dt-core-1.11.3/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="site_libs/dt-core-1.11.3/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="site_libs/dt-core-1.11.3/js/jquery.dataTables.min.js"></script>
+<link href="site_libs/crosstalk-1.2.0/css/crosstalk.min.css" rel="stylesheet" />
+<script src="site_libs/crosstalk-1.2.0/js/crosstalk.min.js"></script>
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">multigroup_ctwas_analysis</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/sq-96/multigroup_ctwas_analysis">
+    <span class="fab fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Enrichment – comparing coloc, twas and
+ctwas results</h1>
+<h4 class="author">XSun</h4>
+<h4 class="date">2025-07-11</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span
+class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2025-07-11
+</p>
+<p>
+<strong>Checks:</strong> <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 1
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> 1
+</p>
+<p>
+<strong>Knit directory:</strong> <code>multigroup_ctwas_analysis/</code>
+<span class="glyphicon glyphicon-question-sign" aria-hidden="true"
+title="This is the local directory in which the code in this file was executed.">
+</span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version
+1.7.0). The <em>Checks</em> tab describes the reproducibility checks
+that were applied when the results were created. The <em>Past
+versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges">
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted
+changes </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguncommittedchanges"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The R Markdown is untracked by Git. To know which version of the R
+Markdown file created these results, you’ll want to first commit it to
+the Git repo. If you’re still working on the analysis, you can ignore
+this warning. When you’re finished, you can run
+<code>wflow_publish</code> to commit the R Markdown file and build the
+HTML.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistreeb93036b88b969bbf1e63e9ec653a1fbb8ea02287targetblankb93036ba">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/b93036b88b969bbf1e63e9ec653a1fbb8ea02287" target="_blank">b93036b</a>
+</a>
+</p>
+</div>
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistreeb93036b88b969bbf1e63e9ec653a1fbb8ea02287targetblankb93036ba"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development
+and connecting the code version to the results is critical for
+reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/b93036b88b969bbf1e63e9ec653a1fbb8ea02287" target="_blank">b93036b</a>.
+See the <em>Past versions</em> tab to see a history of the changes made
+to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for
+the analysis have been committed to Git prior to generating the results
+(you can use <code>wflow_publish</code> or
+<code>wflow_git_commit</code>). workflowr only checks the R Markdown
+file, but you know if there are other scripts or data files that it
+depends on. Below is the status of the Git repository when the results
+were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .Rhistory
+    Ignored:    cv/
+    Ignored:    figures/lz/IBD-ebi-a-GCST004131/single/
+    Ignored:    figures/lz_ld/IBD-ebi-a-GCST004131/single/
+
+Untracked files:
+    Untracked:  VennDiagram.2025-07-11_15-23-40.log
+    Untracked:  VennDiagram.2025-07-11_15-23-41.log
+    Untracked:  VennDiagram.2025-07-11_15-23-42.log
+    Untracked:  VennDiagram.2025-07-11_15-26-15.log
+    Untracked:  VennDiagram.2025-07-11_15-26-16.log
+    Untracked:  VennDiagram.2025-07-11_15-28-18.log
+    Untracked:  VennDiagram.2025-07-11_15-28-19.log
+    Untracked:  VennDiagram.2025-07-11_15-30-07.log
+    Untracked:  VennDiagram.2025-07-11_15-30-08.log
+    Untracked:  VennDiagram.2025-07-11_15-30-09.log
+    Untracked:  VennDiagram.2025-07-11_15-32-08.log
+    Untracked:  VennDiagram.2025-07-11_15-32-09.log
+    Untracked:  VennDiagram.2025-07-11_15-32-10.log
+    Untracked:  VennDiagram.2025-07-11_15-33-53.log
+    Untracked:  VennDiagram.2025-07-11_15-33-54.log
+    Untracked:  VennDiagram.2025-07-11_15-33-55.log
+    Untracked:  VennDiagram.2025-07-11_15-34-48.log
+    Untracked:  analysis/realdata_final_downstream_enrichment_compare_twasctwascoloc.Rmd
+
+Unstaged changes:
+    Modified:   analysis/index.Rmd
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not
+included in this status report because it is ok for generated content to
+have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+<p>
+There are no past versions. Publish this analysis with
+<code>wflow_publish()</code> to start tracking its development.
+</p>
+<hr>
+</div>
+</div>
+</div>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>We compared gene set enrichment results (using enrichR) across three
+analyses: coloc, TWAS, and cTWAS.</p>
+<ul>
+<li>For coloc, we included genes with posterior probability of
+colocalization (PP4) &gt; 0.8.</li>
+<li>For TWAS, we applied a Bonferroni correction to the TWAS p-values,
+using a significance threshold calculated as: qnorm(1 - (0.05 /
+number_of_TWAS_genes / 2), lower.tail = TRUE).</li>
+<li>For cTWAS, we selected genes with a posterior inclusion probability
+(PIP) &gt; 0.8.</li>
+</ul>
+<p>EnrichR only returns the GO terms with
+<code>p.adjust &lt; 0.05</code></p>
+</div>
+<div id="results" class="section level1">
+<h1>Results</h1>
+<pre class="r"><code>DT::datatable(matrix())</code></pre>
+<div id="htmlwidget-b91b951b198b180294a8" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-b91b951b198b180294a8">{"x":{"filter":"none","vertical":false,"data":[[null]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>V1<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<pre class="r"><code>library(VennDiagram)
+
+traits &lt;- c(&quot;LDL-ukb-d-30780_irnt&quot;,&quot;IBD-ebi-a-GCST004131&quot;,&quot;T1D-GCST90014023&quot;,&quot;SBP-ukb-a-360&quot;,&quot;BMI-panukb&quot;,&quot;HB-panukb&quot;,&quot;Height-panukb&quot;)
+# aFib-ebi-a-GCST006414
+
+folder_results &lt;- &quot;/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/results_downstream/enrichr_compare/&quot;
+ctwas_folder_results &lt;- &quot;/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/&quot;
+
+for (trait in traits){
+  
+  print(trait)
+  
+  ctwas_genes &lt;-  readRDS(paste0(ctwas_folder_results,trait,&quot;/&quot;,trait,&quot;.3qtls.combined_pip_rmmapping_bygroup_final.RDS&quot;))
+  ctwas_genes &lt;- ctwas_genes$gene_name[ctwas_genes$combined_pip &gt; 0.8]
+  
+  coloc_genes &lt;- readRDS(paste0(folder_results,trait,&quot;.genes.coloc.RDS&quot;))
+  coloc_genes &lt;- coloc_genes$gene_name[coloc_genes$PP4 &gt; 0.8]
+  
+  twas_genes &lt;- readRDS(paste0(folder_results,trait,&quot;.genes.twas_bonf.RDS&quot;))
+  
+  venn.plot &lt;- venn.diagram(
+    x = list(
+      cTWAS = ctwas_genes,
+      TWAS = twas_genes,
+      coloc = coloc_genes
+    ),
+    filename = NULL,
+    output = TRUE,
+    category.names = c(&quot;cTWAS&quot;, &quot;TWAS&quot;, &quot;coloc&quot;),
+    cat.cex = 1.5,
+    cex = 1.5,
+    print.mode = &quot;raw&quot;,
+    fill = c(&quot;#66c2a5&quot;, &quot;#fc8d62&quot;, &quot;#8da0cb&quot;),
+    scaled = FALSE
+  )
+  
+  grid::grid.newpage()
+  pushViewport(viewport(layout = grid.layout(10, 1)))
+  
+  # Add title in row 1
+  grid.text(paste0(&quot;Gene Overlap Across Methods -\n &quot;, trait), 
+            vp = viewport(layout.pos.row = 1), 
+            gp = gpar(fontsize = 16, fontface = &quot;bold&quot;))
+  
+  # Draw the Venn plot in rows 2–10
+  pushViewport(viewport(layout.pos.row = 2:10))
+  grid.draw(venn.plot)
+  popViewport()
+  
+  file_ctwas &lt;- paste0(folder_results,trait,&quot;.enrichr.ctwas_GO_Biological_Process_2023.RDS&quot;)
+  if(file.exists(file_ctwas)){
+    df_ctwas &lt;- readRDS(file_ctwas)
+   
+  
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(knitr::knit_print(DT::datatable(df_ctwas,caption = htmltools::tags$caption( style = &#39;caption-side: left; text-align: left; color:black;  font-size:150% ;&#39;,&#39;Enriched GO terms -- ctwas &#39;),options = list(pageLength = 2) )))
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+    cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+    
+  }else{
+    df_ctwas &lt;- NULL
+  }
+  
+  file_twas &lt;- paste0(folder_results,trait,&quot;.enrichr.twas_GO_Biological_Process_2023.RDS&quot;)
+  if(file.exists(file_twas)){
+    df_twas &lt;- readRDS(file_twas)
+    
+    cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+    cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(knitr::knit_print(DT::datatable(df_twas,caption = htmltools::tags$caption( style = &#39;caption-side: left; text-align: left; color:black;  font-size:150% ;&#39;,&#39;Enriched GO terms -- twas &#39;),options = list(pageLength = 2) )))
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+    cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  }else{
+    df_twas &lt;- NULL
+  }
+  
+  file_coloc &lt;- paste0(folder_results,trait,&quot;.enrichr.coloc_GO_Biological_Process_2023.RDS&quot;)
+  if(file.exists(file_coloc)){
+    df_coloc &lt;- readRDS(file_coloc)
+
+      cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(knitr::knit_print(DT::datatable(df_coloc,caption = htmltools::tags$caption( style = &#39;caption-side: left; text-align: left; color:black;  font-size:150% ;&#39;,&#39;Enriched GO terms -- coloc &#39;),options = list(pageLength = 2) )))
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+    cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+    
+  }else{
+    df_coloc &lt;- NULL
+  }
+  
+  terms_ctwas &lt;- if (!is.null(df_ctwas)) df_ctwas$Term else character(0)
+  terms_twas  &lt;- if (!is.null(df_twas)) df_twas$Term else character(0)
+  terms_coloc &lt;- if (!is.null(df_coloc)) df_coloc$Term else character(0)
+  
+  # Create named list
+  term_lists &lt;- list(
+    cTWAS = terms_ctwas,
+    TWAS = terms_twas,
+    coloc = terms_coloc
+  )
+  
+  # Create Venn diagram
+  venn.plot &lt;- venn.diagram(
+    x = term_lists,
+    filename = NULL,
+    output = TRUE,
+    category.names = c(&quot;cTWAS&quot;, &quot;TWAS&quot;, &quot;coloc&quot;),
+    cat.cex = 1.5,
+    cex = 1.5,
+    print.mode = &quot;raw&quot;,
+    fill = c(&quot;#66c2a5&quot;, &quot;#fc8d62&quot;, &quot;#8da0cb&quot;),
+    scaled = FALSE
+  )
+  
+  # Plot with title
+  grid.newpage()
+  pushViewport(viewport(layout = grid.layout(10, 1)))
+  grid.text(paste0(&quot;Enriched pathway Overlap Across Methods -\n &quot;, trait), 
+            vp = viewport(layout.pos.row = 1), 
+            gp = gpar(fontsize = 16, fontface = &quot;bold&quot;))
+  pushViewport(viewport(layout.pos.row = 2:10))
+  grid.draw(venn.plot)
+  popViewport()
+  
+}</code></pre>
+<p>[1] “LDL-ukb-d-30780_irnt”
+<img src="figure/realdata_final_downstream_enrichment_compare_twasctwascoloc.Rmd/unnamed-chunk-1-2.png" width="480" style="display: block; margin: auto;" /><br><br><br><br><br><br><br><br><br><br><br><br></p>
+<div id="htmlwidget-cfcd18300a7076130d9f" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-cfcd18300a7076130d9f">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">Enriched GO terms -- ctwas <\/caption>","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36"],["Cholesterol Metabolic Process (GO:0008203)","Cholesterol Homeostasis (GO:0042632)","Sterol Homeostasis (GO:0055092)","Cholesterol Transport (GO:0030301)","Peptidyl-Serine Phosphorylation (GO:0018105)","Sterol Transport (GO:0015918)","Peptidyl-Serine Modification (GO:0018209)","Regulation Of Cholesterol Efflux (GO:0010874)","Cellular Response To Nutrient Levels (GO:0031669)","Peptidyl-Threonine Phosphorylation (GO:0018107)","Endocytosis (GO:0006897)","Regulation Of Cholesterol Transport (GO:0032374)","Protein Phosphorylation (GO:0006468)","Secondary Alcohol Biosynthetic Process (GO:1902653)","Cellular Response To Starvation (GO:0009267)","Peptidyl-Threonine Modification (GO:0018210)","Cholesterol Biosynthetic Process (GO:0006695)","Sterol Biosynthetic Process (GO:0016126)","Positive Regulation Of Cholesterol Transport (GO:0032376)","Negative Regulation Of Lipoprotein Particle Clearance (GO:0010985)","Cellular Response To Sterol Depletion (GO:0071501)","Intestinal Cholesterol Absorption (GO:0030299)","Cellular Response To Insulin Stimulus (GO:0032869)","Regulation Of Low-Density Lipoprotein Particle Clearance (GO:0010988)","Lipid Transport (GO:0006869)","Regulation Of Cytoplasmic Transport (GO:1903649)","Intestinal Lipid Absorption (GO:0098856)","Regulation Of Mitochondrion Organization (GO:0010821)","Positive Regulation Of Protein Export From Nucleus (GO:0046827)","Low-Density Lipoprotein Particle Remodeling (GO:0034374)","Regulation Of Cholesterol Storage (GO:0010885)","High-Density Lipoprotein Particle Remodeling (GO:0034375)","Sterol Metabolic Process (GO:0016125)","Activin Receptor Signaling Pathway (GO:0032924)","Regulation Of Receptor Recycling (GO:0001919)","Excitatory Postsynaptic Potential (GO:0060079)"],["6/67","6/72","6/73","5/51","7/158","4/25","7/166","4/32","5/78","4/58","6/189","3/23","9/500","3/24","5/126","4/66","3/25","3/28","3/31","2/6","2/8","2/9","4/99","2/10","4/108","2/11","2/11","3/50","2/12","2/12","2/14","2/15","3/60","2/16","2/17","2/18"],[1.60476982269206e-07,2.47658780621734e-07,2.6906335008264e-07,1.16181036291883e-06,1.768628213356e-06,1.94932162510446e-06,2.45815782083307e-06,5.43537092710409e-06,9.67303275979087e-06,5.96958010749093e-05,6.6208482559822e-05,7.8394256890632e-05,8.3289930942906e-05,8.93589644256473e-05,9.77060872937629e-05,9.91991039485108e-05,0.000101278559793064,0.000143126668820037,0.000194847395250257,0.000195244178380358,0.000362736317435845,0.000465273961644612,0.000473217038393253,0.000580219283115224,0.000657262120623046,0.000707482842856286,0.000707482842856286,0.000808433297178678,0.000846975672272765,0.000846975672272765,0.00116229560690684,0.0013379471101985,0.00137510052294078,0.00152547667562611,0.00172479765759009,0.00193582387025167],[8.26024484753706e-05,8.26024484753706e-05,8.26024484753706e-05,0.00026750683606206,0.000299220869453534,0.000299220869453534,0.000323423336141036,0.000625747077982858,0.000989873685751932,0.00548691491584778,0.00548691491584778,0.00548691491584778,0.00548691491584778,0.00548691491584778,0.00548691491584778,0.00548691491584778,0.00548691491584778,0.00732331455462521,0.0089909944144155,0.0089909944144155,0.0159085784932578,0.0189492561895733,0.0189492561895733,0.0222659149895467,0.0241330258618755,0.0241330258618755,0.0241330258618755,0.0260021531387739,0.0260021531387739,0.0260021531387739,0.0345314275471354,0.0383778055038928,0.0383778055038928,0.0413224711250484,0.0453868183611565,0.049524827347272],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[29.1646684609738,26.9484396200814,26.5448875027846,31.7790920716113,13.8904274533414,54.9510006901311,13.1862016390318,41.1987577639752,19.9979854955681,21.3344068706388,9.66185466112063,42.6578571428571,5.5665733197556,40.6244897959184,12.0357316480311,18.5741000467508,38.775974025974,34.1177142857143,30.4576530612245,140.302816901408,93.5258215962441,80.1609657947686,12.1019069412662,70.137323943662,11.0496098104794,62.3411580594679,62.3411580594679,18.1276595744681,56.1042253521127,56.1042253521127,46.7488262910798,43.1505958829903,14.9398496240601,40.0663983903421,37.3934272300469,35.0545774647887],[456.284601263161,409.918479945896,401.579525507451,434.278171406754,183.982966709779,722.497357822668,170.31427712547,499.435351915683,230.900113632931,207.503750798589,92.9731478609862,403.277138732635,52.2878412805024,378.735983746884,111.132490179157,171.223141670875,356.647287645916,302.00251883242,260.208681430929,1198.36277979112,740.89606949094,615.065804780289,92.6516721383259,522.670663979618,80.9652164813236,452.210116474888,452.210116474888,129.07641173231,396.872234130769,396.872234130769,315.898567388755,285.511045981134,98.4420820761415,259.848557073974,237.921122815824,218.993737016649],["CETP;INSIG2;NPC1L1;SNX17;HMGCR;APOB","CETP;NPC1L1;PCSK9;APOB;LDLR;TTC39B","CETP;NPC1L1;PCSK9;APOB;LDLR;TTC39B","CETP;NPC1L1;ABCA8;APOB;LDLR","GSK3B;CSNK1G3;PKN3;TNKS;LRRK2;PRKD2;GAS6","CETP;NPC1L1;APOB;LDLR","GSK3B;CSNK1G3;PKN3;TNKS;LRRK2;PRKD2;GAS6","CETP;ABCA8;PLTP;TTC39B","LRRK2;PCSK9;INHBB;ZFYVE1;FADS1","GSK3B;TNKS;LRRK2;PRKD2","CSNK1G3;LRRK2;DNAJC13;GAS6;LDLR;ASGR1","CETP;ABCA8;TTC39B","GSK3B;CSNK1G3;ACVR1C;FLT3;PKN3;TNKS;LRRK2;PRKD2;GAS6","INSIG2;NPC1L1;HMGCR","LRRK2;PCSK9;INHBB;ZFYVE1;FADS1","GSK3B;TNKS;LRRK2;PRKD2","INSIG2;NPC1L1;HMGCR","INSIG2;NPC1L1;HMGCR","CETP;ABCA8;PLTP","PCSK9;LDLR","INSIG2;NPC1L1","NPC1L1;LDLR","GSK3B;INSIG2;PCSK9;INHBB","PCSK9;LDLR","CETP;ABCA8;LDLR;PLTP","LRRK2;DNAJC13","NPC1L1;LDLR","PRMT6;GSK3B;LRRK2","GSK3B;GAS6","CETP;APOB","APOB;TTC39B","CETP;PLTP","CETP;HMGCR;APOB","ACVR1C;INHBB","PCSK9;LDLR","GSK3B;LRRK2"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Term<\/th>\n      <th>Overlap<\/th>\n      <th>P.value<\/th>\n      <th>Adjusted.P.value<\/th>\n      <th>Old.P.value<\/th>\n      <th>Old.Adjusted.P.value<\/th>\n      <th>Odds.Ratio<\/th>\n      <th>Combined.Score<\/th>\n      <th>Genes<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":2,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[2,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<p><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br></p>
+<div id="htmlwidget-1de1cdb59ef8e1cb6bcb" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1de1cdb59ef8e1cb6bcb">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">Enriched GO terms -- twas <\/caption>","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92","93","94","95","96","97","98","99","100","101","102","103"],["Antigen Processing And Presentation Of Endogenous Peptide Antigen (GO:0002483)","Positive Regulation Of T Cell Mediated Cytotoxicity (GO:0001916)","Antigen Processing And Presentation Of Exogenous Peptide Antigen (GO:0002478)","Cholesterol Transport (GO:0030301)","Regulation Of T Cell Mediated Cytotoxicity (GO:0001914)","Antigen Processing And Presentation Of Endogenous Peptide Antigen Via MHC Class I Via ER Pathway (GO:0002484)","Antigen Processing And Presentation Of Endogenous Peptide Antigen Via MHC Class I Via ER Pathway, TAP-independent (GO:0002486)","Antigen Processing And Presentation Of Endogenous Peptide Antigen Via MHC Class Ib (GO:0002476)","Antigen Processing And Presentation Of Peptide Antigen Via MHC Class Ib (GO:0002428)","Positive Regulation Of Leukocyte Mediated Cytotoxicity (GO:0001912)","Cholesterol Homeostasis (GO:0042632)","Sterol Homeostasis (GO:0055092)","Positive Regulation Of T Cell Mediated Immunity (GO:0002711)","Antigen Processing And Presentation Of Exogenous Peptide Antigen Via MHC Class II (GO:0019886)","MHC Class II Protein Complex Assembly (GO:0002399)","Peptide Antigen Assembly With MHC Class II Protein Complex (GO:0002503)","Antigen Processing And Presentation Of Peptide Antigen Via MHC Class II (GO:0002495)","Cholesterol Efflux (GO:0033344)","Acylglycerol Homeostasis (GO:0055090)","Peptide Antigen Assembly With MHC Protein Complex (GO:0002501)","Very-Low-Density Lipoprotein Particle Remodeling (GO:0034372)","Immunoglobulin Production Involved In Immunoglobulin-Mediated Immune Response (GO:0002381)","Triglyceride-Rich Lipoprotein Particle Remodeling (GO:0034370)","Triglyceride Homeostasis (GO:0070328)","Cellular Glucuronidation (GO:0052695)","Glucuronate Metabolic Process (GO:0019585)","High-Density Lipoprotein Particle Remodeling (GO:0034375)","Negative Regulation Of Natural Killer Cell Mediated Cytotoxicity (GO:0045953)","Negative Regulation Of Receptor-Mediated Endocytosis (GO:0048261)","Immunoglobulin Mediated Immune Response (GO:0016064)","Cholesterol Metabolic Process (GO:0008203)","Positive Regulation Of Leukocyte Cell-Cell Adhesion (GO:1903039)","Triglyceride Metabolic Process (GO:0006641)","Positive Regulation Of Lymphocyte Activation (GO:0051251)","Steroid Metabolic Process (GO:0008202)","Sterol Transport (GO:0015918)","Positive Regulation Of Pathway-Restricted SMAD Protein Phosphorylation (GO:0010862)","Reverse Cholesterol Transport (GO:0043691)","Regulation Of Protein Localization To Centrosome (GO:1904779)","Intestinal Cholesterol Absorption (GO:0030299)","Regulation Of Receptor-Mediated Endocytosis (GO:0048259)","Negative Regulation Of Cholesterol Transport (GO:0032375)","Negative Regulation Of Natural Killer Cell Mediated Immunity (GO:0002716)","Xenobiotic Catabolic Process (GO:0042178)","Intestinal Lipid Absorption (GO:0098856)","Phospholipid Efflux (GO:0033700)","Xenobiotic Transport (GO:0042908)","Lipid Transport (GO:0006869)","Polyamine Transport (GO:0015846)","Protection From Natural Killer Cell Mediated Cytotoxicity (GO:0042270)","Regulation Of Natural Killer Cell Mediated Cytotoxicity (GO:0042269)","Sterol Metabolic Process (GO:0016125)","tRNA 5'-Leader Removal (GO:0001682)","Quaternary Ammonium Group Transport (GO:0015697)","Regulation Of Pathway-Restricted SMAD Protein Phosphorylation (GO:0060393)","Regulation Of Cholesterol Transport (GO:0032374)","Hepaticobiliary System Development (GO:0061008)","Unsaturated Fatty Acid Metabolic Process (GO:0033559)","Regulation Of Natural Killer Cell Cytokine Production (GO:0002727)","Catecholamine Uptake (GO:0090493)","Cholesterol Catabolic Process (GO:0006707)","Sterol Catabolic Process (GO:0016127)","Xenobiotic Glucuronidation (GO:0052697)","Negative Regulation Of Lipoprotein Particle Clearance (GO:0010985)","Positive Regulation Of Mast Cell Activation (GO:0033005)","Positive Regulation Of Natural Killer Cell Cytokine Production (GO:0002729)","Positive Regulation Of Protein Localization To Centrosome (GO:1904781)","Positive Regulation Of Triglyceride Catabolic Process (GO:0010898)","Acylglycerol Catabolic Process (GO:0046464)","Positive Regulation Of Natural Killer Cell Mediated Immunity (GO:0002717)","tRNA 5'-End Processing (GO:0099116)","Negative Regulation Of Leukocyte Mediated Cytotoxicity (GO:0001911)","Long-Chain Fatty Acid Biosynthetic Process (GO:0042759)","Regulation Of Lipoprotein Lipase Activity (GO:0051004)","Regulation Of Extent Of Cell Growth (GO:0061387)","Catecholamine Transport (GO:0051937)","Dopamine Uptake (GO:0090494)","Positive Regulation Of Apoptotic Cell Clearance (GO:2000427)","Positive Regulation Of T Cell Activation (GO:0050870)","Acylglycerol Metabolic Process (GO:0006639)","Alcohol Catabolic Process (GO:0046164)","Serotonin Uptake (GO:0051610)","Neurotransmitter Reuptake (GO:0098810)","Protein poly-ADP-ribosylation (GO:0070212)","Anterior/Posterior Pattern Specification (GO:0009952)","Positive Regulation Of Transmembrane Receptor Protein Serine/Threonine Kinase Signaling Pathway (GO:0090100)","Positive Regulation Of Natural Killer Cell Activation (GO:0032816)","Positive Regulation Of Triglyceride Metabolic Process (GO:0090208)","Long-Chain Fatty Acid Metabolic Process (GO:0001676)","Organic Hydroxy Compound Transport (GO:0015850)","Regulation Of T Cell Activation (GO:0050863)","Dopamine Transport (GO:0015872)","Serotonin Transport (GO:0006837)","Toxin Transport (GO:1901998)","Positive Regulation Of Vascular Endothelial Growth Factor Receptor Signaling Pathway (GO:0030949)","Regulation Of CD8-positive, Alpha-Beta T Cell Activation (GO:2001185)","Positive Regulation Of Alpha-Beta T Cell Activation (GO:0046635)","Regulation Of Cholesterol Efflux (GO:0010874)","Golgi To Plasma Membrane Transport (GO:0006893)","Secondary Alcohol Metabolic Process (GO:1902652)","Positive Regulation Of Protein Phosphorylation (GO:0001934)","Positive Regulation Of Lipid Catabolic Process (GO:0050996)","Positive Regulation Of Cytokine Production Involved In Immune Response (GO:0002720)"],["12/21","13/33","12/31","14/51","12/36","8/13","8/13","8/13","8/13","13/51","15/72","15/73","11/43","9/26","7/14","7/14","9/28","8/23","8/24","7/18","5/7","7/19","5/8","8/31","6/15","6/15","6/15","6/16","7/26","7/30","10/67","8/44","8/45","8/47","11/92","6/25","8/49","5/16","4/9","4/9","7/39","4/10","4/10","5/19","4/11","4/11","5/20","11/108","3/5","3/5","6/32","8/60","4/12","4/12","8/61","5/23","5/23","7/49","3/6","3/6","3/6","3/6","3/6","3/6","3/6","3/6","3/6","3/6","5/24","5/24","4/14","4/14","5/25","4/15","3/7","3/7","3/7","3/7","10/107","6/41","3/8","3/8","3/8","3/8","7/59","9/95","4/18","4/18","8/78","6/45","7/62","3/9","3/9","3/9","3/9","3/9","4/19","5/32","6/47","6/47","21/377","4/20","5/33"],[3.89664769458179e-14,1.54816852195822e-12,1.45546284701431e-11,6.0920329969517e-11,1.13872486674924e-10,3.54484224232059e-10,3.54484224232059e-10,3.54484224232059e-10,3.54484224232059e-10,8.17444285393692e-10,8.77295066740739e-10,1.07657349441039e-09,1.59520727238285e-08,1.73455391413964e-08,3.32338428632935e-08,3.32338428632935e-08,3.65050752952407e-08,1.05893999420472e-07,1.5502971653904e-07,2.79992019219948e-07,3.09873738548275e-07,4.32828639933192e-07,8.0759458031229e-07,1.40315104428039e-06,1.70506680936162e-06,1.70506680936162e-06,1.70506680936162e-06,2.66476367624807e-06,4.7793767117394e-06,1.34445733291249e-05,1.38227807894742e-05,2.30184495719765e-05,2.73277902417519e-05,3.79889536308783e-05,4.41965686998347e-05,4.77249727361345e-05,5.19170016121061e-05,5.2458157974799e-05,6.38543266412745e-05,6.38543266412745e-05,8.19844582797084e-05,0.000104110000012006,0.000104110000012006,0.000130417604062401,0.000160047539740701,0.000160047539740701,0.000169976298358672,0.00019116600354185,0.000198464481933636,0.000198464481933636,0.000207386155773828,0.000226063620920102,0.00023486096105269,0.00023486096105269,0.000254014056764178,0.000344585592822687,0.000344585592822687,0.000361192584219706,0.000388809850038912,0.000388809850038912,0.000388809850038912,0.000388809850038912,0.000388809850038912,0.000388809850038912,0.000388809850038912,0.000388809850038912,0.000388809850038912,0.000388809850038912,0.000425495577176093,0.000425495577176093,0.000454576738625215,0.000454576738625215,0.000519938744933572,0.00060646097588193,0.000666517669085734,0.000666517669085734,0.000666517669085734,0.000666517669085734,0.000735560337490358,0.000834760694585893,0.00104467251759425,0.00104467251759425,0.00104467251759425,0.00104467251759425,0.00113271739396409,0.00121530571497858,0.00127331827742644,0.00127331827742644,0.00134646083512726,0.00137832915278517,0.00152153338165415,0.00153508449392888,0.00153508449392888,0.00153508449392888,0.00153508449392888,0.00153508449392888,0.00157809323232619,0.00168207082510042,0.00173491788664139,0.00173491788664139,0.00186679440146429,0.00193012403889321,0.00193822102014586],[9.99100468890771e-11,1.98475204515044e-09,1.2439355799149e-08,3.90499315104604e-08,5.83938111669012e-08,1.00988616770111e-07,1.00988616770111e-07,1.00988616770111e-07,1.00988616770111e-07,2.04489504647569e-07,2.04489504647569e-07,2.30027869972353e-07,3.14623957414587e-06,3.1767115970386e-06,5.32572331884279e-06,5.32572331884279e-06,5.50582429747042e-06,1.50840119174495e-05,2.09208522740052e-05,3.58949768639973e-05,3.78341078875132e-05,5.04442105813048e-05,9.00292393009005e-05,0.000149903303230622,0.000161918196266785,0.000161918196266785,0.000161918196266785,0.000244016216639287,0.000422562823755167,0.00114327774013587,0.00114327774013587,0.00184435327195462,0.00212328649029854,0.00286481403263447,0.00323771434703932,0.00339907861376247,0.00353954518545749,0.00353954518545749,0.0040930623377057,0.0040930623377057,0.00512702807388225,0.00620786139606474,0.00620786139606474,0.00759978947309083,0.00892091069337299,0.00892091069337299,0.00927274955301353,0.0101772586335568,0.0101772586335568,0.0101772586335568,0.0104262373216489,0.0111466754622912,0.0111515463729463,0.0111515463729463,0.0118416734826064,0.0146604184632319,0.0146604184632319,0.0146604184632319,0.0146604184632319,0.0146604184632319,0.0146604184632319,0.0146604184632319,0.0146604184632319,0.0146604184632319,0.0146604184632319,0.0146604184632319,0.0146604184632319,0.0146604184632319,0.0155852951411357,0.0155852951411357,0.0161879827477091,0.0161879827477091,0.0182619581097216,0.0210130532724496,0.0219096320966131,0.0219096320966131,0.0219096320966131,0.0219096320966131,0.0238731228522187,0.0267540802614779,0.0318873849418055,0.0318873849418055,0.0318873849418055,0.0318873849418055,0.034168087036752,0.0362330680605243,0.037099864355925,0.037099864355925,0.0387901750704077,0.039267066086013,0.0409995483586837,0.0409995483586837,0.0409995483586837,0.0409995483586837,0.0409995483586837,0.0409995483586837,0.0417137221410758,0.0440084652607905,0.0444832946134852,0.0444832946134852,0.047390701439153,0.0482485310257667,0.0482485310257667],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[48.180916976456,23.5186219739292,22.8108002347877,13.7042154094393,18.0539033457249,57.4022140221402,57.4022140221402,57.4022140221402,57.4022140221402,12.3667548760169,9.53910477127398,9.37415404447309,12.3839285714286,19.0167445906274,35.8066298342541,35.8066298342541,17.013230859033,19.1242312423124,17.9280442804428,22.7813494056588,89.2110091743119,20.8818293431553,59.4709480122324,12.4671907588641,23.8247549019608,23.8247549019608,23.8247549019608,21.4411764705882,13.1837743530096,10.8887020578109,6.30051981806368,7.95981959819598,7.74429041587713,7.34639038698079,4.88007054673721,11.2796052631579,6.98730987309873,16.2126772310259,28.4908424908425,28.4908424908425,7.82262891344383,23.7411477411477,23.7411477411477,12.7365661861075,20.3485086342229,20.3485086342229,11.8868501529052,4.07174416158216,53.3308957952468,53.3308957952468,8.23981900452489,5.50610275333523,17.8040293040293,17.8040293040293,5.40193552878925,9.90417940876656,9.90417940876656,5.95702885205648,35.5521023765996,35.5521023765996,35.5521023765996,35.5521023765996,35.5521023765996,35.5521023765996,35.5521023765996,35.5521023765996,35.5521023765996,35.5521023765996,9.38242394978271,9.38242394978271,14.2417582417582,14.2417582417582,8.91284403669725,12.9463869463869,26.6627056672761,26.6627056672761,26.6627056672761,26.6627056672761,3.69473081328751,6.11817226890756,21.3290676416819,21.3290676416819,21.3290676416819,21.3290676416819,4.8089672758181,3.74577655504449,10.1705913134485,10.1705913134485,4.08645229309436,5.48953619909502,4.54595680562531,17.7733089579525,17.7733089579525,17.7733089579525,17.7733089579525,17.7733089579525,9.49206349206349,6.59972816853551,5.22121592539455,5.22121592539455,2.12917100316476,8.89835164835165,6.36369593709043],[1487.63759090438,639.564194335419,569.200454550599,322.343074709167,413.361120835308,1249.09268534898,1249.09268534898,1249.09268534898,1249.09268534898,258.772346916132,198.930186285616,193.571430173225,222.337054365242,339.827903669062,616.579320521729,616.579320521729,291.365436364237,307.150974245836,281.105441910782,343.736498421835,1337.01439744207,305.979857051667,834.330160541248,168.017713050757,316.438161361568,316.438161361568,316.438161361568,275.205973147885,161.517061824814,122.13786325261,70.4977293778894,85.0046209363971,81.3739556609861,74.7731418201388,48.9318007697209,112.232701314955,68.9358505925535,159.783954475992,275.190375610884,275.190375610884,73.6029657358535,217.707809210189,217.707809210189,113.925641332144,177.846772555844,177.846772555844,103.176094748723,34.8637734561008,454.640575226394,454.640575226394,69.8813118400064,46.222048241321,148.779671304525,148.779671304525,44.7178756762045,78.9676867556236,78.9676867556236,47.21600202127,279.17004512084,279.17004512084,279.17004512084,279.17004512084,279.17004512084,279.17004512084,279.17004512084,279.17004512084,279.17004512084,279.17004512084,72.8287766402208,72.8287766402208,109.606619631803,109.606619631803,67.3971400395739,95.9051537315122,194.996202344888,194.996202344888,194.996202344888,194.996202344888,26.6570320062896,43.3678410351371,146.403825628176,146.403825628176,146.403825628176,146.403825628176,32.6198778957266,25.1444975914109,67.7984733875808,67.7984733875808,27.0125764253129,36.1589341620927,29.4943343592345,115.156287616024,115.156287616024,115.156287616024,115.156287616024,115.156287616024,61.2384080869388,42.1572790443832,33.1902003028855,33.1902003028855,13.378715287773,55.6162195028522,39.7475476273692],["HFE;HLA-B;TAP2;HLA-C;HLA-DRA;HLA-A;HLA-F;HLA-G;HLA-DRB1;MICA;HLA-E;MICB","HFE;HLA-B;HLA-C;HLA-A;HLA-F;PVR;HLA-G;HLA-E;HLA-DRA;MICA;HLA-DRB1;NECTIN2;MICB","HLA-DRB5;HLA-DRA;CTSF;HLA-A;HLA-F;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DQB2;HLA-DRB1;DNM2;HLA-E","ABCG8;CETP;ABCG5;ABCA8;APOA5;LIMA1;LIPC;APOM;NPC1L1;APOC2;APOC1;APOE;APOB;LDLR","RIPK3;HFE;HLA-B;HLA-C;HLA-DRA;HLA-A;HLA-F;HLA-G;MICA;HLA-DRB1;MICB;HLA-E","HLA-B;HLA-C;HLA-A;HLA-F;HLA-G;MICA;HLA-E;MICB","HLA-B;HLA-C;HLA-A;HLA-F;HLA-G;MICA;HLA-E;MICB","HLA-B;HLA-C;HLA-A;HLA-F;HLA-G;MICA;HLA-E;MICB","HLA-B;HLA-C;HLA-A;HLA-F;HLA-G;MICA;HLA-E;MICB","HFE;HLA-B;HLA-C;HLA-A;HLA-F;PVR;HLA-G;HLA-E;HLA-DRA;MICA;HLA-DRB1;NECTIN2;MICB","ABCG8;CETP;ABCG5;PCSK9;APOA5;CYP7A1;LIMA1;LIPC;APOM;NPC1L1;APOC2;ANGPTL3;APOE;APOB;LDLR","ABCG8;CETP;ABCG5;PCSK9;APOA5;CYP7A1;LIMA1;LIPC;APOM;NPC1L1;APOC2;ANGPTL3;APOE;APOB;LDLR","HFE;HLA-B;HLA-C;HLA-DRA;HLA-A;HLA-F;HLA-G;MICA;HLA-DRB1;MICB;HLA-E","HLA-DRB5;HLA-DRA;CTSF;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DQB2;HLA-DRB1;DNM2","HLA-DRB5;HLA-DRA;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DQB2;HLA-DRB1","HLA-DRB5;HLA-DRA;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DQB2;HLA-DRB1","HLA-DRB5;HLA-DRA;CTSF;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DQB2;HLA-DRB1;DNM2","ABCG8;ABCG5;APOM;APOC2;APOC1;ABCA8;APOE;APOA5","CETP;GCKR;LIPC;APOC2;APOC4;ANGPTL3;APOE;APOA5","HLA-DRB5;HLA-DRA;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DQB2;HLA-DRB1","CETP;LIPC;APOC2;APOE;APOA5","HLA-DRB5;HLA-DRA;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DQB2;HLA-DRB1","CETP;LIPC;APOC2;APOE;APOA5","CETP;GCKR;LIPC;APOC2;APOC4;ANGPTL3;APOE;APOA5","UGT1A10;UGT2B17;UGT1A4;UGT1A9;UGT1A8;UGT1A6","UGT1A10;UGT2B17;UGT1A4;UGT1A9;UGT1A8;UGT1A6","CETP;APOM;LIPC;APOC1;APOE;PLTP","HLA-B;HLA-A;HLA-F;HLA-G;MICA;HLA-E","SDCBP;ATXN2;ITGB3;APOC2;APOC1;PCSK9;RAC1","HLA-DRB5;HLA-DRA;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DQB2;HLA-DRB1","CETP;INSIG2;NPC1L1;SNX17;ANGPTL3;DHCR24;HMGCR;APOE;APOB;CYP7A1","HLA-DRB5;HLA-DRA;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DQB2;HLA-DRB1;SKAP1","CETP;LIPC;GPAM;APOC1;APOE;APOB;APOA5;LPIN3","HLA-DRB5;HLA-DRA;ZNF335;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DQB2;HLA-DRB1","UGT1A10;CYP2A6;CYP26C1;CYP21A2;NR1I2;CYP1A1;UGT2B17;HSD17B14;DHCR24;CYP7A1;UGT1A8","CETP;ABCG8;ABCG5;NPC1L1;APOB;LDLR","SDCBP;BMPR2;TNXB;HFE;CSNK2B;INHBB;GDF5;GDF7","CETP;APOM;LIPC;APOC2;APOE","GSK3B;UBXN2B;CEP250;MARK4","ABCG8;LIMA1;NPC1L1;LDLR","VTN;HFE;APOC2;APOC1;FLOT1;RAC1;APOA5","ABCG8;ABCG5;APOC2;APOC1","HLA-F;HLA-G;MICA;HLA-E","GSTM4;GSTM2;CYP2A6;GSTM1;NR1I2","ABCG8;LIMA1;NPC1L1;LDLR","APOC2;APOC1;APOE;APOA5","SLC22A3;SLC22A2;NR1I2;SLC22A1;ABCA8","ABCG8;CETP;ABCG5;SLC25A17;ABCA6;ABCA9;APOE;ABCA8;PLTP;APOA5;LDLR","SLC22A3;SLC22A2;SLC22A1","HLA-B;HLA-G;HLA-E","HLA-F;PVR;HLA-G;MICA;NECTIN2;HLA-E","CETP;CYP26C1;CYP21A2;ANGPTL3;HMGCR;APOE;APOB;CYP7A1","POP7;RPP21;RPP14;RPP25","SLC22A3;SLC44A2;SLC22A2;SLC22A1","SDCBP;BMPR2;TNXB;HFE;CSNK2B;INHBB;GDF5;GDF7","CETP;YJEFN3;APOC2;APOC1;ABCA8","UGT1A10;NF1;PCSK9;UGT1A9;UGT1A8","ABHD12;FADS3;GSTM2;ABHD6;DAGLB;CYP4F12;FADS1","HLA-F;HLA-G;HLA-E","SLC22A3;SLC22A2;SLC22A1","SNX17;APOE;CYP7A1","SNX17;APOE;CYP7A1","UGT1A9;UGT1A8;UGT1A6","APOC2;PCSK9;LDLR","SPHK2;HAVCR1;NECTIN2","HLA-F;HLA-G;HLA-E","GSK3B;CEP250;MARK4","APOC2;DAGLB;APOA5","LIPC;ABHD16A;ABHD6;DAGLB;APOA5","HLA-F;HLA-G;PVR;NECTIN2;HLA-E","POP7;RPP21;RPP14;RPP25","HLA-F;HLA-G;MICA;HLA-E","GSTM4;GSTM2;GSTM1;CYP1A1;FADS1","SORT1;APOC2;APOC1;APOA5","GSK3B;APOE;DNM2","SLC22A3;SLC22A2;SLC22A1","SLC22A3;SLC22A2;SLC22A1","C4B;C4A;C2","HLA-DRB5;HLA-DRA;HLA-A;TYK2;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DRB1;HLA-DQB2;SMARCA4","PGS1;CETP;APOC1;ABHD6;APOE;APOA5","SNX17;APOE;CYP7A1","SLC22A3;SLC22A2;SLC22A1","SLC22A3;SLC22A2;SLC22A1","PARP10;TNKS;PARP9","BMPR2;CYP26C1;HOXB3;CELSR2;HOXB7;HOXB6;HOXB5","SDCBP;CDKN2B;BMPR2;TNXB;HFE;CSNK2B;INHBB;GDF5;GDF7","TYK2;HLA-F;GAS6;HLA-E","APOC2;DAGLB;APOA5;LDLR","ABHD12;GSTM4;GSTM2;CYP1A1;ABHD6;DAGLB;CYP4F12;FADS1","SLC22A3;ABCG8;ABCG5;SLC44A2;SLC22A2;SLC22A1","HLA-DRB5;HLA-DRA;HLA-DOB;HLA-DQA2;HLA-DQB2;HLA-DQA1;HLA-DRB1","SLC22A3;SLC22A2;SLC22A1","SLC22A3;SLC22A2;SLC22A1","SLC22A3;SLC22A2;SLC22A1","VTN;ITGB3;PRKD2","HFE;HLA-A;HLA-E","HLA-DRA;HLA-A;HLA-DRB1;HLA-E","CETP;YJEFN3;APOE;ABCA8;PLTP","ARFRP1;BBS1;SEC16A;GCC2;EXOC6;CCDC93","CETP;ANGPTL3;UGT1A4;APOE;APOB;UGT1A6","TNXB;BMPR2;HFE;ITGB3;DOCK7;INHBB;PTPN11;GDF5;GDF7;SDCBP;VTN;RAD50;PDGFD;CSNK2B;ERP29;FLOT1;PRKD2;RAC1;GAS6;RAF1;HLA-DRB1","APOC2;ANGPTL3;DAGLB;APOA5","SPHK2;HLA-A;HLA-F;HLA-G;HLA-E"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Term<\/th>\n      <th>Overlap<\/th>\n      <th>P.value<\/th>\n      <th>Adjusted.P.value<\/th>\n      <th>Old.P.value<\/th>\n      <th>Old.Adjusted.P.value<\/th>\n      <th>Odds.Ratio<\/th>\n      <th>Combined.Score<\/th>\n      <th>Genes<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":2,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[2,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<p><br><br><br><br><br><br><br><br><br><br><br><img src="figure/realdata_final_downstream_enrichment_compare_twasctwascoloc.Rmd/unnamed-chunk-1-3.png" width="480" style="display: block; margin: auto;" />[1]
+“IBD-ebi-a-GCST004131”
+<img src="figure/realdata_final_downstream_enrichment_compare_twasctwascoloc.Rmd/unnamed-chunk-1-4.png" width="480" style="display: block; margin: auto;" /><br><br><br><br><br><br><br><br><br><br><br><br></p>
+<div id="htmlwidget-cd4f4cc36d9100c1e097" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-cd4f4cc36d9100c1e097">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">Enriched GO terms -- ctwas <\/caption>","data":[["1","2","3","4"],["T-helper 17 Cell Differentiation (GO:0072539)","Cellular Response To Interleukin-6 (GO:0071354)","Negative Regulation Of Growth (GO:0045926)","Negative Regulation Of Cell Growth (GO:0030308)"],["2/8","2/23","3/124","3/125"],[4.18072344425752e-05,0.00037344700460227,0.000484217190083171,0.000495715687871914],[0.0164720503703746,0.0488279952553835,0.0488279952553835,0.0488279952553835],[0,0,0,0],[0,0,0,0],[289.405797101449,82.6252587991718,22.3749060856499,22.1903874813711],[2917.91692081771,652.139226735722,170.787143798767,168.857931185142],["STAT3;RORC","SBNO2;STAT3","SMAD3;ADAM15;IP6K2","SMAD3;ADAM15;IP6K2"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Term<\/th>\n      <th>Overlap<\/th>\n      <th>P.value<\/th>\n      <th>Adjusted.P.value<\/th>\n      <th>Old.P.value<\/th>\n      <th>Old.Adjusted.P.value<\/th>\n      <th>Odds.Ratio<\/th>\n      <th>Combined.Score<\/th>\n      <th>Genes<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":2,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[2,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<p><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br></p>
+<div id="htmlwidget-b34ddb0bc40f86bb0267" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-b34ddb0bc40f86bb0267">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">Enriched GO terms -- twas <\/caption>","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75"],["MHC Class II Protein Complex Assembly (GO:0002399)","Peptide Antigen Assembly With MHC Class II Protein Complex (GO:0002503)","Immunoglobulin Mediated Immune Response (GO:0016064)","Peptide Antigen Assembly With MHC Protein Complex (GO:0002501)","Antigen Processing And Presentation Of Exogenous Peptide Antigen Via MHC Class II (GO:0019886)","Immunoglobulin Production Involved In Immunoglobulin-Mediated Immune Response (GO:0002381)","Antigen Processing And Presentation Of Peptide Antigen Via MHC Class II (GO:0002495)","Antigen Processing And Presentation Of Exogenous Peptide Antigen (GO:0002478)","Positive Regulation Of T Cell Activation (GO:0050870)","Antigen Processing And Presentation Of Endogenous Peptide Antigen (GO:0002483)","Positive Regulation Of Leukocyte Cell-Cell Adhesion (GO:1903039)","Positive Regulation Of Lymphocyte Activation (GO:0051251)","Regulation Of T Cell Activation (GO:0050863)","Cellular Response To Cytokine Stimulus (GO:0071345)","Type II Interferon-Mediated Signaling Pathway (GO:0060333)","Cellular Response To Type II Interferon (GO:0071346)","Positive Regulation Of T Cell Mediated Cytotoxicity (GO:0001916)","Regulation Of T Cell Mediated Cytotoxicity (GO:0001914)","Regulation Of T-helper 17 Type Immune Response (GO:2000316)","Positive Regulation Of Cytokine Production (GO:0001819)","Cytokine-Mediated Signaling Pathway (GO:0019221)","Positive Regulation Of T Cell Mediated Immunity (GO:0002711)","Regulation Of Type II Interferon Production (GO:0032649)","Antigen Processing And Presentation Of Endogenous Peptide Antigen Via MHC Class I (GO:0019885)","Receptor Signaling Pathway Via STAT (GO:0097696)","Growth Hormone Receptor Signaling Pathway (GO:0060396)","Growth Hormone Receptor Signaling Pathway Via JAK-STAT (GO:0060397)","Intracellular pH Elevation (GO:0051454)","Positive Regulation Of CD4-positive, Alpha-Beta T Cell Differentiation (GO:0043372)","Positive Regulation Of Apoptotic Cell Clearance (GO:2000427)","Positive Regulation Of Natural Killer Cell Proliferation (GO:0032819)","Positive Regulation Of Leukocyte Mediated Cytotoxicity (GO:0001912)","Phosphatidylinositol Biosynthetic Process (GO:0006661)","Regulation Of Receptor Signaling Pathway Via JAK-STAT (GO:0046425)","Interleukin-12-Mediated Signaling Pathway (GO:0035722)","Positive Regulation Of NK T Cell Activation (GO:0051135)","Positive Regulation Of Memory T Cell Differentiation (GO:0043382)","Receptor Signaling Pathway Via JAK-STAT (GO:0007259)","Positive Regulation Of Immune Response (GO:0050778)","Positive Regulation Of Type II Interferon Production (GO:0032729)","Regulation Of Memory T Cell Differentiation (GO:0043380)","Regulation Of Natural Killer Cell Proliferation (GO:0032817)","Regulation Of T Cell Migration (GO:2000404)","Cellular Response To Interleukin-12 (GO:0071349)","Inositol Phosphate Biosynthetic Process (GO:0032958)","Positive Regulation Of Interleukin-17 Production (GO:0032740)","Positive Regulation Of T Cell Proliferation (GO:0042102)","Regulation Of B Cell Activation (GO:0050864)","Regulation Of CD4-positive, Alpha-Beta T Cell Differentiation (GO:0043370)","Phosphatidylinositol Phosphate Biosynthetic Process (GO:0046854)","Regulation Of Interleukin-10 Production (GO:0032653)","Detection Of Bacterium (GO:0016045)","Positive Regulation Of CD4-positive, Alpha-Beta T Cell Activation (GO:2000516)","Regulation Of Defense Response (GO:0031347)","GTP Metabolic Process (GO:0046039)","Regulation Of Immune Effector Process (GO:0002697)","Antigen Processing And Presentation Of Endogenous Peptide Antigen Via MHC Class I Via ER Pathway (GO:0002484)","Antigen Processing And Presentation Of Endogenous Peptide Antigen Via MHC Class I Via ER Pathway, TAP-independent (GO:0002486)","Antigen Processing And Presentation Of Endogenous Peptide Antigen Via MHC Class Ib (GO:0002476)","Antigen Processing And Presentation Of Peptide Antigen Via MHC Class Ib (GO:0002428)","Positive Regulation Of T-helper 17 Type Immune Response (GO:2000318)","Negative Regulation Of Carbohydrate Metabolic Process (GO:0045912)","Regulation Of Cytokine Production (GO:0001817)","Positive Regulation Of Adaptive Immune Response Based On Somatic Recombination Of Immune Receptors Built From Immunoglobulin Superfamily Domains (GO:0002824)","Regulation Of T Cell Proliferation (GO:0042129)","Regulation Of Gluconeogenesis (GO:0006111)","Dendritic Cell Chemotaxis (GO:0002407)","Negative Regulation Of Gluconeogenesis (GO:0045721)","Polyol Biosynthetic Process (GO:0046173)","Response To Type II Interferon (GO:0034341)","Negative Regulation Of Small Molecule Metabolic Process (GO:0062014)","Cellular Response To Oxygen-Containing Compound (GO:1901701)","Positive Regulation Of Lymphocyte Migration (GO:2000403)","Protein Localization To Endoplasmic Reticulum (GO:0070972)","Regulation Of Interleukin-17 Production (GO:0032660)"],["9/14","9/14","11/30","9/18","10/26","9/19","10/28","10/31","15/107","8/21","10/44","10/47","11/62","18/308","4/9","8/66","6/33","6/36","4/13","16/320","14/257","6/43","8/87","3/6","5/31","4/17","3/7","3/7","3/7","3/7","3/7","6/51","8/98","6/53","3/8","3/8","3/8","5/36","7/80","6/58","3/9","3/9","4/23","3/10","3/10","4/24","6/65","4/25","3/11","5/44","5/46","3/12","3/12","7/97","3/13","3/13","3/13","3/13","3/13","3/13","3/13","4/30","9/167","3/14","6/77","4/31","3/15","3/15","3/15","6/80","4/33","15/406","3/16","3/16","4/34"],[7.87597398417503e-14,7.87597398417503e-14,3.92821517018614e-13,1.81235176061127e-12,2.68150675343805e-12,3.39736335263928e-12,6.44749052694071e-12,2.09212284046716e-11,9.32071011207169e-11,4.81373565903721e-10,9.81189119831796e-10,1.96599356205259e-09,2.36256763245101e-09,1.45161624999287e-06,6.45542442840693e-06,7.46180755759947e-06,9.73067676346316e-06,1.64630294956098e-05,3.48936222944315e-05,3.84301877714157e-05,4.67030215155133e-05,4.70847750389857e-05,5.7467886236834e-05,6.9217518875836e-05,0.000100998436470438,0.000110647267778372,0.000119753157333125,0.000119753157333125,0.000119753157333125,0.000119753157333125,0.000119753157333125,0.000125496289968617,0.000133815461350211,0.00015591962532826,0.000189427532406933,0.000189427532406933,0.000189427532406933,0.000210466564603608,0.000228548171318219,0.000257815632143976,0.000280914335733107,0.000280914335733107,0.000382836569553261,0.000396751787253758,0.000396751787253758,0.000453886446084411,0.000481010988846363,0.000533854731259352,0.000539346878516025,0.000548525990936197,0.000675261102523921,0.00071097950743802,0.00071097950743802,0.00074081338724144,0.000913806507522069,0.000913806507522069,0.000913806507522069,0.000913806507522069,0.000913806507522069,0.000913806507522069,0.000913806507522069,0.00108887454066679,0.00113496855578205,0.00114986557316736,0.00118447970925964,0.00123522725197527,0.00142107908379076,0.00142107908379076,0.00142107908379076,0.00144492278016633,0.00156821286795577,0.00161662173159866,0.0017292578293106,0.0017292578293106,0.0017560701568039],[8.03743145085062e-11,8.03743145085062e-11,2.6724957207833e-10,9.24752485851899e-10,1.09459105675341e-09,1.15566976712279e-09,1.87990402364085e-09,5.33752839674184e-09,2.11372992652648e-08,9.82483448009495e-08,1.82055181234245e-07,3.34382738345778e-07,3.70923118294808e-07,0.00021162491187396,0.000878368083891902,0.000951846826566282,0.00116825360436637,0.0018667246222522,0.00374830963699657,0.00392180066207297,0.00436818299338953,0.00436818299338953,0.00509965025258166,0.00588637316773256,0.00788439335860992,0.00788439335860992,0.00788439335860992,0.00788439335860992,0.00788439335860992,0.00788439335860992,0.00788439335860992,0.00800431024456087,0.00827628353381154,0.0093597633910288,0.0104492322606095,0.0104492322606095,0.0104492322606095,0.0113042699567359,0.0119606876323201,0.0131550426301464,0.013651099029316,0.013651099029316,0.0179948977285538,0.0179948977285538,0.0179948977285538,0.0201387442708322,0.0208881580475623,0.0223908309500156,0.0223908309500156,0.0223908309500156,0.0270236845147318,0.0273794183902075,0.0273794183902075,0.0280000022844404,0.0305750669156155,0.0305750669156155,0.0305750669156155,0.0305750669156155,0.0305750669156155,0.0305750669156155,0.0305750669156155,0.0358450473790469,0.0366699317942902,0.0366699317942902,0.0371926628707527,0.0381984669891142,0.04203510739155,0.04203510739155,0.04203510739155,0.0421298199188497,0.0450805980774328,0.0458267354749008,0.0476948004003099,0.0476948004003099,0.0477885225338235],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[118.920805369128,118.920805369128,38.4804409672831,66.0536912751678,41.4078282828283,59.4453020134228,36.8032173587729,31.5408048741382,10.944572662299,40.5042449189606,19.4682115270351,17.8869778869779,14.3125331213567,4.16721154993438,51.9815181518152,9.05777880290624,14.5190107050572,13.0651162790698,28.8727539420609,3.50678241996744,3.82449191702131,10.5895663104965,6.64290250201092,64.7697368421053,12.5235608762099,19.98476770754,48.5748355263158,48.5748355263158,48.5748355263158,48.5748355263158,48.5748355263158,8.70343300110742,5.82772203641769,8.33222591362126,38.8578947368421,38.8578947368421,38.8578947368421,10.5009613330485,6.27123287671233,7.52913365704063,32.3799342105263,32.3799342105263,13.6696195935383,27.7528195488722,27.7528195488722,12.9854785478548,6.6334816149558,12.3664937922364,24.2824835526316,8.34352182034301,7.93571313196576,21.5833333333333,21.5833333333333,5.08225925925926,19.4240131578947,19.4240131578947,19.4240131578947,19.4240131578947,19.4240131578947,19.4240131578947,19.4240131578947,9.98578319370399,3.73407102200323,17.6572966507177,5.50896074119133,9.61545043393228,16.1850328947368,16.1850328947368,16.1850328947368,5.28481637783963,8.95140548537612,2.53591073117752,14.9392712550607,14.9392712550607,8.65258525852585],[3588.12306881772,3588.12306881772,1099.20999808803,1785.85374128556,1103.29677127504,1569.83281184137,948.320651397786,775.596490250139,252.778008531346,868.99336096391,403.814625258022,358.585041017812,284.297242528528,56.0191288044674,621.209799778977,106.933535815635,167.552680947029,143.904329569415,296.327035576941,35.6522900427526,38.1366925308483,105.509788381514,64.8631883836762,620.381157084646,115.221838637248,182.044510247121,438.634551501646,438.634551501646,438.634551501646,438.634551501646,438.634551501646,78.1849784014547,51.9777375926772,73.041708051831,333.070600996875,333.070600996875,333.070600996875,88.9030682544169,52.5765336332585,62.2152328972046,264.785642394235,264.785642394235,107.551232413402,217.365624773666,217.365624773666,99.9578443772505,50.6772817491383,93.186314020656,182.729370799493,62.645463753834,57.933968420181,156.454711686916,156.454711686916,36.631714164197,135.927140603516,135.927140603516,135.927140603516,135.927140603516,135.927140603516,135.927140603516,135.927140603516,68.1291107426621,25.3212969527693,119.506530207769,37.1218656774005,64.3898668705918,106.114558787701,106.114558787701,106.114558787701,34.5611104856335,57.8065529169736,16.2993548767069,95.0147058022964,95.0147058022964,54.897857226202],["HLA-DRB5;HLA-DMA;HLA-DMB;HLA-DRA;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DQB2;HLA-DRB1","HLA-DRB5;HLA-DMA;HLA-DMB;HLA-DRA;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DQB2;HLA-DRB1","HLA-DMA;HLA-DRB5;HLA-DMB;CARD9;HLA-DRA;FCGR2B;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DQB2;HLA-DRB1","HLA-DRB5;HLA-DMA;HLA-DMB;HLA-DRA;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DQB2;HLA-DRB1","HLA-DMA;HLA-DRB5;HLA-DMB;HLA-DRA;FCGR2B;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DQB2;HLA-DRB1","HLA-DRB5;HLA-DMA;HLA-DMB;HLA-DRA;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DQB2;HLA-DRB1","HLA-DMA;HLA-DRB5;HLA-DMB;HLA-DRA;FCGR2B;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DQB2;HLA-DRB1","HLA-DMA;HLA-DRB5;HLA-DMB;HLA-DRA;FCGR2B;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DQB2;HLA-DRB1","HLA-DRB5;IL23R;TYK2;NOD2;AIF1;HLA-DMA;HLA-DMB;HLA-DRA;JAK2;BRD7;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DRB1;HLA-DQB2","ERAP2;HLA-B;TAP2;HLA-C;TAP1;HLA-DRA;HLA-DRB1;MICA","HLA-DMA;HLA-DRB5;HLA-DMB;HLA-DRA;HLA-DOB;HLA-DQA2;HLA-DQA1;RHOA;HLA-DQB2;HLA-DRB1","HLA-DMA;HLA-DRB5;HLA-DMB;HLA-DRA;NOD2;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DQB2;HLA-DRB1","KAT2A;HLA-DMA;HLA-DRB5;HLA-DMB;HLA-DRA;TNFSF8;HLA-DOB;HLA-DQA2;HLA-DQB2;HLA-DQA1;HLA-DRB1","STAT5A;STAT5B;IL23R;LRRK2;STAT3;CAMK2A;TYK2;AIF1;IRGM;RHOA;ZFP36L2;SBNO2;SOCS1;IRF1;IRF8;JAK2;SLC26A6;IL12RB2","IFNGR2;IRF1;TYK2;JAK2","IFNGR2;IRF1;CAMK2A;IRF8;TYK2;JAK2;AIF1;SLC26A6","IL23R;HLA-B;HLA-C;HLA-DRA;MICA;HLA-DRB1","IL23R;HLA-B;HLA-C;HLA-DRA;MICA;HLA-DRB1","IL23R;CARD9;TYK2;JAK2","PTGER4;IL23R;STAT3;CARD9;TYK2;PARK7;NOD2;AGPAT1;AIF1;KAT2A;IRF1;TNFRSF14;JAK2;IL18R1;CD244;IL12RB2","STAT5A;STAT5B;TRAF3IP2;GPR35;IL23R;STAT3;TYK2;IL1RL1;IL18RAP;SOCS1;CXCR2;JAK2;IL18R1;IL12RB2","IL23R;HLA-B;HLA-C;HLA-DRA;MICA;HLA-DRB1","IL23R;TYK2;JAK2;IRGM;CD244;HLA-DRB1;IL18R1;IL12RB2","ERAP2;TAP2;TAP1","STAT5A;STAT5B;STAT3;TYK2;JAK2","STAT5A;STAT5B;STAT3;JAK2","STAT5A;STAT5B;STAT3","CLN3;SLC26A3;SLC26A6","SOCS1;HLA-DRA;HLA-DRB1","C4B;C4A;C2","IL23R;TYK2;JAK2","IL23R;HLA-B;HLA-C;HLA-DRA;MICA;HLA-DRB1","ITPKC;MTMR3;SOCS1;PGAP3;PMPCA;IP6K1;EFR3B;IP6K2","SOCS1;MST1;CAMK2A;TYK2;JAK2;PTPN2","TYK2;JAK2;IL12RB2","IL23R;TYK2;JAK2","IL23R;HLA-DRA;HLA-DRB1","STAT5A;STAT5B;STAT3;TYK2;JAK2","HLA-DMB;C7;IL23R;HLA-DRA;NOD2;FCGR2B;HLA-DRB1","IL23R;TYK2;JAK2;CD244;IL18R1;IL12RB2","IL23R;HLA-DRA;HLA-DRB1","IL23R;TYK2;JAK2","TNFRSF14;CCR6;AIF1;RHOA","TYK2;JAK2;IL12RB2","ITPKC;IP6K1;IP6K2","IL23R;NOD2;TYK2;JAK2","HLA-DMB;IL23R;TYK2;JAK2;AIF1;ICOSLG","NOD2;FCGR2B;IKZF3;ZFP36L2","SOCS1;HLA-DRA;HLA-DRB1","ITPKC;SOCS1;IP6K1;EFR3B;IP6K2","IL23R;STAT3;NOD2;FCGR2B;HLA-DRB1","HLA-B;NOD2;HLA-DRB1","SOCS1;HLA-DRA;HLA-DRB1","CYLD;SBNO2;IRF1;PARK7;NOD2;JAK2;FCGR2B","EFNA1;LRRK2;IMPDH2","HLA-DRA;FCGR2B;HLA-DRB1","HLA-B;HLA-C;MICA","HLA-B;HLA-C;MICA","HLA-B;HLA-C;MICA","HLA-B;HLA-C;MICA","IL23R;TYK2;JAK2","KAT2A;MST1;NUPR1;CLK2","PTGER4;KAT2A;CARD9;HLA-B;IRF8;AGPAT1;FCGR2B;ICOSLG;HLA-DRB1","IL23R;TYK2;JAK2","HLA-DMB;IL23R;TNFSF8;TYK2;JAK2;HLA-DRB1","KAT2A;MST1;PTPN2;CLK2","CXCR1;CXCR2;CCR6","KAT2A;MST1;CLK2","ITPKC;IP6K1;IP6K2","SLC22A5;IL23R;CAMK2A;IRF8;AIF1;SLC26A6","KAT2A;MST1;NUPR1;CLK2","HCN3;PRKAA1;NFKBIL1;RORC;GPBAR1;NOD2;ADCY7;IRGM;RHOA;ITPKC;SBNO2;GNB1;SLC26A3;SLC26A6;IP6K2","TNFRSF14;AIF1;RHOA","LRRK2;SEC16A;KDELR2","IL23R;NOD2;TYK2;JAK2"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Term<\/th>\n      <th>Overlap<\/th>\n      <th>P.value<\/th>\n      <th>Adjusted.P.value<\/th>\n      <th>Old.P.value<\/th>\n      <th>Old.Adjusted.P.value<\/th>\n      <th>Odds.Ratio<\/th>\n      <th>Combined.Score<\/th>\n      <th>Genes<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":2,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[2,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<p><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br></p>
+<div id="htmlwidget-ea290b91341feeb9fb9d" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-ea290b91341feeb9fb9d">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">Enriched GO terms -- coloc <\/caption>","data":[["1","2","3","4","5","6","7","8","9"],["Dendritic Cell Chemotaxis (GO:0002407)","Associative Learning (GO:0008306)","Dendritic Cell Migration (GO:0036336)","Positive Regulation Of Aspartic-Type Endopeptidase Activity Involved In Amyloid Precursor Protein Catabolic Process (GO:1902961)","Positive Regulation Of Aspartic-Type Peptidase Activity (GO:1905247)","Substrate Adhesion-Dependent Cell Spreading (GO:0034446)","Negative Regulation Of Transporter Activity (GO:0032410)","Regulation Of Aspartic-Type Endopeptidase Activity Involved In Amyloid Precursor Protein Catabolic Process (GO:1902959)","B Cell Activation (GO:0042113)"],["3/15","3/18","3/18","2/6","2/7","3/36","2/8","2/8","4/92"],[2.14271141638726e-05,3.81221252446251e-05,3.81221252446251e-05,0.000200640873802843,0.000280224444748221,0.000317992617327037,0.000372737765799994,0.000372737765799994,0.000377202952111772],[0.00906035843313923,0.00906035843313923,0.00906035843313923,0.0298828560950771,0.0298828560950771,0.0298828560950771,0.0298828560950771,0.0298828560950771,0.0298828560950771],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[70.1197183098592,56.087323943662,56.087323943662,138.347222222222,110.672222222222,25.4711907810499,92.2222222222222,92.2222222222222,12.8818181818182],[753.84681346562,570.672577143885,570.672577143885,1177.88741237,905.289889415916,205.131786443336,728.060822649528,728.060822649528,101.543858320616],["CXCR1;CXCR2;CCR6","CLN3;RGS14;ADCY3","CXCR1;CXCR2;CCR6","EFNA1;EFNA3","EFNA1;EFNA3","EFNA1;ITGA4;ITGAV","NDFIP1;PPIF","EFNA1;EFNA3","CD40;HHEX;ITGA4;PRKCB"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Term<\/th>\n      <th>Overlap<\/th>\n      <th>P.value<\/th>\n      <th>Adjusted.P.value<\/th>\n      <th>Old.P.value<\/th>\n      <th>Old.Adjusted.P.value<\/th>\n      <th>Odds.Ratio<\/th>\n      <th>Combined.Score<\/th>\n      <th>Genes<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":2,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[2,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<p><br><br><br><br><br><br><br><br><br><br><br><img src="figure/realdata_final_downstream_enrichment_compare_twasctwascoloc.Rmd/unnamed-chunk-1-5.png" width="480" style="display: block; margin: auto;" />[1]
+“T1D-GCST90014023”
+<img src="figure/realdata_final_downstream_enrichment_compare_twasctwascoloc.Rmd/unnamed-chunk-1-6.png" width="480" style="display: block; margin: auto;" /><br><br><br><br><br><br><br><br><br><br><br><br></p>
+<div id="htmlwidget-b8483c7d3a45f2736f54" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-b8483c7d3a45f2736f54">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">Enriched GO terms -- ctwas <\/caption>","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53"],["Myeloid Dendritic Cell Differentiation (GO:0043011)","Regulation Of Type II Interferon Production (GO:0032649)","Myeloid Dendritic Cell Activation (GO:0001773)","T Cell Proliferation (GO:0042098)","Dendritic Cell Differentiation (GO:0097028)","Positive Regulation Of Transcription Elongation By RNA Polymerase II (GO:0032968)","Positive Regulation Of DNA-templated Transcription, Elongation (GO:0032786)","Positive Regulation Of Type II Interferon Production (GO:0032729)","Myeloid Leukocyte Differentiation (GO:0002573)","Regulation Of Transcription Elongation By RNA Polymerase II (GO:0034243)","Positive Regulation Of Cytokine Production (GO:0001819)","Positive Regulation Of Multicellular Organismal Process (GO:0051240)","Positive Regulation Of Protein Serine/Threonine Kinase Activity (GO:0071902)","Positive Regulation Of Antigen Processing And Presentation (GO:0002579)","Positive Regulation Of Dendritic Cell Antigen Processing And Presentation (GO:0002606)","Regulation Of Tumor Necrosis Factor Production (GO:0032680)","Negative Regulation Of CD4-positive, Alpha-Beta T Cell Proliferation (GO:2000562)","Positive Regulation Of Gene Expression (GO:0010628)","Positive Regulation Of Protein Kinase Activity (GO:0045860)","Negative Regulation Of CD8-positive, Alpha-Beta T Cell Activation (GO:2001186)","Regulation Of Myeloid Leukocyte Differentiation (GO:0002761)","Manganese Ion Transport (GO:0006828)","Regulation Of Dendritic Cell Antigen Processing And Presentation (GO:0002604)","Regulation Of CD8-positive, Alpha-Beta T Cell Proliferation (GO:2000564)","Regulation Of T-helper 1 Type Immune Response (GO:0002825)","Autophagosome-Lysosome Fusion (GO:0061909)","Regulation Of CD4-positive, Alpha-Beta T Cell Proliferation (GO:2000561)","Negative Regulation Of Alpha-Beta T Cell Proliferation (GO:0046642)","Regulation Of Cytokine Production (GO:0001817)","Negative Regulation Of Interleukin-17 Production (GO:0032700)","Positive Regulation Of Bone Resorption (GO:0045780)","Negative Regulation Of Alpha-Beta T Cell Activation (GO:0046636)","Regulation Of Phospholipase Activity (GO:0010517)","snRNA Transcription By RNA Polymerase II (GO:0042795)","Negative Regulation Of Cytokine Production (GO:0001818)","Negative Regulation Of CD4-positive, Alpha-Beta T Cell Activation (GO:2000515)","Regulation Of Phospholipase C Activity (GO:1900274)","Multicellular Organismal-Level Iron Ion Homeostasis (GO:0060586)","Positive Regulation Of T-helper 1 Type Immune Response (GO:0002827)","Regulation Of T Cell Differentiation In Thymus (GO:0033081)","Positive Regulation Of Ruffle Assembly (GO:1900029)","snRNA Transcription (GO:0009301)","Positive Regulation Of Granulocyte Macrophage Colony-Stimulating Factor Production (GO:0032725)","Positive Regulation Of Adaptive Immune Response Based On Somatic Recombination Of Immune Receptors Built From Immunoglobulin Superfamily Domains (GO:0002824)","Regulation Of Granulocyte Macrophage Colony-Stimulating Factor Production (GO:0032645)","Defense Response To Protozoan (GO:0042832)","Positive Regulation Of Transcription By RNA Polymerase III (GO:0045945)","Negative Regulation Of Interleukin-10 Production (GO:0032693)","Positive Regulation Of Myeloid Leukocyte Cytokine Production Involved In Immune Response (GO:0061081)","Positive Regulation Of Collagen Metabolic Process (GO:0010714)","Late Endosome To Lysosome Transport (GO:1902774)","Positive Regulation Of Regulatory T Cell Differentiation (GO:0045591)","Positive Regulation Of Small GTPase Mediated Signal Transduction (GO:0051057)"],["2/9","3/87","2/13","2/14","2/22","2/43","2/56","2/58","2/71","2/77","3/320","3/387","2/117","1/5","1/5","2/127","1/6","3/480","2/145","1/7","1/7","1/8","1/8","1/8","1/8","1/8","1/9","1/9","2/167","1/10","1/10","1/10","1/10","1/10","2/178","1/11","1/11","1/12","1/12","1/12","1/12","1/12","1/13","1/14","1/15","1/15","1/15","1/16","1/16","1/16","1/16","1/17","1/17"],[1.88426175267926e-05,3.48314723942105e-05,4.07552681828681e-05,4.75272798636248e-05,0.000120229631930328,0.000465736813527105,0.000789822996782574,0.000847043959356977,0.0012662395991897,0.00148708606698462,0.00160058214421888,0.0027512533052132,0.00338968833520852,0.00374469708393798,0.00374469708393798,0.00397934794281695,0.00449206839321453,0.00504112497649346,0.00515214441915416,0.00523891689414434,0.00523891689414434,0.00598524283644591,0.00598524283644591,0.00598524283644591,0.00598524283644591,0.00598524283644591,0.00673104649386944,0.00673104649386944,0.00677566994813091,0.00747632815644859,0.00747632815644859,0.00747632815644859,0.00747632815644859,0.00747632815644859,0.00766401988898197,0.00822108812367145,0.00822108812367145,0.0089653267055103,0.0089653267055103,0.0089653267055103,0.0089653267055103,0.0089653267055103,0.00970904421567263,0.0104522409709381,0.0111949172924613,0.0111949172924613,0.0111949172924613,0.0119370735063596,0.0119370735063596,0.0119370735063596,0.0119370735063596,0.0126787099336331,0.0126787099336331],[0.00247141855290849,0.00247141855290849,0.00247141855290849,0.00247141855290849,0.00500155268830165,0.0161455428689396,0.0220231429432814,0.0220231429432814,0.029264204070162,0.0302655532725025,0.0302655532725025,0.0443997132082415,0.0443997132082415,0.0443997132082415,0.0443997132082415,0.0443997132082415,0.0443997132082415,0.0443997132082415,0.0443997132082415,0.0443997132082415,0.0443997132082415,0.0443997132082415,0.0443997132082415,0.0443997132082415,0.0443997132082415,0.0443997132082415,0.0443997132082415,0.0443997132082415,0.0443997132082415,0.0443997132082415,0.0443997132082415,0.0443997132082415,0.0443997132082415,0.0443997132082415,0.0443997132082415,0.0443997132082415,0.0443997132082415,0.0443997132082415,0.0443997132082415,0.0443997132082415,0.0443997132082415,0.0443997132082415,0.046964678996742,0.0486845350847607,0.0486845350847607,0.0486845350847607,0.0486845350847607,0.0486845350847607,0.0486845350847607,0.0486845350847607,0.0486845350847607,0.0497579559659562,0.0497579559659562],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[439.076923076923,59.2291666666667,279.356643356643,256.064102564103,153.576923076923,74.8367729831144,56.7834757834758,54.75,44.4057971014493,40.8410256410256,15.5110410094637,12.7610677083333,26.5819397993311,356.803571428571,356.803571428571,24.4430769230769,285.428571428571,10.2243186582809,21.3469607315761,237.845238095238,237.845238095238,203.857142857143,203.857142857143,203.857142857143,203.857142857143,203.857142857143,178.366071428571,178.366071428571,18.4801864801865,158.539682539683,158.539682539683,158.539682539683,158.539682539683,158.539682539683,17.3155594405594,142.678571428571,142.678571428571,129.701298701299,129.701298701299,129.701298701299,129.701298701299,129.701298701299,118.886904761905,109.736263736264,101.892857142857,101.892857142857,101.892857142857,95.0952380952381,95.0952380952381,95.0952380952381,95.0952380952381,89.1473214285714,89.1473214285714],[4776.8888068673,607.986756202417,2823.71612391394,2548.91500508111,1386.20174723602,574.139479895918,405.64421204982,387.288248561396,296.262321547139,265.913334082666,99.8505873349453,75.2354106020232,151.171951462039,1993.60946675892,1993.60946675892,135.088020810462,1542.86759275583,54.0879340910373,112.463095321345,1249.0776854949,1249.0776854949,1043.43429845216,1043.43429845216,1043.43429845216,1043.43429845216,1043.43429845216,892.013120036697,892.013120036697,92.2977581069702,776.212425317664,776.212425317664,776.212425317664,776.212425317664,776.212425317664,84.347875964278,685.007341093277,685.007341093277,611.462600299646,611.462600299646,611.462600299646,611.462600299646,611.462600299646,551.004832497213,500.500391445588,457.73281515348,457.73281515348,457.73281515348,421.091823007422,421.091823007422,421.091823007422,421.091823007422,389.380440824271,389.380440824271],["BATF3;CAMK4","SLC11A1;RASGRP1;VSIR","BATF3;CAMK4","SLC11A1;RASGRP1","BATF3;CAMK4","ELL;ZMYND8","ELL;ZMYND8","SLC11A1;RASGRP1","BATF3;CAMK4","ELL;ZMYND8","CCDC88B;SLC11A1;RASGRP1","CCDC88B;SLC11A1;PLEKHM1","TAB1;RASGRP1","SLC11A1","SLC11A1","RASGRP1;VSIR","VSIR","CCDC88B;SLC11A1;VSIR","SLC11A1;TAB1","VSIR","CAMK4","SLC11A1","SLC11A1","VSIR","SLC11A1","PLEKHM1","VSIR","VSIR","CCDC88B;SLC11A1","VSIR","PLEKHM1","VSIR","RASGRP1","ELL","SLC11A1;VSIR","VSIR","RASGRP1","SLC11A1","SLC11A1","CAMK4","PLEKHM1","ELL","RASGRP1","SLC11A1","RASGRP1","SLC11A1","ELL","VSIR","CAMK4","VSIR","PLEKHM1","VSIR","RASGRP1"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Term<\/th>\n      <th>Overlap<\/th>\n      <th>P.value<\/th>\n      <th>Adjusted.P.value<\/th>\n      <th>Old.P.value<\/th>\n      <th>Old.Adjusted.P.value<\/th>\n      <th>Odds.Ratio<\/th>\n      <th>Combined.Score<\/th>\n      <th>Genes<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":2,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[2,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<p><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br></p>
+<div id="htmlwidget-0cd1448c4699a7b4bd6a" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-0cd1448c4699a7b4bd6a">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">Enriched GO terms -- twas <\/caption>","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75"],["Peptide Antigen Assembly With MHC Protein Complex (GO:0002501)","MHC Class II Protein Complex Assembly (GO:0002399)","Peptide Antigen Assembly With MHC Class II Protein Complex (GO:0002503)","Antigen Processing And Presentation Of Exogenous Peptide Antigen (GO:0002478)","Antigen Processing And Presentation Of Endogenous Peptide Antigen (GO:0002483)","Positive Regulation Of Leukocyte Cell-Cell Adhesion (GO:1903039)","Immunoglobulin Production Involved In Immunoglobulin-Mediated Immune Response (GO:0002381)","Positive Regulation Of T Cell Activation (GO:0050870)","Positive Regulation Of Lymphocyte Activation (GO:0051251)","Regulation Of T Cell Activation (GO:0050863)","Antigen Processing And Presentation Of Exogenous Peptide Antigen Via MHC Class II (GO:0019886)","Antigen Processing And Presentation Of Peptide Antigen Via MHC Class II (GO:0002495)","Immunoglobulin Mediated Immune Response (GO:0016064)","Positive Regulation Of Leukocyte Mediated Cytotoxicity (GO:0001912)","Antigen Processing And Presentation Of Endogenous Peptide Antigen Via MHC Class I Via ER Pathway (GO:0002484)","Antigen Processing And Presentation Of Endogenous Peptide Antigen Via MHC Class I Via ER Pathway, TAP-independent (GO:0002486)","Antigen Processing And Presentation Of Endogenous Peptide Antigen Via MHC Class Ib (GO:0002476)","Antigen Processing And Presentation Of Peptide Antigen Via MHC Class Ib (GO:0002428)","Positive Regulation Of T Cell Mediated Cytotoxicity (GO:0001916)","Regulation Of T Cell Mediated Cytotoxicity (GO:0001914)","Positive Regulation Of T Cell Mediated Immunity (GO:0002711)","Positive Regulation Of Cytokine Production (GO:0001819)","Regulation Of Cytokine Production (GO:0001817)","Negative Regulation Of Natural Killer Cell Mediated Cytotoxicity (GO:0045953)","T Cell Receptor Signaling Pathway (GO:0050852)","Regulation Of Natural Killer Cell Mediated Cytotoxicity (GO:0042269)","Regulation Of Natural Killer Cell Cytokine Production (GO:0002727)","Positive Regulation Of Natural Killer Cell Cytokine Production (GO:0002729)","Positive Regulation Of Natural Killer Cell Mediated Immunity (GO:0002717)","Antigen Receptor-Mediated Signaling Pathway (GO:0050851)","Negative Regulation Of Natural Killer Cell Mediated Immunity (GO:0002716)","T Cell Mediated Immunity (GO:0002456)","Positive Regulation Of Natural Killer Cell Mediated Cytotoxicity (GO:0045954)","Regulation Of Interleukin-4 Production (GO:0032673)","Positive Regulation Of Type II Interferon Production (GO:0032729)","Protection From Natural Killer Cell Mediated Cytotoxicity (GO:0042270)","Negative Regulation Of Leukocyte Mediated Cytotoxicity (GO:0001911)","T Cell Activation (GO:0042110)","Regulation Of Type II Interferon Production (GO:0032649)","Antigen Processing And Presentation Of Endogenous Peptide Antigen Via MHC Class I (GO:0019885)","Regulation Of T Cell Tolerance Induction (GO:0002664)","Regulation Of T-helper Cell Differentiation (GO:0045622)","Positive Regulation Of Alpha-Beta T Cell Proliferation (GO:0046641)","Positive Regulation Of Apoptotic Cell Clearance (GO:2000427)","Antigen Processing And Presentation Of Peptide Antigen Via MHC Class I (GO:0002474)","Positive Regulation Of Interleukin-4 Production (GO:0032753)","Positive Regulation Of Cytokine Production Involved In Immune Response (GO:0002720)","Regulation Of T Cell Receptor Signaling Pathway (GO:0050856)","Positive Regulation Of Alpha-Beta T Cell Activation (GO:0046635)","T Cell Mediated Cytotoxicity (GO:0001913)","Positive Regulation Of CD8-positive, Alpha-Beta T Cell Activation (GO:2001187)","Regulation Of Natural Killer Cell Proliferation (GO:0032817)","Endothelial Tube Morphogenesis (GO:0061154)","Myeloid Dendritic Cell Differentiation (GO:0043011)","Positive Regulation Of Phosphorylation (GO:0042327)","Positive Regulation Of Signal Transduction (GO:0009967)","Positive Regulation Of Phagocytosis (GO:0050766)","Positive Regulation Of T Cell Proliferation (GO:0042102)","Regulation Of Epithelial Cell Apoptotic Process (GO:1904035)","Regulation Of CD4-positive, Alpha-Beta T Cell Differentiation (GO:0043370)","Detection Of Bacterium (GO:0016045)","Gamma-Delta T Cell Activation (GO:0046629)","Positive Regulation Of CD4-positive, Alpha-Beta T Cell Activation (GO:2000516)","Quaternary Ammonium Group Transport (GO:0015697)","T Cell Differentiation (GO:0030217)","Myeloid Leukocyte Differentiation (GO:0002573)","Regulation Of Immune Effector Process (GO:0002697)","Immune Response-Regulating Cell Surface Receptor Signaling Pathway (GO:0002768)","Myeloid Dendritic Cell Activation (GO:0001773)","Regulation Of Macromolecule Metabolic Process (GO:0060255)","Negative Regulation Of Response To Stimulus (GO:0048585)","Regulation Of T Cell Proliferation (GO:0042129)","Regulation Of Receptor Signaling Pathway Via JAK-STAT (GO:0046425)","Alpha-Beta T Cell Activation (GO:0046631)","Epithelial Tube Morphogenesis (GO:0060562)"],["12/18","11/14","11/14","14/31","12/21","15/44","11/19","19/107","14/47","15/62","11/26","11/28","11/30","13/51","8/13","8/13","8/13","8/13","10/33","10/36","10/43","21/320","15/167","6/16","11/95","7/32","4/6","4/6","6/24","11/134","4/10","5/20","5/21","5/23","7/58","3/5","4/14","9/111","8/87","3/6","3/6","3/6","4/17","3/7","4/18","4/18","5/33","5/34","4/19","3/8","3/8","3/9","3/9","3/9","12/231","13/266","6/60","6/65","3/11","3/11","3/12","3/12","3/12","3/12","5/46","6/71","3/13","3/13","3/13","9/162","5/52","6/77","5/53","3/15","4/33"],[3.90138464074873e-18,5.16677398780893e-18,5.16677398780893e-18,1.12553493742325e-17,5.91799511315957e-17,1.25656374847014e-16,9.99160236322897e-16,6.74898177086955e-15,1.15218771029073e-14,3.92489235625358e-14,9.24443890538111e-14,2.4972391263488e-13,6.17418975492895e-13,9.74371267322374e-13,4.72473998402865e-12,4.72473998402865e-12,4.72473998402865e-12,4.72473998402865e-12,6.3840811278982e-11,1.68022663623742e-10,1.1477923157844e-09,5.44585010169359e-08,8.16634712776674e-08,1.12007518471528e-07,3.50127110645008e-07,6.00095901163326e-07,9.40675972741595e-07,9.40675972741595e-07,1.6898265175585e-06,1.06050653376954e-05,1.2517495988759e-05,1.29334977184826e-05,1.67535587437837e-05,2.69851966522582e-05,3.75487169906985e-05,3.96220217051344e-05,5.67177889489982e-05,7.42975505972006e-05,7.67917689782124e-05,7.83038126452932e-05,7.83038126452932e-05,7.83038126452932e-05,0.000129831561863387,0.000135406831969025,0.00016483000242628,0.00016483000242628,0.000166949600860511,0.000193189941582546,0.000206164030774469,0.000214083783612968,0.000214083783612968,0.000317323312211234,0.000317323312211234,0.000317323312211234,0.000365135896503953,0.000378065743930713,0.000387618714675639,0.000598223242019969,0.000608656246747737,0.000608656246747737,0.000801953950155344,0.000801953950155344,0.000801953950155344,0.000801953950155344,0.000813737907137098,0.000957539268466856,0.00103023279933298,0.00103023279933298,0.00103023279933298,0.00122355354207926,0.00142703671483819,0.001463543392455,0.00155535435310004,0.00160058214421888,0.00182500785048177],[3.29467954622616e-15,3.29467954622616e-15,3.29467954622616e-15,5.3828708382267e-15,2.26422493029485e-14,4.00634408470564e-14,2.73056218869386e-13,1.61385026595918e-12,2.4490389886513e-12,7.5083190775131e-12,1.60769196599946e-11,3.98101537392105e-11,9.08555769321467e-11,1.33140873884836e-10,5.02134866080378e-10,5.02134866080378e-10,5.02134866080378e-10,5.02134866080378e-10,6.42776168298382e-09,1.60713677756109e-08,1.04558414290265e-07,4.73541420206356e-06,6.7922704588773e-06,8.92793261816803e-06,2.6791726506556e-05,4.41532099586709e-05,6.4268326280524e-05,6.4268326280524e-05,0.000111470280278945,0.000676249666367041,0.000772450639564386,0.000773180660483036,0.000971198723541159,0.00151831415281676,0.00205230558866304,0.00210547020894228,0.00293246297998469,0.00356655222834395,0.00356655222834395,0.00356655222834395,0.00356655222834395,0.00356655222834395,0.00577599483359674,0.00588711976265327,0.00679520396693953,0.00679520396693953,0.00679520396693953,0.00769942413015438,0.00803024074610996,0.00803024074610996,0.00803024074610996,0.0112414721529646,0.0112414721529646,0.0112414721529646,0.0127000903638557,0.0129149958596331,0.0130090280907807,0.0194059900004737,0.0194059900004737,0.0194059900004737,0.023948932559281,0.023948932559281,0.023948932559281,0.023948932559281,0.023948932559281,0.0277541306148045,0.0285628310887534,0.0285628310887534,0.0285628310887534,0.0334379703713945,0.0384495948659924,0.0388855348578669,0.040758806540827,0.0413772113769017,0.0465498669062883],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[127.753246753247,233.491909385113,233.491909385113,52.918492887351,85.1558441558442,33.3256076879593,87.537216828479,14.0534581697372,27.2388591800357,20.5437739797698,46.6699029126214,41.1751380163716,36.8371657298586,21.8880507457569,100.897435897436,100.897435897436,100.897435897436,100.897435897436,27.5694249649369,24.3846153846154,19.2052785923754,4.55253296942987,6.3183779119931,37.5859872611465,8.30466944059177,17.5827476038339,124.544303797468,124.544303797468,20.8726114649682,5.66019417475728,41.5063291139241,20.8095238095238,19.5079365079365,17.3386243386243,8.60759255778989,93.1135646687697,24.8987341772152,5.55456780783053,6.36189548847777,62.0725552050473,62.0725552050473,62.0725552050473,19.1499513145083,46.5520504731861,17.7811934900542,17.7811934900542,11.140589569161,10.7558839627805,16.5949367088608,37.2397476340694,37.2397476340694,31.0315457413249,31.0315457413249,31.0315457413249,3.46219533890767,3.25154819688172,6.9447983014862,6.35463672676239,23.2712933753943,23.2712933753943,20.6845425867508,20.6845425867508,20.6845425867508,20.6845425867508,7.6031746031746,5.76629103380696,18.615141955836,18.615141955836,18.615141955836,3.69339890296955,6.63053022627491,5.27738404952005,6.49206349206349,15.5110410094637,8.57747708424269],[5121.01446561962,9293.97807837263,9293.97807837263,2065.18060123029,3181.92891723405,1220.14983030307,3023.50189972978,458.555693690708,874.218350703989,634.162726231875,1400.66501952243,1194.83746650037,1035.61165925334,605.357468959037,2631.22437915942,2631.22437915942,2631.22437915942,2631.22437915942,647.182007766135,548.822642389476,395.348830998107,76.144878287399,103.120091606762,601.552444255638,123.44865856585,251.893543052359,1728.25984302207,1728.25984302207,277.415472089737,64.8328761709861,468.539348810885,234.225546756324,214.526824251937,182.406179201418,87.7102607829961,943.810776360416,243.445447708749,52.8096789060731,60.2752259461584,586.890687571717,586.890687571717,586.890687571717,171.378135080484,414.649668827116,154.884791173827,154.884791173827,96.8988269729841,91.9825632110866,140.838546772296,314.64395704197,314.64395704197,249.977390675848,249.977390675848,249.977390675848,27.4041103389541,25.6236384445378,54.5547824673602,47.1612323348727,172.306634660192,172.306634660192,147.448921427138,147.448921427138,147.448921427138,147.448921427138,54.0880126329682,40.0823183202777,128.034396918572,128.034396918572,128.034396918572,24.7679179544269,43.4442631812735,34.4449305235589,41.9780193447197,99.8505873349453,54.0910371588123],["HLA-DRB5;HLA-DMA;HLA-DMB;HLA-DRA;HLA-DOA;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DQB2;HLA-DRB1;TAPBP;HLA-DPA1","HLA-DRB5;HLA-DMA;HLA-DMB;HLA-DRA;HLA-DOA;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DQB2;HLA-DRB1;HLA-DPA1","HLA-DRB5;HLA-DMA;HLA-DMB;HLA-DRA;HLA-DOA;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DQB2;HLA-DRB1;HLA-DPA1","HLA-DRB5;HLA-A;HLA-F;HLA-E;HLA-DMA;HLA-DMB;HLA-DRA;HLA-DOA;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DQB2;HLA-DRB1;HLA-DPA1","HLA-B;TAP2;HLA-C;TAP1;HLA-DRA;HLA-A;HLA-F;HLA-G;HLA-DRB1;MICA;HLA-E;MICB","HLA-DRB5;SIRPG;TNF;CCDC88B;HLA-DMA;HLA-DMB;HLA-DRA;PRKCQ;HLA-DOA;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DQB2;HLA-DRB1;HLA-DPA1","HLA-DRB5;HLA-DMA;HLA-DMB;HLA-DRA;HLA-DOA;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DQB2;HLA-DRB1;HLA-DPA1","HLA-DRB5;SMARCC2;SIRPG;HLA-A;GATA3;TYK2;AIF1;CCDC88B;HLA-DMA;HLA-DMB;HLA-DRA;PRKCQ;HLA-DOA;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DRB1;HLA-DQB2;HLA-DPA1","HLA-DRB5;SIRPG;CCDC88B;HLA-DMA;HLA-DMB;HLA-DRA;PRKCQ;HLA-DOA;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DQB2;HLA-DRB1;HLA-DPA1","HLA-DRB5;SIRPG;PTPN22;CCDC88B;HLA-DMA;HLA-DMB;HLA-DRA;PRKCQ;HLA-DOA;HLA-DOB;HLA-DQA2;HLA-DQB2;HLA-DQA1;HLA-DRB1;HLA-DPA1","HLA-DMA;HLA-DRB5;HLA-DMB;HLA-DRA;HLA-DOA;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DQB2;HLA-DRB1;HLA-DPA1","HLA-DMA;HLA-DRB5;HLA-DMB;HLA-DRA;HLA-DOA;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DQB2;HLA-DRB1;HLA-DPA1","HLA-DMA;HLA-DRB5;HLA-DMB;HLA-DRA;HLA-DOA;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DQB2;HLA-DRB1;HLA-DPA1","HLA-B;HLA-C;HLA-A;HLA-F;HLA-G;RASGRP1;HLA-E;NCR3;HLA-DRA;CD226;MICA;HLA-DRB1;MICB","HLA-B;HLA-C;HLA-A;HLA-F;HLA-G;MICA;HLA-E;MICB","HLA-B;HLA-C;HLA-A;HLA-F;HLA-G;MICA;HLA-E;MICB","HLA-B;HLA-C;HLA-A;HLA-F;HLA-G;MICA;HLA-E;MICB","HLA-B;HLA-C;HLA-A;HLA-F;HLA-G;MICA;HLA-E;MICB","HLA-B;HLA-C;HLA-DRA;HLA-A;HLA-F;HLA-G;MICA;HLA-DRB1;MICB;HLA-E","HLA-B;HLA-C;HLA-DRA;HLA-A;HLA-F;HLA-G;MICA;HLA-DRB1;MICB;HLA-E","HLA-B;HLA-C;HLA-DRA;HLA-A;HLA-F;HLA-G;MICA;HLA-DRB1;MICB;HLA-E","PTPN22;PTPN11;HLA-A;GATA3;BTN3A2;TYK2;AGPAT1;HLA-G;AIF1;TNF;AGER;RASGRP1;HLA-E;CCDC88B;IFIH1;IRF4;FLOT1;CD226;PRKCQ;PRKD2;HLA-DPA1","BTN2A2;PPP1R11;BTN2A1;MAST2;HLA-B;GATA3;BTNL2;BTN3A2;AGPAT1;TNF;RPS6KA4;CCDC88B;IFIH1;FLOT1;HLA-DRB1","HLA-B;HLA-A;HLA-F;HLA-G;MICA;HLA-E","BTN2A2;BTN2A1;CD3G;PTPN22;PRKD2;BTN3A2;HLA-A;GATA3;BTNL2;HLA-DRB1;HLA-DPA1","NCR3;CD226;HLA-F;RASGRP1;HLA-G;MICA;HLA-E","CD226;HLA-F;HLA-G;HLA-E","CD226;HLA-F;HLA-G;HLA-E","NCR3;CD226;HLA-F;HLA-G;RASGRP1;HLA-E","BTN2A2;BTN2A1;PRKD2;CD3G;PTPN22;HLA-A;GATA3;BTNL2;BTN3A2;HLA-DRB1;HLA-DPA1","HLA-F;HLA-G;MICA;HLA-E","CTSH;BTN3A2;HLA-A;GNL1;MICA","NCR3;CD226;HLA-F;RASGRP1;HLA-E","IRF4;PRKCQ;GATA3;HLA-DRB1;HLA-E","PTPN22;CD226;BTN3A2;HLA-A;TYK2;RASGRP1;HLA-DPA1","HLA-B;HLA-G;HLA-E","HLA-F;HLA-G;MICA;HLA-E","IRF4;PIK3R3;CD3G;PTPN22;GATA3;RASGRP1;MICA;PTPN2;MICB","PTPN22;CD226;BTN3A2;HLA-A;TYK2;RASGRP1;HLA-DRB1;HLA-DPA1","TAP2;TAP1;HLA-A","IL2RA;HLA-B;HLA-G","IRF4;HLA-DRA;HLA-DRB1","PTPN22;HLA-A;TYK2;HLA-E","C4B;C4A;C2","TAP2;TAP1;HLA-A;TAPBP","IRF4;PRKCQ;GATA3;HLA-E","CD226;HLA-A;HLA-F;HLA-G;HLA-E","PTPN22;CD226;PRKD2;UBASH3A;PTPN2","HLA-DRA;HLA-A;HLA-DRB1;HLA-E","CTSH;HLA-A;MICA","PTPN22;HLA-A;HLA-E","PTPN22;TYK2;HLA-E","CSNK2B;PRKD2;RBPJ","BATF3;CAMK4;UBD","DDR1;DAXX;RAD50;ERBB3;IGF2;ERP29;FLOT1;PIK3R3;TNF;AGER;RASGRP1;HLA-DRB1","TNXB;IGF2;PTPN11;GATA3;RBPJ;AGPAT1;RXRB;TRIM39;CTSH;CD226;PRKD2;BAK1;IL7R","C4B;C4A;IL15RA;SIRPG;TNF;C2","CCDC88B;HLA-DMB;IGF2;TYK2;AIF1;HLA-DPA1","NUPR1;TNF;ZFP36L1","IRF4;HLA-DRA;HLA-DRB1","HLA-B;HLA-A;HLA-DRB1","CD3G;MICA;MICB","HLA-DRA;PRKCQ;HLA-DRB1","SLC22A4;SLC22A5;SLC44A4","PIK3R3;PTPN22;GATA3;PTPN2;ZFP36L1","FARP2;BATF3;UBD;CAMK4;GATA3;HLA-DRB1","IRF4;HLA-DRA;HLA-DRB1","NCR3;HLA-G;MICB","BATF3;CAMK4;UBD","TCF19;DAXX;MTMR3;CDK2;AFF3;AIF1;POU5F1;ZFP36L1;TAPBP","BRAP;MPIG6B;ERBB3;HLA-G;SH2B3","CCDC88B;HLA-DMB;TYK2;HLA-G;HLA-DRB1;HLA-DPA1","TYK2;IL7R;TNF;SH2B3;PTPN2","CD3G;HLA-A;HLA-E","CSNK2B;PRKD2;GATA3;RASIP1"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Term<\/th>\n      <th>Overlap<\/th>\n      <th>P.value<\/th>\n      <th>Adjusted.P.value<\/th>\n      <th>Old.P.value<\/th>\n      <th>Old.Adjusted.P.value<\/th>\n      <th>Odds.Ratio<\/th>\n      <th>Combined.Score<\/th>\n      <th>Genes<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":2,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[2,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<p><br><br><br><br><br><br><br><br><br><br><br><img src="figure/realdata_final_downstream_enrichment_compare_twasctwascoloc.Rmd/unnamed-chunk-1-7.png" width="480" style="display: block; margin: auto;" />[1]
+“SBP-ukb-a-360”
+<img src="figure/realdata_final_downstream_enrichment_compare_twasctwascoloc.Rmd/unnamed-chunk-1-8.png" width="480" style="display: block; margin: auto;" /><br><br><br><br><br><br><br><br><br><br><br><br></p>
+<div id="htmlwidget-8f8c3f44260fbdb47e01" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-8f8c3f44260fbdb47e01">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">Enriched GO terms -- ctwas <\/caption>","data":[["1"],["Embryonic Eye Morphogenesis (GO:0048048)"],["2/9"],[0.000106279253124673],[0.0387919273905055],[0],[0],[172.796536796537],[1580.99162589653],["FBN2;TBX2"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Term<\/th>\n      <th>Overlap<\/th>\n      <th>P.value<\/th>\n      <th>Adjusted.P.value<\/th>\n      <th>Old.P.value<\/th>\n      <th>Old.Adjusted.P.value<\/th>\n      <th>Odds.Ratio<\/th>\n      <th>Combined.Score<\/th>\n      <th>Genes<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":2,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[2,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<p><br><br><br><br><br><br><br><br><br><br><br><br><img src="figure/realdata_final_downstream_enrichment_compare_twasctwascoloc.Rmd/unnamed-chunk-1-9.png" width="480" style="display: block; margin: auto;" />[1]
+“BMI-panukb”
+<img src="figure/realdata_final_downstream_enrichment_compare_twasctwascoloc.Rmd/unnamed-chunk-1-10.png" width="480" style="display: block; margin: auto;" /><br><br><br><br><br><br><br><br><br><br><br><br></p>
+<div id="htmlwidget-e031547489fa89b2a107" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-e031547489fa89b2a107">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">Enriched GO terms -- twas <\/caption>","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15"],["Antigen Processing And Presentation Of Endogenous Peptide Antigen (GO:0002483)","Regulation Of Telomere Maintenance Via Telomere Lengthening (GO:1904356)","Antigen Processing And Presentation Of Endogenous Peptide Antigen Via MHC Class I Via ER Pathway (GO:0002484)","Antigen Processing And Presentation Of Endogenous Peptide Antigen Via MHC Class I Via ER Pathway, TAP-independent (GO:0002486)","Antigen Processing And Presentation Of Endogenous Peptide Antigen Via MHC Class Ib (GO:0002476)","Antigen Processing And Presentation Of Peptide Antigen Via MHC Class Ib (GO:0002428)","Positive Regulation Of DNA-templated Transcription (GO:0045893)","Telomeric Loop Disassembly (GO:0090657)","Negative Regulation Of Telomere Maintenance (GO:0032205)","Protein Phosphorylation (GO:0006468)","Regulation Of Telomere Maintenance (GO:0032204)","MAPK Cascade (GO:0000165)","Positive Regulation Of T Cell Mediated Cytotoxicity (GO:0001916)","Positive Regulation Of Leukocyte Mediated Cytotoxicity (GO:0001912)","Positive Regulation Of Telomere Maintenance (GO:0032206)"],["10/21","8/17","7/13","7/13","7/13","7/13","95/1243","5/9","6/15","46/500","9/38","15/98","8/33","10/51","10/52"],[2.06663698128774e-08,6.35608921399121e-07,1.03443825502325e-06,1.03443825502325e-06,1.03443825502325e-06,1.03443825502325e-06,2.53903597832441e-05,3.35746128635807e-05,5.33521930918703e-05,5.75586140572626e-05,8.51734353573524e-05,0.000106942640073029,0.000177114053372851,0.00018956685856735,0.000224270151869524],[6.68557063446584e-05,0.000557734625833367,0.000557734625833367,0.000557734625833367,0.000557734625833367,0.000557734625833367,0.0117339734141135,0.0135767340767104,0.0186202116475245,0.0186202116475245,0.0250487330346396,0.028829953386354,0.0438034848189554,0.0438034848189554,0.0483675960865273],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[17.3632705322846,16.9451137884873,22.221664994985,22.221664994985,22.221664994985,22.221664994985,1.62482798802528,23.7637637637638,12.6833667334669,1.96106977642482,5.91588979379657,3.45602836015447,6.09510040160643,4.65107719487658,4.54009772923254],[307.238871972909,241.784446306998,306.251254429409,306.251254429409,306.251254429409,306.251254429409,17.1925340291644,244.80812394078,124.786514531804,19.1453491522736,55.4367441023539,31.5992205082934,52.6538454054841,39.8633072152542,38.148893942782],["HLA-B;TAP2;HLA-C;TAP1;HLA-A;HLA-F;HLA-G;HLA-DRB1;MICA;MICB","RTEL1;SLX4;TNKS;PINX1;DHX36;TERF2;SMG5;SMG6","HLA-B;HLA-C;HLA-A;HLA-F;HLA-G;MICA;MICB","HLA-B;HLA-C;HLA-A;HLA-F;HLA-G;MICA;MICB","HLA-B;HLA-C;HLA-A;HLA-F;HLA-G;MICA;MICB","HLA-B;HLA-C;HLA-A;HLA-F;HLA-G;MICA;MICB","RNF10;SPI1;PID1;CSRNP3;NCF1;KDM1A;CRTC1;PTPRN;ONECUT1;TRIAP1;HMGB1;SGF29;RPS6KA4;RPTOR;PPP3CA;RPS6KA5;ZMIZ2;NFATC2IP;MLX;UBTF;KAT8;NCK1;HMGN1;GTF2I;KCNH2;NCOA1;MAP2K3;MEF2C;SMARCC1;MLIP;SMARCC2;MAP2K2;PRMT2;MSL2;PTOV1;AXIN1;VEZF1;PPRC1;ISL1;ETV5;UCHL5;GNL3;ILF3;DDX39B;TAL1;DXO;NCOA7;ZFPM2;TP53;SKAP1;PPARD;GLYR1;INO80E;KDM3A;CTBP2;ATF6B;TNKS;WBP2;NOTCH4;PIK3R2;FOXO3;CAMKK2;ERBB4;HLTF;DHX36;LEO1;E4F1;MAP2K5;BPTF;MAPK3;ATF7IP;ESRRA;MLXIP;TFAP2B;PCGF5;NFATC3;ZNF76;RFXANK;USF2;MTOR;GATAD2A;SMARCA4;HINFP;KLF1;FOSL1;POMC;MLLT10;PSMC3;KANSL1;CARM1;CTNNB1;SSBP2;SSBP3;HLA-DRB1;RNF187","RTEL1;WRN;SLX4;XRCC3;TERF2","RTEL1;SLX4;TNKS;PINX1;TERF2;SMG6","BLK;TNKS;FLT3;MAST3;MAST2;STK19;CAMKK2;RPS6KA4;STK33;RPS6KA5;CAMKV;GRK4;ERBB4;AKT3;MAPK6;MARK3;MAPK3;PRRT1;EPHA4;MAP3K3;CDK11A;DMPK;TAF11;ADAM10;ATG13;YWHAZ;ACVR2B;CDK11B;MTOR;MAPK12;BCKDK;ILF3;SBK1;STK24;WNK1;CCNE1;TAOK2;CSNK2B;KIT;ULK3;TSSK6;PIK3C3;ATP13A2;CSNK1G2;MAP3K11;FGFR1","RTEL1;SLX4;SLF2;DHX36;TERF2;SMG5;PML;SMG6;GNL3","MAP2K3;MAP3K3;MEF2C;MAP2K2;DUSP6;MAPK12;CAMKK2;PPP1CB;PPP1CC;MAPK11;TAOK2;MAP2K5;MAP3K11;FGFR1;MAPK3","HLA-B;HLA-C;HLA-A;HLA-F;HLA-G;MICA;HLA-DRB1;MICB","SPI1;CADM1;HLA-B;HLA-C;HLA-A;HLA-F;HLA-G;MICA;HLA-DRB1;MICB","INO80E;RTEL1;SLX4;TNKS;DHX36;TERF2;UCHL5;PML;GNL3;MAPK3"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Term<\/th>\n      <th>Overlap<\/th>\n      <th>P.value<\/th>\n      <th>Adjusted.P.value<\/th>\n      <th>Old.P.value<\/th>\n      <th>Old.Adjusted.P.value<\/th>\n      <th>Odds.Ratio<\/th>\n      <th>Combined.Score<\/th>\n      <th>Genes<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":2,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[2,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<p><br><br><br><br><br><br><br><br><br><br><br><img src="figure/realdata_final_downstream_enrichment_compare_twasctwascoloc.Rmd/unnamed-chunk-1-11.png" width="480" style="display: block; margin: auto;" />[1]
+“HB-panukb”
+<img src="figure/realdata_final_downstream_enrichment_compare_twasctwascoloc.Rmd/unnamed-chunk-1-12.png" width="480" style="display: block; margin: auto;" /><br><br><br><br><br><br><br><br><br><br><br><br></p>
+<div id="htmlwidget-08448a12bd5c354c3f76" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-08448a12bd5c354c3f76">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">Enriched GO terms -- twas <\/caption>","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29"],["Antigen Processing And Presentation Of Endogenous Peptide Antigen (GO:0002483)","Antigen Processing And Presentation Of Exogenous Peptide Antigen (GO:0002478)","MHC Class II Protein Complex Assembly (GO:0002399)","Peptide Antigen Assembly With MHC Class II Protein Complex (GO:0002503)","Peptide Antigen Assembly With MHC Protein Complex (GO:0002501)","Antigen Processing And Presentation Of Endogenous Peptide Antigen Via MHC Class I Via ER Pathway (GO:0002484)","Antigen Processing And Presentation Of Endogenous Peptide Antigen Via MHC Class I Via ER Pathway, TAP-independent (GO:0002486)","Antigen Processing And Presentation Of Endogenous Peptide Antigen Via MHC Class Ib (GO:0002476)","Antigen Processing And Presentation Of Peptide Antigen Via MHC Class Ib (GO:0002428)","Immunoglobulin Production Involved In Immunoglobulin-Mediated Immune Response (GO:0002381)","Regulation Of T Cell Mediated Cytotoxicity (GO:0001914)","Immunoglobulin Mediated Immune Response (GO:0016064)","Antigen Processing And Presentation Of Exogenous Peptide Antigen Via MHC Class II (GO:0019886)","Positive Regulation Of T Cell Mediated Cytotoxicity (GO:0001916)","Antigen Processing And Presentation Of Peptide Antigen Via MHC Class II (GO:0002495)","Positive Regulation Of Leukocyte Cell-Cell Adhesion (GO:1903039)","Positive Regulation Of T Cell Mediated Immunity (GO:0002711)","Organonitrogen Compound Catabolic Process (GO:1901565)","Unsaturated Fatty Acid Metabolic Process (GO:0033559)","Positive Regulation Of T Cell Activation (GO:0050870)","Positive Regulation Of Leukocyte Mediated Cytotoxicity (GO:0001912)","Negative Regulation Of Pathway-Restricted SMAD Protein Phosphorylation (GO:0060394)","Negative Regulation Of Response To Stimulus (GO:0048585)","Negative Regulation Of Natural Killer Cell Mediated Cytotoxicity (GO:0045953)","Regulation Of Vascular Wound Healing (GO:0061043)","tRNA 5'-Leader Removal (GO:0001682)","Long-Chain Fatty Acid Metabolic Process (GO:0001676)","Regulation Of Cytokine Production (GO:0001817)","Linoleic Acid Metabolic Process (GO:0043651)"],["13/21","13/31","9/14","9/14","10/18","8/13","8/13","8/13","8/13","9/19","12/36","11/30","10/26","11/33","10/28","12/44","11/43","15/78","11/49","17/107","11/51","5/10","11/52","6/16","4/7","5/12","13/78","21/167","6/19"],[5.73888123691788e-12,3.45858065722324e-09,7.34675989689294e-09,7.34675989689294e-09,7.54888692547537e-09,8.61806243787265e-08,8.61806243787265e-08,8.61806243787265e-08,8.61806243787265e-08,2.63348167967615e-07,2.82658302382183e-07,2.93101879943682e-07,6.09745577275593e-07,8.9058380990286e-07,1.36087266770157e-06,3.15584063619556e-06,1.58848598097082e-05,2.07974998709444e-05,5.92919823470089e-05,7.85276028421482e-05,8.75571847667898e-05,0.000102670546461328,0.000105552037946215,0.0001404894521712,0.000285502391861671,0.000293934021864853,0.00032766787309475,0.000373196950783525,0.000412427311497664],[1.97302736925237e-08,5.19061464995687e-06,5.19061464995687e-06,5.19061464995687e-06,5.19061464995687e-06,3.29209985126735e-05,3.29209985126735e-05,3.29209985126735e-05,3.29209985126735e-05,8.39736886038648e-05,8.39736886038648e-05,8.39736886038648e-05,0.000161254253436422,0.000218701938460431,0.000311912015437199,0.000678111256702521,0.00321247929563392,0.00397232247535039,0.0107287281741588,0.0134988949285653,0.0143343619632487,0.0157777350634386,0.0157777350634386,0.0201251140235244,0.0388671218142832,0.0388671218142832,0.0417230425073982,0.0458232541712057,0.0488939688596196],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[28.051302559415,12.4606439163112,30.9639344262295,30.9639344262295,21.5189152233364,27.4984531392175,27.4984531392175,27.4984531392175,27.4984531392175,15.477868852459,8.61598173515982,9.96993853246254,10.7548997265269,8.60903284671533,9.55889800465917,6.45924657534247,5.9155736770073,4.10561660561661,4.97995101805609,3.25841997961264,4.73045164233577,17.1397459165154,4.61482998041659,10.2904632152589,22.8346932608039,12.2413793103448,3.44204753199269,2.4829523953682,7.91448333682666],[726.073094242223,242.763343072047,579.923727625573,579.923727625573,402.443862767073,447.312400135985,447.312400135985,447.312400135985,447.312400135985,234.486444926929,129.920621912924,149.975248744707,153.905024756485,119.93578225653,129.11570975653,81.8144684410276,65.3679416574219,44.2613297010273,48.4700448578451,30.7987823464488,44.1976430041392,157.411174100209,42.2547976352409,91.2803000119428,186.359872172084,99.5487967961669,27.6173029469885,19.5989470137018,61.6811347697442],["HFE;HLA-B;TAP2;HLA-C;TAP1;HLA-A;HLA-F;HLA-G;HLA-E;HLA-DRA;HLA-DRB1;MICA;MICB","HLA-DRB5;HLA-A;HLA-F;HLA-E;HLA-DMA;HLA-DMB;HLA-DRA;FCGR2B;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DQB2;HLA-DRB1","HLA-DRB5;HLA-DMA;HLA-DMB;HLA-DRA;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DQB2;HLA-DRB1","HLA-DRB5;HLA-DMA;HLA-DMB;HLA-DRA;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DQB2;HLA-DRB1","PDIA3;HLA-DRB5;HLA-DMA;HLA-DMB;HLA-DRA;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DQB2;HLA-DRB1","HLA-B;HLA-C;HLA-A;HLA-F;HLA-G;MICA;HLA-E;MICB","HLA-B;HLA-C;HLA-A;HLA-F;HLA-G;MICA;HLA-E;MICB","HLA-B;HLA-C;HLA-A;HLA-F;HLA-G;MICA;HLA-E;MICB","HLA-B;HLA-C;HLA-A;HLA-F;HLA-G;MICA;HLA-E;MICB","HLA-DRB5;HLA-DMA;HLA-DMB;HLA-DRA;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DQB2;HLA-DRB1","RIPK3;HFE;HLA-B;HLA-C;HLA-DRA;HLA-A;HLA-F;HLA-G;MICA;HLA-DRB1;MICB;HLA-E","HLA-DMA;HLA-DRB5;HLA-DMB;MPL;HLA-DRA;FCGR2B;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DQB2;HLA-DRB1","HLA-DMA;HLA-DRB5;HLA-DMB;HLA-DRA;FCGR2B;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DQB2;HLA-DRB1","HFE;HLA-B;HLA-C;HLA-DRA;HLA-A;HLA-F;HLA-G;MICA;HLA-DRB1;MICB;HLA-E","HLA-DMA;HLA-DRB5;HLA-DMB;HLA-DRA;FCGR2B;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DQB2;HLA-DRB1","HLA-DMA;HLA-DRB5;HLA-DMB;HLA-DRA;TNF;HLA-DOB;HLA-DQA2;HLA-DQA1;RHOA;HLA-DQB2;HLA-DRB1;SKAP1","HFE;HLA-B;HLA-C;HLA-DRA;HLA-A;HLA-F;HLA-G;MICA;HLA-DRB1;MICB;HLA-E","MPST;PRSS16;ETFA;PLA2G6;RNF5;CLN6;PLA2G15;CASP7;LIPC;ADAMTS13;TST;CTRL;CHEK2;CAPN3;SLC16A3","ABHD12;FADS3;ELOVL1;GPX1;SCP2;ALOX5;GSTA1;ABHD6;ALOX15B;FADS1;RAPSN","SMARCE1;HLA-DRB5;XBP1;PBRM1;SMARCD2;SMARCD3;HLA-A;AIF1;HLA-DMA;HLA-DMB;HLA-DRA;FLOT2;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DRB1;HLA-DQB2","HFE;HLA-B;HLA-C;HLA-DRA;HLA-A;HLA-F;HLA-G;MICA;HLA-DRB1;HLA-E;MICB","GREM1;EMILIN1;PPARG;SMAD6;SMAD7","BRAP;FCRLB;PTPN1;KLF7;ALOX5;WDR41;RPS3;FCGR2B;HLA-G;SH2B3;SOCS5","HLA-B;HLA-A;HLA-F;HLA-G;MICA;HLA-E","SLC12A2;XBP1;SERPINE1;TNF","POP5;POP7;RPP21;RPP14;RPP25","GSTM4;ELOVL1;GPX1;ABHD6;ALOX15B;ABHD12;SCP2;ALOX5;GSTA1;PNPLA3;ACSBG1;FADS1;RAPSN","SRGN;BTN2A2;PPP1R11;BTN3A1;RIPK3;MOG;BTN2A1;BTN1A1;MAST2;ZBTB37;HLA-B;BTN3A3;BTN3A2;AGPAT1;TNF;PER1;ALOX5;FLOT1;FCGR2B;BTN2A3P;HLA-DRB1","ELOVL1;ALOX5;GSTA1;ALOX15B;FADS1;RAPSN"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Term<\/th>\n      <th>Overlap<\/th>\n      <th>P.value<\/th>\n      <th>Adjusted.P.value<\/th>\n      <th>Old.P.value<\/th>\n      <th>Old.Adjusted.P.value<\/th>\n      <th>Odds.Ratio<\/th>\n      <th>Combined.Score<\/th>\n      <th>Genes<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":2,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[2,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<p><br><br><br><br><br><br><br><br><br><br><br><img src="figure/realdata_final_downstream_enrichment_compare_twasctwascoloc.Rmd/unnamed-chunk-1-13.png" width="480" style="display: block; margin: auto;" />[1]
+“Height-panukb”
+<img src="figure/realdata_final_downstream_enrichment_compare_twasctwascoloc.Rmd/unnamed-chunk-1-14.png" width="480" style="display: block; margin: auto;" /><br><br><br><br><br><br><br><br><br><br><br><br></p>
+<div id="htmlwidget-f5c066aa3c554ee7045d" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-f5c066aa3c554ee7045d">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">Enriched GO terms -- ctwas <\/caption>","data":[["1","2"],["Regulation Of DNA-templated Transcription (GO:0006355)","Regulation Of Nucleic Acid-Templated Transcription (GO:1903506)"],["38/1922","15/452"],[4.70005424416859e-05,6.22819983247542e-05],[0.0392687999437575,0.0392687999437575],[0,0],[0,0],[2.18971241073152,3.53473878961975],[21.8212536707447,34.2298382541579],["YAP1;HOMEZ;SRCAP;PLAG1;TWIST2;CXXC1;ZNF24;RPS6KA4;LYL1;ZNF827;ZMIZ2;TRPS1;CREB3L2;SCMH1;SPIN1;STAT6;ERC1;RREB1;USP47;CDK11A;TLE1;MAP2K2;ZNF680;SMAD3;EED;ZBTB38;SMAD9;SUPT3H;DKK3;NFATC4;MLF2;GATAD2A;FUBP3;IRF3;BAMBI;ZNF438;TP53;MXD4","CDK11A;ZNF680;SMAD3;SRCAP;PLAG1;ZBTB38;CXXC1;SUPT3H;MLF2;RPS6KA4;LYL1;SPIN1;ERC1;TP53;RREB1"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Term<\/th>\n      <th>Overlap<\/th>\n      <th>P.value<\/th>\n      <th>Adjusted.P.value<\/th>\n      <th>Old.P.value<\/th>\n      <th>Old.Adjusted.P.value<\/th>\n      <th>Odds.Ratio<\/th>\n      <th>Combined.Score<\/th>\n      <th>Genes<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":2,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[2,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<p><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br></p>
+<div id="htmlwidget-3977c5bc927b8d3eba87" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-3977c5bc927b8d3eba87">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">Enriched GO terms -- twas <\/caption>","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49"],["Chromatin Remodeling (GO:0006338)","Chromatin Organization (GO:0006325)","Positive Regulation Of DNA-templated Transcription (GO:0045893)","Regulation Of DNA-templated Transcription (GO:0006355)","Peptide Antigen Assembly With MHC Protein Complex (GO:0002501)","Antigen Processing And Presentation Of Endogenous Peptide Antigen (GO:0002483)","Regulation Of Lipid Kinase Activity (GO:0043550)","Regulation Of Gene Expression (GO:0010468)","MHC Class II Protein Complex Assembly (GO:0002399)","Peptide Antigen Assembly With MHC Class II Protein Complex (GO:0002503)","Collagen Fibril Organization (GO:0030199)","Ubiquitin-Dependent Protein Catabolic Process (GO:0006511)","Polyol Biosynthetic Process (GO:0046173)","Actin Filament Capping (GO:0051693)","Barbed-End Actin Filament Capping (GO:0051016)","DNA Damage Response (GO:0006974)","Cellular Response To Oxidative Stress (GO:0034599)","Antigen Processing And Presentation Of Exogenous Peptide Antigen (GO:0002478)","Regulation Of Cell Growth (GO:0001558)","Negative Regulation Of Gene Expression (GO:0010629)","Regulation Of Transcription By RNA Polymerase II (GO:0006357)","Protein-Containing Complex Assembly (GO:0065003)","Negative Regulation Of Insulin Receptor Signaling Pathway (GO:0046627)","Negative Regulation Of Nucleic Acid-Templated Transcription (GO:1903507)","Regulation Of Proteasomal Ubiquitin-Dependent Protein Catabolic Process (GO:0032434)","Negative Regulation Of Cellular Response To Insulin Stimulus (GO:1900077)","Positive Regulation Of Nucleic Acid-Templated Transcription (GO:1903508)","Protein Phosphorylation (GO:0006468)","Negative Regulation Of Cellular Process (GO:0048523)","Mitotic Metaphase Plate Congression (GO:0007080)","Inositol Phosphate Biosynthetic Process (GO:0032958)","Insulin-Like Growth Factor Receptor Signaling Pathway (GO:0048009)","Negative Regulation Of DNA-templated Transcription (GO:0045892)","Immunoglobulin Production Involved In Immunoglobulin-Mediated Immune Response (GO:0002381)","Antigen Processing And Presentation Of Endogenous Peptide Antigen Via MHC Class I Via ER Pathway (GO:0002484)","Antigen Processing And Presentation Of Endogenous Peptide Antigen Via MHC Class I Via ER Pathway, TAP-independent (GO:0002486)","Antigen Processing And Presentation Of Endogenous Peptide Antigen Via MHC Class Ib (GO:0002476)","Antigen Processing And Presentation Of Peptide Antigen Via MHC Class Ib (GO:0002428)","Regulation Of Insulin Receptor Signaling Pathway (GO:0046626)","Positive Regulation Of Transcription By RNA Polymerase II (GO:0045944)","protein-DNA Complex Organization (GO:0071824)","Regulation Of Nucleic Acid-Templated Transcription (GO:1903506)","Antigen Processing And Presentation Of Exogenous Peptide Antigen Via MHC Class II (GO:0019886)","Proteasomal Protein Catabolic Process (GO:0010498)","Aortic Valve Morphogenesis (GO:0003180)","Protein Polyubiquitination (GO:0000209)","Negative Regulation Of Intracellular Signal Transduction (GO:1902532)","RNA Catabolic Process (GO:0006401)","Actin Polymerization Or Depolymerization (GO:0008154)"],["69/228","77/268","270/1243","395/1922","12/18","13/21","9/11","240/1127","10/14","10/14","19/42","92/367","10/15","11/18","11/18","94/384","37/117","15/31","61/227","83/336","395/2028","81/328","13/26","106/456","34/109","13/27","124/557","113/500","120/537","19/50","7/10","7/10","210/1025","10/19","8/13","8/13","8/13","8/13","17/44","193/938","21/60","102/452","12/26","56/220","15/37","57/226","58/231","20/57","19/53"],[1.29496566925094e-07,2.69220940501068e-07,2.91454620035758e-07,3.20044642891753e-07,2.63111815707844e-06,3.38076555927606e-06,3.43779980701058e-06,6.29556508376912e-06,7.40879759990465e-06,7.40879759990465e-06,1.11591279827372e-05,1.27619175923705e-05,1.89366415918304e-05,2.36228549125058e-05,2.36228549125058e-05,2.82150100055674e-05,3.48262187044467e-05,3.52383316420459e-05,4.22321564072655e-05,5.76103049651189e-05,6.78725626774346e-05,7.10327617264026e-05,7.64482157714924e-05,8.79306699374248e-05,9.63352891536083e-05,0.000125321747195804,0.000170706798074023,0.000175476631120668,0.000183506808953012,0.000201048550869697,0.000241732949755918,0.000241732949755918,0.000255842248592513,0.000307792494372132,0.000308458324235633,0.000308458324235633,0.000308458324235633,0.000308458324235633,0.000341351142471395,0.000358048370652631,0.000359839344308748,0.00037371619749192,0.00037479957472538,0.000389795054529736,0.000410948599601558,0.000446224782068864,0.000451794671480951,0.000474728225886819,0.000479149522784162],[0.000381973281291307,0.000381973281291307,0.000381973281291307,0.000381973281291307,0.00234457946838121,0.00234457946838121,0.00234457946838121,0.00353695997419448,0.00353695997419448,0.00353695997419448,0.00484306154450794,0.00507711621549808,0.00695411745841525,0.00751836729015351,0.00751836729015351,0.00841865361041119,0.00934598862550706,0.00934598862550706,0.010611384983594,0.0137515797951739,0.0154141092946294,0.0154141092946294,0.0158679905257872,0.0174908757617194,0.018396186816773,0.0230110008120296,0.0299187656060738,0.0299187656060738,0.0302090174462648,0.0319935260617311,0.036063534441711,0.036063534441711,0.0370118452963835,0.0387521063131819,0.0387521063131819,0.0387521063131819,0.0387521063131819,0.0387521063131819,0.0416114690636969,0.0416114690636969,0.0416114690636969,0.0416114690636969,0.0416114690636969,0.0422927634164763,0.0435970803221741,0.045890803439363,0.045890803439363,0.0466828535055427,0.0466828535055427],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[2.23487191525573,2.07730308536464,1.44942307600502,1.36000247534684,10.2139364303178,8.30036686028737,22.9658015267176,1.40700763103197,12.7611484422725,12.7611484422725,4.22354351155203,1.72313966735019,10.2083078802688,8.02230369691415,8.02230369691415,1.66905631823587,2.36961810902371,4.78930865708168,1.88694585976547,1.68725558835986,1.26284805617609,1.68615834598384,5.10638948333843,1.55964757709251,2.32120615384615,4.74136349740141,1.47564241237174,1.50359483595276,1.48241457402978,3.13209504520081,11.9002136100092,11.9002136100092,1.33285302018513,5.66992465892894,8.16166056166056,8.16166056166056,8.16166056166056,8.16166056166056,3.21637247899874,1.33854858986579,2.7520450741413,1.49890634820867,4.37530562347188,1.75089914467918,3.48188214355238,1.72945175965366,1.7192213553892,2.76215553789083,2.85522025042789],[35.4442002531009,31.4248873792061,21.8114714326043,20.3385722832412,131.22969347624,104.563111020353,288.925374279739,16.8498522209588,150.74543537935,150.74543537935,48.1621341282663,19.4181384695498,111.009343714167,85.4639749710678,85.4639749710678,17.4844605887529,24.3244617394723,49.1065829236422,19.0059388007731,16.4706669575228,12.1206624462507,16.1068073111522,48.4029397724766,14.5654892930576,21.4657621059386,42.5993784658929,12.8020288678684,13.003095178041,12.7535962072518,26.6602806841971,99.1011346340826,99.1011346340826,11.0239600473436,45.8474911572604,65.9782421873186,65.9782421873186,65.9782421873186,65.9782421873186,25.6750113072999,10.6211721951918,21.8233125898994,11.8293897031482,34.51730734742,13.7443647381369,27.1483827506434,13.3421802823435,13.2419289855686,21.1381357149677,21.8238698543827],["RB1;SETD2;KDM1A;PHF1;CHD8;HP1BP3;CHD6;RSF1;YEATS4;CTCF;NUDT5;CHD2;LOXL2;BCL7A;GATAD1;PWWP2A;JARID2;SS18;PBRM1;PCID2;SMARCC2;GPX1;RING1;USP3;TET1;CHD1L;ARID1A;KAT2A;CFDP1;MTF2;WAC;PADI2;TOP1;INO80C;INO80B;NFAT5;SMARCD1;INO80E;SMARCD2;USP15;SMARCD3;RNF8;ZNHIT1;ZNF827;TDG;MIER1;PCGF1;ZBTB7A;MTA3;BPTF;KDM4A;NPM1;DR1;KDM4B;MCRS1;PCGF2;SETDB2;GLMN;SMARCA5;SMARCA4;GATAD2A;TADA2B;COPRS;PER1;REST;RYBP;YEATS2;SNAI1;EZH1","RB1;USP36;PHF1;CHD8;CHD6;RSF1;NUCKS1;YEATS4;CTCF;NUDT5;HMGN4;CHAF1A;BCL7A;GATAD1;PWWP2A;BANF1;HMG20A;JARID2;HMGN2;HMGN1;BRD2;SS18;PBRM1;SUPT16H;SMARCC2;RING1;TET1;CHD1L;ARID1A;KAT2A;CFDP1;MTF2;WAC;PADI2;TOP1;INO80C;INO80B;SMARCD1;INO80E;SMARCD2;HDAC3;SMARCD3;SUPT4H1;SPTY2D1;ZNHIT1;ZNF827;MIER1;UBN1;PCGF1;ZBTB7A;MTA3;BPTF;KDM4A;NPM1;DR1;KDM4B;TCF7L1;MCRS1;PCGF2;CBX1;SMARCA5;LRWD1;SMARCA4;GATAD2A;NAP1L4;PARP10;TADA2B;COPRS;PER1;REST;RYBP;NASP;YEATS2;ANP32B;EZH1;EZH2;PHF19","ATF1;SPI1;GPATCH3;ELK3;ELK4;PSMD9;MSANTD1;ZMIZ1;ZMIZ2;CREB3L2;RPS6KA1;AKT1;EPC2;SOX8;HOXA7;HOXA5;CDK5RAP2;MED1;SMARCC2;SLC11A1;SERPINF2;WDR75;MED4;RUNX3;RUNX2;DDX39B;DDIT3;ATF7;DXO;CLOCK;TP53;HOXB7;MEAF6;CTBP2;SUPT4H1;TWIST1;XPC;PIK3R1;GATA2;CYP27B1;PPP3R1;FADD;RREB1;STAT5B;CREBBP;JUP;EIF2AK3;IGF2;SMARCA5;NFATC3;PBX4;NR1D1;FLI1;SMARCA4;FOSL2;FOSL1;TADA2B;MC1R;FUBP3;AGO2;SNAI1;CDK12;HLA-DRB1;FANK1;ARF4;ELL;PHF20;PTPRN;MED19;RSF1;CTCF;MEOX2;PTMS;MED13;HEY2;MLX;SPIN1;SS18;FOXD2;NCOA6;TESC;TET2;TET1;POU5F1;SREBF2;SUPT3H;GNL3;KAT2A;GAL;MDFIC;RARA;WAC;NCOA7;RHOQ;PPARD;NFIX;DOT1L;NSD1;HSF1;SPP1;STAT6;MEF2D;NPM1;PCGF5;CDX1;MCRS1;STAT2;ZNF76;NR1H3;GRHL1;GATAD2A;SKI;PER1;PSMC5;TFAP4;RYBP;PSMC3;NFIC;CTNNB1;AGRN;CRLF3;CRTC3;CCNT1;PRDM4;KDM1A;ICE2;PRDM2;YEATS4;NUCKS1;PARK7;NR3C1;TNF;CHCHD2;HMGN1;KCNH2;MAP2K3;PCID2;MAP2K1;SUPT16H;MAP2K2;FBXW11;ZBTB38;WNT5A;UBE2E1;THOC1;LMO7;SUPT7L;RNF40;NPAS4;ILF3;ZNF318;FIZ1;GLYR1;INO80C;INO80B;BLM;INO80E;AKNA;MAX;TNKS;NOTCH4;KMT2B;PSEN1;FOXO3;GLIS1;SBNO2;ZKSCAN3;EP400;DVL3;E4F1;CYTL1;WNT4;BPTF;DR1;SMAD3;NEK4;TGFB3;HMGA1;RFXANK;BMP6;MLXIPL;BMP2;DAB2;TFCP2;BAMBI;TLX2;MAFF;CAPRIN2;MKRN2;TCF4;NFE2L1;ZNF410;PICALM;RNF187;BMPR1A;RNF10;CHD8;CHD6;SIX1;ARRB1;TRIAP1;NR2E3;PKD1;LYL1;FLCN;SIX4;SIN3A;MYBL2;SOST;MYBL1;NCK1;ACTR3;RBM14;CHUK;MSL2;AXIN1;VEZF1;ARID1A;ETV4;DCN;MSL1;DNM2;SENP1;CCNA2;PSRC1;IRF3;TFDP2;THRAP3;IRF1;ITGB1BP1;NFAT5;HDAC3;SMARCD3;ATF6B;PLA2G1B;PLAG1;CXXC1;LRP5;MLLT1;LRP6;ATAD2B;ATOH7;CAND2;TP53INP2;E2F1;E2F4;VHL;MTA3;MAPK3;ATF7IP;MLXIP;SPAG8;PRRX1;ACVR2A;MTOR;POMC;REST;KLF5;KANSL1;KANSL2;CARM1;KANSL3;ASXL2;QRICH1;PFKM;SSBP3;TAF2;LPIN3;SSBP4;CCDC62","ATF1;RB1;SPI1;GPATCH3;ELK3;ELK4;PSMD9;MSANTD1;ZSCAN31;ZMIZ1;ZMIZ2;CREB3L2;HOXA3;AKT1;HOXA7;HOXA6;HOXA5;CDK5RAP2;HOXA4;HES7;MED1;ZNF165;MED8;MED4;DKK3;EID2;HOXB9;DDIT3;ZSCAN23;ATF7;ZSCAN26;CLOCK;HOXB7;HOXB6;ZNF276;CTBP2;MEAF6;SRCAP;XPC;DEDD2;ZSCAN12;ZBTB7B;ZSCAN16;ZBTB7A;RREB1;ZNF146;HEXIM1;HEXIM2;CREBBP;ZNF142;PBX3;NFATC3;IRF2BP2;PBX4;NR1D1;SNF8;FLI1;FOSL2;NFATC4;FOSL1;TADA2B;HNRNPK;ZFAT;SNAI1;HLA-DRB1;EZH2;FANK1;PHF20;PHF1;ZNF44;CTCF;GLI4;NIPBL;MED13;HEY2;SPIN1;CIC;ZNF367;TEAD3;BRD3;SS18;BRD2;RING1;ANXA4;TESC;POU5F1;PHF20L1;NCOR2;KAT2A;MED20;MTF2;PAX9;RARA;PPARD;NFIX;ZNF518B;SRRT;ZNF518A;SPTY2D1;GSC;NSD1;NSD2;SPP1;PCGF1;STAT6;SPDEF;ZNF101;ZNF341;UTP4;PCGF5;MCRS1;STAT2;ZNF76;NR1H3;WWP2;GATAD2A;PSMC5;RYBP;NFIC;CRLF3;ZNF213;ZNF697;ZNF696;LIMS1;CCNT1;ZBTB24;HR;YEATS4;TNF;EFEMP1;SCMH1;SLC39A8;ZNF205;ZNF568;KMT5A;PITX1;FADS1;ZNF322;KCNH2;MAP2K3;ZNF683;MAP2K1;MAP2K2;TLE1;ZNF680;ZBTB38;THOC1;FOXP2;NPAS4;ILF3;DGKQ;ZNF318;ERF;ZNF678;TOX;INO80C;INO80B;BLM;INO80E;MAX;NOTCH4;KMT2B;FOXO6;FOXO3;GLIS1;SBNO1;SBNO2;MED31;NACC1;ZKSCAN3;DVL3;E4F1;ZKSCAN4;DR1;NEK4;BRPF3;RFXANK;MLXIPL;TFCP2;GON4L;BCL6;YEATS2;CNOT2;MAFF;MDM4;MAFK;MNAT1;ZNF410;NFE2L1;ZNF652;RNF187;RNF10;BNC2;ARRB1;SUMO1;ZNF408;SIN3A;HMG20A;ERC1;SOST;CHUK;DNMT3A;MSL2;ZFP91;VEZF1;MSL1;TFDP2;LCOR;TESMIN;LCORL;CRK;ZNF510;NFAT5;SMARCD1;SMARCD2;HDAC3;SMARCD3;PLAG1;CXXC1;LRP5;TULP3;MLLT1;BARX1;LRP6;POLR2A;TP53INP2;E2F1;ASCC2;E2F4;ZNF500;MLXIP;PML;TBX2;KLF5;GFI1;JMJD1C;CCAR2;ZNF608;RPS6KA1;ZNF844;EPC2;SOX8;SMARCC2;SFMBT1;RUNX3;RUNX2;ZNF713;DXO;ZNF710;TP53;L3MBTL3;TWIST2;SUPT4H1;TWIST1;ZBTB4;CYP27B1;ZNHIT1;ZNF827;ZNF704;MIER1;ZNF821;ZBED6;STAT5B;EGR3;INSR;SETDB2;IGF2;SMARCA5;SMARCA4;FUBP3;CALR;CC2D1B;RSF1;LIMD1;MEOX2;SUFU;UIMC1;MLX;BBS7;PBRM1;FOXD2;NCOA6;PROX2;CBFA2T2;COMMD7;MLF1;SUPT3H;MLF2;TOX4;MDFIC;WAC;NCOA7;HSF1;GPBP1L1;APBB3;NPM1;CDX1;GRHL1;PEX14;PER1;TFAP4;CTNNB1;NDUFA13;PRDM4;KDM1A;ZSCAN9;WWC2;PRDM2;NR3C1;LOXL2;PCID2;KDM2A;FBXW11;WNT5A;ARID5A;KCTD1;SUPT7L;NUPR2;HOMEZ;PSEN1;SOHLH2;EP400;CAMTA1;BPTF;WNT4;SMAD3;DENND4A;TGFB3;HMGA1;SMAD9;SMAD6;DAP;BMP2;BAMBI;TLX2;BHLHE40;TCF4;MXD1;BRWD1;MXD3;MXD4;PHF19;PICALM;CHD8;HP1BP3;SIX1;CHD2;LYL1;SIX4;BCL7A;YWHAQ;SIX5;TRPS1;MYBL1;KLF11;TSFM;USP47;EED;AXIN1;ARID1A;ETV4;DNM2;PSRC1;SETBP1;IRF3;THRAP3;IRF1;CRY1;KDM3B;ATF6B;RGS14;TGFBRAP1;CAND2;ATOH7;TBX20;VHL;MTA3;KLRG1;ATF7IP;KDM4A;CDK11A;TCF7L1;ATP2B4;MAPK14;CDK11B;TBX18;TBX15;REST;KANSL1;KANSL2;CARM1;KANSL3;CDK2AP1;QRICH1;TAF2","HLA-DRB5;HLA-DMA;HLA-DMB;HLA-DRA;TAPBPL;CALR;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DQB2;HLA-DRB1;HLA-DPA1","HFE;HLA-B;TAP2;HLA-C;TAP1;HLA-A;HLA-F;HLA-G;HLA-E;HLA-DRA;HLA-DRB1;MICA;MICB","RB1;RBL2;RBL1;WDR81;EEF1A2;PIK3R3;PPP2R5A;PIK3R1;F2","RB1;RPL5;SPI1;JMJD1C;CPNE1;AKT1;HOXA5;MED1;MBNL1;SLC11A1;RUNX3;DDIT3;ZNF713;ATF7;ZSCAN26;CLOCK;TP53;HOXB7;MEAF6;SRCAP;SUPT4H1;PIK3R3;TWIST1;GATA2;HNRNPLL;ZBTB4;ZBTB2;CYP27B1;ZNHIT1;ZNF827;STC2;MIER1;PCBP2;ZBTB7B;RBM12;RREB1;ZNF146;LYN;CREBBP;TIPARP;INSR;PDE2A;SETDB2;EIF2AK3;IGF2;SMARCA5;BRAF;SNF8;PUM2;TADA2B;PARP10;ZBTB6;FUBP3;ZFAT;SNAI1;CALR;EZH2;MYOM1;SETD2;ZNF131;PHF20;PHF1;RSF1;CTCF;LIMD1;GLI4;TRIM6;SUFU;HEY2;CHMP1A;MLX;SPIN1;TCF19;BTN3A1;TESC;BTN3A2;TERF2;POU5F1;SUPT3H;MLF1;MLF2;KAT2A;MTF2;HNRNPH3;MAPT;RAMP2;SRRT;SPTY2D1;AIF1;NSD1;NSD2;RPS3;PCGF1;GPBP1L1;STX3;RPL17;APBB3;ZNF341;GSN;UTP4;MOG;MCRS1;WWP2;PER1;RYBP;CCDC3;TARDBP;MEGF8;HSPA1B;LIMS1;HSPA1A;MYLK2;HFE;WWC2;TNC;PRDM2;YEATS4;PARK7;NR3C1;TNF;ACTG2;ACTG1;EFEMP1;ZNF205;SLC39A8;FADS1;ZNF683;MAP2K1;ZNF680;MAP2K2;TLE1;BTN1A1;ZBTB38;WNT5A;ZBTB32;CNPY2;ZBTB34;SUPT7L;LGALS9C;TYROBP;SMO;DGKQ;ZNF678;DNMT1;PSEN1;SBNO1;WNT6;SLC38A2;WNT3;WNT4;BPTF;DR1;SMAD3;BTN2A2;BRPF3;DENND4A;BTN2A1;GLMN;HMGA1;ZBTB12;BTNL2;BMP6;CLK3;FGF17;MLXIPL;BMP2;CDK6;GON4L;BCL6;YEATS2;CDK4;BHLHE40;FGFR4;NFKBID;ZNF410;PHF19;PICALM;BMPR1A;USP36;GSK3A;BNC2;CELF1;HP1BP3;CHD6;SIX1;LYL1;FLCN;DNMT3B;HMG20A;ERC1;GPX1;MSL2;MSL1;PTBP3;DNM2;RBL2;RBL1;SETBP1;ESRP2;ZNF638;SMCR8;TESMIN;LRP1;ROCK2;PLAG1;TGFBRAP1;CXXC1;RNF8;TULP3;TOB1;DLL4;MAPK9;POLR2A;ZNF507;TDG;E2F1;IGF2BP3;ASCC2;IGF2BP2;VHL;STOX1;KLRG1;ATF7IP;KDM4A;CDK11A;TCF7L1;NOS3;ATP2B4;MAPK14;CDK11B;MTOR;PML;P2RX7;REST;KANSL1;KANSL2;CARM1;KANSL3;ATP13A2;INSM1","HLA-DRB5;HLA-DMA;HLA-DMB;HLA-DRA;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DQB2;HLA-DRB1;HLA-DPA1","HLA-DRB5;HLA-DMA;HLA-DMB;HLA-DRA;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DQB2;HLA-DRB1;HLA-DPA1","COLGALT2;CRTAP;COL27A1;COL14A1;COL11A1;COL11A2;SERPINF2;LOXL4;PLOD3;LOXL1;LOXL2;ADAMTS2;ADAMTS3;LOX;COL5A2;PXDN;SERPINH1;NF1;CYP1B1","GSK3A;PPP1R11;UBXN2A;FAF1;UBE2D2;ZFAND2B;ARRB1;UBE3B;CCAR1;HERPUD1;ANKRD9;PSMD9;NUB1;CHMP1A;ARIH2;SKP2;FBXO9;UBL7;FBXW4;AREL1;NHLRC3;FBXW11;UBE2E1;AXIN1;AXIN2;PPP2R5C;TRPC4AP;RAD23B;RC3H2;RNF40;WDR81;PSMA1;DDIT3;KCTD13;TRIM13;CHMP3;CHMP4A;RBCK1;CLOCK;RNF166;WDR26;PSMD13;CUL3;VPS4A;CUL1;RNF8;NEDD8;DCST1;RNF5;BAG6;ATXN3;SHARPIN;HECTD1;OS9;PSMB3;UBD;PCBP2;MARVELD3;MVB12A;NAE1;KLHDC3;ATE1;ZRANB1;HACE1;ANKIB1;KLHL25;SMURF1;RNF25;KLHL22;WWP2;BFAR;NTAN1;CHFR;PML;CNOT4;CUL4A;UBE2W;ITCH;PSMC5;SPSB1;PSMC3;UBXN11;APC;GID8;TTC3;MKRN2;CTNNB1;UBAP1;STUB1;UBE2K;TRIM32;RNF187","IPPK;CYP27A1;CYP27B1;ITPKC;ISYNA1;PPIP5K2;ITPKA;IP6K1;IP6K3;IP6K2","VIL1;GSN;SCIN;CAPZB;AVIL;FLII;CAPZA1;TWF2;CAPG;VILL;TRIOBP","VIL1;GSN;SCIN;CAPZB;AVIL;FLII;CAPZA1;TWF2;CAPG;VILL;TRIOBP","MUS81;CDKN1A;FEN1;KDM1A;PHF1;PARK7;NIPBL;CCND1;SUMO1;HMCES;MLST8;TLK2;IER3;BOK;USP47;SHPRH;ARMT1;LIG1;NCOA6;KMT5C;USP3;ZBTB38;METTL3;PRKCD;RECQL;CSNK1E;CHD1L;PPP4R3B;DDB2;RNF169;IRF3;MSH3;DDIT3;PSME4;WAC;CRY1;NUPR2;CEP63;MAPT;SPATA18;TP53;PPP1R15A;NFAT5;BLM;DCUN1D5;USP10;DOT1L;BOD1L1;RNF8;XPC;PDS5B;PSEN1;PDS5A;SAMHD1;ZBTB4;FAAP20;VCPIP1;BCL2L11;RPS3;EP400;E2F1;ZNF668;NAE1;MICA;MAPK3;MUTYH;LYN;ZRANB3;NPM1;SLF2;CRADD;NEK4;MGMT;XRCC3;CBX1;SMARCA5;FANCA;FANCC;MAPK14;GTF2H4;MTOR;PML;CUL4A;RAD50;BCL6;APC;TAOK2;NABP2;GRB2;MNAT1;BCL2L2;CENPS;BCL2L1;RAD9A","MPV17L;PXN;NUDT2;PRR5L;PARK7;FOXO3;AIF1;PRDX3;MAPK9;CHCHD2;MGAT3;RPS3;AKT1;MAPK1;ROMO1;MAPK3;NQO1;PNPT1;GPX1;CHUK;DAPK1;ERCC6L2;PRKCD;GPX8;SLC4A11;FANCC;VRK2;PEX14;MSRA;FER;CCS;SELENOS;ATP13A2;MAPT;TP53;HSPA1B;HSPA1A","HLA-DRB5;HLA-A;HLA-F;DNM2;HLA-E;HLA-DMA;HLA-DMB;HLA-DRA;CTSF;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DQB2;HLA-DRB1;HLA-DPA1","RB1;OGFR;CDKN1A;NDUFA13;TNC;PTPRJ;CCAR2;RERG;FLCN;RPS6KA1;MLST8;AKT1;USP47;SPHK2;ST7L;ADAM17;PSRC1;NDUFS3;SGK3;TP53;SGK2;FBP1;PAPPA2;NDRG3;DCUN1D5;MEAF6;NPR1;DCUN1D3;MAPKAP1;LTBP4;SOCS2;CDC42;DNAJB2;CYP27B1;EXOSC4;FRZB;EXOSC9;IP6K2;CDKN2D;CDK11A;EGLN2;SMAD3;OSGIN1;KLHL22;CDK11B;MTOR;PML;SMARCA4;DCBLD2;BST2;ITCH;BCL6;TAOK2;CAPRIN2;CHPT1;CRLF3;EBAG9;TRIM32;HSPA1B;BCAR1;HSPA1A","RB1;SPI1;PPP1R11;CELF1;PARK7;TNF;FLCN;RBM4;SDR16C5;TRIM6;PAIP2B;CHMP1A;HEY2;CPNE1;NPTN;TRIM27;DIS3L2;NHLRC3;DAPK1;SLC11A1;METTL3;CNPY2;TSC1;NUDT16L1;PUS7;TERF2;PTBP3;RBL2;ILF3;RBL1;SMO;DGKQ;NCL;DXO;SMCR8;MAPT;EIF4E2;DCP2;DDX6;DNMT1;LRP1;ROCK2;SHMT1;PSEN1;GATA2;TOB1;GIGYF2;DLL4;STC2;RPS3;IGF2BP3;IGF2BP2;VHL;STOX1;WNT4;KDM4A;TIA1;PNPT1;SMAD3;BTN2A2;TIPARP;SETDB2;EIF2AK3;ATP2B4;WWP2;LSM5;LSM2;PARP10;BMP2;REST;AGO2;CALR;CCDC3;TARDBP;CNOT9;HSPA1B;ZNF410;EZH2;HSPA1A;BMPR1A;PHF19;PICALM;ASB1","ATF1;RB1;SPI1;EHMT2;SLA2;ELK3;ELK4;ZSCAN31;ZMIZ1;ZMIZ2;CREB3L2;HOXA3;HOXA7;HOXA6;ZNF169;HOXA5;HOXA4;HES7;MED1;ZNF165;SERPINF2;MED8;MED4;HOXB9;DDIT3;ZSCAN23;ATF7;ZSCAN26;CLOCK;HOXB7;HOXB6;ZNF276;CTBP2;SRCAP;GATA2;PPP3R1;ZSCAN12;ZBTB7B;ZSCAN16;ZBTB7A;RREB1;HEXIM1;HEXIM2;CREBBP;ZNF142;JUP;PBX3;NFATC3;IRF2BP2;PBX4;NR1D1;SNF8;FLI1;FOSL2;NFATC4;FOSL1;TADA2B;HNRNPK;AGO2;SNAI1;CDK12;EZH1;EZH2;ARF4;ZNF131;PHF20;TCF25;PHF1;MED19;ZNF44;CTCF;NIPBL;MED13;HEY2;CIC;ZNF367;TEAD3;BRD3;SS18;BRD2;ANXA4;TET2;TET1;POU5F1;PHF20L1;NCOR2;KAT2A;MED20;PAX9;RARA;PPARD;NFIX;ZNF518B;ZNF518A;GSC;NSD1;PCGF1;STAT6;MEF2D;RPL17;SPDEF;ZNF101;PCGF5;MCRS1;PCGF2;STAT2;ZNF76;NR1H3;WWP2;GATAD2A;SKI;PSMC5;PSMC3;NFIC;AGRN;CRLF3;ZNF213;ZNF697;FRK;ZNF696;HSPA1A;CCNT1;ZBTB24;HR;YEATS4;PARK7;TNF;ZNF205;ZNF568;KMT5A;PITX1;ZNF322;ZNF683;FST;ZBTB38;UBE2E1;ZBTB32;ZBTB34;FOXP2;RNF40;NPAS4;DGKQ;ERF;TOX;GLYR1;MAX;TNKS;NOTCH4;FOXO6;AEBP1;FOXO3;GLIS1;PHF21A;SBNO2;MED31;NACC1;ZKSCAN3;DVL3;E4F1;ZKSCAN4;DR1;BRPF3;RFXANK;ZBTB12;MLXIPL;DAB2;TFCP2;BCL6;YEATS2;CDK4;CNOT2;MAFF;MDM4;MAFK;MNAT1;ZNF410;NFE2L1;ZNF652;RNF10;FHL2;ARRB1;METTL13;ZNF408;SIN3A;ZNF529;DNMT3B;NCK1;ACTR3;CHUK;DNMT3A;ZFP91;VEZF1;TFDP2;LCOR;LCORL;CRK;ZNF510;NFAT5;SMARCD1;SMARCD2;HDAC3;SMARCD3;PLAG1;LRP5;BARX1;CXXC5;LRP6;DNAJB4;E2F1;E2F4;FNIP1;ZNF500;JAZF1;MLXIP;SPAG8;PRRX1;TBX2;KLF5;DNAJA3;ASXL2;INSM1;PFKM;CCDC62;GFI1;JMJD1C;EDNRB;ZNF608;RPS6KA1;ZNF844;EPC2;SOX8;TRIM27;SMARCC2;SLC11A1;RUNX3;RUNX2;DXO;ZNF710;TP53;TWIST2;SUPT4H1;TWIST1;PIK3R1;RTF1;ZBTB4;ZBTB2;CYP27B1;MIER3;ZNF704;MIER1;ZNF821;FADD;ZBED6;STAT5B;EGR3;PDE2A;IGF2;SMARCA5;SMARCA4;MC1R;ZBTB6;FUBP3;CALR;CC2D1B;PTPRN;MEOX2;N4BP2L2;PTMS;SUFU;MLX;BBS7;PBRM1;FOXD2;NCOA6;PROX2;SREBF2;SUPT3H;TOX4;GAL;NCOA7;RHOQ;DOT1L;HSF1;NPM1;CDX1;GRHL1;PER1;TFAP4;PER3;CTNNB1;CRTC3;PRDM4;KDM1A;PRDM6;ZSCAN9;WWC2;PRDM2;NUCKS1;NR3C1;LOXL2;CHCHD2;CCND1;MORC3;KDM2A;WNT5A;ARID5A;LMO7;NUPR2;FIZ1;HOMEZ;AKNA;PSEN1;SOHLH2;CAMTA1;CYTL1;BPTF;CBX7;CBX6;SMAD3;TGFB3;CBX2;PTCH1;CBX1;HMGA1;SMAD9;SMAD6;BMP6;EFNA1;BMP2;TLX2;BHLHE40;CAPRIN2;MKRN2;TCF4;MXD1;BRWD1;MXD3;ZSCAN2;MXD4;BMPR1A;CHD8;CHD6;SIX1;TRIAP1;CHD2;NR2E3;PKD1;LYL1;FLCN;SDR16C5;SIX4;BCL7A;SIX5;TRPS1;MYBL2;MYBL1;KLF11;RBM14;EED;ARID1A;ETV4;DCN;SENP1;CCNA2;IRF3;THRAP3;IRF1;CRY1;ITGB1BP1;FBP1;KDM3B;ATF6B;PLA2G1B;ATAD2B;ATOH7;DLL4;MUC1;TBX20;MTA3;MAPK3;KLRG1;TCF7L1;ATP2B4;MAPK14;TBX18;ACVR2A;POMC;TBX15;REST;KANSL3;CDK2AP1;SSBP3;LPIN3;TAF2;SSBP4","DET1;SRP19;COL16A1;GPAA1;GTF2B;HFE;PDCD6;LAMC1;PIK3C2A;CHCHD4;OTUD6B;CHCHD7;KNTC1;KPNA3;BOK;NCK1;CCT2;DBNL;COG4;AXIN1;TRAF1;CD2AP;GAK;VAMP8;NT5C3A;COX7A2L;EID2;CSNK2B;VAMP1;CHMP3;CHMP4A;ITGB1BP1;MAPT;VAMP4;TP53;LLGL1;VAMP3;BLM;PEF1;CUL3;PXN;CAPG;COX7A2;HIGD1B;SLC9A3R2;CAND2;FCHO1;HSF1;FCHO2;KRIT1;LPXN;FADD;GBP1;CENPT;FARP2;TRAPPC3;CREBBP;CENPW;SMAD3;SLC31A1;FANCA;TBCD;PILRB;FANCC;PEX14;PLEKHA7;PML;VIL1;P2RX7;TFAP4;APC;CAPZA1;TBCE;SRPRA;PSMG1;MDM4;TCF4;NDUFAF1;MNAT1;HSPA1A;PICALM","KANK1;PTPN1;GSK3A;IRS1;PRKCD;TSC2;PRKCZ;GRB10;PIP4K2B;PIP4K2C;TNS2;NCK1;SLC27A4","RB1;NDUFA13;SPI1;KDM1A;GFI1;NR3C1;TNF;CCAR2;ELK3;LOXL2;SCMH1;ZNF568;SOX8;KMT5A;HOXA7;TLE1;SMARCC2;SFMBT1;FBXW11;ZBTB38;WNT5A;ARID5A;KCTD1;FOXP2;RUNX2;DKK3;EID2;ILF3;DDIT3;ZNF318;CLOCK;TP53;L3MBTL3;CTBP2;TWIST2;TWIST1;ZBTB4;DEDD2;CYP27B1;SBNO2;ZNF827;NACC1;ZKSCAN3;ZBED6;ZBTB7A;WNT4;HEXIM1;HEXIM2;SETDB2;HMGA1;NR1D1;SMARCA4;MLXIPL;BMP2;DAP;HNRNPK;BCL6;YEATS2;BHLHE40;MDM4;CALR;EZH2;CHD8;RSF1;CTCF;LIMD1;NIPBL;SUMO1;BCL7A;SIX4;YWHAQ;SIN3A;HEY2;UIMC1;MLX;CIC;USP47;RING1;EED;DNMT3A;CBFA2T2;COMMD7;NCOR2;TFDP2;MDFIC;IRF1;PAX9;RARA;CRY1;PPARD;HDAC3;TBX20;E2F1;MTA3;ATF7IP;KDM4A;WWP2;PML;PEX14;GATAD2A;TBX2;PER1;REST;TFAP4;CTNNB1;LIMS1","DET1;GSK3A;HFE;PARK7;CCAR2;HERPUD1;BAG6;DNAJB2;NUB1;BAG5;XPO1;HECTD1;SUMO1;GNA12;ARIH2;TLK2;BBS7;SOCS5;ZYG11B;ANKIB1;CAMLG;GLMN;AXIN1;CSNK1E;AXIN2;RAD23B;PHF20L1;DAB2;RYBP;TRIM39;WAC;STUB1;HSPA1B;HSPA1A","KANK1;PTPN1;GSK3A;IRS1;PRKCD;TSC2;PRKCZ;GRB10;PIP4K2B;PIP4K2C;TNS2;NCK1;SLC27A4","YEATS4;GPATCH3;TNF;PSMD9;MSANTD1;ZMIZ1;CREB3L2;RPS6KA1;AKT1;EPC2;SOX8;CDK5RAP2;KCNH2;MAP2K3;MED1;MAP2K1;PCID2;MAP2K2;SMARCC2;FBXW11;WNT5A;MED4;RUNX3;RUNX2;SUPT7L;ILF3;DDIT3;ZNF318;DXO;CLOCK;TP53;INO80C;INO80B;BLM;INO80E;MEAF6;MAX;NOTCH4;KMT2B;XPC;PSEN1;FOXO3;ZKSCAN3;EP400;DVL3;RREB1;WNT4;CREBBP;SMAD3;NEK4;TGFB3;HMGA1;NR1D1;PBX4;FLI1;SMARCA4;TADA2B;MLXIPL;BMP2;FUBP3;BAMBI;SNAI1;TCF4;HLA-DRB1;RNF187;PICALM;FANK1;RNF10;PHF20;CHD8;SIX1;RSF1;CTCF;LYL1;MED13;SIX4;SPIN1;SOST;MYBL1;CHUK;NCOA6;TESC;MSL2;AXIN1;ARID1A;SUPT3H;MSL1;DNM2;KAT2A;PSRC1;MDFIC;THRAP3;IRF1;RARA;WAC;PPARD;SMARCD3;CXXC1;LRP5;MLLT1;LRP6;CAND2;NSD1;TP53INP2;SPP1;E2F1;VHL;MTA3;ATF7IP;NPM1;MCRS1;NR1H3;GATAD2A;PSMC5;REST;RYBP;TFAP4;KANSL1;KANSL2;KANSL3;CTNNB1;QRICH1;CRLF3;TAF2","MYLK2;CCNT1;STK19;IGF1R;STK10;EFEMP1;AKT3;STK16;RPS6KA1;CDK20;AKT1;STK32B;EPHB1;EPHB4;CSNK1G3;MAP2K1;MORC3;DAPK1;PRKCD;PRKCA;VRK2;CSNK1E;PASK;RUNX3;ILF3;MAPKAPK3;DGKQ;CSNK2B;SIK3;TSSK6;MAPKAPK5;BLK;PXK;EPHA10;TNKS;PRKCZ;TTBK2;GRK2;GRK5;STK36;GRK4;MARK3;IP6K3;LYN;PRRT1;DMPK;NEK4;INSR;EIF2AK3;BRAF;CLK3;BMP2;FER;CDK6;STK24;CDK4;STK25;FES;CDK10;CDK12;MAP3K13;FGFR4;FGFR3;BMPR1A;FGFR1;DDR1;GSK3A;MAST2;LRRK1;PKD1;TLK2;PRKG2;TLK1;ERC1;PRKG1;BRD2;RIPK3;CHUK;STRADA;PEAK1;RARA;BIRC6;SGK3;TOP1;FAM20A;SGK2;NIM1K;USP15;ROCK2;TTK;MAPK9;MKNK2;MAPK1;MAP4K5;MAPK3;MAP3K3;CDK11A;RYK;TAF11;CDC42BPA;MAPK14;CDK11B;MTOR;ACVR2A;MAPK13;MAPK10;TAOK2;NEK10;TAF8;COQ8B;PKN2;ATP13A2;TAF2","RB1;NDUFA13;PLXND1;PARK7;NUDT6;CCAR2;CYP1B1;TNS2;MAP2K1;TSC2;TSC1;RUNX3;ST7L;CSNK2B;CHMP4A;NUPR2;RAF1;TP53;PLPP1;BLM;NDRG3;CTBP2;NPR1;NOTCH4;DCUN1D3;FBLN1;PDS5B;SAV1;CYP27B1;SCIN;LPXN;IP6K2;LYN;CD164;CDT1;SMAD3;APOBEC3G;TGFB3;GLMN;EIF2AK3;OSGIN1;HMGA1;SMAD6;SMARCA4;BST2;BMP2;CDK6;BCL6;DLG5;CAPRIN2;CDK10;NOX4;MDM4;PLXNB1;NF2;ANP32B;APOBEC3B;CDKN1A;CELF1;PDE3B;PINX1;PTPRJ;CTCF;RERG;FLCN;BCL7A;CHMP1A;WDR6;SPEG;MYBL1;DIS3L2;SS18;KLF11;PBRM1;DUSP1;SPHK2;TESC;VPS13C;AXIN2;PPP2R5C;DYNLL1;VAMP8;PSRC1;DDAH1;IRF1;NDUFS3;CHMP3;ITGB1BP1;CRK;FBP1;GAS8;VAMP3;SMARCD1;TP53I13;VPS4A;TOB1;DNAJB2;DLL4;FRZB;PDPN;VHL;CDKN2D;SUZ12;NPM1;NOS3;NR1H3;PML;DCBLD2;SKI;REST;MYO1C;TFAP4;APC;DNAJA3;CTNNB1;AQP11;INSM1;CRLF3;HSPA1B;HSPA1A","CDT1;NUDC;SEH1L;DCTN2;BOD1;CUL3;PINX1;VPS4A;RMDN1;RAB11A;EML4;PSRC1;KIFC1;CHMP1A;CHMP3;CHMP4A;MAPRE1;PIBF1;KPNB1","IPPK;ITPKC;PPIP5K2;ITPKA;IP6K1;IP6K3;IP6K2","GHR;IRS1;EIF2AK3;TSC2;PIK3R1;GIGYF2;IGF1R","RB1;SPI1;EHMT2;GFI1;SLA2;CCAR2;ELK3;ELK4;EDNRB;ZNF608;SOX8;TRIM27;HOXA7;ZNF169;MED1;SMARCC2;SFMBT1;RUNX3;RUNX2;DKK3;EID2;DDIT3;CLOCK;TP53;L3MBTL3;CTBP2;SUPT4H1;TWIST2;TWIST1;RTF1;GATA2;ZBTB4;DEDD2;ZBTB2;CYP27B1;ZNF827;MIER3;MIER1;ZBED6;ZBTB7A;RREB1;HEXIM1;HEXIM2;CREBBP;PDE2A;SETDB2;IGF2;SMARCA5;NFATC3;IRF2BP2;NR1D1;SMARCA4;NFATC4;ZBTB6;HNRNPK;SNAI1;CALR;EZH1;EZH2;ZNF131;TCF25;RSF1;CTCF;LIMD1;N4BP2L2;NIPBL;SUFU;HEY2;UIMC1;MLX;CIC;RING1;TET1;CBFA2T2;COMMD7;POU5F1;SREBF2;NCOR2;MDFIC;PAX9;RARA;PPARD;NFIX;NSD1;HSF1;PCGF1;RPL17;SPDEF;PCGF2;NR1H3;WWP2;PEX14;GATAD2A;SKI;PER1;PER3;TFAP4;NFIC;CTNNB1;FRK;LIMS1;HSPA1A;NDUFA13;KDM1A;PRDM6;WWC2;PRDM2;NR3C1;TNF;LOXL2;CCND1;SCMH1;ZNF205;ZNF568;KMT5A;MAF1;MORC3;TLE1;KDM2A;FBXW11;FST;ZBTB38;WNT5A;ZBTB32;ARID5A;KCTD1;ZBTB34;FOXP2;ILF3;ZNF318;ERF;NUPR2;MAX;NOTCH4;PSEN1;AEBP1;FOXO3;GLIS1;PHF21A;SBNO2;NACC1;ZKSCAN3;E4F1;WNT4;BPTF;CBX7;DR1;CBX6;SMAD3;CBX2;PTCH1;CBX1;HMGA1;ZBTB12;BMP6;EFNA1;MLXIPL;BMP2;DAB2;DAP;BCL6;YEATS2;CNOT2;BHLHE40;MAFF;MDM4;MAFK;MXD1;ZSCAN2;MXD4;CHD8;FHL2;NR2E3;FLCN;SDR16C5;METTL13;SUMO1;BCL7A;YWHAQ;SIX4;SIN3A;ZNF529;TRPS1;DNMT3B;KLF11;USP47;EED;DNMT3A;TFDP2;IRF1;CRY1;LCOR;FBP1;HDAC3;CXXC5;DLL4;MUC1;DNAJB4;TBX20;E2F1;FNIP1;MTA3;JAZF1;ATF7IP;KDM4A;PML;TBX2;REST;DNAJA3;INSM1","HLA-DRB5;HLA-DMA;HLA-DMB;HLA-DRA;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DQB2;HLA-DRB1;HLA-DPA1","HLA-B;HLA-C;HLA-A;HLA-F;HLA-G;MICA;HLA-E;MICB","HLA-B;HLA-C;HLA-A;HLA-F;HLA-G;MICA;HLA-E;MICB","HLA-B;HLA-C;HLA-A;HLA-F;HLA-G;MICA;HLA-E;MICB","HLA-B;HLA-C;HLA-A;HLA-F;HLA-G;MICA;HLA-E;MICB","KANK1;PTPN1;GSK3A;IRS1;PRKCD;IGF2;TSC2;NUCKS1;PRKCZ;GKAP1;GRB10;PIP4K2B;PIP4K2C;ZBTB7B;TNS2;NCK1;SLC27A4","ATF1;MDC1;SPI1;ELK3;ELK4;ZMIZ1;ZMIZ2;RPS6KA1;PWWP2A;SOX8;HOXA7;HOXA5;MED1;SLC11A1;SERPINF2;MED8;MED4;RUNX2;DDIT3;ATF7;TP53;HOXB7;CTBP2;SUPT4H1;TWIST1;PIK3R1;GATA2;CYP27B1;PPP3R1;ZNHIT1;FADD;RREB1;STAT5B;CREBBP;JUP;IGF2;SMARCA5;NFATC3;NR1D1;SMARCA4;FOSL2;MC1R;FUBP3;AGO2;CDK12;ARF4;ELL;PTPRN;MED19;MEOX2;PTMS;MED13;HEY2;MLX;SS18;FOXD2;NCOA6;TET2;TET1;POU5F1;SREBF2;MED28;KAT2A;GAL;MED20;RARA;NCOA7;RHOQ;PPARD;NFIX;DOT1L;HSF1;STAT6;MEF2D;NPM1;PCGF5;CDX1;MCRS1;STAT2;ZNF76;NR1H3;GRHL1;SKI;PER1;PSMC3;NFIC;CTNNB1;AGRN;CRLF3;CRTC3;CCNT1;PRDM4;KDM1A;PRDM2;NUCKS1;PARK7;NR3C1;TNF;CHCHD2;ZBTB38;WNT5A;UBE2E1;LMO7;RNF40;NPAS4;FIZ1;GLYR1;AKNA;MAX;TNKS;NOTCH4;FOXO3;GLIS1;SBNO2;MED31;DVL3;E4F1;CYTL1;BPTF;DR1;SMAD3;TGFB3;HMGA1;SMAD9;RFXANK;BMP6;MLXIPL;BMP2;DAB2;TFCP2;TLX2;MAFF;CAPRIN2;MKRN2;TCF4;NFE2L1;ZNF410;BMPR1A;RNF10;CHD8;CHD6;SIX1;ARRB1;TRIAP1;NR2E3;PKD1;FLCN;SIN3A;MYBL2;MYBL1;NCK1;ACTR3;RBM14;CHUK;VEZF1;ETV4;DCN;SENP1;CCNA2;IRF3;TFDP2;THRAP3;IRF1;ITGB1BP1;NFAT5;HDAC3;ATF6B;PLA2G1B;PLAG1;LRP5;LRP6;ATAD2B;ATOH7;MUC1;E2F1;E2F4;MAPK3;MLXIP;SPAG8;PRRX1;TAF11;ACVR2A;POMC;KLF5;KANSL3;ASXL2;TAF8;PFKM;SSBP3;TAF2;LPIN3;SSBP4;CCDC62","USP36;TCF7L1;HDAC3;PHF1;CBX1;SUPT4H1;NUCKS1;LRWD1;PARP10;HMGN4;GATAD1;MTF2;BANF1;HMG20A;TCF4;HMGN2;RPL17;ZBTB7A;HMGN1;EZH2;PHF19","RB1;SPI1;WWC2;JMJD1C;YEATS4;PRDM2;NR3C1;EFEMP1;ZMIZ1;SLC39A8;ZNF205;FADS1;ZNF680;ZBTB38;ACTN4;RUNX3;DDIT3;ZNF713;ATF7;ZSCAN26;ZNF678;CLOCK;HOXB7;TP53;MEAF6;SRCAP;SUPT4H1;ZBTB4;SBNO1;ZNHIT1;MIER1;RREB1;ZNF146;BPTF;CREBBP;DR1;SMAD3;BRPF3;DENND4A;INSR;IGF2;SMARCA5;HMGA1;MLXIPL;BMP2;GON4L;YEATS2;ZFAT;BHLHE40;SNAI1;CALR;EZH2;PHF19;BNC2;PHF1;HP1BP3;SIX1;RSF1;LIMD1;GLI4;LYL1;SUFU;SPIN1;MLX;HMG20A;ERC1;POU5F1;MLF1;SUPT3H;MLF2;DNM2;KAT2A;SETBP1;MTF2;TESMIN;PLAG1;SRRT;TGFBRAP1;CXXC1;TULP3;SPTY2D1;POLR2A;NSD1;NSD2;E2F1;PCGF1;ASCC2;GPBP1L1;RALY;VHL;APBB3;KLRG1;ATF7IP;ZNF341;CDK11A;TCF7L1;UTP4;CDK11B;PML;REST;RYBP;CARM1","HLA-DMA;HLA-DRB5;HLA-DMB;HLA-DRA;CTSF;HLA-DOB;HLA-DQA2;HLA-DQA1;HLA-DQB2;HLA-DRB1;HLA-DPA1;DNM2","GSK3A;UBXN2A;FAF1;CCDC47;ZFAND2B;ARRB1;ANKRD9;SKP2;UBXN6;FBXO9;NHLRC3;FBXW11;AXIN1;AXIN2;PPP2R5C;RAD23B;PSMA1;DDIT3;PSME4;KCTD13;TRIM13;RBCK1;CLOCK;WDR26;PSMD13;CUL3;CUL1;RNF5;BAG6;ATXN3;SHARPIN;HECTD1;PSMB3;PCBP2;KLHDC3;ATE1;SMURF1;RHBDD1;KLHL22;WWP2;BFAR;NR1D1;PML;CUL4A;UBE2W;ITCH;PSMC5;SPSB1;PSMC3;UBXN11;APC;GID8;CTNNB1;STUB1;UBE2K;RNF187","RB1;ROCK2;NOS3;ELN;TIE1;TWIST1;AXIN2;SMAD6;RHOA;DLL4;EFNA1;HEY2;TBX20;CDH11;SNAI1","UBE2D2;UBE3B;TRIM8;NPEPPS;TRIM6;UBE2Q1;UBE2Q2;ARIH2;TRIM27;SKP2;FBXO9;SHPRH;AREL1;NHLRC3;FBXW11;UBE2E1;ZFP91;TRAF1;RC3H2;DDB2;RBCK1;ZNF598;RNF166;RNF31;ANAPC13;TNKS;PELI3;CUL3;CUL1;RNF8;NT5C2;RNF5;ANAPC10;RNF135;SHARPIN;HECTD1;TNKS2;TMEM129;HACE1;ANKIB1;SMURF1;RNF25;WWP2;BFAR;UBE2W;ITCH;UBOX5;CDC16;TTC3;MKRN1;UBE2N;CTNNB1;STUB1;TRIM38;UBE2K;TRIM32;RNF187","NDUFA13;GSK3A;SPI1;PDCD6;WWC2;PDE3B;PTPRJ;SLA2;LIMD1;HERPUD1;IGF1R;FLCN;SPRED1;RPS6KA1;CPNE1;DAG1;SLC39A8;EPM2A;MAP2K3;DUSP3;TLE1;DUSP1;PLAUR;TSC2;TSC1;HLA-G;CD2AP;PPM1B;DDIT3;PPIF;NDUFS3;TSSK6;MAPKAPK5;LRP1;MGRN1;USP10;TWIST1;PBLD;ARHGAP12;SH3BP1;FNIP1;MARK3;LYN;PLEKHA1;PDE2A;ATP2B4;NR1D1;MAPK14;P2RX7;PER1;MYO1C;TRIM39;DLG5;PDE3A;MKRN2;NF1;BCL2L2;BCL2L1","FEN1;PNPT1;DIS3;DIS3L;METTL3;NUDT16L1;LSM5;LSM2;ISG20;EXOSC5;EXOSC10;EXOSC4;EXOSC9;XRN2;DXO;DNA2;DCP2;HSPA1B;DIS3L2;HSPA1A","GSN;WDR1;AVIL;FLII;TWF2;MICAL3;CAPG;AIF1;VIL1;PREX1;PSTPIP1;CATIP;SCIN;MICAL1;SPIRE2;VILL;CORO7;WASHC3;GAS7"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Term<\/th>\n      <th>Overlap<\/th>\n      <th>P.value<\/th>\n      <th>Adjusted.P.value<\/th>\n      <th>Old.P.value<\/th>\n      <th>Old.Adjusted.P.value<\/th>\n      <th>Odds.Ratio<\/th>\n      <th>Combined.Score<\/th>\n      <th>Genes<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":2,"columnDefs":[{"className":"dt-right","targets":[3,4,5,6,7,8]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[2,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<p><br><br><br><br><br><br><br><br><br><br><br><img src="figure/realdata_final_downstream_enrichment_compare_twasctwascoloc.Rmd/unnamed-chunk-1-15.png" width="480" style="display: block; margin: auto;" /></p>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
