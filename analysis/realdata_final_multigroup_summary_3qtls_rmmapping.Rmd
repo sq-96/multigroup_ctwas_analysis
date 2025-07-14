@@ -171,7 +171,8 @@ for (trait in traits){
   
   combined_pip_by_group_single <- readRDS(paste0(folder_results_single, trait, "/", trait, "_", top_tissue, ".combined_pip_rmmapping_bytype_final.RDS"))
   combined_pip_by_group_multi <- readRDS(paste0(folder_results_multi,trait,"/",trait,".3qtls.combined_pip_rmmapping_bytype_final.RDS"))
-  
+  combined_pip_by_context_multi <- readRDS(paste0(folder_results_multi,trait,"/",trait,".3qtls.combined_pip_rmmapping_bycontext_final.RDS"))
+   
   grid.newpage()
   print(plot_overlap_barplot(combined_pip_by_group_multi = combined_pip_by_group_multi, combined_pip_by_group_single = combined_pip_by_group_single,PIP_cutoff = PIP_cutoff,tissue = top_tissue,trait = trait,return_unique_genes = T))
   
@@ -179,15 +180,26 @@ for (trait in traits){
   
   combined_pip_by_group_multi_sig <- combined_pip_by_group_multi[combined_pip_by_group_multi$combined_pip > PIP_cutoff,]
   combined_pip_by_group_single_sig <- combined_pip_by_group_single[combined_pip_by_group_single$combined_pip > PIP_cutoff,]
+  combined_pip_by_context_multi_sig <- combined_pip_by_context_multi[combined_pip_by_context_multi$combined_pip > PIP_cutoff,]
   
   combined_pip_by_group_multi_unique <- combined_pip_by_group_multi_sig[!combined_pip_by_group_multi_sig$gene_name %in% combined_pip_by_group_single_sig$gene_name, ]
-  
+  combined_pip_by_context_multi_unique <- combined_pip_by_context_multi_sig[!combined_pip_by_context_multi_sig$gene_name %in% combined_pip_by_group_single_sig$gene_name, ]
+ 
   grid.newpage()
   if(nrow(combined_pip_by_group_multi_unique) > 0) {
     print(plot_heatmap(heatmap_data = combined_pip_by_group_multi_unique, main = paste0("New genes identified by multigroup analysis, PIP>",PIP_cutoff),showPIP = T))
   }
   
+  grid.newpage()
+  if(nrow(combined_pip_by_context_multi_unique) > 0) {
+    print(plot_heatmap(heatmap_data = combined_pip_by_context_multi_unique, main = paste0("New genes identified by multicontext analysis, PIP>",PIP_cutoff),showPIP = T))
+  }
+  
+  
+  
   print(paste0("Unique genes from multigroup: ", paste0(combined_pip_by_group_multi_unique$gene_name, collapse = ", ")))
+  
+  
   
 
 }
