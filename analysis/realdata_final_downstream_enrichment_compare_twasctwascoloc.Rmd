@@ -27,8 +27,8 @@ DT::datatable(matrix())
 
 library(VennDiagram)
 
-traits <- c("LDL-ukb-d-30780_irnt","IBD-ebi-a-GCST004131","T1D-GCST90014023","SBP-ukb-a-360","BMI-panukb","HB-panukb","Height-panukb")
-# aFib-ebi-a-GCST006414
+traits <- c("LDL-ukb-d-30780_irnt","IBD-ebi-a-GCST004131","T1D-GCST90014023","aFib-ebi-a-GCST006414","SBP-ukb-a-360","BMI-panukb","HB-panukb","Height-panukb")
+# 
 
 folder_results <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/results_downstream/enrichr_compare/"
 ctwas_folder_results <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/"
@@ -91,7 +91,7 @@ for (trait in traits){
   cat("<br>")
   cat("<br>")
   cat("<br>")
-  cat(knitr::knit_print(DT::datatable(df_ctwas,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Enriched GO terms -- ctwas '),options = list(pageLength = 2) )))
+  cat(knitr::knit_print(DT::datatable(df_ctwas,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;',paste0('Enriched GO terms -- ctwas - ',trait)),options = list(pageLength = 2) )))
   cat("<br>")
   cat("<br>")
   cat("<br>")
@@ -125,7 +125,7 @@ for (trait in traits){
   cat("<br>")
   cat("<br>")
   cat("<br>")
-  cat(knitr::knit_print(DT::datatable(df_twas,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Enriched GO terms -- twas '),options = list(pageLength = 2) )))
+  cat(knitr::knit_print(DT::datatable(df_twas,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;',paste0('Enriched GO terms -- twas - ',trait)),options = list(pageLength = 2) )))
   cat("<br>")
   cat("<br>")
   cat("<br>")
@@ -156,7 +156,7 @@ for (trait in traits){
   cat("<br>")
   cat("<br>")
   cat("<br>")
-  cat(knitr::knit_print(DT::datatable(df_coloc,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Enriched GO terms -- coloc '),options = list(pageLength = 2) )))
+  cat(knitr::knit_print(DT::datatable(df_coloc,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;',paste0('Enriched GO terms -- coloc - ',trait)),options = list(pageLength = 2) )))
   cat("<br>")
   cat("<br>")
   cat("<br>")

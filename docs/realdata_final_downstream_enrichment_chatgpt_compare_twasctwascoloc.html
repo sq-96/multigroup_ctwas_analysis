@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="XSun" />
+
+<meta name="date" content="2025-07-11" />
+
+<title>Enrichment, gene lists are from chatgpt – comparing coloc, twas and ctwas results</title>
+
+<script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/htmlwidgets-1.5.4/htmlwidgets.js"></script>
+<link href="site_libs/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet" />
+<script src="site_libs/datatables-binding-0.22/datatables.js"></script>
+<link href="site_libs/dt-core-1.11.3/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="site_libs/dt-core-1.11.3/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="site_libs/dt-core-1.11.3/js/jquery.dataTables.min.js"></script>
+<link href="site_libs/crosstalk-1.2.0/css/crosstalk.min.css" rel="stylesheet" />
+<script src="site_libs/crosstalk-1.2.0/js/crosstalk.min.js"></script>
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">multigroup_ctwas_analysis</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/sq-96/multigroup_ctwas_analysis">
+    <span class="fab fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Enrichment, gene lists are from chatgpt –
+comparing coloc, twas and ctwas results</h1>
+<h4 class="author">XSun</h4>
+<h4 class="date">2025-07-11</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span
+class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2025-07-14
+</p>
+<p>
+<strong>Checks:</strong> <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 1
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> 1
+</p>
+<p>
+<strong>Knit directory:</strong> <code>multigroup_ctwas_analysis/</code>
+<span class="glyphicon glyphicon-question-sign" aria-hidden="true"
+title="This is the local directory in which the code in this file was executed.">
+</span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version
+1.7.0). The <em>Checks</em> tab describes the reproducibility checks
+that were applied when the results were created. The <em>Past
+versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges">
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted
+changes </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguncommittedchanges"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The R Markdown is untracked by Git. To know which version of the R
+Markdown file created these results, you’ll want to first commit it to
+the Git repo. If you’re still working on the analysis, you can ignore
+this warning. When you’re finished, you can run
+<code>wflow_publish</code> to commit the R Markdown file and build the
+HTML.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistreecf541254b6f6d2e8ed3daed56a6e4f09f3d12284targetblankcf54125a">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/cf541254b6f6d2e8ed3daed56a6e4f09f3d12284" target="_blank">cf54125</a>
+</a>
+</p>
+</div>
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistreecf541254b6f6d2e8ed3daed56a6e4f09f3d12284targetblankcf54125a"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development
+and connecting the code version to the results is critical for
+reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/cf541254b6f6d2e8ed3daed56a6e4f09f3d12284" target="_blank">cf54125</a>.
+See the <em>Past versions</em> tab to see a history of the changes made
+to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for
+the analysis have been committed to Git prior to generating the results
+(you can use <code>wflow_publish</code> or
+<code>wflow_git_commit</code>). workflowr only checks the R Markdown
+file, but you know if there are other scripts or data files that it
+depends on. Below is the status of the Git repository when the results
+were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .Rhistory
+    Ignored:    cv/
+    Ignored:    figures/lz/IBD-ebi-a-GCST004131/single/
+    Ignored:    figures/lz_ld/IBD-ebi-a-GCST004131/single/
+
+Untracked files:
+    Untracked:  VennDiagram.2025-07-14_11-13-09.log
+    Untracked:  VennDiagram.2025-07-14_11-13-10.log
+    Untracked:  VennDiagram.2025-07-14_11-13-11.log
+    Untracked:  VennDiagram.2025-07-14_11-13-12.log
+    Untracked:  VennDiagram.2025-07-14_11-34-53.log
+    Untracked:  VennDiagram.2025-07-14_11-34-57.log
+    Untracked:  VennDiagram.2025-07-14_11-35-06.log
+    Untracked:  VennDiagram.2025-07-14_11-35-13.log
+    Untracked:  VennDiagram.2025-07-14_11-35-22.log
+    Untracked:  VennDiagram.2025-07-14_11-35-29.log
+    Untracked:  VennDiagram.2025-07-14_11-35-30.log
+    Untracked:  VennDiagram.2025-07-14_11-35-31.log
+    Untracked:  VennDiagram.2025-07-14_11-35-39.log
+    Untracked:  VennDiagram.2025-07-14_11-35-46.log
+    Untracked:  VennDiagram.2025-07-14_11-35-47.log
+    Untracked:  VennDiagram.2025-07-14_11-35-54.log
+    Untracked:  VennDiagram.2025-07-14_11-36-01.log
+    Untracked:  VennDiagram.2025-07-14_11-36-09.log
+    Untracked:  VennDiagram.2025-07-14_11-36-17.log
+    Untracked:  VennDiagram.2025-07-14_11-36-25.log
+    Untracked:  VennDiagram.2025-07-14_12-18-22.log
+    Untracked:  VennDiagram.2025-07-14_12-18-23.log
+    Untracked:  VennDiagram.2025-07-14_12-18-24.log
+    Untracked:  analysis/realdata_final_downstream_enrichment_chatgpt_compare_twasctwascoloc.Rmd
+
+Unstaged changes:
+    Deleted:    VennDiagram.2025-07-11_15-23-40.log
+    Deleted:    VennDiagram.2025-07-11_15-23-41.log
+    Deleted:    VennDiagram.2025-07-11_15-23-42.log
+    Deleted:    VennDiagram.2025-07-11_15-26-15.log
+    Deleted:    VennDiagram.2025-07-11_15-26-16.log
+    Deleted:    VennDiagram.2025-07-11_15-28-18.log
+    Deleted:    VennDiagram.2025-07-11_15-28-19.log
+    Deleted:    VennDiagram.2025-07-11_15-30-07.log
+    Deleted:    VennDiagram.2025-07-11_15-30-08.log
+    Deleted:    VennDiagram.2025-07-11_15-30-09.log
+    Deleted:    VennDiagram.2025-07-11_15-32-08.log
+    Deleted:    VennDiagram.2025-07-11_15-32-09.log
+    Deleted:    VennDiagram.2025-07-11_15-32-10.log
+    Deleted:    VennDiagram.2025-07-11_15-33-53.log
+    Deleted:    VennDiagram.2025-07-11_15-33-54.log
+    Deleted:    VennDiagram.2025-07-11_15-33-55.log
+    Deleted:    VennDiagram.2025-07-11_15-34-48.log
+    Deleted:    VennDiagram.2025-07-11_15-35-03.log
+    Deleted:    VennDiagram.2025-07-11_15-35-13.log
+    Deleted:    VennDiagram.2025-07-11_15-35-20.log
+    Deleted:    VennDiagram.2025-07-11_15-35-27.log
+    Deleted:    VennDiagram.2025-07-11_15-35-36.log
+    Deleted:    VennDiagram.2025-07-11_15-35-42.log
+    Deleted:    VennDiagram.2025-07-11_15-35-49.log
+    Deleted:    VennDiagram.2025-07-11_15-35-57.log
+    Deleted:    VennDiagram.2025-07-11_15-36-04.log
+    Deleted:    VennDiagram.2025-07-11_15-36-13.log
+    Deleted:    VennDiagram.2025-07-11_15-36-21.log
+    Deleted:    VennDiagram.2025-07-11_15-36-30.log
+    Deleted:    VennDiagram.2025-07-11_15-36-39.log
+    Deleted:    VennDiagram.2025-07-11_15-36-49.log
+    Modified:   analysis/index.Rmd
+    Modified:   analysis/realdata_final_downstream_enrichment_compare_twasctwascoloc.Rmd
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not
+included in this status report because it is ok for generated content to
+have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+<p>
+There are no past versions. Publish this analysis with
+<code>wflow_publish()</code> to start tracking its development.
+</p>
+<hr>
+</div>
+</div>
+</div>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>We compared overlap with gene lists from chatgpt, across three
+analyses: coloc, TWAS, and cTWAS. The prompt we used in
+<code>chatgpt 4o</code> is</p>
+<p><code>can you return some genes with roles in LDL / LDL risk genes, in txt table format, the second column is the gene functions</code></p>
+<ul>
+<li>For coloc, we included genes with posterior probability of
+colocalization (PP4) &gt; 0.8.</li>
+<li>For TWAS, we applied a Bonferroni correction to the TWAS p-values,
+using a significance threshold calculated as: qnorm(1 - (0.05 /
+number_of_TWAS_genes / 2), lower.tail = TRUE).</li>
+<li>For cTWAS, we selected genes with a posterior inclusion probability
+(PIP) &gt; 0.8.</li>
+</ul>
+</div>
+<div id="results" class="section level1">
+<h1>Results</h1>
+<pre class="r"><code>DT::datatable(matrix())</code></pre>
+<div id="htmlwidget-d639f6103711bd6fa54f" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-d639f6103711bd6fa54f">{"x":{"filter":"none","vertical":false,"data":[[null]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>V1<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<pre class="r"><code>traits &lt;- c(&quot;LDL-ukb-d-30780_irnt&quot;,&quot;IBD-ebi-a-GCST004131&quot;,&quot;T1D-GCST90014023&quot;,&quot;aFib-ebi-a-GCST006414&quot;,&quot;SBP-ukb-a-360&quot;,&quot;BMI-panukb&quot;,&quot;HB-panukb&quot;,&quot;Height-panukb&quot;)
+# 
+
+folder_results &lt;- &quot;/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/results_downstream/enrichr_compare/&quot;
+ctwas_folder_results &lt;- &quot;/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/&quot;
+folder_chatgpt_genes &lt;- &quot;/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/data/genelist/&quot;
+
+
+all_overlap_tables &lt;- list()
+
+for (trait in traits){
+  
+  # print(trait)
+  
+  # Load gene lists
+  ctwas_genes &lt;- readRDS(paste0(ctwas_folder_results, trait, &quot;/&quot;, trait, &quot;.3qtls.combined_pip_rmmapping_bygroup_final.RDS&quot;))
+  ctwas_genes_pip05p &lt;- ctwas_genes$gene_name[ctwas_genes$combined_pip &gt;= 0.5]
+  ctwas_genes_pip05m &lt;- ctwas_genes$gene_name[ctwas_genes$combined_pip &lt; 0.5]
+  ctwas_genes_pip08p &lt;- ctwas_genes$gene_name[ctwas_genes$combined_pip &gt;= 0.8]
+  ctwas_genes_pip08m &lt;- ctwas_genes$gene_name[ctwas_genes$combined_pip &lt; 0.8]
+  ctwas_genes &lt;- ctwas_genes$gene_name[ctwas_genes$combined_pip &gt; 0.8]
+  
+  coloc_genes &lt;- readRDS(paste0(folder_results, trait, &quot;.genes.coloc.RDS&quot;))
+  coloc_genes &lt;- coloc_genes$gene_name[coloc_genes$PP4 &gt; 0.8]
+  
+  twas_genes &lt;- readRDS(paste0(folder_results, trait, &quot;.genes.twas_bonf.RDS&quot;))
+  
+  chatgpt_genes &lt;- read.table(paste0(folder_chatgpt_genes, trait, &quot;_genelist_chatgpt.txt&quot;), header = TRUE, sep = &quot;\t&quot;)
+  
+  # Calculate overlaps
+  overlap_counts &lt;- c(
+    length(intersect(ctwas_genes, chatgpt_genes$Gene)),
+    length(intersect(coloc_genes, chatgpt_genes$Gene)),
+    length(intersect(twas_genes, chatgpt_genes$Gene))
+  )
+  
+  percent_overlap &lt;- c(
+    paste0(round(overlap_counts[1] / length(ctwas_genes) * 100, 1), &quot;%&quot;),
+    paste0(round(overlap_counts[2] / length(coloc_genes) * 100, 1), &quot;%&quot;),
+    paste0(round(overlap_counts[3] / length(twas_genes) * 100, 1), &quot;%&quot;)
+  )
+  
+  overlapping_genes &lt;- c(
+    paste(intersect(ctwas_genes, chatgpt_genes$Gene), collapse = &quot;, &quot;),
+    paste(intersect(coloc_genes, chatgpt_genes$Gene), collapse = &quot;, &quot;),
+    paste(intersect(twas_genes, chatgpt_genes$Gene), collapse = &quot;, &quot;)
+  )
+  
+  overlap_table &lt;- data.frame(
+    Trait = trait,
+    Analysis = c(&quot;cTWAS&quot;, &quot;COLOC&quot;, &quot;TWAS&quot;),
+    Total_Genes = c(length(ctwas_genes), length(coloc_genes), length(twas_genes)),
+    Overlap_with_ChatGPT = c(
+      paste0(length(intersect(ctwas_genes, chatgpt_genes$Gene)),&quot; of &quot;,length(chatgpt_genes$Gene),&quot; Chatgpt genes&quot;),
+      paste0(length(intersect(coloc_genes, chatgpt_genes$Gene)),&quot; of &quot;,length(chatgpt_genes$Gene),&quot; Chatgpt genes&quot;),
+      paste0(length(intersect(twas_genes, chatgpt_genes$Gene)),&quot; of &quot;,length(chatgpt_genes$Gene),&quot; Chatgpt genes&quot;)
+    ),
+    Percent_Overlap = c(
+      paste0(round(length(intersect(ctwas_genes, chatgpt_genes$Gene)) / length(ctwas_genes) * 100, 1), &quot;%&quot;),
+      paste0(round(length(intersect(coloc_genes, chatgpt_genes$Gene)) / length(coloc_genes) * 100, 1), &quot;%&quot;),
+      paste0(round(length(intersect(twas_genes, chatgpt_genes$Gene)) / length(twas_genes) * 100, 1), &quot;%&quot;)
+    ),
+    Overlapping_Genes = c(
+      paste(intersect(ctwas_genes, chatgpt_genes$Gene), collapse = &quot;, &quot;),
+      paste(intersect(coloc_genes, chatgpt_genes$Gene), collapse = &quot;, &quot;),
+      paste(intersect(twas_genes, chatgpt_genes$Gene), collapse = &quot;, &quot;)
+    )
+  )
+  
+  num_gene05p_in_set &lt;- sum(ctwas_genes_pip05p %in% chatgpt_genes$Gene)
+  num_gene05m_in_set &lt;- sum(ctwas_genes_pip05m %in% chatgpt_genes$Gene)
+ 
+  fisher_b_matrix_05p05m &lt;- matrix(
+    c(num_gene05p_in_set, num_gene05m_in_set,
+      length(ctwas_genes_pip05p) - num_gene05p_in_set,
+      length(ctwas_genes_pip05m) - num_gene05m_in_set),
+    nrow = 2, byrow = TRUE,
+    dimnames = list(c(&quot;#included&quot;, &quot;#notincluded&quot;), c(&quot;pip&gt;0.5&quot;, &quot;pip&lt;0.5&quot;))
+  )
+  fisher_b_result_05p05m &lt;- fisher.test(fisher_b_matrix_05p05m)
+  
+  overlap_table$`fisher_p-PIP&gt;0.5&amp;PIP&lt;0.5` &lt;- NA
+  overlap_table$`fisher_p-PIP&gt;0.5&amp;PIP&lt;0.5`[1] &lt;- round(fisher_b_result_05p05m$p.value,digits = 8)
+  
+  
+  num_gene08p_in_set &lt;- sum(ctwas_genes_pip08p %in% chatgpt_genes$Gene)
+  num_gene08m_in_set &lt;- sum(ctwas_genes_pip08m %in% chatgpt_genes$Gene)
+  
+  fisher_b_matrix_08p08m &lt;- matrix(
+    c(num_gene08p_in_set, num_gene08m_in_set,
+      length(ctwas_genes_pip08p) - num_gene08p_in_set,
+      length(ctwas_genes_pip08m) - num_gene08m_in_set),
+    nrow = 2, byrow = TRUE,
+    dimnames = list(c(&quot;#included&quot;, &quot;#notincluded&quot;), c(&quot;pip&gt;0.8&quot;, &quot;pip&lt;0.8&quot;))
+  )
+  fisher_b_result_08p08m &lt;- fisher.test(fisher_b_matrix_08p08m)
+  overlap_table$`fisher_p-PIP&gt;0.8&amp;PIP&lt;0.8` &lt;- NA
+  overlap_table$`fisher_p-PIP&gt;0.8&amp;PIP&lt;0.8`[1] &lt;- round(fisher_b_result_08p08m$p.value,digits = 8)
+  
+  
+  
+  all_overlap_tables[[trait]] &lt;- overlap_table
+  
+
+}
+
+# Combine all into one data frame
+combined_overlap_table &lt;- do.call(rbind, all_overlap_tables)
+rownames(combined_overlap_table) &lt;- NULL
+
+cat(&quot;&lt;br&gt;&lt;br&gt;&quot;)</code></pre>
+<p><br><br></p>
+<pre class="r"><code>cat(knitr::knit_print(DT::datatable(combined_overlap_table,
+                                    caption = htmltools::tags$caption(
+                                      style = &#39;caption-side: left; text-align: left; color:black;  font-size:150% ;&#39;,
+                                      &#39;Combined Gene Overlap Summary Across Traits&#39;
+                                    ),
+                                    options = list(pageLength = 10))))</code></pre>
+<div id="htmlwidget-a42aaead819ac066e1f2" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-a42aaead819ac066e1f2">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">Combined Gene Overlap Summary Across Traits<\/caption>","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24"],["LDL-ukb-d-30780_irnt","LDL-ukb-d-30780_irnt","LDL-ukb-d-30780_irnt","IBD-ebi-a-GCST004131","IBD-ebi-a-GCST004131","IBD-ebi-a-GCST004131","T1D-GCST90014023","T1D-GCST90014023","T1D-GCST90014023","aFib-ebi-a-GCST006414","aFib-ebi-a-GCST006414","aFib-ebi-a-GCST006414","SBP-ukb-a-360","SBP-ukb-a-360","SBP-ukb-a-360","BMI-panukb","BMI-panukb","BMI-panukb","HB-panukb","HB-panukb","HB-panukb","Height-panukb","Height-panukb","Height-panukb"],["cTWAS","COLOC","TWAS","cTWAS","COLOC","TWAS","cTWAS","COLOC","TWAS","cTWAS","COLOC","TWAS","cTWAS","COLOC","TWAS","cTWAS","COLOC","TWAS","cTWAS","COLOC","TWAS","cTWAS","COLOC","TWAS"],[73,761,550,25,366,307,15,240,320,54,372,211,35,383,359,53,783,1004,90,930,1107,203,1065,3284],["6 of 15 Chatgpt genes","4 of 15 Chatgpt genes","12 of 15 Chatgpt genes","2 of 15 Chatgpt genes","3 of 15 Chatgpt genes","11 of 15 Chatgpt genes","0 of 15 Chatgpt genes","1 of 15 Chatgpt genes","11 of 15 Chatgpt genes","4 of 15 Chatgpt genes","2 of 15 Chatgpt genes","9 of 15 Chatgpt genes","0 of 15 Chatgpt genes","1 of 15 Chatgpt genes","5 of 15 Chatgpt genes","1 of 15 Chatgpt genes","3 of 15 Chatgpt genes","6 of 15 Chatgpt genes","1 of 15 Chatgpt genes","0 of 15 Chatgpt genes","4 of 15 Chatgpt genes","3 of 15 Chatgpt genes","2 of 15 Chatgpt genes","12 of 15 Chatgpt genes"],["8.2%","0.5%","2.2%","8%","0.8%","3.6%","0%","0.4%","3.4%","7.4%","0.5%","4.3%","0%","0.3%","1.4%","1.9%","0.4%","0.6%","1.1%","0%","0.4%","1.5%","0.2%","0.4%"],["LDLR, PCSK9, CETP, HMGCR, APOB, NPC1L1","CETP, APOB, HMGCR, SORT1","SORT1, PCSK9, ANGPTL3, CETP, APOE, LDLR, APOB, ABCG8, ABCG5, HMGCR, MYLIP, NPC1L1","STAT3, ATG16L1","ATG16L1, TNFSF15, CARD9","IL23R, NOD2, STAT3, TYK2, ATG16L1, SLC22A5, IRGM, PTGER4, TNFSF15, CARD9, HLA-DQA1","","RGS1","PTPN22, RGS1, IL2RA, SH2B3, CLEC16A, TYK2, IFIH1, UBASH3A, HLA-DRB1, HLA-DQA1, BACH2","PRRX1, NKX2-5, KCNH2, CAV1","PRRX1, CAV1","KCNN3, PRRX1, TBX5, SYNE2, HCN4, TTN, NKX2-5, CAV1, KCNH2","","NPR3","CYP17A1, SH2B3, ATP2B1, GUCY1A3, NPR3","NEGR1","SH2B1, NEGR1, ADCY3","NEGR1, SH2B1, FTO, MC4R, ADCY3, TFAP2B","TMPRSS6","","TMPRSS6, HFE, TFR2, EPO","IGF1R, ZBTB38, FGFR3","ZBTB38, HMGA2","IGF2, SOCS2, ACAN, CILP2, EFEMP1, GDF5, ZBTB38, FGFR3, CDK6, NPR2, PTCH1, IGF1R"],[4.6e-07,null,null,0.00016333,null,null,0.01735095,null,null,0.00054421,null,null,1,null,null,0.02144732,null,null,0.13791623,null,null,0.00570997,null,null],[1e-08,null,null,0.00404903,null,null,1,null,null,3.89e-05,null,null,1,null,null,0.07685999,null,null,0.0598126,null,null,0.00097436,null,null]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Trait<\/th>\n      <th>Analysis<\/th>\n      <th>Total_Genes<\/th>\n      <th>Overlap_with_ChatGPT<\/th>\n      <th>Percent_Overlap<\/th>\n      <th>Overlapping_Genes<\/th>\n      <th>fisher_p-PIP&gt;0.5&amp;PIP&lt;0.5<\/th>\n      <th>fisher_p-PIP&gt;0.8&amp;PIP&lt;0.8<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,7,8]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<pre class="r"><code>cat(&quot;&lt;br&gt;&lt;br&gt;&quot;)</code></pre>
+<p><br><br></p>
+<pre class="r"><code>### print the genes from chatgpt
+
+for (trait in traits){
+  
+  print(trait)
+  
+  # Load gene lists
+  ctwas_genes &lt;- readRDS(paste0(ctwas_folder_results, trait, &quot;/&quot;, trait, &quot;.3qtls.combined_pip_rmmapping_bygroup_final.RDS&quot;))
+  ctwas_genes &lt;- ctwas_genes$gene_name[ctwas_genes$combined_pip &gt; 0.8]
+  
+  coloc_genes &lt;- readRDS(paste0(folder_results, trait, &quot;.genes.coloc.RDS&quot;))
+  coloc_genes &lt;- coloc_genes$gene_name[coloc_genes$PP4 &gt; 0.8]
+  
+  twas_genes &lt;- readRDS(paste0(folder_results, trait, &quot;.genes.twas_bonf.RDS&quot;))
+  
+  chatgpt_genes &lt;- read.table(paste0(folder_chatgpt_genes, trait, &quot;_genelist_chatgpt.txt&quot;), header = TRUE, sep = &quot;\t&quot;)
+  
+  
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(knitr::knit_print(DT::datatable(chatgpt_genes,caption = htmltools::tags$caption( style = &#39;caption-side: left; text-align: left; color:black;  font-size:150% ;&#39;,paste0(&#39;Genes returned by chatgpt - &#39;,trait)),options = list(pageLength = 5) )))
+  cat(&quot;&lt;br&gt;&quot;)
+  cat(&quot;&lt;br&gt;&quot;)
+  
+  # Calculate overlaps
+  overlap_counts &lt;- c(
+    length(intersect(ctwas_genes, chatgpt_genes$Gene)),
+    length(intersect(coloc_genes, chatgpt_genes$Gene)),
+    length(intersect(twas_genes, chatgpt_genes$Gene))
+  )
+  
+  percent_overlap &lt;- c(
+    paste0(round(overlap_counts[1] / length(ctwas_genes) * 100, 1), &quot;%&quot;),
+    paste0(round(overlap_counts[2] / length(coloc_genes) * 100, 1), &quot;%&quot;),
+    paste0(round(overlap_counts[3] / length(twas_genes) * 100, 1), &quot;%&quot;)
+  )
+  
+  overlapping_genes &lt;- c(
+    paste(intersect(ctwas_genes, chatgpt_genes$Gene), collapse = &quot;, &quot;),
+    paste(intersect(coloc_genes, chatgpt_genes$Gene), collapse = &quot;, &quot;),
+    paste(intersect(twas_genes, chatgpt_genes$Gene), collapse = &quot;, &quot;)
+  )
+  
+  overlap_table &lt;- data.frame(
+    Trait = trait,
+    Analysis = c(&quot;cTWAS&quot;, &quot;COLOC&quot;, &quot;TWAS&quot;),
+    Total_Genes = c(length(ctwas_genes), length(coloc_genes), length(twas_genes)),
+    Overlap_with_ChatGPT = c(
+      paste0(length(intersect(ctwas_genes, chatgpt_genes$Gene)),&quot; of &quot;,length(chatgpt_genes$Gene),&quot; Chatgpt genes&quot;),
+      paste0(length(intersect(coloc_genes, chatgpt_genes$Gene)),&quot; of &quot;,length(chatgpt_genes$Gene),&quot; Chatgpt genes&quot;),
+      paste0(length(intersect(twas_genes, chatgpt_genes$Gene)),&quot; of &quot;,length(chatgpt_genes$Gene),&quot; Chatgpt genes&quot;)
+    ),
+    Percent_Overlap = c(
+      paste0(round(length(intersect(ctwas_genes, chatgpt_genes$Gene)) / length(ctwas_genes) * 100, 1), &quot;%&quot;),
+      paste0(round(length(intersect(coloc_genes, chatgpt_genes$Gene)) / length(coloc_genes) * 100, 1), &quot;%&quot;),
+      paste0(round(length(intersect(twas_genes, chatgpt_genes$Gene)) / length(twas_genes) * 100, 1), &quot;%&quot;)
+    ),
+    Overlapping_Genes = c(
+      paste(intersect(ctwas_genes, chatgpt_genes$Gene), collapse = &quot;, &quot;),
+      paste(intersect(coloc_genes, chatgpt_genes$Gene), collapse = &quot;, &quot;),
+      paste(intersect(twas_genes, chatgpt_genes$Gene), collapse = &quot;, &quot;)
+    )
+  )
+  
+}</code></pre>
+<p>[1] “LDL-ukb-d-30780_irnt” <br><br></p>
+<div id="htmlwidget-0d37f914b8c227cbe86e" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-0d37f914b8c227cbe86e">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">Genes returned by chatgpt - LDL-ukb-d-30780_irnt<\/caption>","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15"],["LDLR","APOB","PCSK9","APOE","HMGCR","NPC1L1","ABCG5","ABCG8","LIPA","SORT1","CETP","ANGPTL3","LPL","APOC3","MYLIP"],["Encodes the LDL receptor, which binds LDL particles and mediates their uptake into cells; mutations cause familial hypercholesterolemia.","Codes for apolipoprotein B, the main protein component of LDL; essential for LDL structure and interaction with LDLR.","Regulates LDLR degradation; gain-of-function mutations increase LDL levels; target of cholesterol-lowering drugs.","Plays a key role in lipid transport and clearance; different alleles (e.g., &lt;ce&gt;&lt;b5&gt;2, &lt;ce&gt;&lt;b5&gt;3, &lt;ce&gt;&lt;b5&gt;4) impact LDL metabolism and cardiovascular risk.","Catalyzes the rate-limiting step in cholesterol synthesis; target of statins used to lower LDL cholesterol.","Crucial for intestinal cholesterol absorption; target of ezetimibe, a cholesterol-lowering drug.","Part of a transporter complex that limits intestinal cholesterol absorption and promotes biliary cholesterol excretion.","Works with ABCG5 to excrete plant sterols and cholesterol from enterocytes and hepatocytes into the intestinal lumen and bile.","Encodes lysosomal acid lipase, which hydrolyzes LDL-derived cholesteryl esters; deficiency causes cholesterol storage disorders.","Involved in hepatic lipoprotein metabolism and LDL particle clearance; associated with LDL levels via GWAS.","Transfers cholesteryl esters from HDL to LDL and VLDL; modulates plasma lipid levels and atherosclerosis risk.","Inhibits lipoprotein lipase and endothelial lipase; influences plasma levels of LDL, HDL, and triglycerides.","Catalyzes hydrolysis of triglycerides in lipoproteins; indirectly impacts LDL metabolism through VLDL remnant conversion.","Inhibits lipoprotein lipase and hepatic uptake of triglyceride-rich lipoproteins; affects LDL indirectly.","Also known as IDOL, this E3 ubiquitin ligase promotes degradation of LDLR, thus regulating LDL uptake."]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Gene<\/th>\n      <th>Summary<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":5,"columnDefs":[{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[5,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<p><br><br>[1] “IBD-ebi-a-GCST004131” <br><br></p>
+<div id="htmlwidget-47c2db96ac669f46d753" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-47c2db96ac669f46d753">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">Genes returned by chatgpt - IBD-ebi-a-GCST004131<\/caption>","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15"],["NOD2","IL23R","ATG16L1","IRGM","CARD9","TNFSF15","STAT3","HLA-DQA1","IL10","PTGER4","TYK2","RELA","SLC22A5","FUT2","GPR65"],["Encodes an intracellular pattern recognition receptor that detects bacterial peptidoglycans; mutations are strongly associated with Crohn&lt;e2&gt;&lt;80&gt;&lt;99&gt;s disease.","Encodes the receptor for interleukin-23, important in Th17 cell maintenance; genetic variants reduce IBD risk.","Involved in autophagy and bacterial handling in epithelial cells; the T300A variant is linked to Crohn&lt;e2&gt;&lt;80&gt;&lt;99&gt;s disease.","Regulates autophagy and clearance of intracellular bacteria; variants affect susceptibility to Crohn&lt;e2&gt;&lt;80&gt;&lt;99&gt;s disease.","Adaptor protein in innate immune signaling; important for antifungal responses and intestinal homeostasis.","Encodes TL1A, a cytokine in the TNF superfamily that promotes inflammation via T cells; associated with both Crohn&lt;e2&gt;&lt;80&gt;&lt;99&gt;s and ulcerative colitis.","Transduces signals from cytokines such as IL-6 and IL-23; plays a role in Th17 differentiation and intestinal inflammation.","MHC class II gene involved in antigen presentation; multiple variants in the HLA region are associated with IBD.","Anti-inflammatory cytokine essential for controlling immune responses in the gut; mutations can lead to very early onset IBD.","Encodes a prostaglandin E receptor involved in mucosal immunity and epithelial barrier maintenance.","A kinase in cytokine signaling pathways including IL-23 and type I IFNs; variants linked to IBD risk.","Part of the NF-&lt;ce&gt;&lt;ba&gt;B transcription factor complex; crucial for regulating inflammatory responses in intestinal tissue.","A carnitine transporter gene; variants may affect metabolism and barrier function in IBD.","Controls secretion of ABO antigens in the gut; non-secretor status is associated with altered microbiota and Crohn&lt;e2&gt;&lt;80&gt;&lt;99&gt;s disease risk.","Encodes a pH-sensing G-protein-coupled receptor; may influence immune cell function in the inflamed gut."]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Gene<\/th>\n      <th>Summary<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":5,"columnDefs":[{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[5,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<p><br><br>[1] “T1D-GCST90014023” <br><br></p>
+<div id="htmlwidget-336c9371d7ef7c5801cb" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-336c9371d7ef7c5801cb">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">Genes returned by chatgpt - T1D-GCST90014023<\/caption>","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15"],["HLA-DRB1","HLA-DQA1","INS","PTPN22","IL2RA","CTLA4","IFIH1","TYK2","STAT4","UBASH3A","BACH2","CLEC16A","RGS1","SH2B3","IL10"],["Major histocompatibility complex class II gene; critical for antigen presentation to CD4+ T cells; strongest known genetic association with T1D.","Another MHC class II gene; certain HLA-DQA1/DQB1 haplotypes confer high T1D risk.","Encodes insulin; specific variants in the insulin gene regulatory region affect thymic insulin expression and immune tolerance.","Encodes a lymphoid tyrosine phosphatase that regulates T cell activation; the R620W variant increases T1D risk.","Codes for the IL-2 receptor alpha chain (CD25); key for Treg cell function and immune tolerance.","Negative regulator of T cell activation; genetic variants affect susceptibility to multiple autoimmune diseases including T1D.","Encodes MDA5, a sensor of viral dsRNA; variants influence innate immune responses to viruses and T1D risk.","Kinase involved in type I interferon and IL-12/IL-23 signaling; associated with multiple autoimmune diseases.","Transcription factor activated by cytokines; promotes Th1 differentiation and autoimmune inflammation.","Regulates T cell receptor signaling and apoptosis; associated with T1D risk through effects on T cell activation.","Transcription factor involved in T cell differentiation and immune tolerance; variants are associated with T1D and other autoimmune diseases.","Plays a role in autophagy and antigen presentation in immune cells; implicated in autoimmune beta-cell destruction.","Regulates G protein signaling in B and T cells; associated with impaired immune cell trafficking and T1D risk.","Encodes LNK, a negative regulator of cytokine signaling; shared risk factor across autoimmune diseases.","Anti-inflammatory cytokine; plays a role in regulating immune tolerance and &lt;ce&gt;&lt;b2&gt;-cell inflammation."]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Gene<\/th>\n      <th>Summary<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":5,"columnDefs":[{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[5,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<p><br><br>[1] “aFib-ebi-a-GCST006414” <br><br></p>
+<div id="htmlwidget-860a18e77d14d248dfd5" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-860a18e77d14d248dfd5">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">Genes returned by chatgpt - aFib-ebi-a-GCST006414<\/caption>","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15"],["PITX2","ZFHX3","KCNN3","PRRX1","KCNH2","KCNQ1","GJA5","TBX5","NKX2-5","CAV1","SCN5A","HCN4","SYNE2","TTN","MYH6"],["Transcription factor critical for left-right asymmetry and pulmonary vein development; strongest GWAS hit for AF risk.","Transcription factor involved in cardiac development and ion channel regulation; consistently associated with AF in multiple cohorts.","Encodes a potassium channel (SK3) that contributes to atrial repolarization; influences atrial excitability.","Transcription factor important for cardiac fibroblast identity and extracellular matrix remodeling; linked to AF risk.","Encodes a potassium channel (hERG) essential for cardiac repolarization; mutations cause long QT and may predispose to AF.","Potassium channel involved in repolarization of atrial myocytes; associated with AF and other arrhythmias.","Encodes connexin 40, a gap junction protein that facilitates intercellular electrical coupling in the atria.","Transcription factor involved in atrial development and conduction system formation; loss of function predisposes to AF.","Essential for cardiac development and maintenance of conduction system integrity; mutations linked to AF and congenital heart disease.","Codes for caveolin-1, involved in membrane signaling and atrial structural remodeling; associated with AF in GWAS.","Encodes the cardiac sodium channel Nav1.5; mutations affect conduction velocity and rhythm stability.","Encodes a pacemaker channel involved in heart rate regulation; variants influence sinus node function and AF susceptibility.","Involved in nuclear envelope integrity and myocyte structure; variants implicated in AF through structural remodeling.","Encodes titin, a giant sarcomeric protein; truncating variants linked to atrial and ventricular cardiomyopathy, predisposing to AF.","Encodes alpha-myosin heavy chain, important for atrial contractility; associated with AF and sinus node dysfunction."]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Gene<\/th>\n      <th>Summary<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":5,"columnDefs":[{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[5,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<p><br><br>[1] “SBP-ukb-a-360” <br><br></p>
+<div id="htmlwidget-4feca9fa8fa4460be737" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-4feca9fa8fa4460be737">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">Genes returned by chatgpt - SBP-ukb-a-360<\/caption>","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15"],["AGT","ACE","AGTR1","REN","ADD1","NOS3","SCNN1A","CYP17A1","CYP11B2","NPPA","NPR3","ATP2B1","UMOD","SH2B3","GUCY1A3"],["Encodes angiotensinogen, the precursor of angiotensin I in the renin-angiotensin-aldosterone system (RAAS); affects vasoconstriction and sodium retention.","Converts angiotensin I to angiotensin II, a potent vasoconstrictor; key enzyme in RAAS; target of ACE inhibitors.","Codes for angiotensin II receptor type 1; mediates blood vessel constriction and aldosterone secretion.","Encodes renin, a rate-limiting enzyme in RAAS; initiates the cascade by cleaving angiotensinogen.","Encodes alpha-adducin, involved in renal sodium reabsorption; polymorphisms associated with salt-sensitive hypertension.","Encodes endothelial nitric oxide synthase (eNOS), which produces nitric oxide for vasodilation; variants impact vascular tone.","Codes for alpha-subunit of epithelial sodium channel (ENaC); regulates renal sodium reabsorption and extracellular fluid volume.","Encodes an enzyme in steroid hormone biosynthesis; involved in cortisol and aldosterone production; associated with BP regulation.","Encodes aldosterone synthase; controls synthesis of aldosterone, a hormone that regulates sodium balance and blood pressure.","Codes for atrial natriuretic peptide (ANP), which promotes vasodilation and natriuresis; genetic variants linked to BP regulation.","Encodes natriuretic peptide clearance receptor; regulates natriuretic peptide levels and vascular tone.","Calcium pump gene that helps regulate intracellular calcium levels in vascular smooth muscle cells; affects vascular tone.","Codes for uromodulin, involved in sodium handling in the kidney; associated with salt-sensitive hypertension.","Modulates cytokine signaling and immune responses; pleiotropic gene associated with SBP and cardiovascular risk.","Encodes a subunit of soluble guanylate cyclase; mediates nitric oxide signaling and vasodilation."]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Gene<\/th>\n      <th>Summary<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":5,"columnDefs":[{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[5,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<p><br><br>[1] “BMI-panukb” <br><br></p>
+<div id="htmlwidget-e2c37b3545fae10d46db" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-e2c37b3545fae10d46db">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">Genes returned by chatgpt - BMI-panukb<\/caption>","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15"],["FTO","MC4R","LEPR","LEP","SH2B1","BDNF","SIM1","TMEM18","GNPDA2","NEGR1","ADCY3","PCSK1","NRXN3","KSR2","TFAP2B"],["Fat mass and obesity-associated gene; influences appetite and energy intake via hypothalamic regulation; strongest BMI-associated locus.","Melanocortin 4 receptor; key regulator of appetite and energy homeostasis in the hypothalamus; loss-of-function leads to obesity.","Leptin receptor; mediates leptin signaling to suppress appetite; mutations cause severe early-onset obesity.","Encodes leptin, a hormone secreted by adipocytes to signal energy sufficiency to the brain.","Adaptor protein involved in leptin and insulin signaling; associated with obesity and BMI through neuronal pathways.","Brain-derived neurotrophic factor; involved in neuronal development and appetite regulation; variants influence eating behavior and BMI.","Transcription factor required for hypothalamic development and melanocortin pathway function; linked to hyperphagia and obesity.","Highly expressed in the hypothalamus; may influence neuronal migration and energy homeostasis.","Enzyme involved in glucosamine metabolism; associated with BMI through unclear mechanisms, possibly hypothalamic.","Neuronal growth regulator; implicated in synaptic plasticity and CNS regulation of body weight.","Adenylyl cyclase involved in hypothalamic signaling downstream of MC4R; loss-of-function associated with obesity.","Processes prohormones including proinsulin and pro-opiomelanocortin (POMC); mutations lead to monogenic obesity.","Neurexin family member involved in synaptic connectivity; associated with obesity in multiple GWAS.","Scaffold protein in MAPK signaling; regulates energy expenditure and insulin sensitivity; rare mutations linked to severe obesity.","Transcription factor involved in adipocyte differentiation and fat distribution; associated with BMI and body fat percent."]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Gene<\/th>\n      <th>Summary<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":5,"columnDefs":[{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[5,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<p><br><br>[1] “HB-panukb” <br><br></p>
+<div id="htmlwidget-b26e80231c1fef56840b" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-b26e80231c1fef56840b">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">Genes returned by chatgpt - HB-panukb<\/caption>","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15"],["HBB","HBA1/HBA2","BCL11A","TMPRSS6","HFE","TFR2","TFRC","EPO","EPOR","ALAS2","KLF1","GATA1","SLC11A2","SLC25A37","G6PD"],["Encodes beta-globin, a component of adult hemoglobin; mutations cause beta-thalassemia and sickle cell disease.","Encode alpha-globin chains of hemoglobin; deletions or mutations cause alpha-thalassemia, affecting hemoglobin concentration.","Transcriptional repressor of fetal hemoglobin (HbF); variants influence HbF persistence and total hemoglobin levels.","Regulates hepcidin via cleavage of HJV; impacts iron availability and hemoglobin production.","Modulates iron absorption through hepcidin signaling; mutations cause hereditary hemochromatosis.","Transferrin receptor 2; involved in iron sensing and erythropoietin regulation.","Encodes transferrin receptor 1; mediates cellular iron uptake, essential for hemoglobin synthesis.","Codes for erythropoietin, a hormone that stimulates red blood cell production.","Erythropoietin receptor; initiates erythropoiesis upon EPO binding.","First enzyme in the heme biosynthesis pathway; X-linked mutations lead to sideroblastic anemia.","Erythroid-specific transcription factor that regulates globin gene expression and red cell maturation.","Key transcription factor for erythroid and megakaryocytic lineage development; mutations affect hemoglobin production.","Divalent metal transporter 1 (DMT1); transports iron into erythroid precursor cells.","Mitochondrial iron importer required for heme biosynthesis in red blood cells.","Enzyme in redox homeostasis; deficiency leads to hemolytic anemia, indirectly influencing hemoglobin levels."]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Gene<\/th>\n      <th>Summary<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":5,"columnDefs":[{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[5,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<p><br><br>[1] “Height-panukb” <br><br></p>
+<div id="htmlwidget-f4999764ab08cc24b761" style="width:960px;height:500px;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-f4999764ab08cc24b761">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">Genes returned by chatgpt - Height-panukb<\/caption>","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15"],["HMGA2","SOCS2","IGF1","IGF2","IGF1R","GDF5","ACAN","NPR2","FGFR3","IHH","PTCH1","CILP2","ZBTB38","CDK6","EFEMP1"],["Encodes a transcriptional regulator involved in chromatin architecture and growth; one of the strongest loci for height.","Negative regulator of growth hormone signaling; variants affect stature and postnatal growth.","Insulin-like growth factor 1; mediates growth hormone effects on bone and tissue development; key regulator of height.","Fetal growth factor that acts through IGF1R; involved in early skeletal growth.","Receptor for IGF1/2; mediates anabolic effects on bone and cartilage; mutations linked to short stature.","Growth differentiation factor 5; essential for bone and joint formation; common variants affect height and skeletal proportions.","Encodes aggrecan, a key cartilage matrix component; mutations cause short stature and skeletal dysplasia.","Natriuretic peptide receptor involved in growth plate chondrocyte proliferation; mutations cause variable height phenotypes.","Fibroblast growth factor receptor 3; regulates growth plate activity; gain-of-function mutations cause short stature (e.g., achondroplasia).","Indian Hedgehog, essential for chondrocyte differentiation and endochondral ossification; influences longitudinal bone growth.","Receptor in Hedgehog signaling pathway; involved in cartilage and bone development.","Cartilage intermediate layer protein; involved in cartilage matrix integrity and height regulation via skeletal growth.","Zinc finger transcription factor; implicated in cell proliferation and height through GWAS.","Cyclin-dependent kinase; regulates cell cycle progression in growth plate chondrocytes; GWAS signal for height.","Extracellular matrix protein associated with connective tissue remodeling; linked to bone density and height."]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Gene<\/th>\n      <th>Summary<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":5,"columnDefs":[{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[5,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<p><br><br></p>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
