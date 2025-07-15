@@ -1,0 +1,124 @@
+---
+title: "Examining the results from multi-group analysis"
+author: "XSun"
+date: "2025-07-14"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+    toc: true
+---
+
+# Introduction
+
+```{r warning=FALSE,message=FALSE, warning=F, message=FALSE}
+library(ggplot2)
+library(gridExtra)
+
+trait_nopsy <- c("LDL-ukb-d-30780_irnt","IBD-ebi-a-GCST004131","aFib-ebi-a-GCST006414","SBP-ukb-a-360",
+                 "T1D-GCST90014023","T2D-panukb","ATH_gtexukb","BMI-panukb","HB-panukb",
+                 "Height-panukb","HTN-panukb","PLT-panukb","RA-panukb","RBC-panukb",
+                 "WBC-ieu-b-30"
+                 )
+trait_psy <- c("SCZ-ieu-b-5102","ASD-ieu-a-1185","BIP-ieu-b-5110","MDD-ieu-b-102","PD-ieu-b-7",
+               "ADHD-ieu-a-1183","NS-ukb-a-230")
+traits <- c(trait_nopsy,trait_psy)
+
+folder_results_multi <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/"
+
+
+load_origin_finemap_gene_data <- function(filepath) {
+  if (file.exists(filepath)) {
+    data <- readRDS(filepath)$finemap_res
+    return(data[data$type != "SNP", ])
+  }
+  return(NULL)
+}
+
+plot_finemap_data <- function(data, trait, problematic_genes = NULL, alpha = 0.4, title_suffix = NULL) {
+  if (!is.null(title_suffix)) {
+    plot_title <- paste0(title_suffix, " - ", trait)
+  } else {
+    plot_title <- trait
+  }
+  
+  data <- data[abs(data$z) < 15,]
+  
+  if (!is.null(problematic_genes)) {
+    data$problematic <- data$id %in% problematic_genes
+    ggplot(data, aes(x = abs(z), y = susie_pip, color = problematic)) +
+      geom_point(alpha = alpha) +
+      labs(
+        x = "Absolute Z-score, truncated to abs(z) < 15",
+        y = "SuSiE PIP",
+        title = plot_title,
+        color = "Problematic"
+      ) +
+      scale_color_manual(values = c("FALSE" = "black", "TRUE" = "red")) +
+      theme_minimal()
+  } else {
+    ggplot(data, aes(x = abs(z), y = susie_pip)) +
+      geom_point(alpha = alpha, color = "black") +
+      labs(
+        x = "Absolute Z-score, truncated to abs(z) < 15",
+        y = "SuSiE PIP",
+        title = plot_title
+      ) +
+      theme_minimal()
+  }
+}
+
+```
+
+# Diagnosis plots
+
+```{r fig.height=6, fig.width=12, warning=F, message=FALSE}
+
+for (trait in traits){
+  
+  rm(p_origin,p_regionmerge,p_ldmismatch)
+  
+  # Load origin data (always expected)
+  file_origin <- paste0(folder_results_multi, trait, "/", trait, ".3qtls.thin1.shared_all.L5.finemap_regions_res.RDS")
+  finemap_res_gene_origin <- load_origin_finemap_gene_data(file_origin)
+  
+  # Load problematic gene list (optional)
+  file_problematic_genes <- paste0(folder_results_multi, trait, "/", trait, ".3qtls.thin1.shared_all.L5.ldmismatch_with_mappingtable_problematic_genes.RDS")
+  problematic_genes <- if (file.exists(file_problematic_genes)) readRDS(file_problematic_genes) else NULL
+  
+  p_origin <-  plot_finemap_data(finemap_res_gene_origin, trait, problematic_genes, title_suffix = "origin")
+  
+  # Plot regionmerge if file exists
+  file_regionmerge <- paste0(folder_results_multi,trait,"/",trait,".3qtls.thin1.shared_all.L5.regionmerge_with_mappingtable_finemap_res.RDS")
+  if (file.exists(file_regionmerge)) {
+    finemap_res_regionmerge <- readRDS(file_regionmerge)
+    finemap_res_gene_regionmerge <- finemap_res_regionmerge[finemap_res_regionmerge$type != "SNP",]
+    p_regionmerge <- plot_finemap_data(finemap_res_gene_regionmerge, trait, problematic_genes, title_suffix = "regionmerge")
+  }
+  
+  # Plot ldmismatch if file exists
+  file_ldmismatch <- paste0(folder_results_multi,trait,"/",trait,".3qtls.thin1.shared_all.L5.ldmismatch_with_mappingtable_noLD_finemap_regions_res.RDS")
+  if (file.exists(file_ldmismatch)) {
+    finemap_res_ldmismatch <- readRDS(file_ldmismatch)
+    finemap_res_gene_ldmismatch <- finemap_res_ldmismatch[finemap_res_ldmismatch$type != "SNP",]
+    p_ldmismatch <- plot_finemap_data(finemap_res_gene_ldmismatch, trait, problematic_genes, title_suffix = "ldmismatch")
+  }
+  
+  
+  # Collect existing plots
+  plot_list <- list()
+  
+  if (exists("p_origin")) plot_list <- c(plot_list, list(p_origin))
+  if (exists("p_regionmerge")) plot_list <- c(plot_list, list(p_regionmerge))
+  if (exists("p_ldmismatch")) plot_list <- c(plot_list, list(p_ldmismatch))
+  
+  # Only call grid.arrange if at least one plot exists
+  if (length(plot_list) > 0) {
+    do.call(grid.arrange, c(plot_list, nrow = 1))
+  }
+  
+  
+}
+
+
+```
+
