@@ -8,7 +8,28 @@ output:
     toc: true
 ---
 
-## Introduction
+# Introduction
+
+Region Merging Strategy Update
+
+- Old strategy ("without mapping table"):
+
+When defining boundary genes for region merging, we only considered the molecular trait level. If a molecular trait exceeded a certain threshold, we evaluated whether region merging was needed based on that trait alone.
+
+- New strategy ("with mapping table"):
+
+We now assess merging based on gene-level PIP. Since multiple molecular traits can span different regions but still map to the same gene, we incorporate this mapping information when defining boundary genes. This can result in more genes and regions being merged compared to the old approach.
+
+In the figures below:
+
+`Without mapping table` refers to the old strategy.
+
+`With mapping table` refers to the new, gene-centric strategy.
+
+`Unique genes` are those identified by one strategy but not the other.
+
+
+
 
 ```{r}
 library(ggplot2)
