@@ -15,9 +15,9 @@ We compared overlap with gene lists from chatgpt, across three analyses: coloc, 
 `can you return some genes with roles in LDL / LDL risk genes, in txt table format, the second column is the gene functions `
 
 
-- For coloc, we included genes with posterior probability of colocalization (PP4) > 0.8.
+- For coloc, we included genes with posterior probability of colocalization (PP4) > 0.8 or 0.5.
 - For TWAS, we applied a Bonferroni correction to the TWAS p-values, using a significance threshold calculated as: qnorm(1 - (0.05 / number_of_TWAS_genes / 2), lower.tail = TRUE).
-- For cTWAS, we selected genes with a posterior inclusion probability (PIP) > 0.8.
+- For cTWAS, we selected genes with a posterior inclusion probability (PIP) > 0.8 or 0.5.
 
 
 
@@ -28,13 +28,18 @@ We compared overlap with gene lists from chatgpt, across three analyses: coloc, 
 
 DT::datatable(matrix())
 
-traits <- c("LDL-ukb-d-30780_irnt","IBD-ebi-a-GCST004131","T1D-GCST90014023","aFib-ebi-a-GCST006414","SBP-ukb-a-360","BMI-panukb","HB-panukb","Height-panukb")
-# 
+trait_nopsy <- c("LDL-ukb-d-30780_irnt","IBD-ebi-a-GCST004131","aFib-ebi-a-GCST006414","SBP-ukb-a-360",
+                 "T1D-GCST90014023","T2D-panukb","BMI-panukb","HB-panukb",
+                 "Height-panukb","HTN-panukb","PLT-panukb","RBC-panukb",
+                 "WBC-ieu-b-30"
+                 )
+trait_psy <- c("SCZ-ieu-b-5102","BIP-ieu-b-5110","PD-ieu-b-7","NS-ukb-a-230")
+traits <- c(trait_nopsy,trait_psy)
 
 folder_results <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/results_downstream/enrichr_compare/"
 ctwas_folder_results <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/"
 folder_chatgpt_genes <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/data/genelist/"
-
+folder_coloc <- "/project/xinhe/shengqian/coloc_GWAS_analysis/results/"
 
 all_overlap_tables <- list()
 
@@ -48,51 +53,73 @@ for (trait in traits){
   ctwas_genes_pip05m <- ctwas_genes$gene_name[ctwas_genes$combined_pip < 0.5]
   ctwas_genes_pip08p <- ctwas_genes$gene_name[ctwas_genes$combined_pip >= 0.8]
   ctwas_genes_pip08m <- ctwas_genes$gene_name[ctwas_genes$combined_pip < 0.8]
-  ctwas_genes <- ctwas_genes$gene_name[ctwas_genes$combined_pip > 0.8]
+  ctwas_genes08 <- ctwas_genes$gene_name[ctwas_genes$combined_pip > 0.8]
+  ctwas_genes05 <- ctwas_genes$gene_name[ctwas_genes$combined_pip > 0.5]
   
-  coloc_genes <- readRDS(paste0(folder_results, trait, ".genes.coloc.RDS"))
-  coloc_genes <- coloc_genes$gene_name[coloc_genes$PP4 > 0.8]
+  coloc_genes <- readRDS(paste0(folder_coloc, trait,"/",trait, ".coloc_res.RDS"))
+  coloc_genes08 <- coloc_genes$gene_name[coloc_genes$PP4 > 0.8]
+  coloc_genes05 <- coloc_genes$gene_name[coloc_genes$PP4 > 0.5]
+  coloc_genes_pip05p <- coloc_genes$gene_name[coloc_genes$PP4 >= 0.5]
+  coloc_genes_pip05m <- coloc_genes$gene_name[coloc_genes$PP4 < 0.5]
+  coloc_genes_pip08p <- coloc_genes$gene_name[coloc_genes$PP4 >= 0.8]
+  coloc_genes_pip08m <- coloc_genes$gene_name[coloc_genes$PP4 < 0.8]
   
   twas_genes <- readRDS(paste0(folder_results, trait, ".genes.twas_bonf.RDS"))
   
   chatgpt_genes <- read.table(paste0(folder_chatgpt_genes, trait, "_genelist_chatgpt.txt"), header = TRUE, sep = "\t")
   
   # Calculate overlaps
-  overlap_counts <- c(
-    length(intersect(ctwas_genes, chatgpt_genes$Gene)),
-    length(intersect(coloc_genes, chatgpt_genes$Gene)),
-    length(intersect(twas_genes, chatgpt_genes$Gene))
-  )
-  
-  percent_overlap <- c(
-    paste0(round(overlap_counts[1] / length(ctwas_genes) * 100, 1), "%"),
-    paste0(round(overlap_counts[2] / length(coloc_genes) * 100, 1), "%"),
-    paste0(round(overlap_counts[3] / length(twas_genes) * 100, 1), "%")
-  )
-  
-  overlapping_genes <- c(
-    paste(intersect(ctwas_genes, chatgpt_genes$Gene), collapse = ", "),
-    paste(intersect(coloc_genes, chatgpt_genes$Gene), collapse = ", "),
-    paste(intersect(twas_genes, chatgpt_genes$Gene), collapse = ", ")
-  )
+  # overlap_counts <- c(
+  #   length(intersect(ctwas_genes, chatgpt_genes$Gene)),
+  #   length(intersect(coloc_genes, chatgpt_genes$Gene)),
+  #   length(intersect(twas_genes, chatgpt_genes$Gene))
+  # )
+  # 
+  # percent_overlap <- c(
+  #   paste0(round(overlap_counts[1] / length(ctwas_genes) * 100, 1), "%"),
+  #   paste0(round(overlap_counts[2] / length(coloc_genes) * 100, 1), "%"),
+  #   paste0(round(overlap_counts[3] / length(twas_genes) * 100, 1), "%")
+  # )
+  # 
+  # overlapping_genes <- c(
+  #   paste(intersect(ctwas_genes, chatgpt_genes$Gene), collapse = ", "),
+  #   paste(intersect(coloc_genes, chatgpt_genes$Gene), collapse = ", "),
+  #   paste(intersect(twas_genes, chatgpt_genes$Gene), collapse = ", ")
+  # )
   
   overlap_table <- data.frame(
     Trait = trait,
     Analysis = c("cTWAS", "COLOC", "TWAS"),
-    Total_Genes = c(length(ctwas_genes), length(coloc_genes), length(twas_genes)),
-    Overlap_with_ChatGPT = c(
-      paste0(length(intersect(ctwas_genes, chatgpt_genes$Gene))," of ",length(chatgpt_genes$Gene)," Chatgpt genes"),
-      paste0(length(intersect(coloc_genes, chatgpt_genes$Gene))," of ",length(chatgpt_genes$Gene)," Chatgpt genes"),
+    Total_Genes_PIP08 = c(length(ctwas_genes08), length(coloc_genes08), length(twas_genes)),
+    `Overlap_with_ChatGPT_ctwas&colocPIP0.8` = c(
+      paste0(length(intersect(ctwas_genes08, chatgpt_genes$Gene))," of ",length(chatgpt_genes$Gene)," Chatgpt genes"),
+      paste0(length(intersect(coloc_genes08, chatgpt_genes$Gene))," of ",length(chatgpt_genes$Gene)," Chatgpt genes"),
       paste0(length(intersect(twas_genes, chatgpt_genes$Gene))," of ",length(chatgpt_genes$Gene)," Chatgpt genes")
     ),
-    Percent_Overlap = c(
-      paste0(round(length(intersect(ctwas_genes, chatgpt_genes$Gene)) / length(ctwas_genes) * 100, 1), "%"),
-      paste0(round(length(intersect(coloc_genes, chatgpt_genes$Gene)) / length(coloc_genes) * 100, 1), "%"),
+    `Percent_Overlap_ctwas&colocPIP0.8` = c(
+      paste0(round(length(intersect(ctwas_genes08, chatgpt_genes$Gene)) / length(ctwas_genes08) * 100, 1), "%"),
+      paste0(round(length(intersect(coloc_genes08, chatgpt_genes$Gene)) / length(coloc_genes08) * 100, 1), "%"),
       paste0(round(length(intersect(twas_genes, chatgpt_genes$Gene)) / length(twas_genes) * 100, 1), "%")
     ),
-    Overlapping_Genes = c(
-      paste(intersect(ctwas_genes, chatgpt_genes$Gene), collapse = ", "),
-      paste(intersect(coloc_genes, chatgpt_genes$Gene), collapse = ", "),
+    `Overlapping_Genes_ctwas&colocPIP0.8` = c(
+      paste(intersect(ctwas_genes08, chatgpt_genes$Gene), collapse = ", "),
+      paste(intersect(coloc_genes08, chatgpt_genes$Gene), collapse = ", "),
+      paste(intersect(twas_genes, chatgpt_genes$Gene), collapse = ", ")
+    ),
+     Total_Genes_PIP05 = c(length(ctwas_genes05), length(coloc_genes05), length(twas_genes)),
+    `Overlap_with_ChatGPT_ctwas&colocPIP0.5` = c(
+      paste0(length(intersect(ctwas_genes05, chatgpt_genes$Gene))," of ",length(chatgpt_genes$Gene)," Chatgpt genes"),
+      paste0(length(intersect(coloc_genes05, chatgpt_genes$Gene))," of ",length(chatgpt_genes$Gene)," Chatgpt genes"),
+      paste0(length(intersect(twas_genes, chatgpt_genes$Gene))," of ",length(chatgpt_genes$Gene)," Chatgpt genes")
+    ),
+    `Percent_Overlap_ctwas&colocPIP0.5` = c(
+      paste0(round(length(intersect(ctwas_genes05, chatgpt_genes$Gene)) / length(ctwas_genes05) * 100, 1), "%"),
+      paste0(round(length(intersect(coloc_genes05, chatgpt_genes$Gene)) / length(coloc_genes05) * 100, 1), "%"),
+      paste0(round(length(intersect(twas_genes, chatgpt_genes$Gene)) / length(twas_genes) * 100, 1), "%")
+    ),
+    `Overlapping_Genes_ctwas&colocPIP0.5` = c(
+      paste(intersect(ctwas_genes05, chatgpt_genes$Gene), collapse = ", "),
+      paste(intersect(coloc_genes05, chatgpt_genes$Gene), collapse = ", "),
       paste(intersect(twas_genes, chatgpt_genes$Gene), collapse = ", ")
     )
   )
@@ -112,6 +139,19 @@ for (trait in traits){
   overlap_table$`fisher_p-PIP>0.5&PIP<0.5` <- NA
   overlap_table$`fisher_p-PIP>0.5&PIP<0.5`[1] <- round(fisher_b_result_05p05m$p.value,digits = 8)
   
+  # num_gene05p_in_set <- sum(coloc_genes_pip05p %in% chatgpt_genes$Gene)
+  # num_gene05m_in_set <- sum(coloc_genes_pip05m %in% chatgpt_genes$Gene)
+  # 
+  # fisher_b_matrix_05p05m <- matrix(
+  #   c(num_gene05p_in_set, num_gene05m_in_set,
+  #     length(coloc_genes_pip05p) - num_gene05p_in_set,
+  #     length(coloc_genes_pip05m) - num_gene05m_in_set),
+  #   nrow = 2, byrow = TRUE,
+  #   dimnames = list(c("#included", "#notincluded"), c("pip>0.5", "pip<0.5"))
+  # )
+  # fisher_b_result_05p05m <- fisher.test(fisher_b_matrix_05p05m)
+  # 
+  # overlap_table$`fisher_p-PIP>0.5&PIP<0.5`[2] <- round(fisher_b_result_05p05m$p.value,digits = 8)
   
   num_gene08p_in_set <- sum(ctwas_genes_pip08p %in% chatgpt_genes$Gene)
   num_gene08m_in_set <- sum(ctwas_genes_pip08m %in% chatgpt_genes$Gene)
@@ -127,6 +167,19 @@ for (trait in traits){
   overlap_table$`fisher_p-PIP>0.8&PIP<0.8` <- NA
   overlap_table$`fisher_p-PIP>0.8&PIP<0.8`[1] <- round(fisher_b_result_08p08m$p.value,digits = 8)
   
+  # num_gene08p_in_set <- sum(coloc_genes_pip08p %in% chatgpt_genes$Gene)
+  # num_gene08m_in_set <- sum(coloc_genes_pip08m %in% chatgpt_genes$Gene)
+  # 
+  # fisher_b_matrix_08p08m <- matrix(
+  #   c(num_gene08p_in_set, num_gene08m_in_set,
+  #     length(coloc_genes_pip08p) - num_gene08p_in_set,
+  #     length(coloc_genes_pip08m) - num_gene08m_in_set),
+  #   nrow = 2, byrow = TRUE,
+  #   dimnames = list(c("#included", "#notincluded"), c("pip>0.8", "pip<0.8"))
+  # )
+  # fisher_b_result_08p08m <- fisher.test(fisher_b_matrix_08p08m)
+  # overlap_table$`fisher_p-PIP>0.8&PIP<0.8`[2] <- round(fisher_b_result_08p08m$p.value,digits = 8)
+  # 
   
   
   all_overlap_tables[[trait]] <- overlap_table
