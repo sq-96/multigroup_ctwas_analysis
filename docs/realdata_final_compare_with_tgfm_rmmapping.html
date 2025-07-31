@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="XSun" />
+
+<meta name="date" content="2025-07-31" />
+
+<title>Comparing real data results with TGFM</title>
+
+<script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">multigroup_ctwas_analysis</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/sq-96/multigroup_ctwas_analysis">
+    <span class="fab fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Comparing real data results with TGFM</h1>
+<h4 class="author">XSun</h4>
+<h4 class="date">2025-07-31</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span
+class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2025-07-31
+</p>
+<p>
+<strong>Checks:</strong> <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> 1
+</p>
+<p>
+<strong>Knit directory:</strong> <code>multigroup_ctwas_analysis/</code>
+<span class="glyphicon glyphicon-question-sign" aria-hidden="true"
+title="This is the local directory in which the code in this file was executed.">
+</span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version
+1.7.0). The <em>Checks</em> tab describes the reproducibility checks
+that were applied when the results were created. The <em>Past
+versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges">
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted
+changes </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguncommittedchanges"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The R Markdown is untracked by Git. To know which version of the R
+Markdown file created these results, you’ll want to first commit it to
+the Git repo. If you’re still working on the analysis, you can ignore
+this warning. When you’re finished, you can run
+<code>wflow_publish</code> to commit the R Markdown file and build the
+HTML.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the
+global environment can affect the analysis in your R Markdown file in
+unknown ways. For reproduciblity it’s best to always run the code in an
+empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20231112code">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Seed:</strong>
+<code>set.seed(20231112)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20231112code"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20231112)</code> was run prior to running
+the code in the R Markdown file. Setting a seed ensures that any results
+that rely on randomness, e.g. subsampling or permutations, are
+reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Session information:</strong>
+recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package
+versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be
+confident that you successfully produced the results during this
+run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr
+project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistreeee25fe87dace9b31047081ee8830790ffdb867c5targetblankee25fe8a">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/ee25fe87dace9b31047081ee8830790ffdb867c5" target="_blank">ee25fe8</a>
+</a>
+</p>
+</div>
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistreeee25fe87dace9b31047081ee8830790ffdb867c5targetblankee25fe8a"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development
+and connecting the code version to the results is critical for
+reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/ee25fe87dace9b31047081ee8830790ffdb867c5" target="_blank">ee25fe8</a>.
+See the <em>Past versions</em> tab to see a history of the changes made
+to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for
+the analysis have been committed to Git prior to generating the results
+(you can use <code>wflow_publish</code> or
+<code>wflow_git_commit</code>). workflowr only checks the R Markdown
+file, but you know if there are other scripts or data files that it
+depends on. Below is the status of the Git repository when the results
+were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .Rhistory
+    Ignored:    cv/
+    Ignored:    figures/lz/IBD-ebi-a-GCST004131/single/
+    Ignored:    figures/lz_ld/IBD-ebi-a-GCST004131/single/
+
+Untracked files:
+    Untracked:  analysis/realdata_final_compare_with_tgfm_rmmapping.Rmd
+
+Unstaged changes:
+    Deleted:    VennDiagram.2025-07-16_11-06-59.log
+    Deleted:    VennDiagram.2025-07-16_11-07-00.log
+    Deleted:    VennDiagram.2025-07-16_11-07-01.log
+    Deleted:    VennDiagram.2025-07-16_11-07-02.log
+    Deleted:    VennDiagram.2025-07-16_11-07-03.log
+    Deleted:    VennDiagram.2025-07-16_11-07-04.log
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not
+included in this status report because it is ok for generated content to
+have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+<p>
+There are no past versions. Publish this analysis with
+<code>wflow_publish()</code> to start tracking its development.
+</p>
+<hr>
+</div>
+</div>
+</div>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>There are several traits overlapping with TGFM, we compare the genes
+identified by TGFM and ctwas here.</p>
+<p>TGFM results were downloaded here <a
+href="https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/S26PFI"
+class="uri">https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/S26PFI</a></p>
+<pre class="r"><code>library(EnsDb.Hsapiens.v86)</code></pre>
+<pre><code>Loading required package: ensembldb</code></pre>
+<pre><code>Loading required package: BiocGenerics</code></pre>
+<pre><code>
+Attaching package: &#39;BiocGenerics&#39;</code></pre>
+<pre><code>The following objects are masked from &#39;package:stats&#39;:
+
+    IQR, mad, sd, var, xtabs</code></pre>
+<pre><code>The following objects are masked from &#39;package:base&#39;:
+
+    Filter, Find, Map, Position, Reduce, anyDuplicated, append,
+    as.data.frame, basename, cbind, colnames, dirname, do.call,
+    duplicated, eval, evalq, get, grep, grepl, intersect, is.unsorted,
+    lapply, mapply, match, mget, order, paste, pmax, pmax.int, pmin,
+    pmin.int, rank, rbind, rownames, sapply, setdiff, sort, table,
+    tapply, union, unique, unsplit, which.max, which.min</code></pre>
+<pre><code>Loading required package: GenomicRanges</code></pre>
+<pre><code>Loading required package: stats4</code></pre>
+<pre><code>Loading required package: S4Vectors</code></pre>
+<pre><code>
+Attaching package: &#39;S4Vectors&#39;</code></pre>
+<pre><code>The following objects are masked from &#39;package:base&#39;:
+
+    I, expand.grid, unname</code></pre>
+<pre><code>Loading required package: IRanges</code></pre>
+<pre><code>Loading required package: GenomeInfoDb</code></pre>
+<pre><code>Loading required package: GenomicFeatures</code></pre>
+<pre><code>Loading required package: AnnotationDbi</code></pre>
+<pre><code>Loading required package: Biobase</code></pre>
+<pre><code>Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    &#39;browseVignettes()&#39;. To cite Bioconductor, see
+    &#39;citation(&quot;Biobase&quot;)&#39;, and for packages &#39;citation(&quot;pkgname&quot;)&#39;.</code></pre>
+<pre><code>Warning: replacing previous import &#39;utils::download.file&#39; by
+&#39;restfulr::download.file&#39; when loading &#39;rtracklayer&#39;</code></pre>
+<pre><code>Loading required package: AnnotationFilter</code></pre>
+<pre><code>
+Attaching package: &#39;ensembldb&#39;</code></pre>
+<pre><code>The following object is masked from &#39;package:stats&#39;:
+
+    filter</code></pre>
+<pre class="r"><code>library(AnnotationDbi)
+library(ggplot2)
+
+
+plot_overlap_barplot &lt;- function(ctwas_genes_highpip,
+                                 tgfm_genes_highpip_symbol,
+                                 trait,
+                                 return_unique_genes = FALSE) {
+  
+  # Extract gene names
+  ctwas_genes &lt;- ctwas_genes_highpip
+  tgfm_genes &lt;- tgfm_genes_highpip_symbol
+  
+  # Compute overlap
+  overlap_genes &lt;- intersect(ctwas_genes, tgfm_genes)
+  tgfm_genes_unique &lt;- setdiff(tgfm_genes, overlap_genes)
+  ctwas_genes_unique &lt;- setdiff(ctwas_genes, overlap_genes)
+  n_overlap &lt;- length(overlap_genes)
+  n_ctwas &lt;- length(ctwas_genes)
+  n_tgfm &lt;- length(tgfm_genes)
+  
+  # Construct data frame for plotting
+  df &lt;- data.frame(
+    group = rep(c(&quot;ctwas genes&quot;, &quot;tgfm genes&quot;), each = 2),
+    part = rep(c(&quot;Overlap&quot;, &quot;Unique&quot;), 2),
+    count = c(n_overlap, n_ctwas - n_overlap, n_overlap, n_tgfm - n_overlap)
+  )
+  
+  # Ensure proper stacking order
+  df$part &lt;- factor(df$part, levels = c(&quot;Unique&quot;, &quot;Overlap&quot;))
+  
+  # Plot
+  p &lt;- ggplot(df, aes(x = group, y = count, fill = part)) +
+    geom_bar(stat = &quot;identity&quot;, width = 0.6) +
+    geom_text(aes(label = count), position = position_stack(vjust = 0.5), color = &quot;white&quot;, size = 5) +
+    scale_fill_manual(values = c(&quot;Overlap&quot; = &quot;#1f77b4&quot;, &quot;Unique&quot; = &quot;#ff7f0e&quot;)) +
+    labs(
+      x = &quot;&quot;,
+      y = paste0(&quot;Number of Genes at PIP &gt; 0.8&quot;),
+      title = trait,
+      fill = &quot;&quot;
+    ) +
+    theme_minimal(base_size = 14)
+  
+  if (return_unique_genes) {
+    return(list(plot = p, tgfm_genes_unique = tgfm_genes_unique, ctwas_genes_unique = ctwas_genes_unique))
+  } else {
+    return(p)
+  }
+}
+
+ctwas_folder_results &lt;- &quot;/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/&quot;</code></pre>
+</div>
+<div id="ldl-ukb-d-30780_irnt" class="section level1">
+<h1>LDL-ukb-d-30780_irnt</h1>
+<pre class="r"><code>trait &lt;- &quot;LDL-ukb-d-30780_irnt&quot;
+
+ctwas_genes &lt;-  readRDS(paste0(ctwas_folder_results,trait,&quot;/&quot;,trait,&quot;.3qtls.combined_pip_rmmapping_bygroup_final.RDS&quot;))
+ctwas_genes_highpip &lt;- ctwas_genes$gene_name[ctwas_genes$combined_pip &gt; 0.8]
+
+tgfm_genes &lt;- data.table::fread(&quot;/project/xinhe/xsun/multi_group_ctwas/data/tgfm/GTEx_TGFM_PIPs_biochemistry_LDLdirect.txt&quot;)
+tgfm_genes_highpip &lt;- tgfm_genes[tgfm_genes$TGFM_PIP &gt; 0.8,]
+tgfm_genes_highpip &lt;- tgfm_genes_highpip[tgfm_genes_highpip$genetic_element_class != &quot;variant&quot;,]
+tgfm_genes_highpip$ensg_id &lt;- sub(&quot;\\..*&quot;, &quot;&quot;, tgfm_genes_highpip$genetic_element_name)
+tgfm_genes_highpip_ensg &lt;- unique(tgfm_genes_highpip$ensg_id)
+
+ensg_to_symbol &lt;- AnnotationDbi::select(
+  EnsDb.Hsapiens.v86,
+  keys = tgfm_genes_highpip_ensg,
+  keytype = &quot;GENEID&quot;,
+  columns = c(&quot;GENEID&quot;, &quot;SYMBOL&quot;)
+)
+
+tgfm_genes_highpip_symbol &lt;- ensg_to_symbol$SYMBOL
+
+plot_overlap_barplot(ctwas_genes_highpip = ctwas_genes_highpip, tgfm_genes_highpip_symbol = tgfm_genes_highpip_symbol,trait = trait,return_unique_genes = T)</code></pre>
+<pre><code>$plot</code></pre>
+<p><img src="figure/realdata_final_compare_with_tgfm_rmmapping.Rmd/unnamed-chunk-2-1.png" width="384" style="display: block; margin: auto;" /></p>
+<pre><code>
+$tgfm_genes_unique
+[1] &quot;TRIM2&quot;   &quot;GIGYF1&quot;  &quot;LIPA&quot;    &quot;ST3GAL4&quot; &quot;M6PR&quot;    &quot;SCYL2&quot;   &quot;NYNRIN&quot; 
+[8] &quot;PALM3&quot;   &quot;SPTLC3&quot; 
+
+$ctwas_genes_unique
+ [1] &quot;LDLR&quot;     &quot;PCSK9&quot;    &quot;INSIG2&quot;   &quot;CETP&quot;     &quot;HPR&quot;      &quot;C10orf88&quot;
+ [7] &quot;CCNJ&quot;     &quot;PKN3&quot;     &quot;TRIM39&quot;   &quot;ABCA8&quot;    &quot;GSK3B&quot;    &quot;FCGRT&quot;   
+[13] &quot;FADS1&quot;    &quot;PELO&quot;     &quot;LRCH4&quot;    &quot;STAT5B&quot;   &quot;GAS6&quot;     &quot;HMGCR&quot;   
+[19] &quot;ASGR1&quot;    &quot;TNKS&quot;     &quot;APOB&quot;     &quot;ADH1B&quot;    &quot;PRKD2&quot;    &quot;FLT3&quot;    
+[25] &quot;KDSR&quot;     &quot;ZDHHC18&quot;  &quot;CYP2A6&quot;   &quot;USP39&quot;    &quot;INHBB&quot;    &quot;TIMD4&quot;   
+[31] &quot;ACVR1C&quot;   &quot;CSNK1G3&quot;  &quot;ZFYVE1&quot;   &quot;SRRT&quot;     &quot;ACP6&quot;     &quot;NPC1L1&quot;  
+[37] &quot;ERGIC3&quot;   &quot;TRIM5&quot;    &quot;MITF&quot;     &quot;PSRC1&quot;    &quot;SNX17&quot;    &quot;GABBR1&quot;  
+[43] &quot;ASAP3&quot;    &quot;SP4&quot;      &quot;HMGN1&quot;    &quot;LRRK2&quot;    &quot;KIF13B&quot;   &quot;R3HDM2&quot;  
+[49] &quot;MYPOP&quot;    &quot;SIPA1&quot;    &quot;USP3&quot;     &quot;PGS1&quot;     &quot;FAM117B&quot;  &quot;ADRB1&quot;   
+[55] &quot;TTC39B&quot;   &quot;PHC1&quot;     &quot;WASHC4&quot;   &quot;POP7&quot;     &quot;TPD52&quot;    &quot;THOP1&quot;   
+[61] &quot;ZFP28&quot;    &quot;DMTN&quot;     &quot;PDE4C&quot;    &quot;XPNPEP3&quot; </code></pre>
+</div>
+<div id="htn-panukb" class="section level1">
+<h1>HTN-panukb</h1>
+<pre class="r"><code>trait &lt;- &quot;HTN-panukb&quot;
+
+ctwas_genes &lt;-  readRDS(paste0(ctwas_folder_results,trait,&quot;/&quot;,trait,&quot;.3qtls.combined_pip_rmmapping_bygroup_final.RDS&quot;))
+ctwas_genes_highpip &lt;- ctwas_genes$gene_name[ctwas_genes$combined_pip &gt; 0.8]
+
+tgfm_genes &lt;- data.table::fread(&quot;/project/xinhe/xsun/multi_group_ctwas/data/tgfm/GTEx_TGFM_PIPs_disease_HYPERTENSION_DIAGNOSED.txt&quot;)
+tgfm_genes_highpip &lt;- tgfm_genes[tgfm_genes$TGFM_PIP &gt; 0.8,]
+tgfm_genes_highpip &lt;- tgfm_genes_highpip[tgfm_genes_highpip$genetic_element_class != &quot;variant&quot;,]
+tgfm_genes_highpip$ensg_id &lt;- sub(&quot;\\..*&quot;, &quot;&quot;, tgfm_genes_highpip$genetic_element_name)
+tgfm_genes_highpip_ensg &lt;- unique(tgfm_genes_highpip$ensg_id)
+
+ensg_to_symbol &lt;- AnnotationDbi::select(
+  EnsDb.Hsapiens.v86,
+  keys = tgfm_genes_highpip_ensg,
+  keytype = &quot;GENEID&quot;,
+  columns = c(&quot;GENEID&quot;, &quot;SYMBOL&quot;)
+)
+
+tgfm_genes_highpip_symbol &lt;- ensg_to_symbol$SYMBOL
+
+plot_overlap_barplot(ctwas_genes_highpip = ctwas_genes_highpip, tgfm_genes_highpip_symbol = tgfm_genes_highpip_symbol,trait = trait,return_unique_genes = T)</code></pre>
+<pre><code>$plot</code></pre>
+<p><img src="figure/realdata_final_compare_with_tgfm_rmmapping.Rmd/unnamed-chunk-3-1.png" width="384" style="display: block; margin: auto;" /></p>
+<pre><code>
+$tgfm_genes_unique
+[1] &quot;C1GALT1&quot; &quot;SNX31&quot;   &quot;HRCT1&quot;   &quot;ABO&quot;     &quot;STOX1&quot;   &quot;SLC5A11&quot; &quot;KAT8&quot;   
+[8] &quot;FBF1&quot;    &quot;JPH2&quot;   
+
+$ctwas_genes_unique
+ [1] &quot;ENPEP&quot;    &quot;SIPA1&quot;    &quot;PRRT1&quot;    &quot;FES&quot;      &quot;NOS3&quot;     &quot;EFS&quot;     
+ [7] &quot;TNS2&quot;     &quot;RIN1&quot;     &quot;TMEM133&quot;  &quot;SEPT9&quot;    &quot;DENND4B&quot;  &quot;FBXO10&quot;  
+[13] &quot;ADH1B&quot;    &quot;FAM212A&quot;  &quot;CLCN6&quot;    &quot;CEP170&quot;   &quot;TCF21&quot;    &quot;CHMP1A&quot;  
+[19] &quot;SLC2A4&quot;   &quot;LRRC10B&quot;  &quot;PIP4K2B&quot;  &quot;ATP10A&quot;   &quot;GUCY1A3&quot;  &quot;COLGALT2&quot;
+[25] &quot;MCC&quot;      &quot;ZC3HC1&quot;   &quot;CTSF&quot;     &quot;C18orf8&quot;  &quot;SLCO3A1&quot;  &quot;ITGB5&quot;   
+[31] &quot;NFRKB&quot;    &quot;TYMS&quot;     &quot;ACTR1B&quot;   &quot;CLN8&quot;     &quot;NAA38&quot;    &quot;OAF&quot;     
+[37] &quot;NMT1&quot;     &quot;SHISA4&quot;   &quot;SFXN4&quot;    &quot;MRAS&quot;    </code></pre>
+</div>
+<div id="plt-panukb" class="section level1">
+<h1>PLT-panukb</h1>
+<pre class="r"><code>trait &lt;- &quot;PLT-panukb&quot;
+
+ctwas_genes &lt;-  readRDS(paste0(ctwas_folder_results,trait,&quot;/&quot;,trait,&quot;.3qtls.combined_pip_rmmapping_bygroup_final.RDS&quot;))
+ctwas_genes_highpip &lt;- ctwas_genes$gene_name[ctwas_genes$combined_pip &gt; 0.8]
+
+tgfm_genes &lt;- data.table::fread(&quot;/project/xinhe/xsun/multi_group_ctwas/data/tgfm/GTEx_TGFM_PIPs_blood_PLATELET_COUNT.txt&quot;)
+tgfm_genes_highpip &lt;- tgfm_genes[tgfm_genes$TGFM_PIP &gt; 0.8,]
+tgfm_genes_highpip &lt;- tgfm_genes_highpip[tgfm_genes_highpip$genetic_element_class != &quot;variant&quot;,]
+tgfm_genes_highpip$ensg_id &lt;- sub(&quot;\\..*&quot;, &quot;&quot;, tgfm_genes_highpip$genetic_element_name)
+tgfm_genes_highpip_ensg &lt;- unique(tgfm_genes_highpip$ensg_id)
+
+ensg_to_symbol &lt;- AnnotationDbi::select(
+  EnsDb.Hsapiens.v86,
+  keys = tgfm_genes_highpip_ensg,
+  keytype = &quot;GENEID&quot;,
+  columns = c(&quot;GENEID&quot;, &quot;SYMBOL&quot;)
+)
+
+tgfm_genes_highpip_symbol &lt;- ensg_to_symbol$SYMBOL
+
+plot_overlap_barplot(ctwas_genes_highpip = ctwas_genes_highpip, tgfm_genes_highpip_symbol = tgfm_genes_highpip_symbol,trait = trait,return_unique_genes = T)</code></pre>
+<pre><code>$plot</code></pre>
+<p><img src="figure/realdata_final_compare_with_tgfm_rmmapping.Rmd/unnamed-chunk-4-1.png" width="384" style="display: block; margin: auto;" /></p>
+<pre><code>
+$tgfm_genes_unique
+ [1] &quot;LDLRAP1&quot;   &quot;CDC7&quot;      &quot;KIAA1614&quot;  &quot;ALS2&quot;      &quot;CHST13&quot;    &quot;PAK2&quot;     
+ [7] &quot;DNAJB14&quot;   &quot;RAI14&quot;     &quot;TMEM171&quot;   &quot;ASF1A&quot;     &quot;CRHR2&quot;     &quot;PSMD5&quot;    
+[13] &quot;RSU1&quot;      &quot;C10orf11&quot;  &quot;METTL10&quot;   &quot;RNASEH2C&quot;  &quot;WNT11&quot;     &quot;MDM1&quot;     
+[19] &quot;AP3S2&quot;     &quot;RCCD1&quot;     &quot;CCDC102A&quot;  &quot;LINC00672&quot; &quot;AP1M2&quot;     &quot;ADGRE5&quot;   
+[25] &quot;CEACAM19&quot;  &quot;FCGRT&quot;     &quot;DGCR14&quot;    &quot;TRABD&quot;    
+
+$ctwas_genes_unique
+  [1] &quot;CYB5A&quot;    &quot;ANKRD28&quot;  &quot;EXOC3L4&quot;  &quot;FBXO34&quot;   &quot;CD33&quot;     &quot;CD151&quot;   
+  [7] &quot;THEMIS2&quot;  &quot;CRELD2&quot;   &quot;DCAF16&quot;   &quot;PLXNA1&quot;   &quot;ARL17B&quot;   &quot;ARHGEF12&quot;
+ [13] &quot;ZNF217&quot;   &quot;CCDC97&quot;   &quot;CCND2&quot;    &quot;SH2B3&quot;    &quot;AIF1&quot;     &quot;ANPEP&quot;   
+ [19] &quot;MAT2A&quot;    &quot;ZNF132&quot;   &quot;FAM69A&quot;   &quot;RTEL1&quot;    &quot;CBL&quot;      &quot;CCDC153&quot; 
+ [25] &quot;DFFB&quot;     &quot;CLN3&quot;     &quot;DENND2C&quot;  &quot;MICALL2&quot;  &quot;RNF145&quot;   &quot;SIRT5&quot;   
+ [31] &quot;RAB8A&quot;    &quot;SATB1&quot;    &quot;ECHDC2&quot;   &quot;ZMIZ2&quot;    &quot;ACVR1C&quot;   &quot;SEMA3F&quot;  
+ [37] &quot;FARP2&quot;    &quot;TRDMT1&quot;   &quot;PLCG2&quot;    &quot;BAK1&quot;     &quot;ADAMTS2&quot;  &quot;SEPT10&quot;  
+ [43] &quot;GSTP1&quot;    &quot;TFR2&quot;     &quot;YES1&quot;     &quot;FAM120B&quot;  &quot;COL7A1&quot;   &quot;KIF1C&quot;   
+ [49] &quot;ARHGEF10&quot; &quot;CASC10&quot;   &quot;NOS3&quot;     &quot;LRCH4&quot;    &quot;MFN2&quot;     &quot;KIAA1109&quot;
+ [55] &quot;REPS1&quot;    &quot;CAND2&quot;    &quot;SMKR1&quot;    &quot;RAC2&quot;     &quot;HOXC4&quot;    &quot;AGPAT5&quot;  
+ [61] &quot;CSF1&quot;     &quot;ARIH2&quot;    &quot;TRIM5&quot;    &quot;CCDC38&quot;   &quot;PTPN9&quot;    &quot;PCIF1&quot;   
+ [67] &quot;AAMDC&quot;    &quot;SLC43A3&quot;  &quot;PRR5L&quot;    &quot;STON2&quot;    &quot;TRAM2&quot;    &quot;ALLC&quot;    
+ [73] &quot;PPP2R5C&quot;  &quot;ZSCAN9&quot;   &quot;ERN1&quot;     &quot;DNTTIP2&quot;  &quot;C14orf79&quot; &quot;TMPRSS6&quot; 
+ [79] &quot;ARHGAP15&quot; &quot;ARHGAP45&quot; &quot;PACSIN2&quot;  &quot;DLEU1&quot;    &quot;MFN1&quot;     &quot;PROSER2&quot; 
+ [85] &quot;PHF7&quot;     &quot;IL27&quot;     &quot;TNPO1&quot;    &quot;C1QTNF4&quot;  &quot;AHR&quot;      &quot;MS4A7&quot;   
+ [91] &quot;KMT5C&quot;    &quot;ARPC2&quot;    &quot;ZC3HC1&quot;   &quot;GIPR&quot;     &quot;TIMD4&quot;    &quot;COL11A2&quot; 
+ [97] &quot;ZNF318&quot;   &quot;MAPKAP1&quot;  &quot;ZDHHC18&quot;  &quot;YWHAZ&quot;    &quot;C2CD2&quot;    &quot;HSD17B13&quot;
+[103] &quot;LIPA&quot;     &quot;POR&quot;      &quot;CFLAR&quot;    &quot;CDCA7L&quot;   &quot;SYTL1&quot;    &quot;PDLIM2&quot;  
+[109] &quot;TCTEX1D2&quot;</code></pre>
+</div>
+<div id="rbc-panukb" class="section level1">
+<h1>RBC-panukb</h1>
+<pre class="r"><code>trait &lt;- &quot;RBC-panukb&quot;
+
+ctwas_genes &lt;-  readRDS(paste0(ctwas_folder_results,trait,&quot;/&quot;,trait,&quot;.3qtls.combined_pip_rmmapping_bygroup_final.RDS&quot;))
+ctwas_genes_highpip &lt;- ctwas_genes$gene_name[ctwas_genes$combined_pip &gt; 0.8]
+
+tgfm_genes &lt;- data.table::fread(&quot;/project/xinhe/xsun/multi_group_ctwas/data/tgfm/GTEx_TGFM_PIPs_blood_RED_COUNT.txt&quot;)
+tgfm_genes_highpip &lt;- tgfm_genes[tgfm_genes$TGFM_PIP &gt; 0.8,]
+tgfm_genes_highpip &lt;- tgfm_genes_highpip[tgfm_genes_highpip$genetic_element_class != &quot;variant&quot;,]
+tgfm_genes_highpip$ensg_id &lt;- sub(&quot;\\..*&quot;, &quot;&quot;, tgfm_genes_highpip$genetic_element_name)
+tgfm_genes_highpip_ensg &lt;- unique(tgfm_genes_highpip$ensg_id)
+
+ensg_to_symbol &lt;- AnnotationDbi::select(
+  EnsDb.Hsapiens.v86,
+  keys = tgfm_genes_highpip_ensg,
+  keytype = &quot;GENEID&quot;,
+  columns = c(&quot;GENEID&quot;, &quot;SYMBOL&quot;)
+)
+
+tgfm_genes_highpip_symbol &lt;- ensg_to_symbol$SYMBOL
+
+plot_overlap_barplot(ctwas_genes_highpip = ctwas_genes_highpip, tgfm_genes_highpip_symbol = tgfm_genes_highpip_symbol,trait = trait,return_unique_genes = T)</code></pre>
+<pre><code>$plot</code></pre>
+<p><img src="figure/realdata_final_compare_with_tgfm_rmmapping.Rmd/unnamed-chunk-5-1.png" width="384" style="display: block; margin: auto;" /></p>
+<pre><code>
+$tgfm_genes_unique
+ [1] &quot;SMIM1&quot;   &quot;LINGO4&quot;  &quot;THBS3&quot;   &quot;TWIST2&quot;  &quot;MKRN2&quot;   &quot;SLC12A7&quot; &quot;ANKRD55&quot;
+ [8] &quot;SMN2&quot;    &quot;ASF1A&quot;   &quot;NDUFAF6&quot; &quot;PTPA&quot;    &quot;RAD9A&quot;   &quot;ACADS&quot;   &quot;PNP&quot;    
+[15] &quot;PIAS1&quot;   &quot;DUS3L&quot;   &quot;MISP3&quot;   &quot;ZNF100&quot;  &quot;PDCD5&quot;   &quot;NELFCD&quot;  &quot;ATXN10&quot; 
+
+$ctwas_genes_unique
+  [1] &quot;HIST1H2AC&quot; &quot;ZNF641&quot;    &quot;CD36&quot;      &quot;UBE2Q2&quot;    &quot;GNB2&quot;      &quot;PARP6&quot;    
+  [7] &quot;CNIH4&quot;     &quot;LRCH4&quot;     &quot;INTS14&quot;    &quot;EHBP1L1&quot;   &quot;NOSIP&quot;     &quot;TFRC&quot;     
+ [13] &quot;NFE2L1&quot;    &quot;OSER1&quot;     &quot;HPR&quot;       &quot;CCND2&quot;     &quot;TP53&quot;      &quot;RTEL1&quot;    
+ [19] &quot;SRSF4&quot;     &quot;ZNF217&quot;    &quot;FES&quot;       &quot;PCOLCE&quot;    &quot;ACSM5&quot;     &quot;ZMIZ2&quot;    
+ [25] &quot;MAP2K2&quot;    &quot;POLR2J3&quot;   &quot;CAT&quot;       &quot;NFE2&quot;      &quot;ROCK1&quot;     &quot;TAL1&quot;     
+ [31] &quot;HOXD11&quot;    &quot;XPC&quot;       &quot;ADH1B&quot;     &quot;FHL3&quot;      &quot;SS18&quot;      &quot;FEM1B&quot;    
+ [37] &quot;EDN1&quot;      &quot;RAB34&quot;     &quot;HIST1H2BD&quot; &quot;FADS1&quot;     &quot;WDR3&quot;      &quot;ODF3B&quot;    
+ [43] &quot;POLR2H&quot;    &quot;SOCS5&quot;     &quot;CCDC92&quot;    &quot;PIK3R3&quot;    &quot;PLA2G6&quot;    &quot;TLE3&quot;     
+ [49] &quot;PSMB5&quot;     &quot;FAM200B&quot;   &quot;TNFRSF10B&quot; &quot;ANKRD36C&quot;  &quot;ELOVL3&quot;    &quot;PRR5L&quot;    
+ [55] &quot;RYBP&quot;      &quot;MTMR6&quot;     &quot;SMAD9&quot;     &quot;TST&quot;       &quot;KANSL1&quot;    &quot;TYMS&quot;     
+ [61] &quot;VLDLR&quot;     &quot;H2AFV&quot;     &quot;PCGF3&quot;     &quot;DAP3&quot;      &quot;ADSL&quot;      &quot;ZNF12&quot;    
+ [67] &quot;MN1&quot;       &quot;PFKM&quot;      &quot;ZFP36L2&quot;   &quot;SLC9A3R2&quot;  &quot;PARN&quot;      &quot;TFR2&quot;     
+ [73] &quot;BAHCC1&quot;    &quot;ZBTB7A&quot;    &quot;TRPS1&quot;     &quot;EXOC3L2&quot;   &quot;NUDT2&quot;     &quot;WDR41&quot;    
+ [79] &quot;PTEN&quot;      &quot;NPRL3&quot;     &quot;SLX4IP&quot;    &quot;MARCH2&quot;    &quot;DOK1&quot;      &quot;TMC4&quot;     
+ [85] &quot;GLCE&quot;      &quot;RB1&quot;       &quot;ABCC1&quot;     &quot;HLF&quot;       &quot;DAZAP1&quot;    &quot;ZBTB38&quot;   
+ [91] &quot;PBRM1&quot;     &quot;CD22&quot;      &quot;TTC13&quot;     &quot;EMP2&quot;      &quot;SRPRB&quot;     &quot;ACTR2&quot;    
+ [97] &quot;C6orf52&quot;   &quot;GOSR1&quot;     &quot;CRNN&quot;      &quot;RIPK3&quot;     &quot;SLC25A32&quot;  &quot;ZNF236&quot;   
+[103] &quot;FAM114A1&quot;  &quot;METRNL&quot;    &quot;CFLAR&quot;     &quot;COL4A2&quot;    &quot;UFC1&quot;      &quot;UGT8&quot;     </code></pre>
+</div>
+<div id="bmi-panukb" class="section level1">
+<h1>BMI-panukb</h1>
+<pre class="r"><code>trait &lt;- &quot;BMI-panukb&quot;
+
+ctwas_genes &lt;-  readRDS(paste0(ctwas_folder_results,trait,&quot;/&quot;,trait,&quot;.3qtls.combined_pip_rmmapping_bygroup_final.RDS&quot;))
+ctwas_genes_highpip &lt;- ctwas_genes$gene_name[ctwas_genes$combined_pip &gt; 0.8]
+
+tgfm_genes &lt;- data.table::fread(&quot;/project/xinhe/xsun/multi_group_ctwas/data/tgfm/GTEx_TGFM_PIPs_body_BMIz.txt&quot;)
+tgfm_genes_highpip &lt;- tgfm_genes[tgfm_genes$TGFM_PIP &gt; 0.8,]
+tgfm_genes_highpip &lt;- tgfm_genes_highpip[tgfm_genes_highpip$genetic_element_class != &quot;variant&quot;,]
+tgfm_genes_highpip$ensg_id &lt;- sub(&quot;\\..*&quot;, &quot;&quot;, tgfm_genes_highpip$genetic_element_name)
+tgfm_genes_highpip_ensg &lt;- unique(tgfm_genes_highpip$ensg_id)
+
+ensg_to_symbol &lt;- AnnotationDbi::select(
+  EnsDb.Hsapiens.v86,
+  keys = tgfm_genes_highpip_ensg,
+  keytype = &quot;GENEID&quot;,
+  columns = c(&quot;GENEID&quot;, &quot;SYMBOL&quot;)
+)
+
+tgfm_genes_highpip_symbol &lt;- ensg_to_symbol$SYMBOL
+
+plot_overlap_barplot(ctwas_genes_highpip = ctwas_genes_highpip, tgfm_genes_highpip_symbol = tgfm_genes_highpip_symbol,trait = trait,return_unique_genes = T)</code></pre>
+<pre><code>$plot</code></pre>
+<p><img src="figure/realdata_final_compare_with_tgfm_rmmapping.Rmd/unnamed-chunk-6-1.png" width="384" style="display: block; margin: auto;" /></p>
+<pre><code>
+$tgfm_genes_unique
+ [1] &quot;SLC35E2B&quot; &quot;FUBP1&quot;    &quot;PRMT6&quot;    &quot;ZBTB7B&quot;   &quot;ADH1A&quot;    &quot;SPDYE5&quot;  
+ [7] &quot;GSAP&quot;     &quot;YWHAZ&quot;    &quot;CASP7&quot;    &quot;ARL14EP&quot;  &quot;NDN&quot;      &quot;DCAF7&quot;   
+[13] &quot;CBX8&quot;     &quot;OR7D2&quot;   
+
+$ctwas_genes_unique
+ [1] &quot;MFSD13A&quot;  &quot;NEGR1&quot;    &quot;AGAP3&quot;    &quot;PDIA2&quot;    &quot;PTOV1&quot;    &quot;TRIM66&quot;  
+ [7] &quot;NASP&quot;     &quot;ADGRB2&quot;   &quot;GALNT4&quot;   &quot;ENTPD6&quot;   &quot;CTBP2&quot;    &quot;CCND2&quot;   
+[13] &quot;TRIM35&quot;   &quot;NPY5R&quot;    &quot;CDHR1&quot;    &quot;C18orf8&quot;  &quot;REXO1&quot;    &quot;RNF187&quot;  
+[19] &quot;CENPX&quot;    &quot;EEF1A2&quot;   &quot;PRPF6&quot;    &quot;FLT3&quot;     &quot;SNRNP70&quot;  &quot;CDHR3&quot;   
+[25] &quot;PROCR&quot;    &quot;ACP7&quot;     &quot;EI24&quot;     &quot;TP53&quot;     &quot;ADH1B&quot;    &quot;GPR61&quot;   
+[31] &quot;PRMT2&quot;    &quot;MEST&quot;     &quot;ETV5&quot;     &quot;KHSRP&quot;    &quot;ECE2&quot;     &quot;KCNC4&quot;   
+[37] &quot;HSP90AB1&quot; &quot;PRICKLE4&quot; &quot;PIK3C3&quot;   &quot;ANAPC4&quot;   &quot;DENND1A&quot;  &quot;RSPO3&quot;   
+[43] &quot;SLIT1&quot;    &quot;KCNH2&quot;    &quot;EPHA4&quot;    &quot;RALY&quot;     &quot;PATJ&quot;     &quot;PPP1R16B&quot;
+[49] &quot;TRAF3&quot;    &quot;ATP13A2&quot;  &quot;R3HDM1&quot;   &quot;PPM1A&quot;   </code></pre>
+</div>
+<div id="height-panukb" class="section level1">
+<h1>Height-panukb</h1>
+<pre class="r"><code>trait &lt;- &quot;Height-panukb&quot;
+
+ctwas_genes &lt;-  readRDS(paste0(ctwas_folder_results,trait,&quot;/&quot;,trait,&quot;.3qtls.combined_pip_rmmapping_bygroup_final.RDS&quot;))
+ctwas_genes_highpip &lt;- ctwas_genes$gene_name[ctwas_genes$combined_pip &gt; 0.8]
+
+tgfm_genes &lt;- data.table::fread(&quot;/project/xinhe/xsun/multi_group_ctwas/data/tgfm/GTEx_TGFM_PIPs_body_HEIGHTz.txt&quot;)
+tgfm_genes_highpip &lt;- tgfm_genes[tgfm_genes$TGFM_PIP &gt; 0.8,]
+tgfm_genes_highpip &lt;- tgfm_genes_highpip[tgfm_genes_highpip$genetic_element_class != &quot;variant&quot;,]
+tgfm_genes_highpip$ensg_id &lt;- sub(&quot;\\..*&quot;, &quot;&quot;, tgfm_genes_highpip$genetic_element_name)
+tgfm_genes_highpip_ensg &lt;- unique(tgfm_genes_highpip$ensg_id)
+
+ensg_to_symbol &lt;- AnnotationDbi::select(
+  EnsDb.Hsapiens.v86,
+  keys = tgfm_genes_highpip_ensg,
+  keytype = &quot;GENEID&quot;,
+  columns = c(&quot;GENEID&quot;, &quot;SYMBOL&quot;)
+)
+
+tgfm_genes_highpip_symbol &lt;- ensg_to_symbol$SYMBOL
+
+plot_overlap_barplot(ctwas_genes_highpip = ctwas_genes_highpip, tgfm_genes_highpip_symbol = tgfm_genes_highpip_symbol,trait = trait,return_unique_genes = T)</code></pre>
+<pre><code>$plot</code></pre>
+<p><img src="figure/realdata_final_compare_with_tgfm_rmmapping.Rmd/unnamed-chunk-7-1.png" width="384" style="display: block; margin: auto;" /></p>
+<pre><code>
+$tgfm_genes_unique
+ [1] &quot;AGRN&quot;     &quot;WRAP73&quot;   &quot;SH3D21&quot;   &quot;MEAF6&quot;    &quot;FUBP1&quot;    &quot;CDC14A&quot;  
+ [7] &quot;ZBTB7B&quot;   &quot;MGST3&quot;    &quot;RAB29&quot;    &quot;RNF187&quot;   &quot;FOXN2&quot;    &quot;PPP1R21&quot; 
+[13] &quot;RAD18&quot;    &quot;THUMPD3&quot;  &quot;LIMD1&quot;    &quot;DAP&quot;      &quot;DROSHA&quot;   &quot;IGF2R&quot;   
+[19] &quot;ACHE&quot;     &quot;UPK3BL&quot;   &quot;CALU&quot;     &quot;EFCAB1&quot;   &quot;NPR2&quot;     &quot;BRD3&quot;    
+[25] &quot;DLG5&quot;     &quot;PLEKHA1&quot;  &quot;SPTY2D1&quot;  &quot;RAD9A&quot;    &quot;ANO1&quot;     &quot;VAMP1&quot;   
+[31] &quot;FAM234B&quot;  &quot;ERGIC2&quot;   &quot;POU6F1&quot;   &quot;PNP&quot;      &quot;ARHGEF40&quot; &quot;PCK2&quot;    
+[37] &quot;KHNYN&quot;    &quot;DICER1&quot;   &quot;C15orf52&quot; &quot;UBE2Q2&quot;   &quot;CTSH&quot;     &quot;ZFP1&quot;    
+[43] &quot;CRK&quot;      &quot;EIF5A&quot;    &quot;NATD1&quot;    &quot;ARL17A&quot;   &quot;IMPA2&quot;    &quot;FBXO17&quot;  
+[49] &quot;SLC1A5&quot;   &quot;CABLES2&quot; 
+
+$ctwas_genes_unique
+  [1] &quot;GNA12&quot;    &quot;NFATC4&quot;   &quot;CD79B&quot;    &quot;PTH1R&quot;    &quot;HOMEZ&quot;    &quot;TRIM41&quot;  
+  [7] &quot;CBX7&quot;     &quot;SLC35G6&quot;  &quot;SUSD5&quot;    &quot;ERC1&quot;     &quot;KDM4B&quot;    &quot;SNX11&quot;   
+ [13] &quot;DCAKD&quot;    &quot;CTSW&quot;     &quot;HTR1F&quot;    &quot;FER&quot;      &quot;FES&quot;      &quot;FBLN5&quot;   
+ [19] &quot;RINT1&quot;    &quot;P4HA2&quot;    &quot;CDO1&quot;     &quot;RAB34&quot;    &quot;STAT6&quot;    &quot;CRISPLD2&quot;
+ [25] &quot;CEP192&quot;   &quot;EFCAB13&quot;  &quot;ACP1&quot;     &quot;BCS1L&quot;    &quot;SUPT3H&quot;   &quot;BRICD5&quot;  
+ [31] &quot;GALNT5&quot;   &quot;IRF3&quot;     &quot;LYL1&quot;     &quot;DBNL&quot;     &quot;TMEM8B&quot;   &quot;FHOD3&quot;   
+ [37] &quot;SCMH1&quot;    &quot;AK3&quot;      &quot;EVI5&quot;     &quot;COG4&quot;     &quot;EED&quot;      &quot;CBX2&quot;    
+ [43] &quot;PLAG1&quot;    &quot;FAM114A1&quot; &quot;UVSSA&quot;    &quot;GGPS1&quot;    &quot;LRRC29&quot;   &quot;FKBP9&quot;   
+ [49] &quot;TRIM6&quot;    &quot;CXXC1&quot;    &quot;CNIH4&quot;    &quot;SSBP4&quot;    &quot;TM2D1&quot;    &quot;TLE1&quot;    
+ [55] &quot;ZYG11B&quot;   &quot;PIGC&quot;     &quot;LMF1&quot;     &quot;UBOX5&quot;    &quot;SAP130&quot;   &quot;HNRNPLL&quot; 
+ [61] &quot;NOS3&quot;     &quot;TFG&quot;      &quot;IL11RA&quot;   &quot;TMEM179B&quot; &quot;GLT8D2&quot;   &quot;ASPH&quot;    
+ [67] &quot;TP53&quot;     &quot;HECTD1&quot;   &quot;SMAD3&quot;    &quot;NUP37&quot;    &quot;MLF2&quot;     &quot;GDPD3&quot;   
+ [73] &quot;SPIN1&quot;    &quot;PPP2R5C&quot;  &quot;ABCC8&quot;    &quot;UBE2Q1&quot;   &quot;SF3A2&quot;    &quot;ODF2L&quot;   
+ [79] &quot;USP47&quot;    &quot;PSMB3&quot;    &quot;PCSK5&quot;    &quot;ZCCHC3&quot;   &quot;CCND2&quot;    &quot;ANKS3&quot;   
+ [85] &quot;ZBED5&quot;    &quot;IGF1R&quot;    &quot;GNAS&quot;     &quot;DNAJC5G&quot;  &quot;CRELD1&quot;   &quot;DAB2&quot;    
+ [91] &quot;DKK3&quot;     &quot;SLC9A1&quot;   &quot;BAMBI&quot;    &quot;H1FX&quot;     &quot;CDK11A&quot;   &quot;ZNF565&quot;  
+ [97] &quot;CPNE3&quot;    &quot;ELN&quot;      &quot;HMGN1&quot;    &quot;SREBF2&quot;   &quot;ZC3H13&quot;   &quot;YAP1&quot;    
+[103] &quot;ACTR1B&quot;   &quot;SRCAP&quot;    &quot;HYOU1&quot;    &quot;FBXW8&quot;    &quot;RHBDD1&quot;   &quot;RFT1&quot;    
+[109] &quot;SMOX&quot;     &quot;EDEM3&quot;    &quot;SLC25A30&quot; &quot;ITPK1&quot;    &quot;ZZEF1&quot;    &quot;ZBTB38&quot;  
+[115] &quot;SPSB1&quot;    &quot;MAP2K2&quot;   &quot;AKR1C2&quot;   &quot;FAN1&quot;     &quot;GAS7&quot;     &quot;ZNF438&quot;  
+[121] &quot;DCUN1D5&quot;  &quot;SMCHD1&quot;   &quot;ABHD15&quot;   &quot;TNS2&quot;     &quot;MYO7A&quot;    &quot;CHD1L&quot;   
+[127] &quot;FBXO9&quot;    &quot;HAGHL&quot;    &quot;EXOSC9&quot;   &quot;SEL1L&quot;    &quot;FGFR3&quot;    &quot;TTLL6&quot;   
+[133] &quot;ZNF680&quot;   &quot;MSRB3&quot;    &quot;RALGAPA2&quot; &quot;FAM134B&quot;  &quot;MXD4&quot;     &quot;CKB&quot;     
+[139] &quot;ORM2&quot;     &quot;DAAM2&quot;    &quot;PARP12&quot;   &quot;GRPEL1&quot;   &quot;KCNQ3&quot;    &quot;TPRG1L&quot;  
+[145] &quot;CCND3&quot;    &quot;ZNF484&quot;   &quot;RBCK1&quot;    &quot;ZNF24&quot;    &quot;TRPS1&quot;    &quot;ARL15&quot;   
+[151] &quot;EIF3C&quot;    &quot;ARSJ&quot;     &quot;GSDMC&quot;    &quot;NCR3LG1&quot;  &quot;ZMIZ2&quot;    &quot;SLC25A32&quot;
+[157] &quot;SEC23IP&quot;  &quot;ZBP1&quot;     &quot;FUBP3&quot;    &quot;SPG7&quot;     &quot;ZNF827&quot;   &quot;KCNJ12&quot;  
+[163] &quot;RDH10&quot;    &quot;VAMP5&quot;    &quot;LUC7L2&quot;   &quot;ATP10D&quot;   &quot;RPS6KA4&quot;  &quot;PAPD4&quot;   
+[169] &quot;RREB1&quot;    &quot;CTU2&quot;     &quot;SLC48A1&quot;  &quot;CCDC57&quot;   &quot;SAMD4A&quot;   &quot;MORC3&quot;   
+[175] &quot;SOCS1&quot;    &quot;FN3KRP&quot;   &quot;EMC9&quot;     &quot;SERPINH1&quot; &quot;MPHOSPH6&quot; &quot;MMAB&quot;    
+[181] &quot;PSMF1&quot;    &quot;RPS9&quot;     &quot;UST&quot;      &quot;HNRNPC&quot;   &quot;ATP1B3&quot;   &quot;GATAD2A&quot; 
+[187] &quot;ASPSCR1&quot;  &quot;SERPINF1&quot; &quot;CREB3L2&quot; </code></pre>
+</div>
+<div id="t2d-panukb" class="section level1">
+<h1>T2D-panukb</h1>
+<pre class="r"><code>trait &lt;- &quot;T2D-panukb&quot;
+
+ctwas_genes &lt;-  readRDS(paste0(ctwas_folder_results,trait,&quot;/&quot;,trait,&quot;.3qtls.combined_pip_rmmapping_bygroup_final.RDS&quot;))
+ctwas_genes_highpip &lt;- ctwas_genes$gene_name[ctwas_genes$combined_pip &gt; 0.8]
+
+tgfm_genes &lt;- data.table::fread(&quot;/project/xinhe/xsun/multi_group_ctwas/data/tgfm/GTEx_TGFM_PIPs_disease_T2D.txt&quot;)
+tgfm_genes_highpip &lt;- tgfm_genes[tgfm_genes$TGFM_PIP &gt; 0.8,]
+tgfm_genes_highpip &lt;- tgfm_genes_highpip[tgfm_genes_highpip$genetic_element_class != &quot;variant&quot;,]
+tgfm_genes_highpip$ensg_id &lt;- sub(&quot;\\..*&quot;, &quot;&quot;, tgfm_genes_highpip$genetic_element_name)
+tgfm_genes_highpip_ensg &lt;- unique(tgfm_genes_highpip$ensg_id)
+
+ensg_to_symbol &lt;- AnnotationDbi::select(
+  EnsDb.Hsapiens.v86,
+  keys = tgfm_genes_highpip_ensg,
+  keytype = &quot;GENEID&quot;,
+  columns = c(&quot;GENEID&quot;, &quot;SYMBOL&quot;)
+)
+
+tgfm_genes_highpip_symbol &lt;- ensg_to_symbol$SYMBOL
+
+plot_overlap_barplot(ctwas_genes_highpip = ctwas_genes_highpip, tgfm_genes_highpip_symbol = tgfm_genes_highpip_symbol,trait = trait,return_unique_genes = T)</code></pre>
+<pre><code>$plot</code></pre>
+<p><img src="figure/realdata_final_compare_with_tgfm_rmmapping.Rmd/unnamed-chunk-8-1.png" width="384" style="display: block; margin: auto;" /></p>
+<pre><code>
+$tgfm_genes_unique
+[1] &quot;SRGAP2C&quot; &quot;GTF2I&quot;   &quot;CWF19L1&quot;
+
+$ctwas_genes_unique
+ [1] &quot;CCND2&quot;    &quot;RREB1&quot;    &quot;PRKRIP1&quot;  &quot;ENHO&quot;     &quot;LONRF1&quot;   &quot;HLA-DRB5&quot;
+ [7] &quot;ANK1&quot;     &quot;AP3S2&quot;    &quot;CEP68&quot;    &quot;SLCO4A1&quot;  &quot;SLIT1&quot;    &quot;ZNF703&quot;  
+[13] &quot;EMC1&quot;    </code></pre>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.2.0 (2022-04-22)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: CentOS Linux 7 (Core)
+
+Matrix products: default
+BLAS/LAPACK: /software/openblas-0.3.13-el7-x86_64/lib/libopenblas_haswellp-r0.3.13.so
+
+locale:
+[1] C
+
+attached base packages:
+[1] stats4    stats     graphics  grDevices utils     datasets  methods  
+[8] base     
+
+other attached packages:
+ [1] ggplot2_3.5.1             EnsDb.Hsapiens.v86_2.99.0
+ [3] ensembldb_2.20.2          AnnotationFilter_1.20.0  
+ [5] GenomicFeatures_1.48.3    AnnotationDbi_1.58.0     
+ [7] Biobase_2.56.0            GenomicRanges_1.48.0     
+ [9] GenomeInfoDb_1.39.9       IRanges_2.30.0           
+[11] S4Vectors_0.34.0          BiocGenerics_0.42.0      
+
+loaded via a namespace (and not attached):
+ [1] ProtGenerics_1.28.0         bitops_1.0-7               
+ [3] matrixStats_0.62.0          fs_1.5.2                   
+ [5] bit64_4.0.5                 filelock_1.0.2             
+ [7] progress_1.2.2              httr_1.4.3                 
+ [9] rprojroot_2.0.3             tools_4.2.0                
+[11] bslib_0.3.1                 utf8_1.2.2                 
+[13] R6_2.5.1                    colorspace_2.0-3           
+[15] DBI_1.2.2                   lazyeval_0.2.2             
+[17] withr_2.5.0                 tidyselect_1.2.0           
+[19] prettyunits_1.1.1           bit_4.0.4                  
+[21] curl_4.3.2                  compiler_4.2.0             
+[23] git2r_0.30.1                cli_3.6.1                  
+[25] xml2_1.3.3                  DelayedArray_0.22.0        
+[27] labeling_0.4.2              rtracklayer_1.56.0         
+[29] sass_0.4.1                  scales_1.3.0               
+[31] rappdirs_0.3.3              stringr_1.5.1              
+[33] digest_0.6.29               Rsamtools_2.12.0           
+[35] rmarkdown_2.25              XVector_0.36.0             
+[37] pkgconfig_2.0.3             htmltools_0.5.2            
+[39] MatrixGenerics_1.8.0        highr_0.9                  
+[41] dbplyr_2.1.1                fastmap_1.1.0              
+[43] rlang_1.1.2                 rstudioapi_0.13            
+[45] RSQLite_2.3.1               farver_2.1.0               
+[47] jquerylib_0.1.4             BiocIO_1.6.0               
+[49] generics_0.1.2              jsonlite_1.8.0             
+[51] BiocParallel_1.30.3         dplyr_1.1.4                
+[53] RCurl_1.98-1.7              magrittr_2.0.3             
+[55] GenomeInfoDbData_1.2.8      Matrix_1.5-3               
+[57] munsell_0.5.0               Rcpp_1.0.12                
+[59] fansi_1.0.3                 lifecycle_1.0.4            
+[61] stringi_1.7.6               yaml_2.3.5                 
+[63] SummarizedExperiment_1.26.1 zlibbioc_1.42.0            
+[65] BiocFileCache_2.4.0         grid_4.2.0                 
+[67] blob_1.2.3                  parallel_4.2.0             
+[69] promises_1.2.0.1            crayon_1.5.1               
+[71] lattice_0.20-45             Biostrings_2.64.0          
+[73] hms_1.1.1                   KEGGREST_1.36.3            
+[75] knitr_1.39                  pillar_1.9.0               
+[77] rjson_0.2.21                codetools_0.2-18           
+[79] biomaRt_2.54.1              XML_3.99-0.14              
+[81] glue_1.6.2                  evaluate_0.15              
+[83] data.table_1.14.2           png_0.1-7                  
+[85] vctrs_0.6.5                 httpuv_1.6.5               
+[87] gtable_0.3.0                assertthat_0.2.1           
+[89] cachem_1.0.6                xfun_0.41                  
+[91] restfulr_0.0.14             later_1.3.0                
+[93] tibble_3.2.1                GenomicAlignments_1.32.0   
+[95] memoise_2.0.1               workflowr_1.7.0            
+[97] ellipsis_0.3.2             </code></pre>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

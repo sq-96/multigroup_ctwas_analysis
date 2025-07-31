@@ -1,0 +1,311 @@
+---
+title: "Comparing real data results with TGFM"
+author: "XSun"
+date: "2025-07-31"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+    toc: true
+---
+
+# Introduction
+
+There are several traits overlapping with TGFM, we compare the genes identified by TGFM and ctwas here.
+
+TGFM results were downloaded here https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/S26PFI
+
+
+```{r}
+
+library(EnsDb.Hsapiens.v86)
+library(AnnotationDbi)
+library(ggplot2)
+
+
+plot_overlap_barplot <- function(ctwas_genes_highpip,
+                                 tgfm_genes_highpip_symbol,
+                                 trait,
+                                 return_unique_genes = FALSE) {
+  
+  # Extract gene names
+  ctwas_genes <- ctwas_genes_highpip
+  tgfm_genes <- tgfm_genes_highpip_symbol
+  
+  # Compute overlap
+  overlap_genes <- intersect(ctwas_genes, tgfm_genes)
+  tgfm_genes_unique <- setdiff(tgfm_genes, overlap_genes)
+  ctwas_genes_unique <- setdiff(ctwas_genes, overlap_genes)
+  n_overlap <- length(overlap_genes)
+  n_ctwas <- length(ctwas_genes)
+  n_tgfm <- length(tgfm_genes)
+  
+  # Construct data frame for plotting
+  df <- data.frame(
+    group = rep(c("ctwas genes", "tgfm genes"), each = 2),
+    part = rep(c("Overlap", "Unique"), 2),
+    count = c(n_overlap, n_ctwas - n_overlap, n_overlap, n_tgfm - n_overlap)
+  )
+  
+  # Ensure proper stacking order
+  df$part <- factor(df$part, levels = c("Unique", "Overlap"))
+  
+  # Plot
+  p <- ggplot(df, aes(x = group, y = count, fill = part)) +
+    geom_bar(stat = "identity", width = 0.6) +
+    geom_text(aes(label = count), position = position_stack(vjust = 0.5), color = "white", size = 5) +
+    scale_fill_manual(values = c("Overlap" = "#1f77b4", "Unique" = "#ff7f0e")) +
+    labs(
+      x = "",
+      y = paste0("Number of Genes at PIP > 0.8"),
+      title = trait,
+      fill = ""
+    ) +
+    theme_minimal(base_size = 14)
+  
+  if (return_unique_genes) {
+    return(list(plot = p, tgfm_genes_unique = tgfm_genes_unique, ctwas_genes_unique = ctwas_genes_unique))
+  } else {
+    return(p)
+  }
+}
+
+ctwas_folder_results <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/"
+
+```
+
+
+# LDL-ukb-d-30780_irnt
+
+```{r fig.height=4, fig.width=4}
+
+trait <- "LDL-ukb-d-30780_irnt"
+
+ctwas_genes <-  readRDS(paste0(ctwas_folder_results,trait,"/",trait,".3qtls.combined_pip_rmmapping_bygroup_final.RDS"))
+ctwas_genes_highpip <- ctwas_genes$gene_name[ctwas_genes$combined_pip > 0.8]
+
+tgfm_genes <- data.table::fread("/project/xinhe/xsun/multi_group_ctwas/data/tgfm/GTEx_TGFM_PIPs_biochemistry_LDLdirect.txt")
+tgfm_genes_highpip <- tgfm_genes[tgfm_genes$TGFM_PIP > 0.8,]
+tgfm_genes_highpip <- tgfm_genes_highpip[tgfm_genes_highpip$genetic_element_class != "variant",]
+tgfm_genes_highpip$ensg_id <- sub("\\..*", "", tgfm_genes_highpip$genetic_element_name)
+tgfm_genes_highpip_ensg <- unique(tgfm_genes_highpip$ensg_id)
+
+ensg_to_symbol <- AnnotationDbi::select(
+  EnsDb.Hsapiens.v86,
+  keys = tgfm_genes_highpip_ensg,
+  keytype = "GENEID",
+  columns = c("GENEID", "SYMBOL")
+)
+
+tgfm_genes_highpip_symbol <- ensg_to_symbol$SYMBOL
+
+plot_overlap_barplot(ctwas_genes_highpip = ctwas_genes_highpip, tgfm_genes_highpip_symbol = tgfm_genes_highpip_symbol,trait = trait,return_unique_genes = T)
+
+
+
+```
+
+
+
+
+# HTN-panukb
+
+```{r fig.height=4, fig.width=4}
+
+trait <- "HTN-panukb"
+
+ctwas_genes <-  readRDS(paste0(ctwas_folder_results,trait,"/",trait,".3qtls.combined_pip_rmmapping_bygroup_final.RDS"))
+ctwas_genes_highpip <- ctwas_genes$gene_name[ctwas_genes$combined_pip > 0.8]
+
+tgfm_genes <- data.table::fread("/project/xinhe/xsun/multi_group_ctwas/data/tgfm/GTEx_TGFM_PIPs_disease_HYPERTENSION_DIAGNOSED.txt")
+tgfm_genes_highpip <- tgfm_genes[tgfm_genes$TGFM_PIP > 0.8,]
+tgfm_genes_highpip <- tgfm_genes_highpip[tgfm_genes_highpip$genetic_element_class != "variant",]
+tgfm_genes_highpip$ensg_id <- sub("\\..*", "", tgfm_genes_highpip$genetic_element_name)
+tgfm_genes_highpip_ensg <- unique(tgfm_genes_highpip$ensg_id)
+
+ensg_to_symbol <- AnnotationDbi::select(
+  EnsDb.Hsapiens.v86,
+  keys = tgfm_genes_highpip_ensg,
+  keytype = "GENEID",
+  columns = c("GENEID", "SYMBOL")
+)
+
+tgfm_genes_highpip_symbol <- ensg_to_symbol$SYMBOL
+
+plot_overlap_barplot(ctwas_genes_highpip = ctwas_genes_highpip, tgfm_genes_highpip_symbol = tgfm_genes_highpip_symbol,trait = trait,return_unique_genes = T)
+
+
+
+```
+
+
+
+
+
+
+
+# PLT-panukb
+
+```{r fig.height=4, fig.width=4}
+
+trait <- "PLT-panukb"
+
+ctwas_genes <-  readRDS(paste0(ctwas_folder_results,trait,"/",trait,".3qtls.combined_pip_rmmapping_bygroup_final.RDS"))
+ctwas_genes_highpip <- ctwas_genes$gene_name[ctwas_genes$combined_pip > 0.8]
+
+tgfm_genes <- data.table::fread("/project/xinhe/xsun/multi_group_ctwas/data/tgfm/GTEx_TGFM_PIPs_blood_PLATELET_COUNT.txt")
+tgfm_genes_highpip <- tgfm_genes[tgfm_genes$TGFM_PIP > 0.8,]
+tgfm_genes_highpip <- tgfm_genes_highpip[tgfm_genes_highpip$genetic_element_class != "variant",]
+tgfm_genes_highpip$ensg_id <- sub("\\..*", "", tgfm_genes_highpip$genetic_element_name)
+tgfm_genes_highpip_ensg <- unique(tgfm_genes_highpip$ensg_id)
+
+ensg_to_symbol <- AnnotationDbi::select(
+  EnsDb.Hsapiens.v86,
+  keys = tgfm_genes_highpip_ensg,
+  keytype = "GENEID",
+  columns = c("GENEID", "SYMBOL")
+)
+
+tgfm_genes_highpip_symbol <- ensg_to_symbol$SYMBOL
+
+plot_overlap_barplot(ctwas_genes_highpip = ctwas_genes_highpip, tgfm_genes_highpip_symbol = tgfm_genes_highpip_symbol,trait = trait,return_unique_genes = T)
+
+
+
+```
+
+
+
+
+
+# RBC-panukb
+
+```{r fig.height=4, fig.width=4}
+
+trait <- "RBC-panukb"
+
+ctwas_genes <-  readRDS(paste0(ctwas_folder_results,trait,"/",trait,".3qtls.combined_pip_rmmapping_bygroup_final.RDS"))
+ctwas_genes_highpip <- ctwas_genes$gene_name[ctwas_genes$combined_pip > 0.8]
+
+tgfm_genes <- data.table::fread("/project/xinhe/xsun/multi_group_ctwas/data/tgfm/GTEx_TGFM_PIPs_blood_RED_COUNT.txt")
+tgfm_genes_highpip <- tgfm_genes[tgfm_genes$TGFM_PIP > 0.8,]
+tgfm_genes_highpip <- tgfm_genes_highpip[tgfm_genes_highpip$genetic_element_class != "variant",]
+tgfm_genes_highpip$ensg_id <- sub("\\..*", "", tgfm_genes_highpip$genetic_element_name)
+tgfm_genes_highpip_ensg <- unique(tgfm_genes_highpip$ensg_id)
+
+ensg_to_symbol <- AnnotationDbi::select(
+  EnsDb.Hsapiens.v86,
+  keys = tgfm_genes_highpip_ensg,
+  keytype = "GENEID",
+  columns = c("GENEID", "SYMBOL")
+)
+
+tgfm_genes_highpip_symbol <- ensg_to_symbol$SYMBOL
+
+plot_overlap_barplot(ctwas_genes_highpip = ctwas_genes_highpip, tgfm_genes_highpip_symbol = tgfm_genes_highpip_symbol,trait = trait,return_unique_genes = T)
+
+
+
+```
+
+
+# BMI-panukb
+
+```{r fig.height=4, fig.width=4}
+
+trait <- "BMI-panukb"
+
+ctwas_genes <-  readRDS(paste0(ctwas_folder_results,trait,"/",trait,".3qtls.combined_pip_rmmapping_bygroup_final.RDS"))
+ctwas_genes_highpip <- ctwas_genes$gene_name[ctwas_genes$combined_pip > 0.8]
+
+tgfm_genes <- data.table::fread("/project/xinhe/xsun/multi_group_ctwas/data/tgfm/GTEx_TGFM_PIPs_body_BMIz.txt")
+tgfm_genes_highpip <- tgfm_genes[tgfm_genes$TGFM_PIP > 0.8,]
+tgfm_genes_highpip <- tgfm_genes_highpip[tgfm_genes_highpip$genetic_element_class != "variant",]
+tgfm_genes_highpip$ensg_id <- sub("\\..*", "", tgfm_genes_highpip$genetic_element_name)
+tgfm_genes_highpip_ensg <- unique(tgfm_genes_highpip$ensg_id)
+
+ensg_to_symbol <- AnnotationDbi::select(
+  EnsDb.Hsapiens.v86,
+  keys = tgfm_genes_highpip_ensg,
+  keytype = "GENEID",
+  columns = c("GENEID", "SYMBOL")
+)
+
+tgfm_genes_highpip_symbol <- ensg_to_symbol$SYMBOL
+
+plot_overlap_barplot(ctwas_genes_highpip = ctwas_genes_highpip, tgfm_genes_highpip_symbol = tgfm_genes_highpip_symbol,trait = trait,return_unique_genes = T)
+
+
+
+```
+
+
+
+
+
+# Height-panukb
+
+```{r fig.height=4, fig.width=4}
+
+trait <- "Height-panukb"
+
+ctwas_genes <-  readRDS(paste0(ctwas_folder_results,trait,"/",trait,".3qtls.combined_pip_rmmapping_bygroup_final.RDS"))
+ctwas_genes_highpip <- ctwas_genes$gene_name[ctwas_genes$combined_pip > 0.8]
+
+tgfm_genes <- data.table::fread("/project/xinhe/xsun/multi_group_ctwas/data/tgfm/GTEx_TGFM_PIPs_body_HEIGHTz.txt")
+tgfm_genes_highpip <- tgfm_genes[tgfm_genes$TGFM_PIP > 0.8,]
+tgfm_genes_highpip <- tgfm_genes_highpip[tgfm_genes_highpip$genetic_element_class != "variant",]
+tgfm_genes_highpip$ensg_id <- sub("\\..*", "", tgfm_genes_highpip$genetic_element_name)
+tgfm_genes_highpip_ensg <- unique(tgfm_genes_highpip$ensg_id)
+
+ensg_to_symbol <- AnnotationDbi::select(
+  EnsDb.Hsapiens.v86,
+  keys = tgfm_genes_highpip_ensg,
+  keytype = "GENEID",
+  columns = c("GENEID", "SYMBOL")
+)
+
+tgfm_genes_highpip_symbol <- ensg_to_symbol$SYMBOL
+
+plot_overlap_barplot(ctwas_genes_highpip = ctwas_genes_highpip, tgfm_genes_highpip_symbol = tgfm_genes_highpip_symbol,trait = trait,return_unique_genes = T)
+
+
+
+```
+
+
+
+
+
+# T2D-panukb
+
+```{r fig.height=4, fig.width=4}
+
+trait <- "T2D-panukb"
+
+ctwas_genes <-  readRDS(paste0(ctwas_folder_results,trait,"/",trait,".3qtls.combined_pip_rmmapping_bygroup_final.RDS"))
+ctwas_genes_highpip <- ctwas_genes$gene_name[ctwas_genes$combined_pip > 0.8]
+
+tgfm_genes <- data.table::fread("/project/xinhe/xsun/multi_group_ctwas/data/tgfm/GTEx_TGFM_PIPs_disease_T2D.txt")
+tgfm_genes_highpip <- tgfm_genes[tgfm_genes$TGFM_PIP > 0.8,]
+tgfm_genes_highpip <- tgfm_genes_highpip[tgfm_genes_highpip$genetic_element_class != "variant",]
+tgfm_genes_highpip$ensg_id <- sub("\\..*", "", tgfm_genes_highpip$genetic_element_name)
+tgfm_genes_highpip_ensg <- unique(tgfm_genes_highpip$ensg_id)
+
+ensg_to_symbol <- AnnotationDbi::select(
+  EnsDb.Hsapiens.v86,
+  keys = tgfm_genes_highpip_ensg,
+  keytype = "GENEID",
+  columns = c("GENEID", "SYMBOL")
+)
+
+tgfm_genes_highpip_symbol <- ensg_to_symbol$SYMBOL
+
+plot_overlap_barplot(ctwas_genes_highpip = ctwas_genes_highpip, tgfm_genes_highpip_symbol = tgfm_genes_highpip_symbol,trait = trait,return_unique_genes = T)
+
+
+
+```
+
+
+
+
