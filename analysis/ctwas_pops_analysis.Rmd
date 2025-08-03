@@ -6,13 +6,10 @@ editor_options:
   chunk_output_type: console
 ---
 
-### Method
-1. For each trait, select regions with at lease one high PIP expression/splicing trait (PIP>0.8)
-- based on multi-cTWAS results with three molecular traits (eQTL,sQTL,stQTL) from five tissues.
-2. Run coloc with eQTL and sQTL full summary statistics from five tissues
-- no stQTL full summary statistics
-3. Comparing the number of expression and splicing molecular traits identified by coloc (PP4>0.8), single-cTWAS (PIP>0.8) and multi-cTWAS (PIP>0.8)
-- don't include stability traits identified by multi-cTWAS
+### POPs Method
+1. Use GTEx expression derived features provided by the paper (https://github.com/FinucaneLab/gene_features/tree/master/features/human_multiple)
+2. Generate MAGMA scores with genotype from 45K UKB individuals
+3. Run POPS with features and MAGMA output
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, include=FALSE}
 library(data.table)
@@ -73,7 +70,6 @@ for(i in traits){
   ctwas_res <- ctwas_res[,c("gene_name","combined_pip")]
   merged_df <- merge(ctwas_res, pops_pred, by.x = "gene_name", by.y = "NAME", all.x = TRUE)
   plot_df <- rbind(plot_df,merged_df)
-  print(dim(plot_df))
 }
 plot_df <- na.omit(plot_df)
 plot_pops_by_pip_bin(plot_df,"Across all traits")
