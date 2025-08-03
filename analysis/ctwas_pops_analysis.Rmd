@@ -1,0 +1,95 @@
+---
+title: "ctwas POPs analysis"
+output: html_document
+date: '2025-8-2'
+editor_options: 
+  chunk_output_type: console
+---
+
+### Method
+1. For each trait, select regions with at lease one high PIP expression/splicing trait (PIP>0.8)
+- based on multi-cTWAS results with three molecular traits (eQTL,sQTL,stQTL) from five tissues.
+2. Run coloc with eQTL and sQTL full summary statistics from five tissues
+- no stQTL full summary statistics
+3. Comparing the number of expression and splicing molecular traits identified by coloc (PP4>0.8), single-cTWAS (PIP>0.8) and multi-cTWAS (PIP>0.8)
+- don't include stability traits identified by multi-cTWAS
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+library(data.table)
+traits <- c(
+  "SBP-ukb-a-360", "LDL-ukb-d-30780_irnt", "aFib-ebi-a-GCST006414",
+  "WBC-ieu-b-30", "IBD-ebi-a-GCST004131", "SCZ-ieu-b-5102", "BMI-panukb",
+  "PLT-panukb", "RBC-panukb", "HB-panukb", "HTN-panukb", "Height-panukb",
+  "T2D-panukb", "MDD-ieu-b-102", "BIP-ieu-b-5110",#"T1D-GCST90014023",
+  "ASD-ieu-a-1185", "PD-ieu-b-7", "NS-ukb-a-230","ATH_gtexukb"
+)
+
+plot_pops_by_pip_bin <- function(df,trait_name) {
+  # Define pip bins
+  df$bin <- cut(
+    df$combined_pip,
+    #breaks = c(0, 0.01, 0.25, 0.5, 0.7, 0.9, 1),
+    breaks = c(0, 0.01, 0.25, 0.5, 0.8, 1),
+    include.lowest = TRUE,
+    #labels = c("[0–0.01]", "[0.01–0.25]", "[0.25–0.5]", "[0.5–0.7]", "[0.7–0.9]", "[0.9–1]")
+    labels = c("[0–0.01]", "[0.01–0.25]", "[0.25–0.5]", "[0.5–0.8]", "[0.8–1]")
+  )
+  
+  # Load required libraries
+  library(dplyr)
+  library(ggplot2)
+  
+  # Compute summary statistics
+  summary_df <- df %>%
+    group_by(bin) %>%
+    summarise(
+      avg_pops = mean(PoPS_Score, na.rm = TRUE),
+      se_pops = sd(PoPS_Score, na.rm = TRUE) / sqrt(sum(!is.na(PoPS_Score)))
+    ) %>%
+    ungroup()
+  
+  # Plot
+  ggplot(summary_df, aes(x = bin, y = avg_pops)) +
+    geom_bar(stat = "identity", fill = "steelblue") +
+    geom_errorbar(aes(ymin = avg_pops - se_pops, ymax = avg_pops + se_pops), width = 0.2) +
+    labs(
+      title = trait_name,
+      x = "PIP Bin",
+      y = "Average PoPS Score"
+    ) +
+    theme_minimal()
+}
+```
+
+### POPS score across all traits
+```{r echo=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+plot_df <- data.frame()
+for(i in traits){
+  pops <- fread(paste0("/project/xinhe/shengqian/pops/pops_UKB_output1/",i,"_pops/",i,".preds"))
+  pop_anno <- fread("/project/xinhe/shengqian/pops/example/data/utils/gene_annot_jun10.txt")
+  pops_pred <- merge(pops, pop_anno, by = "ENSGID", all.x = TRUE)
+  pops_pred <- pops_pred[,c("PoPS_Score","NAME")]
+  ctwas_res <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/",i,"/",i,".3qtls.combined_pip_bytype_final.RDS"))
+  ctwas_res <- ctwas_res[,c("gene_name","combined_pip")]
+  merged_df <- merge(ctwas_res, pops_pred, by.x = "gene_name", by.y = "NAME", all.x = TRUE)
+  plot_df <- rbind(plot_df,merged_df)
+  print(dim(plot_df))
+}
+plot_df <- na.omit(plot_df)
+plot_pops_by_pip_bin(plot_df,"Across all traits")
+```
+
+### POPS score of individual trait
+```{r echo=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+for(i in traits){
+  pops <- fread(paste0("/project/xinhe/shengqian/pops/pops_UKB_output1/",i,"_pops/",i,".preds"))
+  pop_anno <- fread("/project/xinhe/shengqian/pops/example/data/utils/gene_annot_jun10.txt")
+  pops_pred <- merge(pops, pop_anno, by = "ENSGID", all.x = TRUE)
+  pops_pred <- pops_pred[,c("PoPS_Score","NAME")]
+  ctwas_res <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/",i,"/",i,".3qtls.combined_pip_bytype_final.RDS"))
+  ctwas_res <- ctwas_res[,c("gene_name","combined_pip")]
+  merged_df <- merge(ctwas_res, pops_pred, by.x = "gene_name", by.y = "NAME", all.x = TRUE)
+  merged_df <- na.omit(merged_df)
+  print(plot_pops_by_pip_bin(merged_df,paste0(i,", # of genes ",dim(merged_df)[1])))
+}
+```
