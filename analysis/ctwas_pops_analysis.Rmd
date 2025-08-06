@@ -15,9 +15,9 @@ editor_options:
 library(data.table)
 traits <- c(
   "SBP-ukb-a-360", "LDL-ukb-d-30780_irnt", "aFib-ebi-a-GCST006414",
-  "WBC-ieu-b-30", "IBD-ebi-a-GCST004131", "SCZ-ieu-b-5102", "BMI-panukb",
+  "WBC-ieu-b-30", "IBD-ebi-a-GCST004131", "BMI-panukb",
   "PLT-panukb", "RBC-panukb", "HB-panukb", "HTN-panukb", "Height-panukb",
-  "T2D-panukb", "MDD-ieu-b-102", "BIP-ieu-b-5110",#"T1D-GCST90014023",
+  "T2D-panukb", "MDD-ieu-b-102", "SCZ-ieu-b-5102", "T1D-GCST90014023", "BIP-ieu-b-5110", 
   "ASD-ieu-a-1185", "PD-ieu-b-7", "NS-ukb-a-230","ATH_gtexukb"
 )
 
@@ -26,10 +26,10 @@ plot_pops_by_pip_bin <- function(df,trait_name) {
   df$bin <- cut(
     df$combined_pip,
     #breaks = c(0, 0.01, 0.25, 0.5, 0.7, 0.9, 1),
-    breaks = c(0, 0.01, 0.25, 0.5, 0.8, 1),
+    breaks = c(0, 0.25, 0.5, 0.75, 1),
     include.lowest = TRUE,
     #labels = c("[0–0.01]", "[0.01–0.25]", "[0.25–0.5]", "[0.5–0.7]", "[0.7–0.9]", "[0.9–1]")
-    labels = c("[0–0.01]", "[0.01–0.25]", "[0.25–0.5]", "[0.5–0.8]", "[0.8–1]")
+    labels = c("[0–0.25]", "[0.25–0.5]", "[0.5–0.75]", "[0.75–1]")
   )
   
   # Load required libraries
@@ -62,7 +62,7 @@ plot_pops_by_pip_bin <- function(df,trait_name) {
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 plot_df <- data.frame()
 for(i in traits){
-  pops <- fread(paste0("/project/xinhe/shengqian/pops/pops_UKB_output1/",i,"_pops/",i,".preds"))
+  pops <- fread(paste0("/project/xinhe/shengqian/pops/pops_full_features_output/",i,"_pops/",i,".preds"))
   pop_anno <- fread("/project/xinhe/shengqian/pops/example/data/utils/gene_annot_jun10.txt")
   pops_pred <- merge(pops, pop_anno, by = "ENSGID", all.x = TRUE)
   pops_pred <- pops_pred[,c("PoPS_Score","NAME")]
@@ -78,7 +78,7 @@ plot_pops_by_pip_bin(plot_df,"Across all traits")
 ### POPS score of individual trait
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 for(i in traits){
-  pops <- fread(paste0("/project/xinhe/shengqian/pops/pops_UKB_output1/",i,"_pops/",i,".preds"))
+  pops <- fread(paste0("/project/xinhe/shengqian/pops/pops_full_features_output/",i,"_pops/",i,".preds"))
   pop_anno <- fread("/project/xinhe/shengqian/pops/example/data/utils/gene_annot_jun10.txt")
   pops_pred <- merge(pops, pop_anno, by = "ENSGID", all.x = TRUE)
   pops_pred <- pops_pred[,c("PoPS_Score","NAME")]
