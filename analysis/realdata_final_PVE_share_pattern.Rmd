@@ -1,0 +1,453 @@
+---
+title: "PVE share pattern"
+author: "XSun"
+date: "2025-08-06"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+    toc: true
+---
+
+# Introduction
+
+
+```{r}
+
+library(ctwas)
+library(pheatmap)
+
+source("/project/xinhe/xsun/multi_group_ctwas/data/samplesize.R")
+
+get_top_tissues <- function(trait, n_top = 10, folder_results) {
+ 
+  
+  # Find files matching pattern
+  finalfiles <- list.files(folder_results, pattern = "_csinclude")
+  
+  # Collect tissue summaries
+  trait_sum <- do.call(rbind, lapply(finalfiles, function(file) {
+    gene_pip <- readRDS(file.path(folder_results, file))
+    
+    tissue <- gsub(pattern = paste0(trait, "_"), replacement = "", x = file)
+    tissue <- gsub(pattern = ".combined_pip_bygroup_final_csinclude.RDS", replacement = "", x = tissue)
+    
+    data.frame(tissue = tissue,
+               num_gene_pip08 = sum(gene_pip$combined_pip > 0.8),
+               stringsAsFactors = FALSE)
+  }))
+  
+  # Filter, order, and select top tissues
+  trait_sum <- trait_sum[trait_sum$num_gene_pip08 > 0, ]
+  trait_sum <- trait_sum[order(trait_sum$num_gene_pip08, decreasing = TRUE), ]
+  
+  # Return top tissues
+  head(trait_sum$tissue, n_top)
+}
+
+
+
+```
+
+
+# LDL-ukb-d-30780_irnt
+
+```{r fig.height=8, fig.width=8}
+
+trait <- "LDL-ukb-d-30780_irnt"
+
+gwas_n <- samplesize[trait]
+
+folder_results <- paste0("/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/expression/",trait,"/")
+
+top_tissues <- get_top_tissues(
+  trait = trait, 
+  n_top = 10,
+  folder_results = folder_results
+)
+
+
+## single tissue eQTL
+prob_pve_alltissue <- c()
+for (tissue in top_tissues){
+  
+  file_param_single <- paste0(folder_results,"/",trait,"_",tissue,".thin1.shared_all.param.RDS")
+  param_single <- readRDS(file_param_single)
+  
+  ctwas_parameters_single <- summarize_param(param_single, gwas_n, enrichment_test = "fisher")
+ 
+  prob_pve <- ctwas_parameters_single$prop_heritability[1]
+  prob_pve_alltissue <- c(prob_pve_alltissue, prob_pve)
+   
+}
+
+names(prob_pve_alltissue) <- gsub(pattern = "\\|eQTL",x = names(prob_pve_alltissue), replacement = "")
+
+
+## pairwise
+
+tissue_combination <- combn(top_tissues, 2, simplify = FALSE)
+
+prob_pve_shared_all <- c()
+for (i in 1:length(tissue_combination)){
+  
+  tissue1 <- tissue_combination[[i]][1]
+  pve_tissue1 <- prob_pve_alltissue[tissue1]
+  tissue2 <- tissue_combination[[i]][2]
+  pve_tissue2 <- prob_pve_alltissue[tissue2]
+  
+  tissue_pair <- paste0(tissue_combination[[i]], collapse = "-")
+  
+  file_param_pair <- paste0("/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/pairwise_snakemake_outputs/",trait,"/",trait,".",tissue_pair,".eqtlonly.thin1.shared_all.param.RDS")
+  param_pair <- readRDS(file_param_pair)
+  ctwas_parameters_pair <- summarize_param(param_pair, gwas_n, enrichment_test = "fisher")
+  prob_pve_sum <- ctwas_parameters_pair$prop_heritability[1] + ctwas_parameters_pair$prop_heritability[2] 
+
+  prob_pve_shared <- pve_tissue1 + pve_tissue2 - prob_pve_sum
+  names(prob_pve_shared) <- tissue_pair
+  prob_pve_shared_all <-c(prob_pve_shared_all,prob_pve_shared)
+}
+
+
+mat <- matrix(NA, nrow = length(top_tissues), ncol = length(top_tissues),
+              dimnames = list(top_tissues, top_tissues))
+
+# Fill in the values
+for (n in names(prob_pve_shared_all)) {
+  parts <- strsplit(n, "-")[[1]]
+  mat[parts[1], parts[2]] <- prob_pve_shared_all[n]
+  mat[parts[2], parts[1]] <- prob_pve_shared_all[n]  # symmetric
+}
+
+
+
+# Assuming your matrix is called 'mat'
+# Fill diagonal with 1 for self-comparison
+diag(mat) <- NA
+
+# Create heatmap
+pheatmap(mat, 
+         cluster_rows = F, 
+         cluster_cols = F, 
+         display_numbers = TRUE,   # optional, shows the values
+         color = colorRampPalette(c("white", "red"))(100),
+         main = paste0("Shared PVE between tissues (eQTL) --", trait))
+
+
+```
+
+
+```{r fig.height=8, fig.width=8}
+
+## single tissue eQTL
+prob_pve_alltissue <- c()
+for (tissue in top_tissues){
+  
+  file_param_single <- paste0("/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/splicing/",trait,"/",trait,"_",tissue,".thin1.shared_all.param.RDS")
+  param_single <- readRDS(file_param_single)
+  
+  ctwas_parameters_single <- summarize_param(param_single, gwas_n, enrichment_test = "fisher")
+ 
+  prob_pve <- ctwas_parameters_single$prop_heritability[1]
+  prob_pve_alltissue <- c(prob_pve_alltissue, prob_pve)
+   
+}
+
+names(prob_pve_alltissue) <- gsub(pattern = "\\|sQTL",x = names(prob_pve_alltissue), replacement = "")
+
+
+## pairwise
+
+tissue_combination <- combn(top_tissues, 2, simplify = FALSE)
+
+prob_pve_shared_all <- c()
+for (i in 1:length(tissue_combination)){
+  
+  tissue1 <- tissue_combination[[i]][1]
+  pve_tissue1 <- prob_pve_alltissue[tissue1]
+  tissue2 <- tissue_combination[[i]][2]
+  pve_tissue2 <- prob_pve_alltissue[tissue2]
+  
+  tissue_pair <- paste0(tissue_combination[[i]], collapse = "-")
+  
+  file_param_pair <- paste0("/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/pairwise_snakemake_outputs/",trait,"/",trait,".",tissue_pair,".sqtlonly.thin1.shared_all.param.RDS")
+  param_pair <- readRDS(file_param_pair)
+  ctwas_parameters_pair <- summarize_param(param_pair, gwas_n, enrichment_test = "fisher")
+  prob_pve_sum <- ctwas_parameters_pair$prop_heritability[1] + ctwas_parameters_pair$prop_heritability[2] 
+
+  prob_pve_shared <- pve_tissue1 + pve_tissue2 - prob_pve_sum
+  names(prob_pve_shared) <- tissue_pair
+  prob_pve_shared_all <-c(prob_pve_shared_all,prob_pve_shared)
+}
+
+
+mat <- matrix(NA, nrow = length(top_tissues), ncol = length(top_tissues),
+              dimnames = list(top_tissues, top_tissues))
+
+# Fill in the values
+for (n in names(prob_pve_shared_all)) {
+  parts <- strsplit(n, "-")[[1]]
+  mat[parts[1], parts[2]] <- prob_pve_shared_all[n]
+  mat[parts[2], parts[1]] <- prob_pve_shared_all[n]  # symmetric
+}
+
+
+
+# Assuming your matrix is called 'mat'
+# Fill diagonal with 1 for self-comparison
+diag(mat) <- NA
+
+# Create heatmap
+pheatmap(mat, 
+         cluster_rows = F, 
+         cluster_cols = F, 
+         display_numbers = TRUE,   # optional, shows the values
+         color = colorRampPalette(c("white", "red"))(100),
+         main = paste0("Shared PVE between tissues (sQTL) --", trait))
+
+
+```
+
+
+# IBD-ebi-a-GCST004131
+
+```{r fig.height=8, fig.width=8}
+
+trait <- "IBD-ebi-a-GCST004131"
+
+gwas_n <- samplesize[trait]
+
+folder_results <- paste0("/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/expression/",trait,"/")
+
+top_tissues <- get_top_tissues(
+  trait = trait, 
+  n_top = 10,
+  folder_results = folder_results
+)
+
+
+## single tissue eQTL
+prob_pve_alltissue <- c()
+for (tissue in top_tissues){
+  
+  file_param_single <- paste0(folder_results,"/",trait,"_",tissue,".thin1.shared_all.param.RDS")
+  param_single <- readRDS(file_param_single)
+  
+  ctwas_parameters_single <- summarize_param(param_single, gwas_n, enrichment_test = "fisher")
+ 
+  prob_pve <- ctwas_parameters_single$prop_heritability[1]
+  prob_pve_alltissue <- c(prob_pve_alltissue, prob_pve)
+   
+}
+
+names(prob_pve_alltissue) <- gsub(pattern = "\\|eQTL",x = names(prob_pve_alltissue), replacement = "")
+
+
+## pairwise
+
+tissue_combination <- combn(top_tissues, 2, simplify = FALSE)
+
+prob_pve_shared_all <- c()
+for (i in 1:length(tissue_combination)){
+  
+  tissue1 <- tissue_combination[[i]][1]
+  pve_tissue1 <- prob_pve_alltissue[tissue1]
+  tissue2 <- tissue_combination[[i]][2]
+  pve_tissue2 <- prob_pve_alltissue[tissue2]
+  
+  tissue_pair <- paste0(tissue_combination[[i]], collapse = "-")
+  
+  file_param_pair <- paste0("/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/pairwise_snakemake_outputs/",trait,"/",trait,".",tissue_pair,".eqtlonly.thin1.shared_all.param.RDS")
+  param_pair <- readRDS(file_param_pair)
+  ctwas_parameters_pair <- summarize_param(param_pair, gwas_n, enrichment_test = "fisher")
+  prob_pve_sum <- ctwas_parameters_pair$prop_heritability[1] + ctwas_parameters_pair$prop_heritability[2] 
+
+  prob_pve_shared <- pve_tissue1 + pve_tissue2 - prob_pve_sum
+  names(prob_pve_shared) <- tissue_pair
+  prob_pve_shared_all <-c(prob_pve_shared_all,prob_pve_shared)
+}
+
+
+mat <- matrix(NA, nrow = length(top_tissues), ncol = length(top_tissues),
+              dimnames = list(top_tissues, top_tissues))
+
+# Fill in the values
+for (n in names(prob_pve_shared_all)) {
+  parts <- strsplit(n, "-")[[1]]
+  mat[parts[1], parts[2]] <- prob_pve_shared_all[n]
+  mat[parts[2], parts[1]] <- prob_pve_shared_all[n]  # symmetric
+}
+
+
+
+# Assuming your matrix is called 'mat'
+# Fill diagonal with 1 for self-comparison
+diag(mat) <- NA
+
+# Create heatmap
+pheatmap(mat, 
+         cluster_rows = F, 
+         cluster_cols = F, 
+         display_numbers = TRUE,   # optional, shows the values
+         color = colorRampPalette(c("white", "red"))(100),
+         main = paste0("Shared PVE between tissues (eQTL) --", trait))
+
+
+```
+
+
+<!-- ```{r fig.height=8, fig.width=8} -->
+
+<!-- ## single tissue eQTL -->
+<!-- prob_pve_alltissue <- c() -->
+<!-- for (tissue in top_tissues){ -->
+
+<!--   file_param_single <- paste0("/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/splicing/",trait,"/",trait,"_",tissue,".thin1.shared_all.param.RDS") -->
+<!--   param_single <- readRDS(file_param_single) -->
+
+<!--   ctwas_parameters_single <- summarize_param(param_single, gwas_n, enrichment_test = "fisher") -->
+
+<!--   prob_pve <- ctwas_parameters_single$prop_heritability[1] -->
+<!--   prob_pve_alltissue <- c(prob_pve_alltissue, prob_pve) -->
+
+<!-- } -->
+
+<!-- names(prob_pve_alltissue) <- gsub(pattern = "\\|sQTL",x = names(prob_pve_alltissue), replacement = "") -->
+
+
+<!-- ## pairwise -->
+
+<!-- tissue_combination <- combn(top_tissues, 2, simplify = FALSE) -->
+
+<!-- prob_pve_shared_all <- c() -->
+<!-- for (i in 1:length(tissue_combination)){ -->
+
+<!--   tissue1 <- tissue_combination[[i]][1] -->
+<!--   pve_tissue1 <- prob_pve_alltissue[tissue1] -->
+<!--   tissue2 <- tissue_combination[[i]][2] -->
+<!--   pve_tissue2 <- prob_pve_alltissue[tissue2] -->
+
+<!--   tissue_pair <- paste0(tissue_combination[[i]], collapse = "-") -->
+
+<!--   file_param_pair <- paste0("/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/pairwise_snakemake_outputs/",trait,"/",trait,".",tissue_pair,".sqtlonly.thin1.shared_all.param.RDS") -->
+<!--   param_pair <- readRDS(file_param_pair) -->
+<!--   ctwas_parameters_pair <- summarize_param(param_pair, gwas_n, enrichment_test = "fisher") -->
+<!--   prob_pve_sum <- ctwas_parameters_pair$prop_heritability[1] + ctwas_parameters_pair$prop_heritability[2]  -->
+
+<!--   prob_pve_shared <- pve_tissue1 + pve_tissue2 - prob_pve_sum -->
+<!--   names(prob_pve_shared) <- tissue_pair -->
+<!--   prob_pve_shared_all <-c(prob_pve_shared_all,prob_pve_shared) -->
+<!-- } -->
+
+
+<!-- mat <- matrix(NA, nrow = length(top_tissues), ncol = length(top_tissues), -->
+<!--               dimnames = list(top_tissues, top_tissues)) -->
+
+<!-- # Fill in the values -->
+<!-- for (n in names(prob_pve_shared_all)) { -->
+<!--   parts <- strsplit(n, "-")[[1]] -->
+<!--   mat[parts[1], parts[2]] <- prob_pve_shared_all[n] -->
+<!--   mat[parts[2], parts[1]] <- prob_pve_shared_all[n]  # symmetric -->
+<!-- } -->
+
+
+
+<!-- # Assuming your matrix is called 'mat' -->
+<!-- # Fill diagonal with 1 for self-comparison -->
+<!-- diag(mat) <- NA -->
+
+<!-- # Create heatmap -->
+<!-- pheatmap(mat,  -->
+<!--          cluster_rows = F,  -->
+<!--          cluster_cols = F,  -->
+<!--          display_numbers = TRUE,   # optional, shows the values -->
+<!--          color = colorRampPalette(c("white", "red"))(100), -->
+<!--          main = paste0("Shared PVE between tissues (sQTL) --", trait)) -->
+
+
+<!-- ``` -->
+
+<!-- # SCZ-ieu-b-5102 -->
+
+<!-- ```{r fig.height=4, fig.width=4} -->
+
+<!-- trait <- "SCZ-ieu-b-5102" -->
+
+<!-- gwas_n <- samplesize[trait] -->
+
+<!-- folder_results <- paste0("/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/expression/",trait,"/") -->
+
+<!-- top_tissues <- get_top_tissues( -->
+<!--   trait = trait,  -->
+<!--   n_top = 10, -->
+<!--   folder_results = folder_results -->
+<!-- ) -->
+
+
+<!-- ## single tissue eQTL -->
+<!-- prob_pve_alltissue <- c() -->
+<!-- for (tissue in top_tissues){ -->
+
+<!--   file_param_single <- paste0(folder_results,"/",trait,"_",tissue,".thin1.shared_all.param.RDS") -->
+<!--   param_single <- readRDS(file_param_single) -->
+
+<!--   ctwas_parameters_single <- summarize_param(param_single, gwas_n, enrichment_test = "fisher") -->
+
+<!--   prob_pve <- ctwas_parameters_single$prop_heritability[1] -->
+<!--   prob_pve_alltissue <- c(prob_pve_alltissue, prob_pve) -->
+
+<!-- } -->
+
+<!-- names(prob_pve_alltissue) <- gsub(pattern = "\\|eQTL",x = names(prob_pve_alltissue), replacement = "") -->
+
+
+<!-- ## pairwise -->
+
+<!-- tissue_combination <- combn(top_tissues, 2, simplify = FALSE) -->
+
+<!-- prob_pve_shared_all <- c() -->
+<!-- for (i in 1:length(tissue_combination)){ -->
+
+<!--   tissue1 <- tissue_combination[[i]][1] -->
+<!--   pve_tissue1 <- prob_pve_alltissue[tissue1] -->
+<!--   tissue2 <- tissue_combination[[i]][2] -->
+<!--   pve_tissue2 <- prob_pve_alltissue[tissue2] -->
+
+<!--   tissue_pair <- paste0(tissue_combination[[i]], collapse = "-") -->
+
+<!--   file_param_pair <- paste0("/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/pairwise_snakemake_outputs/",trait,"/",trait,".",tissue_pair,".eqtlonly.thin1.shared_all.param.RDS") -->
+<!--   param_pair <- readRDS(file_param_pair) -->
+<!--   ctwas_parameters_pair <- summarize_param(param_pair, gwas_n, enrichment_test = "fisher") -->
+<!--   prob_pve_sum <- ctwas_parameters_pair$prop_heritability[1] + ctwas_parameters_pair$prop_heritability[2]  -->
+
+<!--   prob_pve_shared <- pve_tissue1 + pve_tissue2 - prob_pve_sum -->
+<!--   names(prob_pve_shared) <- tissue_pair -->
+<!--   prob_pve_shared_all <-c(prob_pve_shared_all,prob_pve_shared) -->
+<!-- } -->
+
+
+<!-- mat <- matrix(NA, nrow = length(top_tissues), ncol = length(top_tissues), -->
+<!--               dimnames = list(top_tissues, top_tissues)) -->
+
+<!-- # Fill in the values -->
+<!-- for (n in names(prob_pve_shared_all)) { -->
+<!--   parts <- strsplit(n, "-")[[1]] -->
+<!--   mat[parts[1], parts[2]] <- prob_pve_shared_all[n] -->
+<!--   mat[parts[2], parts[1]] <- prob_pve_shared_all[n]  # symmetric -->
+<!-- } -->
+
+
+
+<!-- # Assuming your matrix is called 'mat' -->
+<!-- # Fill diagonal with 1 for self-comparison -->
+<!-- diag(mat) <- NA -->
+
+<!-- # Create heatmap -->
+<!-- pheatmap(mat,  -->
+<!--          cluster_rows = F,  -->
+<!--          cluster_cols = F,  -->
+<!--          display_numbers = TRUE,   # optional, shows the values -->
+<!--          color = colorRampPalette(c("white", "red"))(100), -->
+<!--          main = paste0("Shared PVE between tissues (eQTL) --", trait)) -->
+
+
+<!-- ``` -->
