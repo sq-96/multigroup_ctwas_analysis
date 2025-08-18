@@ -12,7 +12,7 @@ editor_options:
 3. Run POPS with features and MAGMA output
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, include=FALSE}
-library(data.table)
+library(data.table)#a
 traits <- c(
   "SBP-ukb-a-360", "LDL-ukb-d-30780_irnt", "aFib-ebi-a-GCST006414",
   "WBC-ieu-b-30", "IBD-ebi-a-GCST004131", "BMI-panukb",
@@ -87,5 +87,59 @@ for(i in traits){
   merged_df <- merge(ctwas_res, pops_pred, by.x = "gene_name", by.y = "NAME", all.x = TRUE)
   merged_df <- na.omit(merged_df)
   print(plot_pops_by_pip_bin(merged_df,paste0(i,", # of genes ",dim(merged_df)[1])))
+}
+```
+
+### POPS score of genes uniquelly identified by cTWAS and TGFM
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(grex)
+library(ggplot2)
+trait_list <- list("LDL-ukb-d-30780_irnt" = "/project/xinhe/xsun/multi_group_ctwas/data/tgfm/GTEx_TGFM_PIPs_biochemistry_LDLdirect.txt",
+                   "HTN-panukb" = "/project/xinhe/xsun/multi_group_ctwas/data/tgfm/GTEx_TGFM_PIPs_disease_HYPERTENSION_DIAGNOSED.txt",
+                   "PLT-panukb" = "/project/xinhe/xsun/multi_group_ctwas/data/tgfm/GTEx_TGFM_PIPs_blood_PLATELET_COUNT.txt",
+                   "RBC-panukb" = "/project/xinhe/xsun/multi_group_ctwas/data/tgfm/GTEx_TGFM_PIPs_blood_RED_COUNT.txt",
+                   "BMI-panukb" = "/project/xinhe/xsun/multi_group_ctwas/data/tgfm/GTEx_TGFM_PIPs_body_BMIz.txt",
+                   "Height-panukb" = "/project/xinhe/xsun/multi_group_ctwas/data/tgfm/GTEx_TGFM_PIPs_body_HEIGHTz.txt",
+                   "T2D-panukb" = "/project/xinhe/xsun/multi_group_ctwas/data/tgfm/GTEx_TGFM_PIPs_disease_T2D.txt")
+for(i in names(trait_list)){
+  ctwas_folder_results <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/"
+  ctwas_genes <-  readRDS(paste0(ctwas_folder_results,i,"/",i,".3qtls.combined_pip_rmmapping_bygroup_final.RDS"))
+  ctwas_genes_highpip <- ctwas_genes$gene_name[ctwas_genes$combined_pip > 0.8]
+  tgfm_genes <- data.table::fread(trait_list[[i]])
+  tgfm_genes_highpip <- tgfm_genes[tgfm_genes$TGFM_PIP > 0.8,]
+  tgfm_genes_highpip <- tgfm_genes_highpip[tgfm_genes_highpip$genetic_element_class != "variant",]
+  tgfm_genes_highpip$ensg_id <- sub("\\..*", "", tgfm_genes_highpip$genetic_element_name)
+  tgfm_genes_highpip_ensg <- unique(tgfm_genes_highpip$ensg_id)
+  library(EnsDb.Hsapiens.v86)
+  ensg_to_symbol <- AnnotationDbi::select(
+    EnsDb.Hsapiens.v86,
+    keys = tgfm_genes_highpip_ensg,
+    keytype = "GENEID",
+    columns = c("GENEID", "SYMBOL")
+  )
+
+  tgfm_genes_highpip <- ensg_to_symbol$SYMBOL
+  ctwas_unique_genes <- setdiff(ctwas_genes_highpip,tgfm_genes_highpip)
+  tgfm_unique_genes <- setdiff(tgfm_genes_highpip,ctwas_genes_highpip)
+
+  pops <- fread(paste0("/project/xinhe/shengqian/pops/pops_full_features_output/",i,"_pops/",i,".preds"))
+  df <- grex(cleanid(pops$ENSGID))
+  pops <- cbind(pops,df)
+  tgfm_gene <- pops[pops$hgnc_symbol %in% tgfm_unique_genes,]
+  ctwas_gene <- pops[pops$hgnc_symbol %in% ctwas_unique_genes,]
+
+  # Combine into one data frame
+  df <- data.frame(
+    score = c(tgfm_gene$PoPS_Score, ctwas_gene$PoPS_Score),
+    group = c(rep("TGFM", length(tgfm_gene$PoPS_Score)),
+            rep("cTWAS", length(ctwas_gene$PoPS_Score)))
+  )
+
+  # Boxplot
+  p <- ggplot(df, aes(x = group, y = score, fill = group)) +
+    geom_boxplot(alpha = 0.7) +
+    theme_minimal() +
+    labs(title = i, x = "", y = "PoPS Score")
+  print(p)
 }
 ```

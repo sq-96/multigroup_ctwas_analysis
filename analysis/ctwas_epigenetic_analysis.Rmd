@@ -15,10 +15,11 @@ library(data.table)
 ## SCZ one QTL
 ```{r,echo=FALSE,fig.width=10,fig.height=4}
 # Example: Load three different heritability proportion datasets
-prop1 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/SCZ_eQTL/SCZ_eQTL.parameters.RDS")$prop_heritability
+prop1 <- readRDS("/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_eQTL/SCZ_eQTL.parameters.RDS")$prop_heritability
 prop1 <- c(sum(prop1[1:5]),prop1[6])
-prop2 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/SCZ_caQTL/SCZ_caQTL.parameters.RDS")$prop_heritability
-prop3 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/SCZ_mQTL/SCZ_mQTL.parameters.RDS")$prop_heritability
+prop2 <- readRDS("/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_caQTL/SCZ_caQTL.parameters.RDS")$prop_heritability
+prop2 <- c(prop2[1:2],prop2[3])
+prop3 <- readRDS("/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_mQTL/SCZ_mQTL.parameters.RDS")$prop_heritability
 
 # Set up layout for 3 plots in one row
 par(mfrow = c(1, 3), mar = c(2, 2, 2, 1))  # Adjust margins if needed
@@ -53,12 +54,12 @@ pie(
 ## SCZ two QTLs
 ```{r,echo=FALSE,fig.width=10,fig.height=4}
 # Example: Load three different heritability proportion datasets
-prop1 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/SCZ_eQTL_caQTL/SCZ_eQTL_caQTL.parameters.RDS")$prop_heritability
-prop1 <- c(sum(prop1[1:5]),prop1[6],prop1[7])
-prop2 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/SCZ_eQTL_mQTL/SCZ_eQTL_mQTL.parameters.RDS")$prop_heritability
+prop1 <- readRDS("/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_eQTL_caQTL/SCZ_eQTL_caQTL.parameters.RDS")$prop_heritability
+prop1 <- c(sum(prop1[1:5]),sum(prop1[6:7]),prop1[8])
+prop2 <- readRDS("/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_eQTL_mQTL/SCZ_eQTL_mQTL.parameters.RDS")$prop_heritability
 prop2 <- c(sum(prop2[1:5]),prop2[6],prop2[7])
-prop3 <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/SCZ_caQTL_mQTL/SCZ_caQTL_mQTL.parameters.RDS")$prop_heritability
-
+prop3 <- readRDS("/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_caQTL_mQTL/SCZ_caQTL_mQTL.parameters.RDS")$prop_heritability
+prop3 <- c(sum(prop3[1:2]),prop3[3],prop3[4])
 # Set up layout for 3 plots in one row
 par(mfrow = c(1, 3), mar = c(4, 4, 4, 2))  # Adjust margins if needed
 
@@ -91,9 +92,9 @@ pie(
 
 ## SCZ three QTLs
 ```{r,echo=FALSE}
-prop_heritability <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/SCZ_eQTL_caQTL_mQTL/SCZ_eQTL_caQTL_mQTL.parameters.RDS")
+prop_heritability <- readRDS("/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_eQTL_caQTL_mQTL/SCZ_eQTL_caQTL_mQTL.parameters.RDS")
 prop_heritability <- prop_heritability$prop_heritability
-prop_heritability <- c(sum(prop_heritability[1:5]),prop_heritability[6],prop_heritability[7],prop_heritability[8])
+prop_heritability <- c(sum(prop_heritability[1:5]),sum(prop_heritability[6:7]),prop_heritability[8],prop_heritability[9])
 colors <- brewer.pal(n = 4, name = "Set2")  # Alternatives: "Pastel1", "Dark2", "Set3"
 
 # Draw pie chart
@@ -105,6 +106,155 @@ pie(
 )
 ```
 
+```{r}
+mapping_table <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/weights/gene_mapping.RDS")
+predictdb_mapping_table <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
+mapping_table <- rbind(mapping_table,predictdb_mapping_table)
+snp_map <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/LD_region_info/snp_map.RDS")
+```
+
+```{r}
+get_cre_res <- function(mapping_table,finemap_res,snp_map){
+  finemap_res <- readRDS(finemap_res)
+  finemap_res <- finemap_res$finemap_res
+  finemap_res_multi <- anno_finemap_res(finemap_res,
+                                      snp_map = snp_map,
+                                      mapping_table = mapping_table,
+                                      add_gene_annot = TRUE,
+                                      map_by = "molecular_id",
+                                      drop_unmapped = TRUE,
+                                      add_position = TRUE,
+                                      use_gene_pos = "mid")
+  
+  setDT(finemap_res_multi)
+  result <- as.data.table(finemap_res_multi)[grepl("^L[0-9]+$", cs) & type %in% c("mQTL","caQTL")]
+
+  # 1) Positions per credible set/region
+  pos_summary <- result[, .(
+    start_pos = min(start),
+    end_pos   = max(end)
+  ), by = .(cs, region_id)]
+
+  # 2) Sum PIP per type, then pick the type(s) with the highest summed PIP
+  type_sum <- result[, .(type_pip = sum(susie_pip)), by = .(cs, region_id, type)]
+  max_type <- type_sum[, .(max_pip = max(type_pip)), by = .(cs, region_id)]
+
+  # keep all ties (e.g., "eQTL|mQTL" if equal)
+  type_leaders <- merge(type_sum, max_type, by = c("cs","region_id"))[
+    type_pip == max_pip,
+    .(top_type = paste(sort(unique(type)), collapse = "|"),
+      top_type_pip = unique(max_pip)),
+    by = .(cs, region_id)
+  ]
+
+  # (Optional) total PIP across all types for that CS/region
+  totals <- type_sum[, .(total_susie_pip = sum(type_pip)), by = .(cs, region_id)]
+
+  # Final: total, positions, and top-type info
+  result <- Reduce(
+    function(x, y) merge(x, y, by = c("cs","region_id"), all.x = TRUE),
+    list(totals, pos_summary, type_leaders)
+  )
+  result <- result[order(-total_susie_pip)]
+  result_sig <- result[result$total_susie_pip>0.8,]
+  return(list(finemap_res_multi=finemap_res_multi, result_sig=result_sig, result=result))
+}
+```
+
+```{r}
+epi_res <- get_cre_res(mapping_table,"/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_caQTL_mQTL/SCZ_caQTL_mQTL.finemap_regions_res.RDS",snp_map)
+full_res <- get_cre_res(mapping_table,"/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_eQTL_caQTL_mQTL/SCZ_eQTL_caQTL_mQTL.finemap_regions_res.RDS",snp_map)
+```
+
+```{r}
+epi_result <- epi_res$result_sig
+epi_result <- epi_result[,c("region_id","start_pos","end_pos","total_susie_pip")]
+full_result <- full_res$result
+full_result <- full_result[,c("region_id","start_pos","end_pos","total_susie_pip")]
+setDT(epi_result)
+setDT(full_result)
+setnames(full_result, "total_susie_pip", "total_susie_pip_full")
+merged_result <- full_result[epi_result, 
+                             on = .(region_id, start_pos, end_pos)]
+merged_result[is.na(total_susie_pip_full), total_susie_pip_full := 0]
+
+#overlap_result <- epi_result[full_result, on = .(region_id, start_pos, end_pos), nomatch = 0]
+#diff_result <- epi_result[!overlap_result, on = .(region_id, start_pos, end_pos)]
+#full_result[full_result$region_id %in% diff_result$region_id]
+```
+
+
+```{r}
+library(ggplot2)
+
+ggplot(merged_result, aes(x = total_susie_pip_full, 
+                          y = total_susie_pip)) +
+  geom_point(alpha = 0.6) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red") +
+  labs(x = "CRE PIP in full results",
+       y = "CRE PIP in EpiQTL results",
+       title = "") +
+  coord_cartesian(xlim = c(0, 1), ylim = c(0, 1)) +
+  theme_minimal()
+```
+
+
+```{r}
+get_gene_res <- function(mapping_table,finemap_res,snp_map){
+  finemap_res <- readRDS(finemap_res)
+  finemap_res <- finemap_res$susie_alpha_res
+  finemap_res <- finemap_res[finemap_res$type=="eQTL",]
+  finemap_res <- anno_susie_alpha_res(finemap_res,
+                                      mapping_table = mapping_table,
+                                      map_by = "molecular_id",
+                                      drop_unmapped = TRUE)
+  
+  results <- combine_gene_pips(finemap_res,
+                                  group_by = "gene_name",
+                                  by = "type",
+                                  method = "combine_cs",
+                                  filter_cs = FALSE,
+                                  include_cs_id = TRUE,
+                                  include_set_id = TRUE)
+  
+  result_sig <- results[results$combined_pip>0.8,]
+  return(list(result_sig=result_sig, result=results))
+}
+```
+
+
+```{r}
+eQTL_res <- get_gene_res(mapping_table,"/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_eQTL/SCZ_eQTL.finemap_regions_res.RDS",snp_map)
+full_res <- get_gene_res(mapping_table,"/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_eQTL_caQTL_mQTL/SCZ_eQTL_caQTL_mQTL.finemap_regions_res.RDS",snp_map)
+```
+
+```{r}
+library(data.table)
+eQTL_result <- eQTL_res$result_sig
+eQTL_result <- eQTL_result[,c("gene_name","combined_pip")]
+full_result <- full_res$result
+full_result <- full_result[,c("gene_name","combined_pip")]
+setDT(eQTL_result)
+setDT(full_result)
+setnames(full_result, "combined_pip", "combined_pip_full")
+merged_result <- full_result[eQTL_result, 
+                             on = .(gene_name)]
+merged_result[is.na(combined_pip_full), combined_pip_full := 0]
+```
+
+```{r}
+library(ggplot2)
+
+ggplot(merged_result, aes(x = combined_pip_full, 
+                          y = combined_pip)) +
+  geom_point(alpha = 0.6) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red") +
+  labs(x = "Gene PIP in full results",
+       y = "Gene PIP in eQTL results",
+       title = "") +
+  coord_cartesian(xlim = c(0, 1), ylim = c(0, 1)) +
+  theme_minimal()
+```
 
 ```{r,echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
 mapping_table <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/weights/gene_mapping.RDS")
@@ -154,5 +304,112 @@ for(i in result$region_id){
                  panel.heights = c(4, 4, 1, 4))
   print(p)
 }
+```
+
+```{r}
+finemap_res <- readRDS("/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_eQTL_caQTL_mQTL/SCZ_eQTL_caQTL_mQTL.finemap_regions_res.RDS")
+finemap_res <- finemap_res$finemap_res
+finemap_res_multi <- anno_finemap_res(finemap_res,
+                                      snp_map = snp_map,
+                                      mapping_table = mapping_table,
+                                      add_gene_annot = TRUE,
+                                      map_by = "molecular_id",
+                                      drop_unmapped = TRUE,
+                                      add_position = TRUE,
+                                      use_gene_pos = "mid")
+finemap_res_multi <- finemap_res_multi[finemap_res_multi$type=="mQTL",]
+finemap_res_multi <- finemap_res_multi[!is.na(finemap_res_multi$cs),]  
+all_cre_cpgs <- unlist(strsplit(finemap_res_multi$molecular_id, "_"))
+#write.table(all_cre_cpgs,file = "/project/xinhe/shengqian/cTWAS_epigenetic/data/all_cre_cpgs.txt",sep = "\t",quote = F,row.names = F,col.names = F)
+```
+
+
+```{r}
+cre_cpgs <- finemap_res_multi[finemap_res_multi$region_id=="1_7187275_9305140",]
+cre_cpgs <- unlist(strsplit(cre_cpgs$molecular_id, "_"))
+#write.table(cre_cpgs,file = "/project/xinhe/shengqian/cTWAS_epigenetic/data/candidate_gene_CpGs/RERE_cre_cpgs.txt",sep = "\t",quote = F,row.names = F,col.names = F)
+
+CpG_info <- fread("/project/xinhe/shengqian/cTWAS_epigenetic/data/Brain-mMeta/Brain-mMeta.epi")
+CpG_info <- CpG_info[CpG_info$V2 %in% cre_cpgs,]
+CpG_info <- CpG_info[,c("V1","V4","V2")]
+colnames(CpG_info) <- c("chr","BP","Probe")
+CpG_info$chr <- paste0("chr", CpG_info$chr)
+
+library(rtracklayer)
+chain <- import.chain("/project2/xinhe/shengqian/hg19ToHg38.over.chain")
+gr <- GRanges(seqnames = CpG_info$chr,
+              ranges = IRanges(start = CpG_info$BP, end = CpG_info$BP),
+              ID = CpG_info$Probe)
+lifted <- liftOver(gr, chain)
+mapped_idx <- lengths(lifted) > 0
+lifted_flat <- unlist(lifted[mapped_idx])
+result <- data.frame(
+  hg38_BP = start(lifted_flat),
+  ID = mcols(gr[mapped_idx])$ID
+)
+
+CpG_info_merged <- merge(
+  CpG_info,
+  result,
+  by.x = "Probe",
+  by.y = "ID",
+  all.x = FALSE  # only keep rows with a match
+)
+
+CpG_info_merged$start <- CpG_info_merged$hg38_BP
+CpG_info_merged$end <- CpG_info_merged$start + 1
+CpG_info_merged <- CpG_info_merged[,c("chr","start","end","Probe")]
+write.table(CpG_info_merged,file = "/project/xinhe/shengqian/cTWAS_epigenetic/data/candidate_gene_CpGs/RERE_cre_cpgs.bed",sep = "\t",quote = F,row.names = F,col.names = F)
+```
+
+
+```{r}
+CpG_info <- fread("/project/xinhe/shengqian/cTWAS_epigenetic/data/Brain-mMeta/Brain-mMeta.epi")
+head(CpG_info)
+CpG_info <- CpG_info[CpG_info$V2 %in% all_cre_cpgs,]
+CpG_info <- CpG_info[,c("V1","V4","V2")]
+colnames(CpG_info) <- c("chr","BP","Probe")
+CpG_info$chr <- paste0("chr", CpG_info$chr)
+```
+
+```{r}
+library(rtracklayer)
+chain <- import.chain("/project2/xinhe/shengqian/hg19ToHg38.over.chain")
+gr <- GRanges(seqnames = CpG_info$chr,
+              ranges = IRanges(start = CpG_info$BP, end = CpG_info$BP),
+              ID = CpG_info$Probe)
+lifted <- liftOver(gr, chain)
+mapped_idx <- lengths(lifted) > 0
+lifted_flat <- unlist(lifted[mapped_idx])
+result <- data.frame(
+  hg38_BP = start(lifted_flat),
+  ID = mcols(gr[mapped_idx])$ID
+)
+
+CpG_info_merged <- merge(
+  CpG_info,
+  result,
+  by.x = "Probe",
+  by.y = "ID",
+  all.x = FALSE  # only keep rows with a match
+)
+
+CpG_info_merged$start <- CpG_info_merged$hg38_BP
+CpG_info_merged$end <- CpG_info_merged$start + 1
+CpG_info_merged <- CpG_info_merged[,c("chr","start","end","Probe")]
+write.table(CpG_info_merged,file = "/project/xinhe/shengqian/cTWAS_epigenetic/data/all_cre_cpgs.bed",sep = "\t",quote = F,row.names = F,col.names = F)
+
+
+#bed_dir="/project/xinhe/shengqian/cTWAS_epigenetic/data/PEC2_adult_sc_bed_files"
+#target_bed="/project/xinhe/shengqian/cTWAS_epigenetic/data/all_cre_cpgs.bed"
+#output_dir="/project/xinhe/shengqian/cTWAS_epigenetic/data/all_cre_cpgs_peaks"
+
+# Loop through each .bed file in the directory
+#for bed_file in "$bed_dir"/*.bed; do
+#    filename=$(basename "$bed_file" .bed)
+#    output_file="$output_dir/all_cre_cpgs.${filename}.bed"
+    
+#    bedtools intersect -a "$bed_file" -b "$target_bed" -wa -wb > "$output_file"
+#done
 ```
 
