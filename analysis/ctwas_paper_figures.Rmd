@@ -31,7 +31,7 @@ title <- paste0(trait, ", top tissue: ", top_tissue)
 PIP_cutoff <- 0.8
 combined_pip_by_group_single <- readRDS(paste0(folder_results_single, trait, "/", trait, "_", top_tissue, ".combined_pip_bygroup_final.RDS"))
 combined_pip_by_group_multi <- readRDS(paste0(folder_results_multi,trait,"/",trait,".3qtls.combined_pip_bytype_final.RDS"))
-print(plot_overlap_barplot(combined_pip_by_group_multi = combined_pip_by_group_multi, combined_pip_by_group_single = combined_pip_by_group_single,PIP_cutoff = PIP_cutoff,tissue = top_tissue,trait = trait,return_unique_genes = T)$plot)
+print(plot_overlap_barplot_multi_vs_single(combined_pip_by_group_multi = combined_pip_by_group_multi, combined_pip_by_group_single = combined_pip_by_group_single,PIP_cutoff = PIP_cutoff,tissue = top_tissue,trait = trait,return_unique_genes = T)$plot)
 ```
 
 ### M-cTWAS identified genes with higher POPS scores
@@ -57,7 +57,7 @@ for(i in traits){
   plot_df <- rbind(plot_df,merged_df)
 }
 plot_df <- na.omit(plot_df)
-plot_pops_by_pip_bin(plot_df,"Across all traits")
+plot_pops_by_pip_bin(plot_df,"POPs score across all traits")
 ```
 
 
