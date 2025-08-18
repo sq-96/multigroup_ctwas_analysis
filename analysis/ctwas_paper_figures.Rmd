@@ -34,6 +34,32 @@ combined_pip_by_group_multi <- readRDS(paste0(folder_results_multi,trait,"/",tra
 print(plot_overlap_barplot(combined_pip_by_group_multi = combined_pip_by_group_multi, combined_pip_by_group_single = combined_pip_by_group_single,PIP_cutoff = PIP_cutoff,tissue = top_tissue,trait = trait,return_unique_genes = T)$plot)
 ```
 
+### M-cTWAS identified genes with higher POPS scores
+Averaged POPS scores across all traits stratified by M-cTWAS PIPs 
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+traits <- c(
+  "SBP-ukb-a-360", "LDL-ukb-d-30780_irnt", "aFib-ebi-a-GCST006414",
+  "WBC-ieu-b-30", "IBD-ebi-a-GCST004131", "BMI-panukb",
+  "PLT-panukb", "RBC-panukb", "HB-panukb", "HTN-panukb", "Height-panukb",
+  "T2D-panukb", "MDD-ieu-b-102", "SCZ-ieu-b-5102", "T1D-GCST90014023", "BIP-ieu-b-5110", 
+  "ASD-ieu-a-1185", "PD-ieu-b-7", "NS-ukb-a-230","ATH_gtexukb"
+)
+
+plot_df <- data.frame()
+for(i in traits){
+  pops <- fread(paste0("/project/xinhe/shengqian/pops/pops_full_features_output/",i,"_pops/",i,".preds"))
+  pop_anno <- fread("/project/xinhe/shengqian/pops/example/data/utils/gene_annot_jun10.txt")
+  pops_pred <- merge(pops, pop_anno, by = "ENSGID", all.x = TRUE)
+  pops_pred <- pops_pred[,c("PoPS_Score","NAME")]
+  ctwas_res <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/",i,"/",i,".3qtls.combined_pip_rmmapping_bygroup_final.RDS"))
+  ctwas_res <- ctwas_res[,c("gene_name","combined_pip")]
+  merged_df <- merge(ctwas_res, pops_pred, by.x = "gene_name", by.y = "NAME", all.x = TRUE)
+  plot_df <- rbind(plot_df,merged_df)
+}
+plot_df <- na.omit(plot_df)
+plot_pops_by_pip_bin(plot_df,"Across all traits")
+```
+
 
 ### Comparison of number of signals per region between M-cTWAS, Coloc and TWAS
 cTWAS tends to report single genes per locus, while coloc or TWAS report many. The number of signals of Coloc and TWAS are calcuated in regions with TWAS signals (after bonferroni correction). M-cTWAS signals are culated in regions selected by screen region step. 
