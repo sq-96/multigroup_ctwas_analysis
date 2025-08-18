@@ -1,7 +1,7 @@
 ---
-title: "ctwas POPs analysis"
+title: "cTWAS paper figures"
 output: html_document
-date: '2025-8-2'
+date: '2025-8-18'
 editor_options: 
   chunk_output_type: console
 ---
@@ -14,6 +14,25 @@ library(data.table)
 library(ggplot2)
 source("/project/xinhe/shengqian/cTWAS_paper_figures/plot_function.R")
 ```
+### Incorporating multiple modality and tissues improves discovery power
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+source("/project/xinhe/xsun/multi_group_ctwas/data/samplesize.R")
+folder_results_single <- "/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/expression/"
+folder_results_multi <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/"
+trait <- "LDL-ukb-d-30780_irnt"
+gwas_n <- samplesize[trait]
+param_multi <- readRDS(paste0(folder_results_multi,trait,"/",trait,".3qtls.thin1.shared_all.param.RDS"))
+ctwas_parameters_multi <- summarize_param(param = param_multi,gwas_n = gwas_n)
+top_tissue <- get_top_tissue(ctwas_parameters_multi$group_pve)
+param_single <- readRDS(paste0(folder_results_single, trait, "/", trait, "_", top_tissue, ".thin1.shared_all.param.RDS"))
+ctwas_parameters_single <- summarize_param(param_single, gwas_n)
+title <- paste0(trait, ", top tissue: ", top_tissue)
+PIP_cutoff <- 0.8
+combined_pip_by_group_single <- readRDS(paste0(folder_results_single, trait, "/", trait, "_", top_tissue, ".combined_pip_bygroup_final.RDS"))
+combined_pip_by_group_multi <- readRDS(paste0(folder_results_multi,trait,"/",trait,".3qtls.combined_pip_bytype_final.RDS"))
+print(plot_overlap_barplot(combined_pip_by_group_multi = combined_pip_by_group_multi, combined_pip_by_group_single = combined_pip_by_group_single,PIP_cutoff = PIP_cutoff,tissue = top_tissue,trait = trait,return_unique_genes = T)$plot)
+```
+
 
 ### Comparison of number of signals per region between M-cTWAS, Coloc and TWAS
 cTWAS tends to report single genes per locus, while coloc or TWAS report many. The number of signals of Coloc and TWAS are calcuated in regions with TWAS signals (after bonferroni correction). M-cTWAS signals are culated in regions selected by screen region step. 
