@@ -1,0 +1,37 @@
+---
+title: "ctwas POPs analysis"
+output: html_document
+date: '2025-8-2'
+editor_options: 
+  chunk_output_type: console
+---
+
+## Multi-cTWAS improves the discovery of candidate genes
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+library(ctwas)
+library(data.table)
+library(ggplot2)
+source("/project/xinhe/shengqian/cTWAS_paper_figures/plot_function.R")
+```
+
+### Comparison of number of signals per region between M-cTWAS, Coloc and TWAS
+cTWAS tends to report single genes per locus, while coloc or TWAS report many. The number of signals of Coloc and TWAS are calcuated in regions with TWAS signals (after bonferroni correction). M-cTWAS signals are culated in regions selected by screen region step. 
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+mapping_predictdb <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
+mapping_munro     <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/Munro_mapping.RDS")
+mapping_table <- rbind(mapping_predictdb, mapping_munro)
+
+plots <- plot_number_of_signals_per_region_distributions(
+  coloc_file = "/project/xinhe/shengqian/coloc_GWAS_analysis/results/LDL-ukb-d-30780_irnt/LDL-ukb-d-30780_irnt.coloc_res.RDS",
+  twas_file  = "/project/xinhe/shengqian/coloc_GWAS_analysis/results/LDL-ukb-d-30780_irnt/LDL-ukb-d-30780_irnt.twas_res.RDS",
+  ctwas_id_file = "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/LDL-ukb-d-30780_irnt/LDL-ukb-d-30780_irnt.3qtls.thin1.shared_all.L5.regionmerge_with_mappingtable_finemap_res.RDS",
+  ctwas_gene_alpha_file = "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/LDL-ukb-d-30780_irnt/LDL-ukb-d-30780_irnt.3qtls.thin1.shared_all.L5.regionmerge_with_mappingtable_susie_alpha_res.RDS",
+  mapping_table = mapping_table,
+  x_max = 50
+)
+
+# Show plots
+print(plots)
+```
+
