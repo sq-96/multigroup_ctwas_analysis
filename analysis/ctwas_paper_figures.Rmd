@@ -6,18 +6,51 @@ editor_options:
   chunk_output_type: console
 ---
 
-## Multi-cTWAS improves the discovery of candidate genes
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, include=FALSE}
 library(ctwas)
 library(data.table)
 library(ggplot2)
+library(ggrepel)
+library(egg)
+library(grid)
+library(dplyr)
 source("/project/xinhe/shengqian/cTWAS_paper_figures/plot_function.R")
+source("/project/xinhe/xsun/multi_group_ctwas/data/samplesize.R")
 ```
 
-### Incorporating multiple modality and tissues improves discovery power
+## Figure 2: cTWAS estimates genetic architecture of complex traits from GTEx
+
+### Figure 2c: Partition of h2g (Multiple tissues contribute and Contribution of each modality)
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-source("/project/xinhe/xsun/multi_group_ctwas/data/samplesize.R")
+folder_results_single <- "/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/expression/"
+folder_results_multi <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/"
+trait <- "LDL-ukb-d-30780_irnt"
+gwas_n <- samplesize[trait]
+param_multi <- readRDS(paste0(folder_results_multi,trait,"/",trait,".3qtls.thin1.shared_all.param.RDS"))
+ctwas_parameters_multi <- summarize_param(param = param_multi,gwas_n = gwas_n)
+top_tissue <- get_top_tissue(ctwas_parameters_multi$group_pve)
+param_single <- readRDS(paste0(folder_results_single, trait, "/", trait, "_", top_tissue, ".thin1.shared_all.param.RDS"))
+ctwas_parameters_single <- summarize_param(param_single, gwas_n)
+title <- paste0(trait, ", top tissue: ", top_tissue)
+print(generate_piecharts_for_trait(title_top = title))
+```
+
+### Figure 2d: Percent of TWAS regions with Coloc signals
+```{r}
+plot_fraction_of_coloc_signals_in_TWAS_regions("LDL-ukb-d-30780_irnt", pretty_labels = TRUE)
+```
+
+
+### Figure 2e: MECS estimated eQTL heritability contributions
+```{r}
+plot_MESC_eQTL_heritability("LDL-ukb-d-30780_irnt")$plot
+```
+
+## Figure 3: Multi-cTWAS improves the discovery of candidate genes
+
+### Figure 3a: Incorporating multiple modality and tissues improves discovery power
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 folder_results_single <- "/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/expression/"
 folder_results_multi <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/"
 trait <- "LDL-ukb-d-30780_irnt"
@@ -34,7 +67,7 @@ combined_pip_by_group_multi <- readRDS(paste0(folder_results_multi,trait,"/",tra
 print(plot_overlap_barplot_multi_vs_single(combined_pip_by_group_multi = combined_pip_by_group_multi, combined_pip_by_group_single = combined_pip_by_group_single,PIP_cutoff = PIP_cutoff,tissue = top_tissue,trait = trait,return_unique_genes = T)$plot)
 ```
 
-### M-cTWAS identified genes with higher POPS scores
+### Figure 3b: M-cTWAS identified genes with higher POPS scores
 Averaged POPS scores across all traits stratified by M-cTWAS PIPs 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 traits <- c(
@@ -61,7 +94,7 @@ plot_pops_by_pip_bin(plot_df,"POPs score across all traits")
 ```
 
 
-### Comparison of number of signals per region between M-cTWAS, Coloc and TWAS
+### Figure 3c: Comparison of number of signals per region between M-cTWAS, Coloc and TWAS
 cTWAS tends to report single genes per locus, while coloc or TWAS report many. The number of signals of Coloc and TWAS are calcuated in regions with TWAS signals (after bonferroni correction). M-cTWAS signals are culated in regions selected by screen region step. 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 mapping_predictdb <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
@@ -81,7 +114,7 @@ plots <- plot_number_of_signals_per_region_distributions(
 print(plots)
 ```
 
-### Compare with TGFM: compare with genes found in the paper. Show that unique genes by cTWAS are valid
+### Figure 3d: Compare with TGFM: compare with genes found in the paper. Show that unique genes by cTWAS are valid
 For unique genes identified by M-cTWAS and TGFM, I plotted the distribution of POPS scores and showed that M-cTWAS unique genes have higher POPS score than TGFM unique genes.
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 library(grex)
