@@ -191,16 +191,76 @@ combined_pip_by_context_multi_sig <- combined_pip_by_context_multi[combined_pip_
   
 combined_pip_by_group_multi_unique <- combined_pip_by_group_multi_sig[!combined_pip_by_group_multi_sig$gene_name %in% combined_pip_by_group_single_sig$gene_name, ]
 combined_pip_by_context_multi_unique <- combined_pip_by_context_multi_sig[!combined_pip_by_context_multi_sig$gene_name %in% combined_pip_by_group_single_sig$gene_name, ]
- 
-grid.newpage()
+
 if(nrow(combined_pip_by_group_multi_unique) > 0) {
   p1 <- plot_heatmap(heatmap_data = combined_pip_by_group_multi_unique, main = paste0("New genes identified by multigroup analysis, PIP>",PIP_cutoff),showPIP = T)
 }
   
-grid.newpage()
 if(nrow(combined_pip_by_context_multi_unique) > 0) {
   p2 <- plot_heatmap(heatmap_data = combined_pip_by_context_multi_unique, main = paste0("New genes identified by multicontext analysis, PIP>",PIP_cutoff),showPIP = T)
 }
+
+grid.newpage()
 print(p1)
+grid.newpage()
 print(p2)
 ```
+
+## Figure 5: Brain epiQTLs explain a large fraction of missing heritability by eQTLs
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+mapping_table <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/weights/gene_mapping.RDS")
+predictdb_mapping_table <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
+mapping_table <- rbind(mapping_table,predictdb_mapping_table)
+snp_map <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/LD_region_info/snp_map.RDS")
+epi_res <- get_cre_res(mapping_table,"/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_caQTL_mQTL/SCZ_caQTL_mQTL.finemap_regions_res.RDS",snp_map)
+full_res <- get_cre_res(mapping_table,"/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_eQTL_caQTL_mQTL/SCZ_eQTL_caQTL_mQTL.finemap_regions_res.RDS",snp_map)
+epi_result <- epi_res$result_sig
+epi_result <- epi_result[,c("region_id","start_pos","end_pos","total_susie_pip")]
+full_result <- full_res$result
+full_result <- full_result[,c("region_id","start_pos","end_pos","total_susie_pip")]
+setDT(epi_result)
+setDT(full_result)
+setnames(full_result, "total_susie_pip", "total_susie_pip_full")
+merged_result <- full_result[epi_result, 
+                             on = .(region_id, start_pos, end_pos)]
+merged_result[is.na(total_susie_pip_full), total_susie_pip_full := 0]
+p1 <- ggplot(merged_result, aes(x = total_susie_pip, 
+                          y = total_susie_pip_full)) +
+    geom_point(alpha = 0.6) +
+    geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red") +
+    labs(x = "CRE PIP in EpiQTL results",
+       y = "CRE PIP in full results",
+       title = "") +
+    coord_cartesian(xlim = c(0, 1), ylim = c(0, 1)) +
+    theme_minimal(base_size = 14)
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+eQTL_res <- get_gene_res(mapping_table,"/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_eQTL/SCZ_eQTL.finemap_regions_res.RDS",snp_map)
+full_res <- get_gene_res(mapping_table,"/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_eQTL_caQTL_mQTL/SCZ_eQTL_caQTL_mQTL.finemap_regions_res.RDS",snp_map)
+eQTL_result <- eQTL_res$result_sig
+eQTL_result <- eQTL_result[,c("gene_name","combined_pip")]
+full_result <- full_res$result
+full_result <- full_result[,c("gene_name","combined_pip")]
+setDT(eQTL_result)
+setDT(full_result)
+setnames(full_result, "combined_pip", "combined_pip_full")
+merged_result <- full_result[eQTL_result, 
+                             on = .(gene_name)]
+merged_result[is.na(combined_pip_full), combined_pip_full := 0]
+p2 <- ggplot(merged_result, aes(x = combined_pip, 
+                          y = combined_pip_full)) +
+  geom_point(alpha = 0.6) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red") +
+  labs(x = "Gene PIP in eQTL results",
+       y = "Gene PIP in full results",
+       title = "") +
+  coord_cartesian(xlim = c(0, 1), ylim = c(0, 1)) +
+  theme_minimal(base_size = 14)
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+combined_plot <- (p1 | p2) + plot_layout(guides = "collect") & theme(legend.position = "bottom")
+print(combined_plot)
+```
+
