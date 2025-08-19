@@ -15,6 +15,7 @@ library(ggrepel)
 library(egg)
 library(grid)
 library(dplyr)
+library(pheatmap)
 source("/project/xinhe/shengqian/cTWAS_paper_figures/plot_function.R")
 source("/project/xinhe/xsun/multi_group_ctwas/data/samplesize.R")
 ```
@@ -37,13 +38,13 @@ print(generate_piecharts_for_trait(title_top = title))
 ```
 
 ### Figure 2d: Percent of TWAS regions with Coloc signals
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 plot_fraction_of_coloc_signals_in_TWAS_regions("LDL-ukb-d-30780_irnt", pretty_labels = TRUE)
 ```
 
 
 ### Figure 2e: MECS estimated eQTL heritability contributions
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 plot_MESC_eQTL_heritability("LDL-ukb-d-30780_irnt")$plot
 ```
 
@@ -165,5 +166,39 @@ for(i in names(trait_list)){
   
   combined_plot <- (p1 | p2) + plot_layout(guides = "collect") & theme(legend.position = "bottom")
   print(combined_plot)
+}
+```
+
+## Figure 4: cTWAS discovers candidate genes for complex traits and provides insights on their molecular mechanisms 
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+folder_results_single <- "/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/expression/"
+folder_results_multi <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/"
+trait <- "LDL-ukb-d-30780_irnt"
+gwas_n <- samplesize[trait]
+param_multi <- readRDS(paste0(folder_results_multi,trait,"/",trait,".3qtls.thin1.shared_all.param.RDS"))
+ctwas_parameters_multi <- summarize_param(param = param_multi,gwas_n = gwas_n)
+top_tissue <- get_top_tissue(ctwas_parameters_multi$group_pve)
+param_single <- readRDS(paste0(folder_results_single, trait, "/", trait, "_", top_tissue, ".thin1.shared_all.param.RDS"))
+ctwas_parameters_single <- summarize_param(param_single, gwas_n)
+title <- paste0(trait, ", top tissue: ", top_tissue)
+PIP_cutoff <- 0.8
+combined_pip_by_group_single <- readRDS(paste0(folder_results_single, trait, "/", trait, "_", top_tissue, ".combined_pip_bygroup_final.RDS"))
+combined_pip_by_group_multi <- readRDS(paste0(folder_results_multi,trait,"/",trait,".3qtls.combined_pip_bytype_final.RDS"))
+combined_pip_by_context_multi <- readRDS(paste0(folder_results_multi,trait,"/",trait,".3qtls.combined_pip_rmmapping_bycontext_final.RDS"))
+combined_pip_by_group_multi_sig <- combined_pip_by_group_multi[combined_pip_by_group_multi$combined_pip > PIP_cutoff,]
+combined_pip_by_group_single_sig <- combined_pip_by_group_single[combined_pip_by_group_single$combined_pip > PIP_cutoff,]
+combined_pip_by_context_multi_sig <- combined_pip_by_context_multi[combined_pip_by_context_multi$combined_pip > PIP_cutoff,]
+  
+combined_pip_by_group_multi_unique <- combined_pip_by_group_multi_sig[!combined_pip_by_group_multi_sig$gene_name %in% combined_pip_by_group_single_sig$gene_name, ]
+combined_pip_by_context_multi_unique <- combined_pip_by_context_multi_sig[!combined_pip_by_context_multi_sig$gene_name %in% combined_pip_by_group_single_sig$gene_name, ]
+ 
+grid.newpage()
+if(nrow(combined_pip_by_group_multi_unique) > 0) {
+  p1 <- plot_heatmap(heatmap_data = combined_pip_by_group_multi_unique, main = paste0("New genes identified by multigroup analysis, PIP>",PIP_cutoff),showPIP = T)
+}
+  
+grid.newpage()
+if(nrow(combined_pip_by_context_multi_unique) > 0) {
+  p2 <- plot_heatmap(heatmap_data = combined_pip_by_context_multi_unique, main = paste0("New genes identified by multicontext analysis, PIP>",PIP_cutoff),showPIP = T)
 }
 ```
