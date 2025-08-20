@@ -289,9 +289,14 @@ if(nrow(combined_pip_by_group_multi_unique) > 0) {
 if(nrow(combined_pip_by_context_multi_unique) > 0) {
   p2 <- plot_heatmap(heatmap_data = combined_pip_by_context_multi_unique, main = paste0("New genes identified by multicontext analysis, PIP>",PIP_cutoff),showPIP = T)
 }
+```
 
+```{r echo=FALSE, message=FALSE, warning=FALSE,fig.height=8, fig.width=10}
 grid.newpage()
 print(p1)
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE,fig.height=8, fig.width=10}
 grid.newpage()
 print(p2)
 ```
@@ -304,6 +309,12 @@ mapping_table <- rbind(mapping_table,predictdb_mapping_table)
 snp_map <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/LD_region_info/snp_map.RDS")
 epi_res <- get_cre_res(mapping_table,"/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_caQTL_mQTL/SCZ_caQTL_mQTL.finemap_regions_res.RDS",snp_map)
 full_res <- get_cre_res(mapping_table,"/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_eQTL_caQTL_mQTL/SCZ_eQTL_caQTL_mQTL.finemap_regions_res.RDS",snp_map)
+suppressMessages({
+  suppressWarnings({
+    epi_res <- get_cre_res(mapping_table,"/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_caQTL_mQTL/SCZ_caQTL_mQTL.finemap_regions_res.RDS",snp_map)
+    full_res <- get_cre_res(mapping_table,"/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_eQTL_caQTL_mQTL/SCZ_eQTL_caQTL_mQTL.finemap_regions_res.RDS",snp_map)
+  })
+})
 epi_result <- epi_res$result_sig
 epi_result <- epi_result[,c("region_id","start_pos","end_pos","total_susie_pip")]
 full_result <- full_res$result
@@ -326,8 +337,12 @@ p1 <- ggplot(merged_result, aes(x = total_susie_pip,
 ```
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-eQTL_res <- get_gene_res(mapping_table,"/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_eQTL/SCZ_eQTL.finemap_regions_res.RDS",snp_map)
-full_res <- get_gene_res(mapping_table,"/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_eQTL_caQTL_mQTL/SCZ_eQTL_caQTL_mQTL.finemap_regions_res.RDS",snp_map)
+suppressMessages({
+  suppressWarnings({
+    eQTL_res <- get_gene_res(mapping_table, "/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_eQTL/SCZ_eQTL.finemap_regions_res.RDS", snp_map)
+    full_res <- get_gene_res(mapping_table, "/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_eQTL_caQTL_mQTL/SCZ_eQTL_caQTL_mQTL.finemap_regions_res.RDS", snp_map)
+  })
+})
 eQTL_result <- eQTL_res$result_sig
 eQTL_result <- eQTL_result[,c("gene_name","combined_pip")]
 full_result <- full_res$result
