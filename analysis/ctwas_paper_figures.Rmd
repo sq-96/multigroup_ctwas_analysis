@@ -20,6 +20,59 @@ source("/project/xinhe/shengqian/cTWAS_paper_figures/plot_function.R")
 source("/project/xinhe/xsun/multi_group_ctwas/data/samplesize.R")
 ```
 
+```{r}
+thin <- 1
+vgs <- "shared_all"
+L <-5
+colors <- c("#ff7f0e", "#2ca02c", "#d62728",  "#9467bd", "#8c564b", "#e377c2", "#7f7f7f",  "#bcbd22",  "#17becf",  "#f7b6d2",  "#c5b0d5",  "#9edae5", "#ffbb78",  "#98df8a",  "#ff9896" )
+
+fix_panel_size <- function(plot, width = 2.1, height = 2) {
+  set_panel_size(plot, 
+                 width = unit(width, "in"), 
+                 height = unit(height, "in"))
+}
+
+folder_results_multiqtl <- "/project/xinhe/xsun/multi_group_ctwas/24.diff_qtls_0519/snakemake_outputs/"
+
+trait <- "IBD-ebi-a-GCST004131"
+
+gwas_n <- samplesize[trait]
+
+
+file_param <- paste0("/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/expression/IBD-ebi-a-GCST004131/IBD-ebi-a-GCST004131_Whole_Blood.thin1.shared_all.param.RDS")
+param <- readRDS(file_param)
+ctwas_parameters <- summarize_param(param, gwas_n)
+
+p1 <- plot_piechart_topn(ctwas_parameters = ctwas_parameters,colors = colors,by = "context",title = NULL)
+
+
+file_param <- paste0("/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/expression/IBD-ebi-a-GCST004131/IBD-ebi-a-GCST004131_Colon_Transverse.thin1.shared_all.param.RDS")
+param <- readRDS(file_param)
+ctwas_parameters <- summarize_param(param, gwas_n)
+
+p2 <- plot_piechart_topn(ctwas_parameters = ctwas_parameters,colors = colors,by = "context",title = NULL)
+
+file_param <- paste0("/project/xinhe/xsun/multi_group_ctwas/24.diff_qtls_0519/snakemake_outputs/IBD-ebi-a-GCST004131/IBD-ebi-a-GCST004131.eonly.thin1.shared_all.param.RDS")
+param <- readRDS(file_param)
+ctwas_parameters <- summarize_param(param, gwas_n)
+
+p3 <- plot_piechart_topn(ctwas_parameters = ctwas_parameters,colors = colors,by = "context",title = NULL)
+
+pie1 <- fix_panel_size(p1)
+pie2 <- fix_panel_size(p2)
+pie3 <- fix_panel_size(p3)
+
+# Calculate widths of each gtable (plot + legend)
+widths <- unit.c(grobWidth(pie1), grobWidth(pie2),grobWidth(pie3))
+
+# Arrange plots with their natural widths
+p <- grid.arrange(pie1, pie2, pie3,
+                  ncol = 3, 
+                  widths = widths,
+                  top = paste0(trait))
+```
+
+
 ## Figure 2: cTWAS simulations
 ```{r echo=FALSE}
 pve_gene <- c(0.02, 0.02, 0, 0, 0,
@@ -108,7 +161,9 @@ top_tissue <- get_top_tissue(ctwas_parameters_multi$group_pve)
 param_single <- readRDS(paste0(folder_results_single, trait, "/", trait, "_", top_tissue, ".thin1.shared_all.param.RDS"))
 ctwas_parameters_single <- summarize_param(param_single, gwas_n)
 title <- paste0(trait, ", top tissue: ", top_tissue)
-print(generate_piecharts_for_trait(ctwas_parameters_single, ctwas_parameters_multi, title_top = title))
+p <- generate_piecharts_for_trait(ctwas_parameters_single, ctwas_parameters_multi, title_top = title)
+grid::grid.draw(p)
+invisible(NULL)
 ```
 
 ### Figure 2d: Percent of TWAS regions with Coloc signals
@@ -142,7 +197,7 @@ combined_pip_by_group_multi <- readRDS(paste0(folder_results_multi,trait,"/",tra
 print(plot_overlap_barplot_multi_vs_single(combined_pip_by_group_multi = combined_pip_by_group_multi, combined_pip_by_group_single = combined_pip_by_group_single,PIP_cutoff = PIP_cutoff,tissue = top_tissue,trait = trait,return_unique_genes = T)$plot)
 ```
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 traits <- c(
   "SBP-ukb-a-360", "LDL-ukb-d-30780_irnt", "aFib-ebi-a-GCST006414",
   "WBC-ieu-b-30", "IBD-ebi-a-GCST004131", "BMI-panukb",
@@ -187,7 +242,7 @@ plot_pops_by_pip_bin(plot_df,"POPs score across all traits")
 
 ### Figure 3c: Comparison of number of signals per region between M-cTWAS, Coloc and TWAS
 cTWAS tends to report single genes per locus, while coloc or TWAS report many. The number of signals of Coloc and TWAS are calcuated in regions with TWAS signals (after bonferroni correction). M-cTWAS signals are culated in regions selected by screen region step. 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
+```{r echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
 mapping_predictdb <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
 mapping_munro     <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/Munro_mapping.RDS")
 mapping_table <- rbind(mapping_predictdb, mapping_munro)
@@ -201,7 +256,9 @@ plots <- plot_number_of_signals_per_region_distributions(
   x_max = 50
 )
 
-# Show plots
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 print(plots)
 ```
 
@@ -302,7 +359,7 @@ print(p2)
 ```
 
 ## Figure 5: Brain epiQTLs explain a large fraction of missing heritability by eQTLs
-```{r echo=FALSE, message=FALSE, warning=FALSE}
+```{r echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
 mapping_table <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/weights/gene_mapping.RDS")
 predictdb_mapping_table <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
 mapping_table <- rbind(mapping_table,predictdb_mapping_table)
@@ -336,7 +393,7 @@ p1 <- ggplot(merged_result, aes(x = total_susie_pip,
     theme_minimal(base_size = 14)
 ```
 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
+```{r echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
 suppressMessages({
   suppressWarnings({
     eQTL_res <- get_gene_res(mapping_table, "/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_eQTL/SCZ_eQTL.finemap_regions_res.RDS", snp_map)
