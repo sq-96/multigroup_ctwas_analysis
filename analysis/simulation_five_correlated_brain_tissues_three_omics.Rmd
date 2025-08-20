@@ -1090,6 +1090,26 @@ plot_single_PHE(results_dir,runtag_list,c(1),phe_true)
 ```
 
 ### Molecular level PIP
+```{r}
+phenofs <- paste0(results_dir, runtag, "_simu",  paste(1, 1:10, sep = "-"), "-pheno.Rd")
+pipfs <- paste0(results_dir, runtag, "_simu", paste(1, 1:10, sep = "-"), ".thin", 1, ".", "shared_all", ".", "ctwas",".minp08.mingene0.estimated_parameter.finemap_regions_res.RDS")
+cau <- lapply(phenofs, function(x) {load(x);get_causal_id(phenores)})
+df <- NULL
+for (i in 1:length(pipfs)) {
+  res <- readRDS(pipfs[i])
+  res <- res$finemap_res
+  res <- data.frame(res[res$type!="SNP", ])
+  res$runtag <- i
+  res$ifcausal <- ifelse(res$id %in% cau[[i]], 1, 0)
+  df <- rbind(df, res)
+}
+saveRDS(df,file = "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correlated_brain_tissues_three_omics/molecular_PIP_calibration_df.RDS")
+```
+
+```{r}
+fig <- cp_plot(df$susie_pip, df$ifcausal, df$runtag, mode ="PIP", main = "main")
+```
+
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.width=4, fig.height=4}
 molecular_PIPs <- list()
 for(i in c(1)){
@@ -1101,6 +1121,39 @@ do.call(grid.arrange, c(molecular_PIPs, ncol = 1))
 ```
 
 ### Gene level PIP
+### Molecular level PIP
+```{r}
+phenofs <- paste0(results_dir, runtag, "_simu",  paste(1, 1:10, sep = "-"), "-pheno.Rd")
+pipfs <- paste0(results_dir, runtag, "_simu", paste(1, 1:10, sep = "-"), ".thin", 1, ".", "shared_all", ".", "ctwas",".minp08.mingene0.estimated_parameter.finemap_regions_res.RDS")
+mapping_table1 <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
+mapping_table2 <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/Munro_mapping.RDS")
+mapping_table <- rbind(mapping_table1,mapping_table2)
+cau <- lapply(phenofs, function(x) {load(x);get_causal_id(phenores)})
+df <- NULL
+for (i in 1:length(pipfs)) {
+    res <- readRDS(pipfs[i])
+    res <- anno_susie_alpha_res(res$susie_alpha_res,
+                                mapping_table = mapping_table,
+                                map_by = "molecular_id",
+                                drop_unmapped = TRUE)
+
+    res <- combine_gene_pips(res,
+                             group_by = "gene_name",
+                             by = "type",
+                             method = "combine_cs",
+                             filter_cs = FALSE,
+                             include_cs_id = FALSE)
+
+    res$runtag <- i
+    true_genes <- unique(mapping_table[mapping_table$molecular_id %in% sapply(cau[[i]],function(x){unlist(strsplit(x, "[|]"))[1]}),"gene_name"])
+    res$ifcausal <- ifelse(res$gene_name %in% true_genes, 1, 0)  
+    res <- res[,c("gene_name","combined_pip","ifcausal","runtag")]
+    colnames(res) <- c("gene","susie_pip","ifcausal","runtag")
+    df <- rbind(df, res)
+}
+saveRDS(df,file = "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correlated_brain_tissues_three_omics/gene_PIP_calibration_df.RDS")
+```
+
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.width=4, fig.height=4}
 mapping_table1 <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
 mapping_table2 <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/Munro_mapping.RDS")

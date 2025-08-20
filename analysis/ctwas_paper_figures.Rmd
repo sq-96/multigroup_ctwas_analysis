@@ -20,6 +20,80 @@ source("/project/xinhe/shengqian/cTWAS_paper_figures/plot_function.R")
 source("/project/xinhe/xsun/multi_group_ctwas/data/samplesize.R")
 ```
 
+## Figure 2: cTWAS simulations
+```{r echo=FALSE}
+pve_gene <- c(0.02, 0.02, 0, 0, 0,
+              0.01, 0.01, 0, 0, 0,
+              0.003, 0.003, 0, 0, 0)
+
+group_size <- c(8798,8772,8478,8596,8542, 
+                22802,19188,17467,17104,22142, 
+                3561,2935,2578,2659,3142)
+pve_snp <- 0.3
+sigma_theta <- 0.02
+sigma_beta <- 0.02
+gene_prior <- pve_gene/sigma_beta^2/(1-sum(pve_gene)-pve_snp)/group_size
+snp_prior <- pve_snp/sigma_beta^2/(1-sum(pve_gene)-pve_snp)/5000000
+
+thins <- c(1)
+
+prior_true <- gene_prior
+  
+enrichment_true <- log(gene_prior/snp_prior,base = exp(1))
+
+pve_true <- pve_gene
+
+phe_true <- pve_gene/(sum(pve_gene)+pve_snp)
+```
+
+### Figure 2a: Enrichment
+```{r,echo=FALSE,fig.width= 12, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correlated_brain_tissues_three_omics/"
+runtag = "five_correlated_brain_tissues_three_omics"
+plot_enrichment_correlated(results_dir,runtag,paste(1, 1:10, sep = "-"),c(1),"shared_all","ctwas",".minp08.mingene0.parameters.RDS",enrichment_true)
+```
+
+### Figure 2b: PHE
+```{r,echo=FALSE,fig.width= 12, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correlated_brain_tissues_three_omics/"
+runtag = "five_correlated_brain_tissues_three_omics"
+plot_PHE_correlated(results_dir,runtag,paste(1, 1:10, sep = "-"),c(1),"shared_all","ctwas",".minp08.mingene0.parameters.RDS",phe_true)
+```
+
+### Figure 2c: Inflated single group PHE
+```{r,echo=FALSE,fig.width= 12, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correlated_brain_tissues_three_omics/"
+runtag_list <- c(paste0(c("Cerebellum","Cortex","Nucleus_accumbens","Caudate","Cerebellar_Hemisphere"),"_expression"),
+                  paste0(c("Cerebellum","Cortex","Nucleus_accumbens","Caudate","Cerebellar_Hemisphere"),"_splicing"),
+                  paste0(c("Cerebellum","Cortex","Nucleus_accumbens","Caudate","Cerebellar_Hemisphere"),"_stability"))
+plot_single_PHE_correlated(results_dir,runtag_list,c(1),phe_true)
+```
+
+### Figure 2d: PIP calibration
+```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.width=8, fig.height=4}
+df1 <- readRDS("/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correlated_brain_tissues_three_omics/molecular_PIP_calibration_df.RDS")
+df2 <- readRDS("/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correlated_brain_tissues_three_omics/gene_PIP_calibration_df.RDS")
+fig1 <- cp_plot(df1$susie_pip, df1$ifcausal, df1$runtag, mode ="PIP", main = "MT level")
+fig2 <- cp_plot(df2$susie_pip, df2$ifcausal, df2$runtag, mode ="PIP", main = "Gene level")
+grid.arrange(fig1, fig2, ncol = 2)
+```
+
+### Figure 2e: Power and False discovery rate
+```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.width=8, fig.height=4}
+multi_ctwas_res <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correlated_brain_tissues_three_omics/multi_ctwas_simu_res.RDS"
+single_ctwas_res <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correlated_brain_tissues_three_omics/single_ctwas_simu_res.RDS"
+coloc_res <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correlated_brain_tissues_three_omics/coloc_simu_res.RDS"
+smr_res <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correlated_brain_tissues_three_omics/smr_simu_res.RDS"
+p1 <- plot_molecular_power_compare_method(multi_ctwas_res,single_ctwas_res,coloc_res,smr_res)
+
+multi_ctwas_res <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correlated_brain_tissues_three_omics/multi_ctwas_simu_gene_res.RDS"
+single_ctwas_res <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correlated_brain_tissues_three_omics/single_ctwas_simu_gene_res.RDS"
+coloc_res <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correlated_brain_tissues_three_omics/coloc_simu_gene_res.RDS"
+smr_res <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correlated_brain_tissues_three_omics/smr_simu_gene_res.RDS"
+p2 <- plot_gene_power_compare_method(multi_ctwas_res,single_ctwas_res,coloc_res,smr_res)
+grid.arrange(p1, p2, ncol = 2)
+```
+
 ## Figure 2: cTWAS estimates genetic architecture of complex traits from GTEx
 
 ### Figure 2c: Partition of h2g (Multiple tissues contribute and Contribution of each modality)
@@ -34,7 +108,7 @@ top_tissue <- get_top_tissue(ctwas_parameters_multi$group_pve)
 param_single <- readRDS(paste0(folder_results_single, trait, "/", trait, "_", top_tissue, ".thin1.shared_all.param.RDS"))
 ctwas_parameters_single <- summarize_param(param_single, gwas_n)
 title <- paste0(trait, ", top tissue: ", top_tissue)
-print(generate_piecharts_for_trait(title_top = title))
+print(generate_piecharts_for_trait(ctwas_parameters_single, ctwas_parameters_multi, title_top = title))
 ```
 
 ### Figure 2d: Percent of TWAS regions with Coloc signals
@@ -63,10 +137,26 @@ param_single <- readRDS(paste0(folder_results_single, trait, "/", trait, "_", to
 ctwas_parameters_single <- summarize_param(param_single, gwas_n)
 title <- paste0(trait, ", top tissue: ", top_tissue)
 PIP_cutoff <- 0.8
-combined_pip_by_group_single <- readRDS(paste0(folder_results_single, trait, "/", trait, "_", top_tissue, ".combined_pip_bygroup_final.RDS"))
-combined_pip_by_group_multi <- readRDS(paste0(folder_results_multi,trait,"/",trait,".3qtls.combined_pip_bytype_final.RDS"))
+combined_pip_by_group_single <- readRDS(paste0(folder_results_single, trait, "/", trait, "_", top_tissue, ".combined_pip_rmmapping_bygroup_final.RDS"))
+combined_pip_by_group_multi <- readRDS(paste0(folder_results_multi,trait,"/",trait,".3qtls.combined_pip_rmmapping_bygroup_final.RDS"))
 print(plot_overlap_barplot_multi_vs_single(combined_pip_by_group_multi = combined_pip_by_group_multi, combined_pip_by_group_single = combined_pip_by_group_single,PIP_cutoff = PIP_cutoff,tissue = top_tissue,trait = trait,return_unique_genes = T)$plot)
 ```
+
+```{r}
+traits <- c(
+  "SBP-ukb-a-360", "LDL-ukb-d-30780_irnt", "aFib-ebi-a-GCST006414",
+  "WBC-ieu-b-30", "IBD-ebi-a-GCST004131", "BMI-panukb",
+  "PLT-panukb", "RBC-panukb", "HB-panukb", "HTN-panukb", "Height-panukb",
+  "T2D-panukb", "MDD-ieu-b-102", "SCZ-ieu-b-5102", "T1D-GCST90014023", "BIP-ieu-b-5110", 
+  "ASD-ieu-a-1185", "PD-ieu-b-7", "NS-ukb-a-230","ATH_gtexukb"
+)
+for(i in traits){
+  combined_pip_by_group_multi <- readRDS(paste0(folder_results_multi,i,"/",i,".3qtls.combined_pip_bytype_final.RDS"))
+  combined_pip_by_group_multi <- combined_pip_by_group_multi[combined_pip_by_group_multi$combined_pip>0.8,]
+  write.table(combined_pip_by_group_multi$gene_name,file = paste0("/project/xinhe/shengqian/cTWAS_paper_figures/data/ctwas_genes_PIP0.8/",i,".txt"),col.names = F,row.names = F,quote = F,sep = "\t")
+}
+```
+
 
 ### Figure 3b: M-cTWAS identified genes with higher POPS scores
 Averaged POPS scores across all traits stratified by M-cTWAS PIPs 
@@ -182,8 +272,8 @@ param_single <- readRDS(paste0(folder_results_single, trait, "/", trait, "_", to
 ctwas_parameters_single <- summarize_param(param_single, gwas_n)
 title <- paste0(trait, ", top tissue: ", top_tissue)
 PIP_cutoff <- 0.8
-combined_pip_by_group_single <- readRDS(paste0(folder_results_single, trait, "/", trait, "_", top_tissue, ".combined_pip_bygroup_final.RDS"))
-combined_pip_by_group_multi <- readRDS(paste0(folder_results_multi,trait,"/",trait,".3qtls.combined_pip_bytype_final.RDS"))
+combined_pip_by_group_single <- readRDS(paste0(folder_results_single, trait, "/", trait, "_", top_tissue, ".combined_pip_rmmapping_bygroup_final.RDS"))
+combined_pip_by_group_multi <- readRDS(paste0(folder_results_multi,trait,"/",trait,".3qtls.combined_pip_rmmapping_bytype_final.RDS"))
 combined_pip_by_context_multi <- readRDS(paste0(folder_results_multi,trait,"/",trait,".3qtls.combined_pip_rmmapping_bycontext_final.RDS"))
 combined_pip_by_group_multi_sig <- combined_pip_by_group_multi[combined_pip_by_group_multi$combined_pip > PIP_cutoff,]
 combined_pip_by_group_single_sig <- combined_pip_by_group_single[combined_pip_by_group_single$combined_pip > PIP_cutoff,]
