@@ -21,6 +21,7 @@ For each tissue pair \((A, B)\), we first estimated the PHE of tissue \(A\) when
 \]
 
 
+
 # Results
 
 
@@ -29,6 +30,7 @@ For each tissue pair \((A, B)\), we first estimated the PHE of tissue \(A\) when
 library(ctwas)
 library(ComplexHeatmap)
 library(grid)
+library(circlize)
 
 trait_nopsy <- c("LDL-ukb-d-30780_irnt","IBD-ebi-a-GCST004131","aFib-ebi-a-GCST006414","SBP-ukb-a-360",
                  "T1D-GCST90014023","T2D-panukb","ATH_gtexukb","BMI-panukb","HB-panukb",
@@ -148,17 +150,47 @@ for (trait  in traits){
   
 
   
-  ht1 <- Heatmap(mat,
+  if (any(mat < 0, na.rm = TRUE)) {
+    
+    mat_range <- range(mat, na.rm = TRUE)  # includes negatives
+    
+    # create diverging color function
+    col_fun <- colorRamp2(
+      c(mat_range[1], 0, mat_range[2]),  # min (neg), 0, max (pos)
+      c("blue", "white", "red")          # colors
+    )
+    
+    ht1 <- Heatmap(mat,
+            name = "%PVE decrease",
+            cluster_rows = FALSE,
+            cluster_columns = FALSE,
+            col = col_fun,
+            row_names_side = "left",
+            column_title = paste0("%PVE decreased after \n adding the second tissue(column) -- \n", trait," (eQTL)"),
+            rect_gp = gpar(col = "black", lwd = 0.5),
+            cell_fun = function(j, i, x, y, width, height, fill) {
+              if (!is.na(mat[i, j])) {
+                grid.text(sprintf("%.1f", mat[i, j]), x, y, gp = gpar(fontsize = 8))
+              }
+            })
+    
+    
+    
+  }else{
+    
+       ht1 <- Heatmap(mat,
           name = "%PVE decrease",
           cluster_rows = FALSE,
           cluster_columns = FALSE,
           col = colorRampPalette(c("white", "red"))(100),
           row_names_side = "left",   # can also be "right"
-          column_title = paste0("%PVE decreased after \n adding the second tissue(column) -- \n", trait," (eQTL)"),
+          column_title = paste0("%PVE decreased after  \n adding the second tissue(column) -- \n", trait," (eQTL)"),
           rect_gp = gpar(col = "black", lwd = 0.5),   # draw grid lines
           cell_fun = function(j, i, x, y, width, height, fill) {
             grid.text(sprintf("%.1f", mat[i, j]), x, y, gp = gpar(fontsize = 8))
           })
+    
+  }
 
   
   
@@ -209,8 +241,35 @@ for (trait  in traits){
   }
   
 
-  
-   ht2 <- Heatmap(mat,
+  if (any(mat < 0, na.rm = TRUE)) {
+    
+    mat_range <- range(mat, na.rm = TRUE)  # includes negatives
+    
+    # create diverging color function
+    col_fun <- colorRamp2(
+      c(mat_range[1], 0, mat_range[2]),  # min (neg), 0, max (pos)
+      c("blue", "white", "red")          # colors
+    )
+    
+    ht2 <- Heatmap(mat,
+            name = "%PVE decrease",
+            cluster_rows = FALSE,
+            cluster_columns = FALSE,
+            col = col_fun,
+            row_names_side = "left",
+            column_title = paste0("%PVE decreased after \n adding the second tissue(column) -- \n", trait," (sQTL)"),
+            rect_gp = gpar(col = "black", lwd = 0.5),
+            cell_fun = function(j, i, x, y, width, height, fill) {
+              if (!is.na(mat[i, j])) {
+                grid.text(sprintf("%.1f", mat[i, j]), x, y, gp = gpar(fontsize = 8))
+              }
+            })
+    
+    
+    
+  }else{
+    
+       ht2 <- Heatmap(mat,
           name = "%PVE decrease",
           cluster_rows = FALSE,
           cluster_columns = FALSE,
@@ -221,6 +280,10 @@ for (trait  in traits){
           cell_fun = function(j, i, x, y, width, height, fill) {
             grid.text(sprintf("%.1f", mat[i, j]), x, y, gp = gpar(fontsize = 8))
           })
+    
+  }
+  
+
   
   
   draw(ht1 + ht2)
