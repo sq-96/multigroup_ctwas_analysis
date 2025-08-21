@@ -136,3 +136,220 @@ for (trait  in traits){
 
 ```
 
+
+```{r fig.height=6, fig.width=10, warning=F}
+
+#trait <- "LDL-ukb-d-30780_irnt"
+
+
+for (trait  in traits){
+  
+  print(trait)
+  
+  gwas_n <- samplesize[trait]
+  
+  folder_results <- paste0("/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/expression/",trait,"/")
+  
+  top_tissues <- get_top_tissues_phe(
+    trait = trait, 
+    n_top = 10,
+    folder_results = folder_results
+  )
+  
+  
+  ## single tissue eQTL
+  prob_pve_alltissue <- c()
+  for (tissue in top_tissues){
+    
+    file_param_single <- paste0(folder_results,"/",trait,"_",tissue,".thin1.shared_all.param.RDS")
+    param_single <- readRDS(file_param_single)
+    
+    ctwas_parameters_single <- summarize_param(param_single, gwas_n, enrichment_test = "fisher")
+    
+    prob_pve <- ctwas_parameters_single$prop_heritability[1]
+    prob_pve_alltissue <- c(prob_pve_alltissue, prob_pve)
+    
+  }
+  
+  names(prob_pve_alltissue) <- gsub(pattern = "\\|eQTL",x = names(prob_pve_alltissue), replacement = "")
+  
+  
+  ## pairwise
+  
+  tissue_combination <- combn(top_tissues, 2, simplify = FALSE)
+  
+  mat <- matrix(NA, nrow = length(top_tissues), ncol = length(top_tissues),
+                dimnames = list(top_tissues, top_tissues))
+  
+  for (i in 1:length(tissue_combination)){
+    
+    tissue1 <- tissue_combination[[i]][1]
+    pve_tissue1 <- prob_pve_alltissue[tissue1]
+    tissue2 <- tissue_combination[[i]][2]
+    pve_tissue2 <- prob_pve_alltissue[tissue2]
+    
+    tissue_pair <- paste0(tissue_combination[[i]], collapse = "-")
+    
+    file_param_pair <- paste0("/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/pairwise_snakemake_outputs_bynumber/",trait,"/",trait,".",tissue_pair,".eqtlonly.thin1.shared_all.param.RDS")
+    param_pair <- readRDS(file_param_pair)
+    ctwas_parameters_pair <- summarize_param(param_pair, gwas_n, enrichment_test = "fisher")
+    
+    pve_tissue1_joint <- ctwas_parameters_pair$prop_heritability[paste0(tissue1,"|eQTL")]
+    pve_tissue2_joint <- ctwas_parameters_pair$prop_heritability[paste0(tissue2,"|eQTL")]
+    
+    pct_pve_shared_tissue1 <- (pve_tissue1 - pve_tissue1_joint)/pve_tissue1 * 100
+    pct_pve_shared_tissue2 <- (pve_tissue2 - pve_tissue2_joint)/pve_tissue2 * 100
+    
+    mat[tissue1, tissue2] <- pct_pve_shared_tissue1
+    mat[tissue2, tissue1] <- pct_pve_shared_tissue2
+    
+  
+  }
+  
+
+  
+  if (any(mat < 0, na.rm = TRUE)) {
+    
+    mat_range <- range(mat, na.rm = TRUE)  # includes negatives
+    
+    # create diverging color function
+    col_fun <- colorRamp2(
+      c(mat_range[1], 0, mat_range[2]),  # min (neg), 0, max (pos)
+      c("blue", "white", "red")          # colors
+    )
+    
+    ht1 <- Heatmap(mat,
+            name = "%PVE decrease",
+            cluster_rows = FALSE,
+            cluster_columns = FALSE,
+            col = col_fun,
+            row_names_side = "left",
+            column_title = paste0("%PVE decreased after \n adding the second tissue(column) -- \n", trait," (eQTL)"),
+            rect_gp = gpar(col = "black", lwd = 0.5),
+            cell_fun = function(j, i, x, y, width, height, fill) {
+              if (!is.na(mat[i, j])) {
+                grid.text(sprintf("%.1f", mat[i, j]), x, y, gp = gpar(fontsize = 8))
+              }
+            })
+    
+    
+    
+  }else{
+    
+       ht1 <- Heatmap(mat,
+          name = "%PVE decrease",
+          cluster_rows = FALSE,
+          cluster_columns = FALSE,
+          col = colorRampPalette(c("white", "red"))(100),
+          row_names_side = "left",   # can also be "right"
+          column_title = paste0("%PVE decreased after  \n adding the second tissue(column) -- \n", trait," (eQTL)"),
+          rect_gp = gpar(col = "black", lwd = 0.5),   # draw grid lines
+          cell_fun = function(j, i, x, y, width, height, fill) {
+            grid.text(sprintf("%.1f", mat[i, j]), x, y, gp = gpar(fontsize = 8))
+          })
+    
+  }
+
+  
+  
+  
+  ## single tissue sQTL
+  
+  folder_results <- paste0("/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/splicing/",trait,"/")
+  
+  prob_pve_alltissue <- c()
+  for (tissue in top_tissues){
+    
+    file_param_single <- paste0(folder_results,"/",trait,"_",tissue,".thin1.shared_all.param.RDS")
+    param_single <- readRDS(file_param_single)
+    
+    ctwas_parameters_single <- summarize_param(param_single, gwas_n, enrichment_test = "fisher")
+    
+    prob_pve <- ctwas_parameters_single$prop_heritability[1]
+    prob_pve_alltissue <- c(prob_pve_alltissue, prob_pve)
+    
+  }
+  
+  names(prob_pve_alltissue) <- gsub(pattern = "\\|sQTL",x = names(prob_pve_alltissue), replacement = "")
+  
+  
+  for (i in 1:length(tissue_combination)){
+    
+    tissue1 <- tissue_combination[[i]][1]
+    pve_tissue1 <- prob_pve_alltissue[tissue1]
+    tissue2 <- tissue_combination[[i]][2]
+    pve_tissue2 <- prob_pve_alltissue[tissue2]
+    
+    tissue_pair <- paste0(tissue_combination[[i]], collapse = "-")
+    
+    file_param_pair <- paste0("/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/pairwise_snakemake_outputs_bynumber/",trait,"/",trait,".",tissue_pair,".sqtlonly.thin1.shared_all.param.RDS")
+    param_pair <- readRDS(file_param_pair)
+    ctwas_parameters_pair <- summarize_param(param_pair, gwas_n, enrichment_test = "fisher")
+    
+    pve_tissue1_joint <- ctwas_parameters_pair$prop_heritability[paste0(tissue1,"|sQTL")]
+    pve_tissue2_joint <- ctwas_parameters_pair$prop_heritability[paste0(tissue2,"|sQTL")]
+    
+    pct_pve_shared_tissue1 <- (pve_tissue1 - pve_tissue1_joint)/pve_tissue1 * 100
+    pct_pve_shared_tissue2 <- (pve_tissue2 - pve_tissue2_joint)/pve_tissue2 * 100
+    
+    mat[tissue1, tissue2] <- pct_pve_shared_tissue1
+    mat[tissue2, tissue1] <- pct_pve_shared_tissue2
+    
+  
+  }
+  
+
+  if (any(mat < 0, na.rm = TRUE)) {
+    
+    mat_range <- range(mat, na.rm = TRUE)  # includes negatives
+    
+    # create diverging color function
+    col_fun <- colorRamp2(
+      c(mat_range[1], 0, mat_range[2]),  # min (neg), 0, max (pos)
+      c("blue", "white", "red")          # colors
+    )
+    
+    ht2 <- Heatmap(mat,
+            name = "%PVE decrease",
+            cluster_rows = FALSE,
+            cluster_columns = FALSE,
+            col = col_fun,
+            row_names_side = "left",
+            column_title = paste0("%PVE decreased after \n adding the second tissue(column) -- \n", trait," (sQTL)"),
+            rect_gp = gpar(col = "black", lwd = 0.5),
+            cell_fun = function(j, i, x, y, width, height, fill) {
+              if (!is.na(mat[i, j])) {
+                grid.text(sprintf("%.1f", mat[i, j]), x, y, gp = gpar(fontsize = 8))
+              }
+            })
+    
+    
+    
+  }else{
+    
+       ht2 <- Heatmap(mat,
+          name = "%PVE decrease",
+          cluster_rows = FALSE,
+          cluster_columns = FALSE,
+          col = colorRampPalette(c("white", "red"))(100),
+          row_names_side = "left",   # can also be "right"
+          column_title = paste0("%PVE decreased after  \n adding the second tissue(column) -- \n", trait," (sQTL)"),
+          rect_gp = gpar(col = "black", lwd = 0.5),   # draw grid lines
+          cell_fun = function(j, i, x, y, width, height, fill) {
+            grid.text(sprintf("%.1f", mat[i, j]), x, y, gp = gpar(fontsize = 8))
+          })
+    
+  }
+  
+
+  
+  
+  draw(ht1 + ht2)
+  
+}
+
+
+
+
+
+```
