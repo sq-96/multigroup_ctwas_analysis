@@ -383,7 +383,7 @@ div.tocify {
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2025-08-20
+<strong>Last updated:</strong> 2025-08-21
 </p>
 <p>
 <strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 1
@@ -474,16 +474,16 @@ This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a> analysi
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree308849b6c06fc62260cc950403b62b0896b73f60targetblank308849ba"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/308849b6c06fc62260cc950403b62b0896b73f60" target="_blank">308849b</a> </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree5896c927d03cec416ea1ffedb6375abccef4ba4ctargetblank5896c92a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/5896c927d03cec416ea1ffedb6375abccef4ba4c" target="_blank">5896c92</a> </a>
 </p>
 </div>
-<div id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree308849b6c06fc62260cc950403b62b0896b73f60targetblank308849ba" class="panel-collapse collapse">
+<div id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree5896c927d03cec416ea1ffedb6375abccef4ba4ctargetblank5896c92a" class="panel-collapse collapse">
 <div class="panel-body">
 <p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility.
 </p>
 <p>
-The results in this page were generated with repository version <a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/308849b6c06fc62260cc950403b62b0896b73f60" target="_blank">308849b</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
+The results in this page were generated with repository version <a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/5896c927d03cec416ea1ffedb6375abccef4ba4c" target="_blank">5896c92</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
 </p>
 <p>
 Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
@@ -529,6 +529,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/5896c927d03cec416ea1ffedb6375abccef4ba4c/analysis/ctwas_paper_figures.Rmd" target="_blank">5896c92</a>
+</td>
+<td>
+sq-96
+</td>
+<td>
+2025-08-21
+</td>
+<td>
+update
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/sq-96/multigroup_ctwas_analysis/5896c927d03cec416ea1ffedb6375abccef4ba4c/docs/ctwas_paper_figures.html" target="_blank">5896c92</a>
+</td>
+<td>
+sq-96
+</td>
+<td>
+2025-08-21
+</td>
+<td>
+update
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -1311,56 +1345,7 @@ sq-96
 <h2>Figure 3: cTWAS estimates genetic architecture of complex traits from GTEx</h2>
 <div id="figure-3a-tissues-are-often-correlated-but-one-tissue-is-not-enough." class="section level3">
 <h3>Figure 3a: Tissues are often correlated: but one tissue is not enough.</h3>
-<pre class="r"><code>thin &lt;- 1
-vgs &lt;- &quot;shared_all&quot;
-L &lt;-5
-colors &lt;- c(&quot;#ff7f0e&quot;, &quot;#2ca02c&quot;, &quot;#d62728&quot;,  &quot;#9467bd&quot;, &quot;#8c564b&quot;, &quot;#e377c2&quot;, &quot;#7f7f7f&quot;,  &quot;#bcbd22&quot;,  &quot;#17becf&quot;,  &quot;#f7b6d2&quot;,  &quot;#c5b0d5&quot;,  &quot;#9edae5&quot;, &quot;#ffbb78&quot;,  &quot;#98df8a&quot;,  &quot;#ff9896&quot; )
-
-fix_panel_size &lt;- function(plot, width = 2.1, height = 2) {
-  set_panel_size(plot, 
-                 width = unit(width, &quot;in&quot;), 
-                 height = unit(height, &quot;in&quot;))
-}
-
-folder_results_multiqtl &lt;- &quot;/project/xinhe/xsun/multi_group_ctwas/24.diff_qtls_0519/snakemake_outputs/&quot;
-
-trait &lt;- &quot;IBD-ebi-a-GCST004131&quot;
-
-gwas_n &lt;- samplesize[trait]
-
-
-file_param &lt;- paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/expression/IBD-ebi-a-GCST004131/IBD-ebi-a-GCST004131_Whole_Blood.thin1.shared_all.param.RDS&quot;)
-param &lt;- readRDS(file_param)
-ctwas_parameters &lt;- summarize_param(param, gwas_n)
-
-p1 &lt;- plot_piechart_topn(ctwas_parameters = ctwas_parameters,colors = colors,by = &quot;context&quot;,title = NULL)
-
-
-file_param &lt;- paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/expression/IBD-ebi-a-GCST004131/IBD-ebi-a-GCST004131_Colon_Transverse.thin1.shared_all.param.RDS&quot;)
-param &lt;- readRDS(file_param)
-ctwas_parameters &lt;- summarize_param(param, gwas_n)
-
-p2 &lt;- plot_piechart_topn(ctwas_parameters = ctwas_parameters,colors = colors,by = &quot;context&quot;,title = NULL)
-
-file_param &lt;- paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/24.diff_qtls_0519/snakemake_outputs/IBD-ebi-a-GCST004131/IBD-ebi-a-GCST004131.eonly.thin1.shared_all.param.RDS&quot;)
-param &lt;- readRDS(file_param)
-ctwas_parameters &lt;- summarize_param(param, gwas_n)
-
-p3 &lt;- plot_piechart_topn(ctwas_parameters = ctwas_parameters,colors = colors,by = &quot;context&quot;,title = NULL)
-
-pie1 &lt;- fix_panel_size(p1)
-pie2 &lt;- fix_panel_size(p2)
-pie3 &lt;- fix_panel_size(p3)
-
-# Calculate widths of each gtable (plot + legend)
-widths &lt;- unit.c(grobWidth(pie1), grobWidth(pie2),grobWidth(pie3))
-
-# Arrange plots with their natural widths
-p &lt;- grid.arrange(pie1, pie2, pie3,
-                  ncol = 3, 
-                  widths = widths,
-                  top = paste0(trait))</code></pre>
-<p><img src="figure/ctwas_paper_figures.Rmd/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/ctwas_paper_figures.Rmd/unnamed-chunk-8-1.png" width="960" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-8-1">
 Past versions of unnamed-chunk-8-1.png
@@ -1383,6 +1368,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/5896c927d03cec416ea1ffedb6375abccef4ba4c/docs/figure/ctwas_paper_figures.Rmd/unnamed-chunk-8-1.png" target="_blank">5896c92</a>
+</td>
+<td>
+sq-96
+</td>
+<td>
+2025-08-21
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/4343a9a720118180741652fc68d9163abbbea21f/docs/figure/ctwas_paper_figures.Rmd/unnamed-chunk-8-1.png" target="_blank">4343a9a</a>
@@ -1423,7 +1419,7 @@ sq-96
 </div>
 <div id="figure-3b-shared-pattern" class="section level3">
 <h3>Figure 3b: Shared pattern</h3>
-<p><img src="figure/ctwas_paper_figures.Rmd/unnamed-chunk-9-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p><img src="figure/ctwas_paper_figures.Rmd/unnamed-chunk-9-1.png" width="960" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-9-1">
 Past versions of unnamed-chunk-9-1.png
@@ -1446,6 +1442,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/5896c927d03cec416ea1ffedb6375abccef4ba4c/docs/figure/ctwas_paper_figures.Rmd/unnamed-chunk-9-1.png" target="_blank">5896c92</a>
+</td>
+<td>
+sq-96
+</td>
+<td>
+2025-08-21
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/4cdfb66c9254546ca804507c5df7c830dc869b08/docs/figure/ctwas_paper_figures.Rmd/unnamed-chunk-9-1.png" target="_blank">4cdfb66</a>
@@ -1522,6 +1529,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/5896c927d03cec416ea1ffedb6375abccef4ba4c/docs/figure/ctwas_paper_figures.Rmd/unnamed-chunk-10-1.png" target="_blank">5896c92</a>
+</td>
+<td>
+sq-96
+</td>
+<td>
+2025-08-21
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/4cdfb66c9254546ca804507c5df7c830dc869b08/docs/figure/ctwas_paper_figures.Rmd/unnamed-chunk-10-1.png" target="_blank">4cdfb66</a>
 </td>
 <td>
@@ -1563,6 +1581,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/5896c927d03cec416ea1ffedb6375abccef4ba4c/docs/figure/ctwas_paper_figures.Rmd/unnamed-chunk-11-1.png" target="_blank">5896c92</a>
+</td>
+<td>
+sq-96
+</td>
+<td>
+2025-08-21
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/4cdfb66c9254546ca804507c5df7c830dc869b08/docs/figure/ctwas_paper_figures.Rmd/unnamed-chunk-11-1.png" target="_blank">4cdfb66</a>
 </td>
 <td>
@@ -1602,6 +1631,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/5896c927d03cec416ea1ffedb6375abccef4ba4c/docs/figure/ctwas_paper_figures.Rmd/unnamed-chunk-12-1.png" target="_blank">5896c92</a>
+</td>
+<td>
+sq-96
+</td>
+<td>
+2025-08-21
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/b3fe9073bf107f82806c58cce6c725483cfca0ac/docs/figure/ctwas_paper_figures.Rmd/unnamed-chunk-12-1.png" target="_blank">b3fe907</a>
@@ -1659,6 +1699,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/5896c927d03cec416ea1ffedb6375abccef4ba4c/docs/figure/ctwas_paper_figures.Rmd/unnamed-chunk-13-1.png" target="_blank">5896c92</a>
+</td>
+<td>
+sq-96
+</td>
+<td>
+2025-08-21
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/4cdfb66c9254546ca804507c5df7c830dc869b08/docs/figure/ctwas_paper_figures.Rmd/unnamed-chunk-13-1.png" target="_blank">4cdfb66</a>
 </td>
 <td>
@@ -1698,6 +1749,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/5896c927d03cec416ea1ffedb6375abccef4ba4c/docs/figure/ctwas_paper_figures.Rmd/unnamed-chunk-15-1.png" target="_blank">5896c92</a>
+</td>
+<td>
+sq-96
+</td>
+<td>
+2025-08-21
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/4343a9a720118180741652fc68d9163abbbea21f/docs/figure/ctwas_paper_figures.Rmd/unnamed-chunk-15-1.png" target="_blank">4343a9a</a>
@@ -1753,6 +1815,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/5896c927d03cec416ea1ffedb6375abccef4ba4c/docs/figure/ctwas_paper_figures.Rmd/unnamed-chunk-17-1.png" target="_blank">5896c92</a>
+</td>
+<td>
+sq-96
+</td>
+<td>
+2025-08-21
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/36913e73176c6a2cbf9f5fd7bd0781fb38fb1eac/docs/figure/ctwas_paper_figures.Rmd/unnamed-chunk-17-1.png" target="_blank">36913e7</a>
 </td>
 <td>
@@ -1794,6 +1867,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/5896c927d03cec416ea1ffedb6375abccef4ba4c/docs/figure/ctwas_paper_figures.Rmd/unnamed-chunk-18-1.png" target="_blank">5896c92</a>
+</td>
+<td>
+sq-96
+</td>
+<td>
+2025-08-21
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/4343a9a720118180741652fc68d9163abbbea21f/docs/figure/ctwas_paper_figures.Rmd/unnamed-chunk-18-1.png" target="_blank">4343a9a</a>
 </td>
 <td>
@@ -1819,11 +1903,85 @@ sq-96
 </div>
 </div>
 <p><img src="figure/ctwas_paper_figures.Rmd/unnamed-chunk-18-2.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-18-2">
+Past versions of unnamed-chunk-18-2.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-18-2" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/5896c927d03cec416ea1ffedb6375abccef4ba4c/docs/figure/ctwas_paper_figures.Rmd/unnamed-chunk-18-2.png" target="_blank">5896c92</a>
+</td>
+<td>
+sq-96
+</td>
+<td>
+2025-08-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 </div>
 <div id="figure-5-ctwas-discovers-candidate-genes-for-complex-traits-and-provides-insights-on-their-molecular-mechanisms" class="section level2">
 <h2>Figure 5: cTWAS discovers candidate genes for complex traits and provides insights on their molecular mechanisms</h2>
 <p><img src="figure/ctwas_paper_figures.Rmd/unnamed-chunk-20-1.png" width="960" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-20-1">
+Past versions of unnamed-chunk-20-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-20-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/5896c927d03cec416ea1ffedb6375abccef4ba4c/docs/figure/ctwas_paper_figures.Rmd/unnamed-chunk-20-1.png" target="_blank">5896c92</a>
+</td>
+<td>
+sq-96
+</td>
+<td>
+2025-08-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p><img src="figure/ctwas_paper_figures.Rmd/unnamed-chunk-21-1.png" width="960" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-21-1">
@@ -1849,6 +2007,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/5896c927d03cec416ea1ffedb6375abccef4ba4c/docs/figure/ctwas_paper_figures.Rmd/unnamed-chunk-21-1.png" target="_blank">5896c92</a>
+</td>
+<td>
+sq-96
+</td>
+<td>
+2025-08-21
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/36913e73176c6a2cbf9f5fd7bd0781fb38fb1eac/docs/figure/ctwas_paper_figures.Rmd/unnamed-chunk-21-1.png" target="_blank">36913e7</a>
 </td>
 <td>
@@ -1866,6 +2035,43 @@ sq-96
 <div id="figure-5a-brain-epiqtls-explain-a-large-fraction-of-missing-heritability-by-eqtls" class="section level2">
 <h2>Figure 5a: Brain epiQTLs explain a large fraction of missing heritability by eQTLs</h2>
 <p><img src="figure/ctwas_paper_figures.Rmd/unnamed-chunk-24-1.png" width="960" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-24-1">
+Past versions of unnamed-chunk-24-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-24-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/5896c927d03cec416ea1ffedb6375abccef4ba4c/docs/figure/ctwas_paper_figures.Rmd/unnamed-chunk-24-1.png" target="_blank">5896c92</a>
+</td>
+<td>
+sq-96
+</td>
+<td>
+2025-08-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
