@@ -47,21 +47,21 @@ phe_true <- pve_gene/(sum(pve_gene)+pve_snp)
 ```
 
 ### Figure 2a: Enrichment
-```{r,echo=FALSE,fig.width= 12, fig.height= 4}
+```{r,echo=FALSE, message=FALSE, warning=FALSE, fig.width= 12, fig.height= 4}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correlated_brain_tissues_three_omics/"
 runtag = "five_correlated_brain_tissues_three_omics"
 plot_enrichment_correlated(results_dir,runtag,paste(1, 1:10, sep = "-"),c(1),"shared_all","ctwas",".minp08.mingene0.parameters.RDS",enrichment_true)
 ```
 
 ### Figure 2b: PHE
-```{r,echo=FALSE,fig.width= 12, fig.height= 4}
+```{r,echo=FALSE, message=FALSE, warning=FALSE, fig.width= 12, fig.height= 4}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correlated_brain_tissues_three_omics/"
 runtag = "five_correlated_brain_tissues_three_omics"
 plot_PHE_correlated(results_dir,runtag,paste(1, 1:10, sep = "-"),c(1),"shared_all","ctwas",".minp08.mingene0.parameters.RDS",phe_true)
 ```
 
 ### Figure 2c: Inflated single group PHE
-```{r,echo=FALSE,fig.width= 12, fig.height= 4}
+```{r,echo=FALSE, message=FALSE, warning=FALSE, fig.width= 12, fig.height= 4}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correlated_brain_tissues_three_omics/"
 runtag_list <- c(paste0(c("Cerebellum","Cortex","Nucleus_accumbens","Caudate","Cerebellar_Hemisphere"),"_expression"),
                   paste0(c("Cerebellum","Cortex","Nucleus_accumbens","Caudate","Cerebellar_Hemisphere"),"_splicing"),
@@ -94,9 +94,68 @@ p2 <- plot_gene_power_compare_method(multi_ctwas_res,single_ctwas_res,coloc_res,
 grid.arrange(p1, p2, ncol = 2)
 ```
 
-## Figure 2: cTWAS estimates genetic architecture of complex traits from GTEx
+## Figure 3: cTWAS estimates genetic architecture of complex traits from GTEx
 
-### Figure 2c: Partition of h2g (Multiple tissues contribute and Contribution of each modality)
+### Figure 3a: Tissues are often correlated: but one tissue is not enough.
+```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.height=4, fig.width=10}
+thin <- 1
+vgs <- "shared_all"
+L <-5
+colors <- c("#ff7f0e", "#2ca02c", "#d62728",  "#9467bd", "#8c564b", "#e377c2", "#7f7f7f",  "#bcbd22",  "#17becf",  "#f7b6d2",  "#c5b0d5",  "#9edae5", "#ffbb78",  "#98df8a",  "#ff9896" )
+
+fix_panel_size <- function(plot, width = 2.1, height = 2) {
+  set_panel_size(plot, 
+                 width = unit(width, "in"), 
+                 height = unit(height, "in"))
+}
+
+folder_results_multiqtl <- "/project/xinhe/xsun/multi_group_ctwas/24.diff_qtls_0519/snakemake_outputs/"
+
+trait <- "IBD-ebi-a-GCST004131"
+
+gwas_n <- samplesize[trait]
+
+
+file_param <- paste0("/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/expression/IBD-ebi-a-GCST004131/IBD-ebi-a-GCST004131_Whole_Blood.thin1.shared_all.param.RDS")
+param <- readRDS(file_param)
+ctwas_parameters <- summarize_param(param, gwas_n)
+
+p1 <- plot_piechart_topn(ctwas_parameters = ctwas_parameters,colors = colors,by = "context",title = NULL)
+
+
+file_param <- paste0("/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/expression/IBD-ebi-a-GCST004131/IBD-ebi-a-GCST004131_Colon_Transverse.thin1.shared_all.param.RDS")
+param <- readRDS(file_param)
+ctwas_parameters <- summarize_param(param, gwas_n)
+
+p2 <- plot_piechart_topn(ctwas_parameters = ctwas_parameters,colors = colors,by = "context",title = NULL)
+
+file_param <- paste0("/project/xinhe/xsun/multi_group_ctwas/24.diff_qtls_0519/snakemake_outputs/IBD-ebi-a-GCST004131/IBD-ebi-a-GCST004131.eonly.thin1.shared_all.param.RDS")
+param <- readRDS(file_param)
+ctwas_parameters <- summarize_param(param, gwas_n)
+
+p3 <- plot_piechart_topn(ctwas_parameters = ctwas_parameters,colors = colors,by = "context",title = NULL)
+
+pie1 <- fix_panel_size(p1)
+pie2 <- fix_panel_size(p2)
+pie3 <- fix_panel_size(p3)
+
+# Calculate widths of each gtable (plot + legend)
+widths <- unit.c(grobWidth(pie1), grobWidth(pie2),grobWidth(pie3))
+
+# Arrange plots with their natural widths
+p <- grid.arrange(pie1, pie2, pie3,
+                  ncol = 3, 
+                  widths = widths,
+                  top = paste0(trait))
+```
+
+### Figure 3b: Shared pattern
+```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.height=6, fig.width=10}
+trait <- "LDL-ukb-d-30780_irnt"
+out <- plot_pairwise_PVE(trait, samplesize, n_top = 10)
+```
+
+### Figure 3c: Partition of h2g (Multiple tissues contribute and Contribution of each modality)
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 folder_results_single <- "/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/expression/"
 folder_results_multi <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/"
@@ -108,26 +167,29 @@ top_tissue <- get_top_tissue(ctwas_parameters_multi$group_pve)
 param_single <- readRDS(paste0(folder_results_single, trait, "/", trait, "_", top_tissue, ".thin1.shared_all.param.RDS"))
 ctwas_parameters_single <- summarize_param(param_single, gwas_n)
 title <- paste0(trait, ", top tissue: ", top_tissue)
-print(generate_piecharts_for_trait(ctwas_parameters_single, ctwas_parameters_multi, title_top = title))
+p <- generate_piecharts_for_trait(ctwas_parameters_single, ctwas_parameters_multi, title_top = title)
+grid::grid.draw(p)
+invisible(NULL)
 ```
 
-### Figure 2d: Percent of TWAS regions with Coloc signals
+### Figure 3d: Percent of TWAS regions with Coloc signals
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 plot_fraction_of_coloc_signals_in_TWAS_regions("LDL-ukb-d-30780_irnt", pretty_labels = TRUE)
 ```
 
 
-### Figure 2e: MECS estimated eQTL heritability contributions
+### Figure 3e: MECS estimated eQTL heritability contributions
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 plot_MESC_eQTL_heritability("LDL-ukb-d-30780_irnt")$plot
 ```
 
-## Figure 3: Multi-cTWAS improves the discovery of candidate genes
+## Figure 4: Multi-cTWAS improves the discovery of candidate genes
 
-### Figure 3a: Incorporating multiple modality and tissues improves discovery power
+### Figure 4a: Incorporating multiple modality and tissues improves discovery power
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 folder_results_single <- "/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/expression/"
 folder_results_multi <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/"
+folder_results_multi_E <- "/project/xinhe/xsun/multi_group_ctwas/26.multi_tissue_eQTL_0805/snakemake_outputs/"
 trait <- "LDL-ukb-d-30780_irnt"
 gwas_n <- samplesize[trait]
 param_multi <- readRDS(paste0(folder_results_multi,trait,"/",trait,".3qtls.thin1.shared_all.param.RDS"))
@@ -139,10 +201,12 @@ title <- paste0(trait, ", top tissue: ", top_tissue)
 PIP_cutoff <- 0.8
 combined_pip_by_group_single <- readRDS(paste0(folder_results_single, trait, "/", trait, "_", top_tissue, ".combined_pip_rmmapping_bygroup_final.RDS"))
 combined_pip_by_group_multi <- readRDS(paste0(folder_results_multi,trait,"/",trait,".3qtls.combined_pip_rmmapping_bygroup_final.RDS"))
-print(plot_overlap_barplot_multi_vs_single(combined_pip_by_group_multi = combined_pip_by_group_multi, combined_pip_by_group_single = combined_pip_by_group_single,PIP_cutoff = PIP_cutoff,tissue = top_tissue,trait = trait,return_unique_genes = T)$plot)
+combined_pip_by_group_multi_E <- readRDS(paste0(folder_results_multi_E,trait,"/",trait,".eqtlonly.combined_pip_rmmapping_bygroup_final.RDS"))
+#print(plot_overlap_barplot_multi_vs_single(combined_pip_by_group_multi = combined_pip_by_group_multi, combined_pip_by_group_single = combined_pip_by_group_single, PIP_cutoff = PIP_cutoff,tissue = top_tissue,trait = trait,return_unique_genes = T)$plot)
+print(plot_overlap_barplot_multi_vs_multi_E_vs_single(combined_pip_by_group_multi = combined_pip_by_group_multi, combined_pip_by_group_single = combined_pip_by_group_single, combined_pip_by_group_multi_E = combined_pip_by_group_multi_E, PIP_cutoff = PIP_cutoff,tissue = top_tissue,trait = trait,return_unique_genes = T)$plot)
 ```
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 traits <- c(
   "SBP-ukb-a-360", "LDL-ukb-d-30780_irnt", "aFib-ebi-a-GCST006414",
   "WBC-ieu-b-30", "IBD-ebi-a-GCST004131", "BMI-panukb",
@@ -158,7 +222,7 @@ for(i in traits){
 ```
 
 
-### Figure 3b: M-cTWAS identified genes with higher POPS scores
+### Figure 4b: M-cTWAS identified genes with higher POPS scores
 Averaged POPS scores across all traits stratified by M-cTWAS PIPs 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 traits <- c(
@@ -185,9 +249,9 @@ plot_pops_by_pip_bin(plot_df,"POPs score across all traits")
 ```
 
 
-### Figure 3c: Comparison of number of signals per region between M-cTWAS, Coloc and TWAS
+### Figure 4c: Comparison of number of signals per region between M-cTWAS, Coloc and TWAS
 cTWAS tends to report single genes per locus, while coloc or TWAS report many. The number of signals of Coloc and TWAS are calcuated in regions with TWAS signals (after bonferroni correction). M-cTWAS signals are culated in regions selected by screen region step. 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
+```{r echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
 mapping_predictdb <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
 mapping_munro     <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/Munro_mapping.RDS")
 mapping_table <- rbind(mapping_predictdb, mapping_munro)
@@ -201,11 +265,13 @@ plots <- plot_number_of_signals_per_region_distributions(
   x_max = 50
 )
 
-# Show plots
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 print(plots)
 ```
 
-### Figure 3d: Compare with TGFM: compare with genes found in the paper. Show that unique genes by cTWAS are valid
+### Figure 4d: Compare with TGFM: compare with genes found in the paper. Show that unique genes by cTWAS are valid
 For unique genes identified by M-cTWAS and TGFM, I plotted the distribution of POPS scores and showed that M-cTWAS unique genes have higher POPS score than TGFM unique genes.
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 library(grex)
@@ -259,7 +325,7 @@ for(i in names(trait_list)){
 }
 ```
 
-## Figure 4: cTWAS discovers candidate genes for complex traits and provides insights on their molecular mechanisms 
+## Figure 5: cTWAS discovers candidate genes for complex traits and provides insights on their molecular mechanisms 
 ```{r echo=FALSE, message=FALSE, warning=FALSE,fig.height=8, fig.width=10}
 folder_results_single <- "/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/expression/"
 folder_results_multi <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/"
@@ -301,8 +367,8 @@ grid.newpage()
 print(p2)
 ```
 
-## Figure 5: Brain epiQTLs explain a large fraction of missing heritability by eQTLs
-```{r echo=FALSE, message=FALSE, warning=FALSE}
+## Figure 5a: Brain epiQTLs explain a large fraction of missing heritability by eQTLs
+```{r echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
 mapping_table <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/weights/gene_mapping.RDS")
 predictdb_mapping_table <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
 mapping_table <- rbind(mapping_table,predictdb_mapping_table)
@@ -336,7 +402,7 @@ p1 <- ggplot(merged_result, aes(x = total_susie_pip,
     theme_minimal(base_size = 14)
 ```
 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
+```{r echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
 suppressMessages({
   suppressWarnings({
     eQTL_res <- get_gene_res(mapping_table, "/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_eQTL/SCZ_eQTL.finemap_regions_res.RDS", snp_map)
