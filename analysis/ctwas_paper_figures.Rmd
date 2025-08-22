@@ -20,7 +20,7 @@ source("/project/xinhe/shengqian/cTWAS_paper_figures/plot_function.R")
 source("/project/xinhe/xsun/multi_group_ctwas/data/samplesize.R")
 ```
 
-## Figure 2: cTWAS simulations
+## Figure 2: cTWAS simulations (Correlated Brain Tissues)
 ```{r echo=FALSE}
 pve_gene <- c(0.02, 0.02, 0, 0, 0,
               0.01, 0.01, 0, 0, 0,
@@ -150,7 +150,7 @@ p <- grid.arrange(pie1, pie2, pie3,
 ```
 
 ### Figure 3b: Shared pattern
-```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.height=6, fig.width=10}
+```{r, eval=FALSE, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.height=6, fig.width=10}
 trait <- "LDL-ukb-d-30780_irnt"
 out <- plot_pairwise_PVE(trait, samplesize, n_top = 10)
 ```
@@ -367,7 +367,88 @@ grid.newpage()
 print(p2)
 ```
 
-## Figure 5a: Brain epiQTLs explain a large fraction of missing heritability by eQTLs
+## Figure 5: Brain epiQTLs explain a large fraction of missing heritability by eQTLs
+
+### Figure 5a: Enrichment of epiQTLs vs. eQTLs
+```{r,echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.height=4, fig.width=10}
+prop_heritability <- readRDS("/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_eQTL_caQTL_mQTL/SCZ_eQTL_caQTL_mQTL.parameters.RDS")
+
+# Extract values
+log_enrichment <- prop_heritability$log_enrichment
+log_enrichment_se <- prop_heritability$log_enrichment_se
+
+# Build data frame
+df <- data.frame(
+  context = names(log_enrichment),
+  value = as.numeric(log_enrichment),
+  se = as.numeric(log_enrichment_se)
+)
+
+# Plot
+ggplot(df, aes(x = context, y = value)) +
+  geom_col(fill = "steelblue", alpha = 0.8) +
+  geom_errorbar(aes(ymin = value - se, ymax = value + se), width = 0.2) +
+  theme_minimal(base_size = 14) +
+  labs(x = "", y = "Log Enrichment") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+### Figure 5b: epiQTLs explain a larger fraction of h2g than eQTLs and different QTLs have limited overlap
+```{r,echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.height=4, fig.width=10}
+library(RColorBrewer)
+# Example: Load three different heritability proportion datasets
+prop1 <- readRDS("/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_eQTL/SCZ_eQTL.parameters.RDS")$prop_heritability
+prop1 <- c(sum(prop1[1:5]),prop1[6])
+prop2 <- readRDS("/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_caQTL/SCZ_caQTL.parameters.RDS")$prop_heritability
+prop2 <- c(prop2[1:2],prop2[3])
+prop3 <- readRDS("/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_mQTL/SCZ_mQTL.parameters.RDS")$prop_heritability
+
+# Set up layout for 3 plots in one row
+par(mfrow = c(1, 3), mar = c(2, 2, 2, 1))  # Adjust margins if needed
+
+# Choose consistent color palette
+colors <- brewer.pal(n = max(lengths(list(prop1, prop2, prop3))), name = "Set2")
+
+# Plot each pie chart
+pie(
+  prop1,
+  labels = paste0(c("eQTL","SNP"), "\n", round(100 * prop1, 1), "%"),
+  col = colors,
+  border = "white"
+)
+
+pie(
+  prop2,
+  labels = paste0(c("caQTL","SNP"), "\n", round(100 * prop2, 1), "%"),
+  col = colors,
+  border = "white"
+)
+
+pie(
+  prop3,
+  labels = paste0(c("mQTL","SNP"), "\n", round(100 * prop3, 1), "%"),
+  col = colors,
+  border = "white"
+)
+
+```
+
+```{r,echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.height=4, fig.width=10}
+prop_heritability <- readRDS("/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_eQTL_caQTL_mQTL/SCZ_eQTL_caQTL_mQTL.parameters.RDS")
+prop_heritability <- prop_heritability$prop_heritability
+prop_heritability <- c(sum(prop_heritability[1:5]),sum(prop_heritability[6:7]),prop_heritability[8],prop_heritability[9])
+colors <- brewer.pal(n = 4, name = "Set2")  # Alternatives: "Pastel1", "Dark2", "Set3"
+
+# Draw pie chart
+pie(
+  prop_heritability,
+  labels = paste0(c("eQTL","caQTL","mQTL","SNP"), "\n", round(100 * prop_heritability, 1), "%"),
+  col = colors,
+  border = "white"
+)
+```
+
+### Figure 5c: Using epiQTL discovered novel CREs missed by eQTLs
 ```{r echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
 mapping_table <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/weights/gene_mapping.RDS")
 predictdb_mapping_table <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
