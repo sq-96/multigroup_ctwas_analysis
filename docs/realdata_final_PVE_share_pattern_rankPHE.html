@@ -537,15 +537,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree8996a4df3bcd8dc696e6be1244bd2f730aa1c74ctargetblank8996a4da">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistreea2b260dd04dccad8a08e206e6e6ad7917d5c132btargetblanka2b260da">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/8996a4df3bcd8dc696e6be1244bd2f730aa1c74c" target="_blank">8996a4d</a>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/a2b260dd04dccad8a08e206e6e6ad7917d5c132b" target="_blank">a2b260d</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistree8996a4df3bcd8dc696e6be1244bd2f730aa1c74ctargetblank8996a4da"
+id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistreea2b260dd04dccad8a08e206e6e6ad7917d5c132btargetblanka2b260da"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -555,7 +555,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/8996a4df3bcd8dc696e6be1244bd2f730aa1c74c" target="_blank">8996a4d</a>.
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/a2b260dd04dccad8a08e206e6e6ad7917d5c132b" target="_blank">a2b260d</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -576,7 +576,6 @@ Ignored files:
     Ignored:    figures/lz_ld/IBD-ebi-a-GCST004131/single/
 
 Unstaged changes:
-    Modified:   analysis/realdata_final_PVE_share_pattern.Rmd
     Modified:   analysis/realdata_final_PVE_share_pattern_rankPHE.Rmd
 
 </code></pre>
@@ -624,6 +623,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/fef2c966c1b38536af83c4909ba01818af93de90/analysis/realdata_final_PVE_share_pattern_rankPHE.Rmd" target="_blank">fef2c96</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-08-22
+</td>
+<td>
+update
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/sq-96/multigroup_ctwas_analysis/fef2c966c1b38536af83c4909ba01818af93de90/docs/realdata_final_PVE_share_pattern_rankPHE.html" target="_blank">fef2c96</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-08-22
+</td>
+<td>
+update
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -1136,7 +1169,8 @@ for (trait  in traits){
   
   }
   
-
+  prob_pve_alltissue &lt;- prob_pve_alltissue[rownames(mat)]
+  prob_pve_alltissue &lt;- round(prob_pve_alltissue*100,digits = 2)
   
   if (any(mat &lt; 0, na.rm = TRUE)) {
     
@@ -1147,6 +1181,8 @@ for (trait  in traits){
       c(mat_range[1], 0, mat_range[2]),  # min (neg), 0, max (pos)
       c(&quot;blue&quot;, &quot;white&quot;, &quot;red&quot;)          # colors
     )
+    
+    rownames(mat) &lt;- paste0(rownames(mat),&quot; &quot;,prob_pve_alltissue,&quot;%&quot;)
     
     ht1 &lt;- Heatmap(mat,
             name = &quot;%PVE decrease&quot;,
@@ -1165,6 +1201,8 @@ for (trait  in traits){
     
     
   }else{
+    
+    rownames(mat) &lt;- paste0(rownames(mat),&quot; &quot;,prob_pve_alltissue,&quot;%&quot;)
     
        ht1 &lt;- Heatmap(mat,
           name = &quot;%PVE decrease&quot;,
@@ -1202,6 +1240,8 @@ for (trait  in traits){
   
   names(prob_pve_alltissue) &lt;- gsub(pattern = &quot;\\|sQTL&quot;,x = names(prob_pve_alltissue), replacement = &quot;&quot;)
   
+    mat &lt;- matrix(NA, nrow = length(top_tissues_phe), ncol = length(top_tissues_phe),
+                dimnames = list(top_tissues_phe, top_tissues_phe))
   
   for (i in 1:length(tissue_combination)){
     
@@ -1228,6 +1268,10 @@ for (trait  in traits){
   
   }
   
+  prob_pve_alltissue &lt;- prob_pve_alltissue[rownames(mat)]
+  prob_pve_alltissue &lt;- round(prob_pve_alltissue*100,digits = 2)
+  
+  
 
   if (any(mat &lt; 0, na.rm = TRUE)) {
     
@@ -1238,6 +1282,8 @@ for (trait  in traits){
       c(mat_range[1], 0, mat_range[2]),  # min (neg), 0, max (pos)
       c(&quot;blue&quot;, &quot;white&quot;, &quot;red&quot;)          # colors
     )
+    
+    rownames(mat) &lt;- paste0(rownames(mat),&quot; &quot;,prob_pve_alltissue,&quot;%&quot;)
     
     ht2 &lt;- Heatmap(mat,
             name = &quot;%PVE decrease&quot;,
@@ -1256,6 +1302,8 @@ for (trait  in traits){
     
     
   }else{
+    
+    rownames(mat) &lt;- paste0(rownames(mat),&quot; &quot;,prob_pve_alltissue,&quot;%&quot;)
     
        ht2 &lt;- Heatmap(mat,
           name = &quot;%PVE decrease&quot;,
@@ -1279,48 +1327,862 @@ for (trait  in traits){
 }</code></pre>
 <pre><code>[1] &quot;LDL-ukb-d-30780_irnt&quot;</code></pre>
 <p><img src="figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-1.png" width="960" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-3-1">
+Past versions of unnamed-chunk-3-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-3-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/fef2c966c1b38536af83c4909ba01818af93de90/docs/figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-1.png" target="_blank">fef2c96</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-08-22
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>[1] &quot;IBD-ebi-a-GCST004131&quot;</code></pre>
 <p><img src="figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-2.png" width="960" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-3-2">
+Past versions of unnamed-chunk-3-2.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-3-2" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/fef2c966c1b38536af83c4909ba01818af93de90/docs/figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-2.png" target="_blank">fef2c96</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-08-22
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>[1] &quot;aFib-ebi-a-GCST006414&quot;</code></pre>
 <p><img src="figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-3.png" width="960" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-3-3">
+Past versions of unnamed-chunk-3-3.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-3-3" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/fef2c966c1b38536af83c4909ba01818af93de90/docs/figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-3.png" target="_blank">fef2c96</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-08-22
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>[1] &quot;SBP-ukb-a-360&quot;</code></pre>
 <p><img src="figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-4.png" width="960" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-3-4">
+Past versions of unnamed-chunk-3-4.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-3-4" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/fef2c966c1b38536af83c4909ba01818af93de90/docs/figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-4.png" target="_blank">fef2c96</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-08-22
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>[1] &quot;T1D-GCST90014023&quot;</code></pre>
 <p><img src="figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-5.png" width="960" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-3-5">
+Past versions of unnamed-chunk-3-5.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-3-5" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/fef2c966c1b38536af83c4909ba01818af93de90/docs/figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-5.png" target="_blank">fef2c96</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-08-22
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>[1] &quot;T2D-panukb&quot;</code></pre>
 <p><img src="figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-6.png" width="960" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-3-6">
+Past versions of unnamed-chunk-3-6.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-3-6" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/fef2c966c1b38536af83c4909ba01818af93de90/docs/figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-6.png" target="_blank">fef2c96</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-08-22
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>[1] &quot;ATH_gtexukb&quot;</code></pre>
 <p><img src="figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-7.png" width="960" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-3-7">
+Past versions of unnamed-chunk-3-7.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-3-7" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/fef2c966c1b38536af83c4909ba01818af93de90/docs/figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-7.png" target="_blank">fef2c96</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-08-22
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>[1] &quot;BMI-panukb&quot;</code></pre>
 <p><img src="figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-8.png" width="960" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-3-8">
+Past versions of unnamed-chunk-3-8.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-3-8" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/fef2c966c1b38536af83c4909ba01818af93de90/docs/figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-8.png" target="_blank">fef2c96</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-08-22
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>[1] &quot;HB-panukb&quot;</code></pre>
 <p><img src="figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-9.png" width="960" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-3-9">
+Past versions of unnamed-chunk-3-9.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-3-9" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/fef2c966c1b38536af83c4909ba01818af93de90/docs/figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-9.png" target="_blank">fef2c96</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-08-22
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>[1] &quot;Height-panukb&quot;</code></pre>
 <p><img src="figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-10.png" width="960" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-3-10">
+Past versions of unnamed-chunk-3-10.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-3-10" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/fef2c966c1b38536af83c4909ba01818af93de90/docs/figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-10.png" target="_blank">fef2c96</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-08-22
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>[1] &quot;HTN-panukb&quot;</code></pre>
 <p><img src="figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-11.png" width="960" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-3-11">
+Past versions of unnamed-chunk-3-11.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-3-11" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/fef2c966c1b38536af83c4909ba01818af93de90/docs/figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-11.png" target="_blank">fef2c96</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-08-22
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>[1] &quot;PLT-panukb&quot;</code></pre>
 <p><img src="figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-12.png" width="960" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-3-12">
+Past versions of unnamed-chunk-3-12.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-3-12" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/fef2c966c1b38536af83c4909ba01818af93de90/docs/figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-12.png" target="_blank">fef2c96</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-08-22
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>[1] &quot;RA-panukb&quot;</code></pre>
 <p><img src="figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-13.png" width="960" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-3-13">
+Past versions of unnamed-chunk-3-13.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-3-13" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/fef2c966c1b38536af83c4909ba01818af93de90/docs/figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-13.png" target="_blank">fef2c96</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-08-22
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>[1] &quot;RBC-panukb&quot;</code></pre>
 <p><img src="figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-14.png" width="960" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-3-14">
+Past versions of unnamed-chunk-3-14.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-3-14" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/fef2c966c1b38536af83c4909ba01818af93de90/docs/figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-14.png" target="_blank">fef2c96</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-08-22
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>[1] &quot;WBC-ieu-b-30&quot;</code></pre>
 <p><img src="figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-15.png" width="960" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-3-15">
+Past versions of unnamed-chunk-3-15.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-3-15" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/fef2c966c1b38536af83c4909ba01818af93de90/docs/figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-15.png" target="_blank">fef2c96</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-08-22
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>[1] &quot;SCZ-ieu-b-5102&quot;</code></pre>
 <p><img src="figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-16.png" width="960" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-3-16">
+Past versions of unnamed-chunk-3-16.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-3-16" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/fef2c966c1b38536af83c4909ba01818af93de90/docs/figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-16.png" target="_blank">fef2c96</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-08-22
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>[1] &quot;BIP-ieu-b-5110&quot;</code></pre>
 <p><img src="figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-17.png" width="960" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-3-17">
+Past versions of unnamed-chunk-3-17.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-3-17" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/fef2c966c1b38536af83c4909ba01818af93de90/docs/figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-17.png" target="_blank">fef2c96</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-08-22
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>[1] &quot;MDD-ieu-b-102&quot;</code></pre>
 <p><img src="figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-18.png" width="960" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-3-18">
+Past versions of unnamed-chunk-3-18.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-3-18" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/fef2c966c1b38536af83c4909ba01818af93de90/docs/figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-18.png" target="_blank">fef2c96</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-08-22
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>[1] &quot;PD-ieu-b-7&quot;</code></pre>
 <p><img src="figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-19.png" width="960" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-3-19">
+Past versions of unnamed-chunk-3-19.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-3-19" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/fef2c966c1b38536af83c4909ba01818af93de90/docs/figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-19.png" target="_blank">fef2c96</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-08-22
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>[1] &quot;NS-ukb-a-230&quot;</code></pre>
 <p><img src="figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-20.png" width="960" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-3-20">
+Past versions of unnamed-chunk-3-20.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-3-20" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/fef2c966c1b38536af83c4909ba01818af93de90/docs/figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-20.png" target="_blank">fef2c96</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-08-22
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>[1] &quot;ASD-ieu-a-1185&quot;</code></pre>
 <p><img src="figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-21.png" width="960" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-3-21">
+Past versions of unnamed-chunk-3-21.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-3-21" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/fef2c966c1b38536af83c4909ba01818af93de90/docs/figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-21.png" target="_blank">fef2c96</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-08-22
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>[1] &quot;ADHD-ieu-a-1183&quot;</code></pre>
 <p><img src="figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-22.png" width="960" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-3-22">
+Past versions of unnamed-chunk-3-22.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-3-22" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/fef2c966c1b38536af83c4909ba01818af93de90/docs/figure/realdata_final_PVE_share_pattern_rankPHE.Rmd/unnamed-chunk-3-22.png" target="_blank">fef2c96</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-08-22
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
