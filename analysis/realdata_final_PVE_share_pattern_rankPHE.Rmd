@@ -102,32 +102,32 @@ get_top_tissues_phe <- function(trait, n_top = 10, folder_results, gwas_n) {
 ```
 
 
-# Tissue ranking 
+# Tissue ranking
 
 ```{r warning=F, message=F}
 
 for (trait  in traits){
-  
+
   print(trait)
-  
+
   gwas_n <- samplesize[trait]
-  
+
   folder_results <- paste0("/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/expression/",trait,"/")
-  
+
   top_tissues <- get_top_tissues(
-    trait = trait, 
+    trait = trait,
     n_top = 10,
     folder_results = folder_results
   )
- 
-  
-  top_tissues_phe <- get_top_tissues_phe(trait, 
-                                     n_top = 10, 
-                                     folder_results, 
-                                     gwas_n) 
-  
+
+
+  top_tissues_phe <- get_top_tissues_phe(trait,
+                                     n_top = 10,
+                                     folder_results,
+                                     gwas_n)
+
   tissues <- cbind( top_tissues, top_tissues_phe)
-  colnames(tissues) <- c("by gene number", "by PHE")  
+  colnames(tissues) <- c("by gene number", "by PHE")
   tissues <- as.data.frame(tissues)
   print(tissues)
 }
@@ -136,6 +136,8 @@ for (trait  in traits){
 
 ```
 
+
+# Results
 
 ```{r fig.height=6, fig.width=10, warning=F}
 
@@ -150,16 +152,15 @@ for (trait  in traits){
   
   folder_results <- paste0("/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/expression/",trait,"/")
   
-  top_tissues <- get_top_tissues_phe(
-    trait = trait, 
-    n_top = 10,
-    folder_results = folder_results
-  )
+  top_tissues_phe <- get_top_tissues_phe(trait,
+                                     n_top = 10,
+                                     folder_results,
+                                     gwas_n)
   
   
   ## single tissue eQTL
   prob_pve_alltissue <- c()
-  for (tissue in top_tissues){
+  for (tissue in top_tissues_phe){
     
     file_param_single <- paste0(folder_results,"/",trait,"_",tissue,".thin1.shared_all.param.RDS")
     param_single <- readRDS(file_param_single)
@@ -176,10 +177,10 @@ for (trait  in traits){
   
   ## pairwise
   
-  tissue_combination <- combn(top_tissues, 2, simplify = FALSE)
+  tissue_combination <- combn(top_tissues_phe, 2, simplify = FALSE)
   
-  mat <- matrix(NA, nrow = length(top_tissues), ncol = length(top_tissues),
-                dimnames = list(top_tissues, top_tissues))
+  mat <- matrix(NA, nrow = length(top_tissues_phe), ncol = length(top_tissues_phe),
+                dimnames = list(top_tissues_phe, top_tissues_phe))
   
   for (i in 1:length(tissue_combination)){
     
@@ -190,7 +191,7 @@ for (trait  in traits){
     
     tissue_pair <- paste0(tissue_combination[[i]], collapse = "-")
     
-    file_param_pair <- paste0("/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/pairwise_snakemake_outputs_bynumber/",trait,"/",trait,".",tissue_pair,".eqtlonly.thin1.shared_all.param.RDS")
+    file_param_pair <- paste0("/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/pairwise_snakemake_outputs_byPHE/",trait,"/",trait,".",tissue_pair,".eqtlonly.thin1.shared_all.param.RDS")
     param_pair <- readRDS(file_param_pair)
     ctwas_parameters_pair <- summarize_param(param_pair, gwas_n, enrichment_test = "fisher")
     
@@ -258,7 +259,7 @@ for (trait  in traits){
   folder_results <- paste0("/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/splicing/",trait,"/")
   
   prob_pve_alltissue <- c()
-  for (tissue in top_tissues){
+  for (tissue in top_tissues_phe){
     
     file_param_single <- paste0(folder_results,"/",trait,"_",tissue,".thin1.shared_all.param.RDS")
     param_single <- readRDS(file_param_single)
@@ -282,7 +283,7 @@ for (trait  in traits){
     
     tissue_pair <- paste0(tissue_combination[[i]], collapse = "-")
     
-    file_param_pair <- paste0("/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/pairwise_snakemake_outputs_bynumber/",trait,"/",trait,".",tissue_pair,".sqtlonly.thin1.shared_all.param.RDS")
+    file_param_pair <- paste0("/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/pairwise_snakemake_outputs_byPHE/",trait,"/",trait,".",tissue_pair,".sqtlonly.thin1.shared_all.param.RDS")
     param_pair <- readRDS(file_param_pair)
     ctwas_parameters_pair <- summarize_param(param_pair, gwas_n, enrichment_test = "fisher")
     
