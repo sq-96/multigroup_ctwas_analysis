@@ -16,6 +16,7 @@ library(egg)
 library(grid)
 library(dplyr)
 library(pheatmap)
+library(EnsDb.Hsapiens.v86)
 source("/project/xinhe/shengqian/cTWAS_paper_figures/plot_function.R")
 source("/project/xinhe/xsun/multi_group_ctwas/data/samplesize.R")
 ```
@@ -149,9 +150,66 @@ p <- grid.arrange(pie1, pie2, pie3,
                   top = paste0(trait))
 ```
 
+### Figure 3b: Modalities are mostly independent
+```{r}
+folder_results_single_E <- "/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/expression/"
+folder_results_single_S <- "/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/splicing/"
+folder_results_single_ST <- "/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/stability/"
+folder_results_multi <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/STMM_snakemake_outputs/"
+trait <- "LDL-ukb-d-30780_irnt"
+top_tissue <- "Liver"
+gwas_n <- samplesize[trait]
+param_multi <- readRDS(paste0(folder_results_multi,trait,"/",trait,".3qtls.thin1.shared_all.param.RDS"))
+ctwas_parameters_multi <- summarize_param(param = param_multi,gwas_n = gwas_n)$prop_heritability
+param_single_E <- readRDS(paste0(folder_results_single_E, trait, "/", trait, "_", top_tissue, ".thin1.shared_all.param.RDS"))
+ctwas_parameters_single_E <- summarize_param(param_single_E, gwas_n)$prop_heritability
+param_single_S <- readRDS(paste0(folder_results_single_S, trait, "/", trait, "_", top_tissue, ".thin1.shared_all.param.RDS"))
+ctwas_parameters_single_S <- summarize_param(param_single_S, gwas_n)$prop_heritability
+param_single_ST <- readRDS(paste0(folder_results_single_ST, trait, "/", trait, "_", top_tissue, ".thin1.shared_all.param.RDS"))
+ctwas_parameters_single_ST <- summarize_param(param_single_ST, gwas_n)$prop_heritability
+
+library(ggplot2)
+library(dplyr)
+
+# Extract values from your objects
+bar1_eQTL <- ctwas_parameters_single_E[1]
+bar1_sQTL <- ctwas_parameters_single_S[1]
+bar1_stQTL <- ctwas_parameters_single_ST[1]
+
+bar2_eQTL <- ctwas_parameters_multi[1]
+bar2_sQTL <- ctwas_parameters_multi[2]
+bar2_stQTL <- ctwas_parameters_multi[3]
+
+# Build data frame
+df <- data.frame(
+  group = c("Single-modality", "Single-modality", "Single-modality", "Multi-modality", "Multi-modality", "Multi-modality"),
+  QTL   = c("eQTL", "sQTL", "stQTL",
+            "eQTL", "sQTL", "stQTL"),
+  value = c(bar1_eQTL, bar1_sQTL, bar1_stQTL,
+            bar2_eQTL, bar2_sQTL, bar2_stQTL)
+)
+
+
+# Plot
+ggplot(df, aes(x = group, y = value, fill = QTL)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = round(value, 3)),
+            position = position_stack(vjust = 0.5), size = 4, color = "black") +
+  ylab("Proportion of PVE") +
+  xlab("") +
+  ggtitle(trait) +
+  scale_fill_manual(values = c("eQTL" = "#1f77b4",
+                               "sQTL" = "#ff7f0e",
+                               "stQTL" = "#2ca02c")) +
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "right")
+
+```
+
+
 ### Figure 3b: Shared pattern
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.height=6, fig.width=10}
-trait <- "LDL-ukb-d-30780_irnt"
+trait <- "IBD-ebi-a-GCST004131"
 out <- plot_pairwise_PVE(trait, samplesize, n_top = 10)
 ```
 
@@ -172,15 +230,60 @@ grid::grid.draw(p)
 invisible(NULL)
 ```
 
-### Figure 3d: Percent of TWAS regions with Coloc signals
+### Figure 3d: Percent of GWAS loci with Coloc signals
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+snp_info <- fread("/project/xinhe/shengqian/cTWAS_epigenetic/data/UKBBLD_SNPs.txt")
+gwas <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/gwas/ctwas_processed_zsnp/LDL-ukb-d-30780_irnt.preprocessed.z_snp.RDS")
+gwas <- gwas %>% left_join(dplyr::select(as.data.frame(snp_info), id, pos, chrom), by = "id")
+gwas$p <- z2p(gwas$z)
+gwas$pos <- as.numeric(gwas$pos)
+gwas$p   <- as.numeric(gwas$p)
+gwas_loci <- count_loci_500kb(gwas,chr_col = "chrom",pos_col = "pos",p_col   = "p",id_col  = "id",p_thresh = 5e-8, window_bp = 5e5)$loci
+
+coloc_genes <- readRDS("/project/xinhe/shengqian/coloc_GWAS_analysis/results/LDL-ukb-d-30780_irnt/LDL-ukb-d-30780_irnt.coloc_res.RDS")
+coloc_genes <- coloc_genes[coloc_genes$group=="expression_Skin_Not_Sun_Exposed_Suprapubic",]
+coloc_genes <- coloc_genes[coloc_genes$PP4>0.8,]
+coloc_genes <- unique(coloc_genes$gene_name)
+
+coloc_genes <- AnnotationDbi::select(
+  EnsDb.Hsapiens.v86,
+  keys = coloc_genes,
+  keytype = "SYMBOL",
+  columns = c("GENEID", "SYMBOL","GENESEQSTART","GENESEQEND")
+)
+coloc_genes$GENESEQSTART <- as.numeric(coloc_genes$GENESEQSTART)
+coloc_genes$GENESEQEND   <- as.numeric(coloc_genes$GENESEQEND)
+
+out <- map_loci_to_genes(
+  loci_df   = gwas_loci,
+  genes_df  = coloc_genes,
+  loci_chr   = "chr",
+  loci_start = "locus_start",
+  loci_end   = "locus_end",
+  loci_id    = "lead_id",
+  gene_start = "GENESEQSTART",
+  gene_end   = "GENESEQEND",
+  gene_chr   = NULL,          # change to your gene chr column if you have it
+  gene_symbol= "SYMBOL",
+  gene_id    = "GENEID"
+)
+
+out$n_loci
+out$n_loci_with_genes
+```
+
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 plot_fraction_of_coloc_signals_in_TWAS_regions("LDL-ukb-d-30780_irnt", pretty_labels = TRUE)
 ```
 
-
 ### Figure 3e: MECS estimated eQTL heritability contributions
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 plot_MESC_eQTL_heritability("LDL-ukb-d-30780_irnt")$plot
+```
+
+### Figure 3e: MECS estimated eQTL heritability contributions
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+make_eqtl_prop_plot("LDL-ukb-d-30780_irnt")$plot
 ```
 
 ## Figure 4: Multi-cTWAS improves the discovery of candidate genes
@@ -206,7 +309,54 @@ combined_pip_by_group_multi_E <- readRDS(paste0(folder_results_multi_E,trait,"/"
 print(plot_overlap_barplot_multi_vs_multi_E_vs_single(combined_pip_by_group_multi = combined_pip_by_group_multi, combined_pip_by_group_single = combined_pip_by_group_single, combined_pip_by_group_multi_E = combined_pip_by_group_multi_E, PIP_cutoff = PIP_cutoff,tissue = top_tissue,trait = trait,return_unique_genes = T)$plot)
 ```
 
+```{r}
+knitr::include_graphics("/project/xinhe/shengqian/cTWAS_paper_figures/data/lz_png/LDL-ukb-d-30780_irnt/multi/PKN3.png")
+```
+
+
+### Figure 4b: Validation with Silver Standand Genes
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+trait <- "LDL-ukb-d-30780_irnt"
+folder_results_multi <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/"
+traits_silver <- c("T2D","LDL","BMI","RBC","IBD","SCZ","aFib")
+names(traits_silver) <- c("T2D-panukb","LDL-ukb-d-30780_irnt","BMI-panukb","RBC-panukb","IBD-ebi-a-GCST004131","SCZ-ieu-b-5102","aFib-ebi-a-GCST006414")
+known <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/data/silverstandard/known_annotations_",traits_silver[trait],".RDS"))
+bystander <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/data/silverstandard/bystanders_",traits_silver[trait],".RDS"))
+
+ctwas_genes <- readRDS(paste0(folder_results_multi,trait,"/",trait,".3qtls.combined_pip_rmmapping_bygroup_final.RDS"))
+ctwas_genes <- ctwas_genes[,c("gene_name","combined_pip")]
+ctwas_genes <- ctwas_genes$gene_name[ctwas_genes$combined_pip > 0.8]
+
+folder_results <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/results_downstream/enrichr_compare/"
+coloc_genes <- readRDS(paste0(folder_results,trait,".genes.coloc.RDS"))
+coloc_genes <- coloc_genes$gene_name[coloc_genes$PP4 > 0.8]
+
+twas_genes <- readRDS(paste0(folder_results,trait,".genes.twas_bonf.RDS"))
+
+df <- data.frame(
+  Method = c("All genes", "M-cTWAS", "Coloc", "TWAS"),
+  Proportion = c(length(known)/(length(known)+length(bystander)),sum(ctwas_genes%in%known) / (sum(ctwas_genes%in%known) + sum(ctwas_genes%in%bystander)), sum(coloc_genes%in%known) / (sum(coloc_genes%in%known) + sum(coloc_genes%in%bystander)), sum(twas_genes%in%known) / (sum(twas_genes%in%known) + sum(twas_genes%in%bystander)))
+)
+
+# Ensure order
+df$Method <- factor(df$Method, levels = c("All genes", "M-cTWAS", "Coloc", "TWAS"))
+
+# Plot
+ggplot(df, aes(x = Method, y = Proportion, fill = Method)) +
+  geom_col(width = 0.6, alpha = 0.8) +
+  geom_text(aes(label = round(Proportion, 2)), 
+            vjust = -0.5, size = 5) +
+  scale_y_continuous(limits = c(0, 1)) +
+  labs(
+    title = "",
+    y = "Detected genes in silver standard (%)",
+    x = ""
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "none")
+```
+
+```{r, eval=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
 traits <- c(
   "SBP-ukb-a-360", "LDL-ukb-d-30780_irnt", "aFib-ebi-a-GCST006414",
   "WBC-ieu-b-30", "IBD-ebi-a-GCST004131", "BMI-panukb",
@@ -222,7 +372,7 @@ for(i in traits){
 ```
 
 
-### Figure 4b: M-cTWAS identified genes with higher POPS scores
+### Figure 4c: M-cTWAS identified genes with higher POPS scores
 Averaged POPS scores across all traits stratified by M-cTWAS PIPs 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 traits <- c(
@@ -249,7 +399,7 @@ plot_pops_by_pip_bin(plot_df,"POPs score across all traits")
 ```
 
 
-### Figure 4c: Comparison of number of signals per region between M-cTWAS, Coloc and TWAS
+### Figure 4d: Comparison of number of signals per region between M-cTWAS, Coloc and TWAS
 cTWAS tends to report single genes per locus, while coloc or TWAS report many. The number of signals of Coloc and TWAS are calcuated in regions with TWAS signals (after bonferroni correction). M-cTWAS signals are culated in regions selected by screen region step. 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
 mapping_predictdb <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
@@ -271,7 +421,7 @@ plots <- plot_number_of_signals_per_region_distributions(
 print(plots)
 ```
 
-### Figure 4d: Compare with TGFM: compare with genes found in the paper. Show that unique genes by cTWAS are valid
+### Figure 4e: Compare with TGFM: compare with genes found in the paper. Show that unique genes by cTWAS are valid
 For unique genes identified by M-cTWAS and TGFM, I plotted the distribution of POPS scores and showed that M-cTWAS unique genes have higher POPS score than TGFM unique genes.
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 library(grex)
@@ -280,7 +430,63 @@ trait_list <- list("LDL-ukb-d-30780_irnt" = "/project/xinhe/xsun/multi_group_ctw
                    "HTN-panukb" = "/project/xinhe/xsun/multi_group_ctwas/data/tgfm/GTEx_TGFM_PIPs_disease_HYPERTENSION_DIAGNOSED.txt")
 for(i in names(trait_list)){
   ctwas_folder_results <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/"
+  #ctwas_folder_results <- "/project/xinhe/xsun/multi_group_ctwas/26.multi_tissue_eQTL_0805/snakemake_outputs/"
   ctwas_genes <-  readRDS(paste0(ctwas_folder_results,i,"/",i,".3qtls.combined_pip_rmmapping_bygroup_final.RDS"))
+  #ctwas_genes <-  readRDS(paste0(ctwas_folder_results,i,"/",i,".eqtlonly.combined_pip_rmmapping_bygroup_final.RDS"))
+  ctwas_genes_highpip <- ctwas_genes$gene_name[ctwas_genes$combined_pip > 0.8]
+  tgfm_genes <- data.table::fread(trait_list[[i]])
+  tgfm_genes_highpip <- tgfm_genes[tgfm_genes$TGFM_PIP > 0.8,]
+  tgfm_genes_highpip <- tgfm_genes_highpip[tgfm_genes_highpip$genetic_element_class != "variant",]
+  tgfm_genes_highpip$ensg_id <- sub("\\..*", "", tgfm_genes_highpip$genetic_element_name)
+  tgfm_genes_highpip_ensg <- unique(tgfm_genes_highpip$ensg_id)
+  library(EnsDb.Hsapiens.v86)
+  ensg_to_symbol <- AnnotationDbi::select(
+    EnsDb.Hsapiens.v86,
+    keys = tgfm_genes_highpip_ensg,
+    keytype = "GENEID",
+    columns = c("GENEID", "SYMBOL")
+  )
+
+  tgfm_genes_highpip <- ensg_to_symbol$SYMBOL
+  ctwas_unique_genes <- setdiff(ctwas_genes_highpip,tgfm_genes_highpip)
+  tgfm_unique_genes <- setdiff(tgfm_genes_highpip,ctwas_genes_highpip)
+  p1 <- plot_overlap_barplot_cTWAS_vs_TGFM(ctwas_genes_highpip = ctwas_genes_highpip, tgfm_genes_highpip_symbol = tgfm_genes_highpip,trait = i,return_unique_genes = F)
+  
+  pops <- fread(paste0("/project/xinhe/shengqian/pops/pops_full_features_output/",i,"_pops/",i,".preds"))
+  df <- grex(cleanid(pops$ENSGID))
+  pops <- cbind(pops,df)
+  tgfm_gene <- pops[pops$hgnc_symbol %in% tgfm_unique_genes,]
+  ctwas_gene <- pops[pops$hgnc_symbol %in% ctwas_unique_genes,]
+
+  # Combine into one data frame
+  df <- data.frame(
+    score = c(tgfm_gene$PoPS_Score, ctwas_gene$PoPS_Score),
+    group = c(rep("TGFM", length(tgfm_gene$PoPS_Score)),
+            rep("cTWAS", length(ctwas_gene$PoPS_Score)))
+  )
+
+  # Boxplot
+  p2 <- ggplot(df, aes(x = group, y = score, fill = group)) +
+    geom_boxplot(alpha = 0.5) +
+    scale_fill_manual(values = c("blue", "red")) +
+    theme_minimal(base_size = 14) +
+    labs(title = i, x = "", y = "PoPS Score",fill = "")
+  
+  combined_plot <- (p1 | p2) + plot_layout(guides = "collect") & theme(legend.position = "bottom")
+  print(combined_plot)
+}
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(grex)
+library(ggplot2)
+trait_list <- list("LDL-ukb-d-30780_irnt" = "/project/xinhe/xsun/multi_group_ctwas/data/tgfm/GTEx_TGFM_PIPs_biochemistry_LDLdirect.txt",
+                   "HTN-panukb" = "/project/xinhe/xsun/multi_group_ctwas/data/tgfm/GTEx_TGFM_PIPs_disease_HYPERTENSION_DIAGNOSED.txt")
+for(i in names(trait_list)){
+  #ctwas_folder_results <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/"
+  ctwas_folder_results <- "/project/xinhe/xsun/multi_group_ctwas/26.multi_tissue_eQTL_0805/snakemake_outputs/"
+  #ctwas_genes <-  readRDS(paste0(ctwas_folder_results,i,"/",i,".3qtls.combined_pip_rmmapping_bygroup_final.RDS"))
+  ctwas_genes <-  readRDS(paste0(ctwas_folder_results,i,"/",i,".eqtlonly.combined_pip_rmmapping_bygroup_final.RDS"))
   ctwas_genes_highpip <- ctwas_genes$gene_name[ctwas_genes$combined_pip > 0.8]
   tgfm_genes <- data.table::fread(trait_list[[i]])
   tgfm_genes_highpip <- tgfm_genes[tgfm_genes$TGFM_PIP > 0.8,]
