@@ -587,16 +587,12 @@ combined_pip_by_group_multi_sig <- combined_pip_by_group_multi[combined_pip_by_g
 combined_pip_by_group_single_sig <- combined_pip_by_group_single[combined_pip_by_group_single$combined_pip > PIP_cutoff,]
 combined_pip_by_context_multi_sig <- combined_pip_by_context_multi[combined_pip_by_context_multi$combined_pip > PIP_cutoff,]
   
-combined_pip_by_group_multi_unique <- combined_pip_by_group_multi_sig[!combined_pip_by_group_multi_sig$gene_name %in% combined_pip_by_group_single_sig$gene_name, ]
-combined_pip_by_context_multi_unique <- combined_pip_by_context_multi_sig[!combined_pip_by_context_multi_sig$gene_name %in% combined_pip_by_group_single_sig$gene_name, ]
+#combined_pip_by_group_multi_unique <- combined_pip_by_group_multi_sig[!combined_pip_by_group_multi_sig$gene_name %in% combined_pip_by_group_single_sig$gene_name, ]
+#combined_pip_by_context_multi_unique <- combined_pip_by_context_multi_sig[!combined_pip_by_context_multi_sig$gene_name %in% combined_pip_by_group_single_sig$gene_name, ]
 
-if(nrow(combined_pip_by_group_multi_unique) > 0) {
-  p1 <- plot_heatmap(heatmap_data = combined_pip_by_group_multi_unique, main = paste0("New genes identified by multigroup analysis, PIP>",PIP_cutoff),showPIP = T)
-}
+p1 <- plot_heatmap(heatmap_data = combined_pip_by_group_multi_sig, main = paste0("New genes identified by multigroup analysis, PIP>",PIP_cutoff),showPIP = T)
   
-if(nrow(combined_pip_by_context_multi_unique) > 0) {
-  p2 <- plot_heatmap(heatmap_data = combined_pip_by_context_multi_unique, main = paste0("New genes identified by multicontext analysis, PIP>",PIP_cutoff),showPIP = T)
-}
+p2 <- plot_heatmap(heatmap_data = combined_pip_by_context_multi_sig, main = paste0("New genes identified by multicontext analysis, PIP>",PIP_cutoff),showPIP = T)
 ```
 
 ### Figure 5a: cTWAS helps identify causal modality and context
