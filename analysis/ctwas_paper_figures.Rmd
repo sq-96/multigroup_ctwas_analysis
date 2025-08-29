@@ -53,27 +53,39 @@ pve_true <- pve_gene
 phe_true <- pve_gene/(sum(pve_gene)+pve_snp)
 ```
 
-### Figure 2a: Enrichment
+### Figure 2a: Inflated PHE by single-group analysis
+```{r,echo=FALSE, message=FALSE, warning=FALSE, fig.width= 12, fig.height= 4}
+make_phe_plot_correlated()$plot
+```
+
+```{r,echo=FALSE, message=FALSE, warning=FALSE, fig.width= 12, fig.height= 4}
+make_phe_plot_uncorrelated()$plot
+```
+
+### Figure 2b: Enrichment
 ```{r,echo=FALSE, message=FALSE, warning=FALSE, fig.width= 12, fig.height= 4}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correlated_brain_tissues_three_omics/"
 runtag = "five_correlated_brain_tissues_three_omics"
 plot_enrichment_correlated(results_dir,runtag,paste(1, 1:10, sep = "-"),c(1),"shared_all","ctwas",".minp08.mingene0.parameters.RDS",enrichment_true)
 ```
 
-### Figure 2b: PHE
+```{r,echo=FALSE, message=FALSE, warning=FALSE, fig.width= 12, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_uncorrelated_tissues_three_omics/"
+runtag = "five_uncorrelated_tissues_three_omics"
+plot_enrichment_uncorrelated(results_dir,runtag,paste(1, 1:10, sep = "-"),c(1),"shared_all","ctwas",".minp08.mingene0.parameters.RDS",enrichment_true)
+```
+
+### Figure 2c: PHE
 ```{r,echo=FALSE, message=FALSE, warning=FALSE, fig.width= 12, fig.height= 4}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correlated_brain_tissues_three_omics/"
 runtag = "five_correlated_brain_tissues_three_omics"
 plot_PHE_correlated(results_dir,runtag,paste(1, 1:10, sep = "-"),c(1),"shared_all","ctwas",".minp08.mingene0.parameters.RDS",phe_true)
 ```
 
-### Figure 2c: Inflated single group PHE
 ```{r,echo=FALSE, message=FALSE, warning=FALSE, fig.width= 12, fig.height= 4}
-results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correlated_brain_tissues_three_omics/"
-runtag_list <- c(paste0(c("Cerebellum","Cortex","Nucleus_accumbens","Caudate","Cerebellar_Hemisphere"),"_expression"),
-                  paste0(c("Cerebellum","Cortex","Nucleus_accumbens","Caudate","Cerebellar_Hemisphere"),"_splicing"),
-                  paste0(c("Cerebellum","Cortex","Nucleus_accumbens","Caudate","Cerebellar_Hemisphere"),"_stability"))
-plot_single_PHE_correlated(results_dir,runtag_list,c(1),phe_true)
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_uncorrelated_tissues_three_omics/"
+runtag = "five_uncorrelated_tissues_three_omics"
+plot_PHE_uncorrelated(results_dir,runtag,paste(1, 1:10, sep = "-"),c(1),"shared_all","ctwas",".minp08.mingene0.parameters.RDS",phe_true)
 ```
 
 ### Figure 2d: PIP calibration
@@ -82,7 +94,15 @@ df1 <- readRDS("/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correl
 df2 <- readRDS("/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correlated_brain_tissues_three_omics/gene_PIP_calibration_df.RDS")
 fig1 <- cp_plot(df1$susie_pip, df1$ifcausal, df1$runtag, mode ="PIP", main = "MT level")
 fig2 <- cp_plot(df2$susie_pip, df2$ifcausal, df2$runtag, mode ="PIP", main = "Gene level")
-grid.arrange(fig1, fig2, ncol = 2)
+grid.arrange(fig1, fig2, ncol = 2, top = "Correlated tissues")
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.width=8, fig.height=4}
+df1 <- readRDS("/project/xinhe/shengqian/cTWAS_simulation/simulation_five_uncorrelated_tissues_three_omics/molecular_PIP_calibration_df.RDS")
+df2 <- readRDS("/project/xinhe/shengqian/cTWAS_simulation/simulation_five_uncorrelated_tissues_three_omics/gene_PIP_calibration_df.RDS")
+fig1 <- cp_plot(df1$susie_pip, df1$ifcausal, df1$runtag, mode ="PIP", main = "MT level")
+fig2 <- cp_plot(df2$susie_pip, df2$ifcausal, df2$runtag, mode ="PIP", main = "Gene level")
+grid.arrange(fig1, fig2, ncol = 2, top = "Uncorrelated tissues")
 ```
 
 ### Figure 2e: Power and False discovery rate
@@ -98,7 +118,22 @@ single_ctwas_res <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_c
 coloc_res <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correlated_brain_tissues_three_omics/coloc_simu_gene_res.RDS"
 smr_res <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correlated_brain_tissues_three_omics/smr_simu_gene_res.RDS"
 p2 <- plot_gene_power_compare_method(multi_ctwas_res,single_ctwas_res,coloc_res,smr_res)
-grid.arrange(p1, p2, ncol = 2)
+grid.arrange(p1, p2, ncol = 2, top = "Correlated tissues")
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.width=8, fig.height=4}
+multi_ctwas_res <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_uncorrelated_tissues_three_omics/multi_ctwas_simu_res.RDS"
+single_ctwas_res <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_uncorrelated_tissues_three_omics/single_ctwas_simu_res.RDS"
+coloc_res <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_uncorrelated_tissues_three_omics/coloc_simu_res.RDS"
+smr_res <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_uncorrelated_tissues_three_omics/smr_simu_res.RDS"
+p1 <- plot_molecular_power_compare_method(multi_ctwas_res,single_ctwas_res,coloc_res,smr_res)
+
+multi_ctwas_res <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_uncorrelated_tissues_three_omics/multi_ctwas_simu_gene_res.RDS"
+single_ctwas_res <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_uncorrelated_tissues_three_omics/single_ctwas_simu_gene_res.RDS"
+coloc_res <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_uncorrelated_tissues_three_omics/coloc_simu_gene_res.RDS"
+smr_res <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_uncorrelated_tissues_three_omics/smr_simu_gene_res.RDS"
+p2 <- plot_gene_power_compare_method(multi_ctwas_res,single_ctwas_res,coloc_res,smr_res)
+grid.arrange(p1, p2, ncol = 2, top = "Uncorrelated tissues")
 ```
 
 ## Figure 3: cTWAS estimates genetic architecture of complex traits from GTEx
@@ -212,7 +247,6 @@ ggplot(df, aes(x = group, y = value, fill = QTL)) +
 
 ```
 
-
 ### Figure 3b: Shared pattern
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.height=6, fig.width=10}
 trait <- "IBD-ebi-a-GCST004131"
@@ -236,8 +270,9 @@ grid::grid.draw(p)
 invisible(NULL)
 ```
 
-### Figure 3d: Percent of GWAS loci with Coloc signals
-```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+### Figure 3d: Existing methods may overestimate the contribution of molQTL.
+```{r, eval=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
 snp_info <- fread("/project/xinhe/shengqian/cTWAS_epigenetic/data/UKBBLD_SNPs.txt")
 gwas <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/gwas/ctwas_processed_zsnp/LDL-ukb-d-30780_irnt.preprocessed.z_snp.RDS")
 gwas <- gwas %>% left_join(dplyr::select(as.data.frame(snp_info), id, pos, chrom), by = "id")
@@ -278,16 +313,14 @@ out$n_loci
 out$n_loci_with_genes
 ```
 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
+```{r, eval=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
 plot_fraction_of_coloc_signals_in_TWAS_regions("LDL-ukb-d-30780_irnt", pretty_labels = TRUE)
 ```
 
-### Figure 3e: MECS estimated eQTL heritability contributions
-```{r echo=FALSE, message=FALSE, warning=FALSE}
+```{r, eval=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
 plot_MESC_eQTL_heritability("LDL-ukb-d-30780_irnt")$plot
 ```
 
-### Figure 3e: MECS estimated eQTL heritability contributions
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 make_eqtl_prop_plot("LDL-ukb-d-30780_irnt")$plot
 ```
@@ -319,7 +352,48 @@ print(plot_overlap_barplot_multi_vs_multi_E_vs_single(combined_pip_by_group_mult
     <img src="https://github.com/sq-96/multigroup_ctwas_analysis/raw/master/data/figures/LDL-ukb-d-30780_irnt/multi/LDLR.png" width="150%">
 </figure>
 
-### Figure 4b: Validation with Silver Standand Genes
+```{r, eval=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+traits <- c(
+  "SBP-ukb-a-360", "LDL-ukb-d-30780_irnt", "aFib-ebi-a-GCST006414",
+  "WBC-ieu-b-30", "IBD-ebi-a-GCST004131", "BMI-panukb",
+  "PLT-panukb", "RBC-panukb", "HB-panukb", "HTN-panukb", "Height-panukb",
+  "T2D-panukb", "MDD-ieu-b-102", "SCZ-ieu-b-5102", "T1D-GCST90014023", "BIP-ieu-b-5110", 
+  "ASD-ieu-a-1185", "PD-ieu-b-7", "NS-ukb-a-230","ATH_gtexukb"
+)
+for(i in traits){
+  combined_pip_by_group_multi <- readRDS(paste0(folder_results_multi,i,"/",i,".3qtls.combined_pip_bytype_final.RDS"))
+  combined_pip_by_group_multi <- combined_pip_by_group_multi[combined_pip_by_group_multi$combined_pip>0.8,]
+  write.table(combined_pip_by_group_multi$gene_name,file = paste0("/project/xinhe/shengqian/cTWAS_paper_figures/data/ctwas_genes_PIP0.8/",i,".txt"),col.names = F,row.names = F,quote = F,sep = "\t")
+}
+```
+
+### Figure 4b: M-cTWAS identified genes with higher POPS scores
+Averaged POPS scores across all traits stratified by M-cTWAS PIPs 
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+traits <- c(
+  "SBP-ukb-a-360", "LDL-ukb-d-30780_irnt", "aFib-ebi-a-GCST006414",
+  "WBC-ieu-b-30", "IBD-ebi-a-GCST004131", "BMI-panukb",
+  "PLT-panukb", "RBC-panukb", "HB-panukb", "HTN-panukb", "Height-panukb",
+  "T2D-panukb", "MDD-ieu-b-102", "SCZ-ieu-b-5102", "T1D-GCST90014023", "BIP-ieu-b-5110", 
+  "ASD-ieu-a-1185", "PD-ieu-b-7", "NS-ukb-a-230","ATH_gtexukb"
+)
+
+plot_df <- data.frame()
+for(i in traits){
+  pops <- fread(paste0("/project/xinhe/shengqian/pops/pops_full_features_output/",i,"_pops/",i,".preds"))
+  pop_anno <- fread("/project/xinhe/shengqian/pops/example/data/utils/gene_annot_jun10.txt")
+  pops_pred <- merge(pops, pop_anno, by = "ENSGID", all.x = TRUE)
+  pops_pred <- pops_pred[,c("PoPS_Score","NAME")]
+  ctwas_res <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/",i,"/",i,".3qtls.combined_pip_rmmapping_bygroup_final.RDS"))
+  ctwas_res <- ctwas_res[,c("gene_name","combined_pip")]
+  merged_df <- merge(ctwas_res, pops_pred, by.x = "gene_name", by.y = "NAME", all.x = TRUE)
+  plot_df <- rbind(plot_df,merged_df)
+}
+plot_df <- na.omit(plot_df)
+plot_pops_by_pip_bin(plot_df,"POPs score across all traits")
+```
+
+### Figure 4c: Validation with Silver Standand Genes
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 trait <- "LDL-ukb-d-30780_irnt"
 folder_results_multi <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/"
@@ -360,49 +434,6 @@ ggplot(df, aes(x = Method, y = Proportion, fill = Method)) +
   theme_minimal(base_size = 14) +
   theme(legend.position = "none")
 ```
-
-```{r, eval=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
-traits <- c(
-  "SBP-ukb-a-360", "LDL-ukb-d-30780_irnt", "aFib-ebi-a-GCST006414",
-  "WBC-ieu-b-30", "IBD-ebi-a-GCST004131", "BMI-panukb",
-  "PLT-panukb", "RBC-panukb", "HB-panukb", "HTN-panukb", "Height-panukb",
-  "T2D-panukb", "MDD-ieu-b-102", "SCZ-ieu-b-5102", "T1D-GCST90014023", "BIP-ieu-b-5110", 
-  "ASD-ieu-a-1185", "PD-ieu-b-7", "NS-ukb-a-230","ATH_gtexukb"
-)
-for(i in traits){
-  combined_pip_by_group_multi <- readRDS(paste0(folder_results_multi,i,"/",i,".3qtls.combined_pip_bytype_final.RDS"))
-  combined_pip_by_group_multi <- combined_pip_by_group_multi[combined_pip_by_group_multi$combined_pip>0.8,]
-  write.table(combined_pip_by_group_multi$gene_name,file = paste0("/project/xinhe/shengqian/cTWAS_paper_figures/data/ctwas_genes_PIP0.8/",i,".txt"),col.names = F,row.names = F,quote = F,sep = "\t")
-}
-```
-
-
-### Figure 4c: M-cTWAS identified genes with higher POPS scores
-Averaged POPS scores across all traits stratified by M-cTWAS PIPs 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
-traits <- c(
-  "SBP-ukb-a-360", "LDL-ukb-d-30780_irnt", "aFib-ebi-a-GCST006414",
-  "WBC-ieu-b-30", "IBD-ebi-a-GCST004131", "BMI-panukb",
-  "PLT-panukb", "RBC-panukb", "HB-panukb", "HTN-panukb", "Height-panukb",
-  "T2D-panukb", "MDD-ieu-b-102", "SCZ-ieu-b-5102", "T1D-GCST90014023", "BIP-ieu-b-5110", 
-  "ASD-ieu-a-1185", "PD-ieu-b-7", "NS-ukb-a-230","ATH_gtexukb"
-)
-
-plot_df <- data.frame()
-for(i in traits){
-  pops <- fread(paste0("/project/xinhe/shengqian/pops/pops_full_features_output/",i,"_pops/",i,".preds"))
-  pop_anno <- fread("/project/xinhe/shengqian/pops/example/data/utils/gene_annot_jun10.txt")
-  pops_pred <- merge(pops, pop_anno, by = "ENSGID", all.x = TRUE)
-  pops_pred <- pops_pred[,c("PoPS_Score","NAME")]
-  ctwas_res <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/",i,"/",i,".3qtls.combined_pip_rmmapping_bygroup_final.RDS"))
-  ctwas_res <- ctwas_res[,c("gene_name","combined_pip")]
-  merged_df <- merge(ctwas_res, pops_pred, by.x = "gene_name", by.y = "NAME", all.x = TRUE)
-  plot_df <- rbind(plot_df,merged_df)
-}
-plot_df <- na.omit(plot_df)
-plot_pops_by_pip_bin(plot_df,"POPs score across all traits")
-```
-
 
 ### Figure 4d: Comparison of number of signals per region between M-cTWAS, Coloc and TWAS
 cTWAS tends to report single genes per locus, while coloc or TWAS report many. The number of signals of Coloc and TWAS are calcuated in regions with TWAS signals (after bonferroni correction). M-cTWAS signals are culated in regions selected by screen region step. 
