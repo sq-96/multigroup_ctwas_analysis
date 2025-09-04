@@ -321,12 +321,25 @@ finemap_res_multi <- anno_finemap_res(finemap_res,
                                       use_gene_pos = "mid")
 finemap_res_multi <- finemap_res_multi[finemap_res_multi$type=="mQTL",]
 finemap_res_multi <- finemap_res_multi[!is.na(finemap_res_multi$cs),]  
-all_cre_cpgs <- unlist(strsplit(finemap_res_multi$molecular_id, "_"))
+#all_cre_cpgs <- unlist(strsplit(finemap_res_multi$molecular_id, "_"))
 #write.table(all_cre_cpgs,file = "/project/xinhe/shengqian/cTWAS_epigenetic/data/all_cre_cpgs.txt",sep = "\t",quote = F,row.names = F,col.names = F)
+```
+
+```{r}
+###merged CpGs and intersect with ATAC-peaks
+all_cre_cpgs <- finemap_res_multi$molecular_id
+all_cre_cpgs <- mapping_table[mapping_table$molecular_id %in% all_cre_cpgs,]
+
+all_cre_cpgs$start <- as.numeric(all_cre_cpgs$start)-1
+all_cre_cpgs$end <- as.numeric(all_cre_cpgs$end) + 1
+all_cre_cpgs$chr <- paste0("chr",as.numeric(all_cre_cpgs$chrom))
+all_cre_cpgs <- all_cre_cpgs[,c("chr","start","end","molecular_id")]
+write.table(all_cre_cpgs,file = "/project/xinhe/shengqian/cTWAS_epigenetic/data/all_cre_cpgs.bed",sep = "\t",quote = F,row.names = F,col.names = F)
 ```
 
 
 ```{r}
+###each CpG seperately
 cre_cpgs <- finemap_res_multi[finemap_res_multi$region_id=="1_7187275_9305140",]
 cre_cpgs <- unlist(strsplit(cre_cpgs$molecular_id, "_"))
 #write.table(cre_cpgs,file = "/project/xinhe/shengqian/cTWAS_epigenetic/data/candidate_gene_CpGs/RERE_cre_cpgs.txt",sep = "\t",quote = F,row.names = F,col.names = F)
