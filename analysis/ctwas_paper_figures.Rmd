@@ -857,7 +857,7 @@ combined_plot <- (p1 | p2) + plot_layout(guides = "collect") & theme(legend.posi
 print(combined_plot)
 ```
 
-```{r}
+```{r echo=FALSE}
 # ---- settings ----
 workdir <- "/project/xinhe/shengqian/cTWAS_epigenetic/data/all_cre_cpgs_peaks/"
 bed_files <- list.files(workdir, pattern = "^all_cre_cpgs\\.[^.]+\\.PeakCalls\\.bed$", full.names = TRUE)
@@ -931,7 +931,7 @@ ggplot(stat_dt, aes(x = factor(peaks), y = proportion)) +
   theme_classic()
 ```
 
-```{r}
+```{r echo=FALSE}
 driver <- dbDriver('SQLite')
 db <- dbConnect(drv = driver, "/project/xinhe/shengqian/cTWAS_epigenetic/data/weights/brain_mQTL.db")
 query <- function(...) RSQLite::dbGetQuery(db, ...)
@@ -943,7 +943,7 @@ weights <- weights[weights$gene %in% cre_cpgs$V4,]
 length(intersect(weights$rsid,MetaBrain_eQTL$rsid))
 ```
 
-```{r}
+```{r echo=FALSE}
 #library(annotatr)
 #dm_regions = read_regions(con = "/project/xinhe/shengqian/cTWAS_epigenetic/data/all_cre_cpgs.bed", genome = 'hg38',format = 'bed')
 #annots = c('hg38_basicgenes', 'hg38_genes_intergenic')
