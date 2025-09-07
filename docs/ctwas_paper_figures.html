@@ -366,7 +366,7 @@ div.tocify {
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
 <span class="glyphicon glyphicon-list" aria-hidden="true"></span>
-workflowr <span class="glyphicon glyphicon-ok text-success"
+workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger"
 aria-hidden="true"></span>
 </button>
 </p>
@@ -377,8 +377,8 @@ aria-hidden="true"></span>
 </li>
 <li>
 <a data-toggle="tab" href="#checks"> Checks <span
-class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
-</a>
+class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> </a>
 </li>
 <li>
 <a data-toggle="tab" href="#versions">Past versions</a>
@@ -391,9 +391,9 @@ class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
 </p>
 <p>
 <strong>Checks:</strong> <span
-class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 7
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6
 <span class="glyphicon glyphicon-exclamation-sign text-danger"
-aria-hidden="true"></span> 0
+aria-hidden="true"></span> 1
 </p>
 <p>
 <strong>Knit directory:</strong> <code>multigroup_ctwas_analysis/</code>
@@ -416,18 +416,21 @@ versions</em> tab lists the development history.
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate">
-<span class="glyphicon glyphicon-ok text-success"
-aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date
-</a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges">
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted
+changes </a>
 </p>
 </div>
-<div id="strongRMarkdownfilestronguptodate"
+<div id="strongRMarkdownfilestronguncommittedchanges"
 class="panel-collapse collapse">
 <div class="panel-body">
-<p>Great! Since the R Markdown file has been committed to the Git
-repository, you know the exact version of the code that produced these
-results.</p>
+<p>The R Markdown file has unstaged changes. To know which version of
+the R Markdown file created these results, you’ll want to first commit
+it to the Git repo. If you’re still working on the analysis, you can
+ignore this warning. When you’re finished, you can run
+<code>wflow_publish</code> to commit the R Markdown file and build the
+HTML.</p>
 </div>
 </div>
 </div>
@@ -550,7 +553,9 @@ depends on. Below is the status of the Git repository when the results
 were generated:
 </p>
 <pre><code>
-working directory clean
+Unstaged changes:
+    Modified:   analysis/ctwas_paper_figures.Rmd
+
 </code></pre>
 <p>
 Note that any generated files, e.g. HTML, png, CSS, etc., are not
@@ -3212,6 +3217,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/c370e05fb7511a71623c8f678e40574463a4dcb7/docs/figure/ctwas_paper_figures.Rmd/unnamed-chunk-29-1.png" target="_blank">c370e05</a>
+</td>
+<td>
+sq-96
+</td>
+<td>
+2025-09-05
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/7440fa59f8a7eb86ed99e51a8510054c28637068/docs/figure/ctwas_paper_figures.Rmd/unnamed-chunk-29-1.png" target="_blank">7440fa5</a>
 </td>
 <td>
@@ -3779,55 +3795,6 @@ sq-96
 </table>
 </div>
 </div>
-<pre class="r"><code># ---- settings ----
-workdir &lt;- &quot;/project/xinhe/shengqian/cTWAS_epigenetic/data/all_cre_cpgs_peaks/&quot;
-bed_files &lt;- list.files(workdir, pattern = &quot;^all_cre_cpgs\\.[^.]+\\.PeakCalls\\.bed$&quot;, full.names = TRUE)
-stopifnot(length(bed_files) &gt; 0)
-
-# Extract clean cell type names
-cell_types &lt;- sub(&quot;^all_cre_cpgs\\.(.*?)\\.PeakCalls\\.bed$&quot;, &quot;\\1&quot;,
-                  basename(bed_files))
-
-# ---- read CpGs and build long table ----
-read_cpgs &lt;- function(fp) {
-  dt &lt;- fread(fp, header = FALSE, sep = &quot;\t&quot;, showProgress = FALSE)
-  unique(dt[[ncol(dt)]])
-}
-
-cpg_list &lt;- lapply(bed_files, read_cpgs)
-
-records &lt;- rbindlist(
-  lapply(seq_along(cpg_list), function(i) {
-    data.table(cpg = cpg_list[[i]], cell = cell_types[i], present = 1L)
-  })
-)
-
-records &lt;- unique(records, by = c(&quot;cpg&quot;, &quot;cell&quot;))
-
-# ---- cast to wide matrix ----
-mat_dt &lt;- dcast(records, cpg ~ cell, value.var = &quot;present&quot;, fill = 0L)
-presence_count &lt;- rowSums(as.matrix(mat_dt[, -1, with = FALSE]))
-mat_dt &lt;- mat_dt[order(presence_count, decreasing = TRUE)]
-
-cpg_ids &lt;- mat_dt$cpg
-mat &lt;- as.matrix(mat_dt[, -1, with = FALSE])
-rownames(mat) &lt;- cpg_ids
-
-# ---- plot heatmap ----
-cols &lt;- c(&quot;white&quot;, &quot;#FF9999&quot;)
-brks &lt;- c(-0.5, 0.5, 1.5)
-
-pheatmap(
-  mat,
-  color = cols,
-  breaks = brks,
-  cluster_rows = FALSE,
-  cluster_cols = FALSE,
-  show_rownames = FALSE,
-  show_colnames = TRUE,
-  legend = FALSE,
-  border_color = NA
-)</code></pre>
 <p><img src="figure/ctwas_paper_figures.Rmd/unnamed-chunk-44-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-44-1">
@@ -3866,21 +3833,8 @@ sq-96
 </table>
 </div>
 </div>
-<pre class="r"><code># ---- proportions: CpG present in exactly k cell types (k = 1..7) ----
-k_per_cpg &lt;- rowSums(mat)                # how many cell types have a peak for each CpG
-n_cpg     &lt;- length(k_per_cpg)
-n_cells   &lt;- ncol(mat)                    # should be 7
-
-stat_dt &lt;- data.table(
-  peaks = 1:n_cells,
-  n = as.integer(table(factor(k_per_cpg, levels = 1:n_cells)))
-)
-stat_dt[, proportion := n / n_cpg]
-
-cat(&quot;\nProportion of CpGs present in exactly k cell-type peaks:\n&quot;)</code></pre>
 <pre><code>
 Proportion of CpGs present in exactly k cell-type peaks:</code></pre>
-<pre class="r"><code>print(stat_dt)</code></pre>
 <pre><code>   peaks     n proportion
    &lt;int&gt; &lt;int&gt;      &lt;num&gt;
 1:     1    29 0.16292135
@@ -3890,14 +3844,6 @@ Proportion of CpGs present in exactly k cell-type peaks:</code></pre>
 5:     5    10 0.05617978
 6:     6    12 0.06741573
 7:     7    63 0.35393258</code></pre>
-<pre class="r"><code># ---- optional: quick bar plot to screen (not saved) ----
-ggplot(stat_dt, aes(x = factor(peaks), y = proportion)) +
-  geom_col(fill = &quot;#FF9999&quot;) +
-  geom_text(aes(label = sprintf(&quot;%.2f&quot;, proportion)), vjust = -0.3, size = 3) +
-  labs(x = &quot;k (number of cell types with a peak)&quot;, y = &quot;Proportion of CpGs&quot;,
-       title = &quot;CpGs present in exactly k cell-type peaks&quot;) +
-  ylim(0, max(stat_dt$proportion) * 1.15) +
-  theme_classic()</code></pre>
 <p><img src="figure/ctwas_paper_figures.Rmd/unnamed-chunk-44-2.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-44-2">
@@ -3936,29 +3882,7 @@ sq-96
 </table>
 </div>
 </div>
-<pre class="r"><code>driver &lt;- dbDriver(&#39;SQLite&#39;)
-db &lt;- dbConnect(drv = driver, &quot;/project/xinhe/shengqian/cTWAS_epigenetic/data/weights/brain_mQTL.db&quot;)
-query &lt;- function(...) RSQLite::dbGetQuery(db, ...)
-weights &lt;- query(&quot;select * from weights&quot;)
-RSQLite::dbDisconnect(db)
-MetaBrain_eQTL &lt;- readRDS(&quot;/project/xinhe/shengqian/cTWAS_epigenetic/data/MetaBrain_eQTL/MetaBrain_eQTL_qvalue005.RDS&quot;)
-cre_cpgs &lt;- fread(&quot;/project/xinhe/shengqian/cTWAS_epigenetic/data/all_cre_cpgs.bed&quot;)
-weights &lt;- weights[weights$gene %in% cre_cpgs$V4,]
-length(intersect(weights$rsid,MetaBrain_eQTL$rsid))</code></pre>
 <pre><code>[1] 203</code></pre>
-<pre class="r"><code>#library(annotatr)
-#dm_regions = read_regions(con = &quot;/project/xinhe/shengqian/cTWAS_epigenetic/data/all_cre_cpgs.bed&quot;, genome = &#39;hg38&#39;,format = &#39;bed&#39;)
-#annots = c(&#39;hg38_basicgenes&#39;, &#39;hg38_genes_intergenic&#39;)
-#annotations = build_annotations(genome = &#39;hg38&#39;, annotations = annots)
-#dm_annotated = annotate_regions(regions = dm_regions,annotations = annotations,ignore.strand = TRUE,quiet = FALSE)
-#df_dm_annotated = data.frame(dm_annotated)
-#saveRDS(df_dm_annotated,file = &quot;/project/xinhe/shengqian/cTWAS_epigenetic/data/all_cre_cpgs_annotation.RDS&quot;)
-cpg_annot &lt;- readRDS(&quot;/project/xinhe/shengqian/cTWAS_epigenetic/data/all_cre_cpgs_annotation.RDS&quot;)
-cpg_annot$annotation &lt;- sapply(cpg_annot$annot.id, function(x){unlist(strsplit(x, split=&quot;[:]&quot;))[1]})
-cpg_annot &lt;- cpg_annot[,c(&quot;name&quot;,&quot;annotation&quot;,&quot;annot.symbol&quot;)]
-cpg_annot &lt;- cpg_annot[cpg_annot$annotation==&quot;intergenic&quot;,]
-cpg_annot &lt;- unique(cpg_annot[,c(&quot;name&quot;,&quot;annotation&quot;)])
-table(cpg_annot$annotation)</code></pre>
 <pre><code>
 intergenic 
         17 </code></pre>
