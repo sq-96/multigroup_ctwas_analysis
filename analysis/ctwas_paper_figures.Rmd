@@ -51,11 +51,11 @@ thins <- c(1)
 
 prior_true <- gene_prior
   
-enrichment_true <- log(gene_prior/snp_prior,base = exp(1))
+enrichment_true_correlated <- log(gene_prior/snp_prior,base = exp(1))
 
 pve_true <- pve_gene
 
-phe_true <- pve_gene/(sum(pve_gene)+pve_snp)
+phe_true_correlated <- pve_gene/(sum(pve_gene)+pve_snp)
 ```
 
 ```{r echo=FALSE}
@@ -76,11 +76,11 @@ thins <- c(1)
 
 prior_true <- gene_prior
   
-enrichment_true <- log(gene_prior/snp_prior,base = exp(1))
-
+#enrichment_true <- log(gene_prior/snp_prior,base = exp(1))
+enrichment_true_uncorrelated <- gene_prior/snp_prior
 pve_true <- pve_gene
 
-phe_true <- pve_gene/(sum(pve_gene)+pve_snp)
+phe_true_uncorrelated <- pve_gene/(sum(pve_gene)+pve_snp)
 ```
 
 ### Figure 2a: Inflated PHE by single-group analysis
@@ -90,18 +90,6 @@ make_phe_plot_correlated()$plot
 
 ```{r,echo=FALSE, message=FALSE, warning=FALSE, fig.width= 12, fig.height= 4}
 make_phe_plot_uncorrelated()$plot
-```
-
-```{r, eval=FALSE, echo=FALSE, message=FALSE, warning=FALSE, fig.width= 12, fig.height= 4}
-results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correlated_brain_tissues_three_omics/"
-runtag = "five_correlated_brain_tissues_three_omics"
-plot_enrichment_correlated(results_dir,runtag,paste(1, 1:10, sep = "-"),c(1),"shared_all","ctwas",".minp08.mingene0.parameters.RDS",enrichment_true)
-```
-
-```{r, eval=FALSE, echo=FALSE, message=FALSE, warning=FALSE, fig.width= 12, fig.height= 4}
-results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_uncorrelated_tissues_three_omics/"
-runtag = "five_uncorrelated_tissues_three_omics"
-plot_enrichment_uncorrelated(results_dir,runtag,paste(1, 1:10, sep = "-"),c(1),"shared_all","ctwas",".minp08.mingene0.parameters.RDS",enrichment_true)
 ```
 
 ### Figure 2b: PHE
@@ -120,13 +108,26 @@ plot_PHE_uncorrelated(results_dir,runtag,paste(1, 1:10, sep = "-"),c(1),"shared_
 ```{r,echo=FALSE, message=FALSE, warning=FALSE, fig.width= 12, fig.height= 4}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correlated_brain_tissues_three_omics/"
 runtag = "five_correlated_brain_tissues_three_omics"
-plot_PHE(results_dir,runtag,paste(1, 1:10, sep = "-"),c(1),"shared_all","ctwas",".minp08.mingene0.parameters.RDS",phe_true)
+plot_PHE(results_dir,runtag,paste(1, 1:10, sep = "-"),c(1),"shared_all","ctwas",".minp08.mingene0.parameters.RDS",phe_true_correlated)
 ```
 
 ```{r,echo=FALSE, message=FALSE, warning=FALSE, fig.width= 12, fig.height= 4}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_uncorrelated_tissues_three_omics/"
 runtag = "five_uncorrelated_tissues_three_omics"
-plot_PHE(results_dir,runtag,paste(1, 1:10, sep = "-"),c(1),"shared_all","ctwas",".minp08.mingene0.parameters.RDS",phe_true)
+plot_PHE(results_dir,runtag,paste(1, 1:10, sep = "-"),c(1),"shared_all","ctwas",".minp08.mingene0.parameters.RDS",phe_true_uncorrelated)
+```
+
+### Figure S: Enrichment (original scale)
+```{r, eval=FALSE, echo=FALSE, message=FALSE, warning=FALSE, fig.width= 12, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correlated_brain_tissues_three_omics/"
+runtag = "five_correlated_brain_tissues_three_omics"
+plot_enrichment_correlated(results_dir,runtag,paste(1, 1:10, sep = "-"),c(1),"shared_all","ctwas",".minp08.mingene0.parameters.RDS",enrichment_true_correlated)
+```
+
+```{r, eval=FALSE, echo=FALSE, message=FALSE, warning=FALSE, fig.width= 12, fig.height= 4}
+results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_uncorrelated_tissues_three_omics/"
+runtag = "five_uncorrelated_tissues_three_omics"
+plot_enrichment_uncorrelated(results_dir,runtag,paste(1, 1:10, sep = "-"),c(1),"shared_all","ctwas",".minp08.mingene0.parameters.RDS",enrichment_true_uncorrelated)
 ```
 
 ### Figure 2c: PIP calibration
@@ -675,9 +676,9 @@ mapping_predictdb <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weigh
 mapping_munro     <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/Munro_mapping.RDS")
 mapping_table <- rbind(mapping_predictdb, mapping_munro)
 snp_map <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/LD_region_info/snp_map.RDS")
-make_ctwas_category_barplot(trait = "LDL-ukb-d-30780_irnt",
+aa <- make_ctwas_category_barplot(trait = "LDL-ukb-d-30780_irnt",
                             mapping_table = mapping_table,
-                            snp_map = snp_map)$p
+                            snp_map = snp_map)
 ```
 
 ## Figure 6: Brain epiQTLs explain a large fraction of missing heritability by eQTLs
