@@ -84,6 +84,7 @@ phe_true_uncorrelated <- pve_gene/(sum(pve_gene)+pve_snp)
 ```
 
 ### Figure 2a: Inflated PHE by single-group analysis
+Proportion of heritability explained by gene expression of each tissue estimated by MESC and cTWAS. cTWAS used pre-trained GTEx v8 gene expression prediction models from PredictDB. MESC used pre-computed GTEx v8 gene expression scores. Dashlines show the true PVE value. 
 ```{r,echo=FALSE, message=FALSE, warning=FALSE, fig.width= 12, fig.height= 4}
 make_phe_plot_correlated()$plot
 ```
@@ -93,6 +94,7 @@ make_phe_plot_uncorrelated()$plot
 ```
 
 ### Figure 2b: PHE
+Proportion of heritability explained by gene expression, splicing and RNA stability of causal and non-causal tissues estimated by M-cTWAS. Causal groups contain two tissues and non-causal groups contain three tissues. Each dot represents one of the ten replicates in simulations. Dashlines show the true PVE value.
 ```{r, eval=FALSE, echo=FALSE, message=FALSE, warning=FALSE, fig.width= 12, fig.height= 4}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correlated_brain_tissues_three_omics/"
 runtag = "five_correlated_brain_tissues_three_omics"
@@ -118,6 +120,7 @@ plot_PHE(results_dir,runtag,paste(1, 1:10, sep = "-"),c(1),"shared_all","ctwas",
 ```
 
 ### Figure S: Enrichment (original scale)
+Proportion of heritability explained by gene expression, splicing and RNA stability of each tissue estimated by M-cTWAS. Each dot represents one of the ten replicates in simulations. Dashlines show the true PVE value.
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width= 12, fig.height= 4}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correlated_brain_tissues_three_omics/"
 runtag = "five_correlated_brain_tissues_three_omics"
@@ -131,6 +134,7 @@ plot_enrichment_uncorrelated(results_dir,runtag,paste(1, 1:10, sep = "-"),c(1),"
 ```
 
 ### Figure 2c: PIP calibration
+Gene PIP calibration. Gene PIPs from all simulations are grouped into bins. The plot shows the proportion of true causal genes (y axis) against the average PIPs (x axis) under each bin. A well-calibrated method should produce points along the diagonal lines (red). The ±s.e. is shown for each point in the vertical bars calculated over ten independent simulations.
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.width=8, fig.height=4}
 df1 <- readRDS("/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correlated_brain_tissues_three_omics/molecular_PIP_calibration_df.RDS")
 df2 <- readRDS("/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correlated_brain_tissues_three_omics/gene_PIP_calibration_df.RDS")
@@ -148,6 +152,7 @@ grid.arrange(fig1, fig2, ncol = 2, top = "Uncorrelated tissues")
 ```
 
 ### Figure 2d: Power and False discovery rate
+Number of genes identified by various methods. We used the following significance thresholds for each method: PIP>0.8 for cTWAS. We use different colors for causal genes identified by each method, and the top gray bars indicate noncausal genes. The height of the bar is the mean over ten independent simulations; the standard error is shown for each bar in vertical lines from the same ten simulations.
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.width=8, fig.height=4}
 multi_ctwas_res <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correlated_brain_tissues_three_omics/multi_ctwas_simu_res.RDS"
 single_ctwas_res <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correlated_brain_tissues_three_omics/single_ctwas_simu_res.RDS"
