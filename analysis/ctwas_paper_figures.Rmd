@@ -180,60 +180,7 @@ grid.arrange(p1, p2, ncol = 2, top = "Uncorrelated tissues")
 
 ## Figure 3: cTWAS estimates genetic architecture of complex traits from GTEx
 
-### Figure 3a: Tissues are often correlated: but one tissue is not enough.
-```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.height=4, fig.width=10}
-thin <- 1
-vgs <- "shared_all"
-L <-5
-colors <- c("#ff7f0e", "#2ca02c", "#d62728",  "#9467bd", "#8c564b", "#e377c2", "#7f7f7f",  "#bcbd22",  "#17becf",  "#f7b6d2",  "#c5b0d5",  "#9edae5", "#ffbb78",  "#98df8a",  "#ff9896" )
-
-fix_panel_size <- function(plot, width = 2.1, height = 2) {
-  set_panel_size(plot, 
-                 width = unit(width, "in"), 
-                 height = unit(height, "in"))
-}
-
-folder_results_multiqtl <- "/project/xinhe/xsun/multi_group_ctwas/24.diff_qtls_0519/snakemake_outputs/"
-
-trait <- "IBD-ebi-a-GCST004131"
-
-gwas_n <- samplesize[trait]
-
-
-file_param <- paste0("/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/expression/IBD-ebi-a-GCST004131/IBD-ebi-a-GCST004131_Whole_Blood.thin1.shared_all.param.RDS")
-param <- readRDS(file_param)
-ctwas_parameters <- summarize_param(param, gwas_n)
-
-p1 <- plot_piechart_topn(ctwas_parameters = ctwas_parameters,colors = colors,by = "context",title = NULL)
-
-
-file_param <- paste0("/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/expression/IBD-ebi-a-GCST004131/IBD-ebi-a-GCST004131_Colon_Transverse.thin1.shared_all.param.RDS")
-param <- readRDS(file_param)
-ctwas_parameters <- summarize_param(param, gwas_n)
-
-p2 <- plot_piechart_topn(ctwas_parameters = ctwas_parameters,colors = colors,by = "context",title = NULL)
-
-file_param <- paste0("/project/xinhe/xsun/multi_group_ctwas/24.diff_qtls_0519/snakemake_outputs/IBD-ebi-a-GCST004131/IBD-ebi-a-GCST004131.eonly.thin1.shared_all.param.RDS")
-param <- readRDS(file_param)
-ctwas_parameters <- summarize_param(param, gwas_n)
-
-p3 <- plot_piechart_topn(ctwas_parameters = ctwas_parameters,colors = colors,by = "context",title = NULL)
-
-pie1 <- fix_panel_size(p1)
-pie2 <- fix_panel_size(p2)
-pie3 <- fix_panel_size(p3)
-
-# Calculate widths of each gtable (plot + legend)
-widths <- unit.c(grobWidth(pie1), grobWidth(pie2),grobWidth(pie3))
-
-# Arrange plots with their natural widths
-p <- grid.arrange(pie1, pie2, pie3,
-                  ncol = 3, 
-                  widths = widths,
-                  top = paste0(trait))
-```
-
-### Figure 3b: Modalities are mostly independent
+### Figure 3a: Modalities are mostly independent
 ```{r echo=FALSE}
 folder_results_single_E <- "/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/expression/"
 folder_results_single_S <- "/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/splicing/"
@@ -287,6 +234,59 @@ ggplot(df, aes(x = group, y = value, fill = QTL)) +
   theme_minimal(base_size = 14) +
   theme(legend.position = "right")
 
+```
+
+### Figure 3b: Tissues are often correlated: but one tissue is not enough.
+```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.height=4, fig.width=10}
+thin <- 1
+vgs <- "shared_all"
+L <-5
+colors <- c("#ff7f0e", "#2ca02c", "#d62728",  "#9467bd", "#8c564b", "#e377c2", "#7f7f7f",  "#bcbd22",  "#17becf",  "#f7b6d2",  "#c5b0d5",  "#9edae5", "#ffbb78",  "#98df8a",  "#ff9896" )
+
+fix_panel_size <- function(plot, width = 2.1, height = 2) {
+  set_panel_size(plot, 
+                 width = unit(width, "in"), 
+                 height = unit(height, "in"))
+}
+
+folder_results_multiqtl <- "/project/xinhe/xsun/multi_group_ctwas/24.diff_qtls_0519/snakemake_outputs/"
+
+trait <- "IBD-ebi-a-GCST004131"
+
+gwas_n <- samplesize[trait]
+
+
+file_param <- paste0("/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/expression/IBD-ebi-a-GCST004131/IBD-ebi-a-GCST004131_Whole_Blood.thin1.shared_all.param.RDS")
+param <- readRDS(file_param)
+ctwas_parameters <- summarize_param(param, gwas_n)
+
+p1 <- plot_piechart_topn(ctwas_parameters = ctwas_parameters,colors = colors,by = "context",title = NULL)
+
+
+file_param <- paste0("/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/expression/IBD-ebi-a-GCST004131/IBD-ebi-a-GCST004131_Colon_Transverse.thin1.shared_all.param.RDS")
+param <- readRDS(file_param)
+ctwas_parameters <- summarize_param(param, gwas_n)
+
+p2 <- plot_piechart_topn(ctwas_parameters = ctwas_parameters,colors = colors,by = "context",title = NULL)
+
+file_param <- paste0("/project/xinhe/xsun/multi_group_ctwas/24.diff_qtls_0519/snakemake_outputs/IBD-ebi-a-GCST004131/IBD-ebi-a-GCST004131.eonly.thin1.shared_all.param.RDS")
+param <- readRDS(file_param)
+ctwas_parameters <- summarize_param(param, gwas_n)
+
+p3 <- plot_piechart_topn(ctwas_parameters = ctwas_parameters,colors = colors,by = "context",title = NULL)
+
+pie1 <- fix_panel_size(p1)
+pie2 <- fix_panel_size(p2)
+pie3 <- fix_panel_size(p3)
+
+# Calculate widths of each gtable (plot + legend)
+widths <- unit.c(grobWidth(pie1), grobWidth(pie2),grobWidth(pie3))
+
+# Arrange plots with their natural widths
+p <- grid.arrange(pie1, pie2, pie3,
+                  ncol = 3, 
+                  widths = widths,
+                  top = paste0(trait))
 ```
 
 ### Figure 3b: Shared pattern
@@ -394,10 +394,6 @@ combined_pip_by_group_multi_E <- readRDS(paste0(folder_results_multi_E,trait,"/"
 #print(plot_overlap_barplot_multi_vs_single(combined_pip_by_group_multi = combined_pip_by_group_multi, combined_pip_by_group_single = combined_pip_by_group_single, PIP_cutoff = PIP_cutoff,tissue = top_tissue,trait = trait,return_unique_genes = T)$plot)
 print(plot_overlap_barplot_multi_vs_multi_E_vs_single(combined_pip_by_group_multi = combined_pip_by_group_multi, combined_pip_by_group_single = combined_pip_by_group_single, combined_pip_by_group_multi_E = combined_pip_by_group_multi_E, PIP_cutoff = PIP_cutoff,tissue = top_tissue,trait = trait,return_unique_genes = T)$plot)
 ```
-
-<figure class="half">
-    <img src="https://github.com/sq-96/multigroup_ctwas_analysis/raw/master/data/figures/LDL-ukb-d-30780_irnt/multi/LDLR.png" width="150%">
-</figure>
 
 ```{r, eval=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
 traits <- c(
@@ -680,6 +676,11 @@ aa <- make_ctwas_category_barplot(trait = "LDL-ukb-d-30780_irnt",
                             mapping_table = mapping_table,
                             snp_map = snp_map)
 ```
+
+### Figure 5e: locus examples
+<figure class="half">
+    <img src="https://github.com/sq-96/multigroup_ctwas_analysis/raw/master/data/figures/LDL-ukb-d-30780_irnt/multi/LDLR.png" width="150%">
+</figure>
 
 ## Figure 6: Brain epiQTLs explain a large fraction of missing heritability by eQTLs
 
