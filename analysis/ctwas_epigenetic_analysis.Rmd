@@ -259,7 +259,7 @@ ggplot(merged_result, aes(x = combined_pip_full,
 ```
 
 ```{r,echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
-mapping_table <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/weights/gene_mapping.RDS")
+mapping_table <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/gene_mapping.RDS")
 predictdb_mapping_table <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
 mapping_table <- rbind(mapping_table,predictdb_mapping_table)
 weights <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/SCZ_eQTL_caQTL_mQTL/SCZ_eQTL_caQTL_mQTL.preprocessed.weights.RDS")
@@ -337,6 +337,50 @@ all_cre_cpgs <- all_cre_cpgs[,c("chr","start","end","molecular_id")]
 write.table(all_cre_cpgs,file = "/project/xinhe/shengqian/cTWAS_epigenetic/data/all_cre_cpgs.bed",sep = "\t",quote = F,row.names = F,col.names = F)
 ```
 
+```{r}
+finemap_res <- readRDS("/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_eQTL_caQTL_mQTL/SCZ_eQTL_caQTL_mQTL.finemap_regions_res.RDS")
+finemap_res <- finemap_res$finemap_res
+finemap_res_multi <- anno_finemap_res(finemap_res,
+                                      snp_map = snp_map,
+                                      mapping_table = mapping_table,
+                                      add_gene_annot = TRUE,
+                                      map_by = "molecular_id",
+                                      drop_unmapped = TRUE,
+                                      add_position = TRUE,
+                                      use_gene_pos = "mid")
+finemap_res_multi <- finemap_res_multi[finemap_res_multi$type=="caQTL",]
+finemap_res_multi <- finemap_res_multi[!is.na(finemap_res_multi$cs),]  
+#all_cre_cpgs <- unlist(strsplit(finemap_res_multi$molecular_id, "_"))
+#write.table(all_cre_cpgs,file = "/project/xinhe/shengqian/cTWAS_epigenetic/data/all_cre_cpgs.txt",sep = "\t",quote = F,row.names = F,col.names = F)
+```
+
+```{r}
+###merged CpGs and intersect with ATAC-peaks
+all_cre_atac <- finemap_res_multi$molecular_id
+all_cre_atac <- mapping_table[mapping_table$molecular_id %in% all_cre_atac,]
+
+all_cre_atac$start <- as.numeric(all_cre_atac$start)-1
+all_cre_atac$end <- as.numeric(all_cre_atac$end) + 1
+all_cre_atac$chr <- paste0("chr",as.numeric(all_cre_atac$chrom))
+all_cre_atac <- all_cre_atac[,c("chr","start","end","molecular_id")]
+write.table(all_cre_atac,file = "/project2/xinhe/shengqian/cTWAS_epigenetics/data/all_cre_atac.bed",sep = "\t",quote = F,row.names = F,col.names = F)
+```
+
+
+
+```{r}
+###merged CpGs and intersect with ATAC-peaks (random CpGs)
+set.seed(2025)
+all_cpgs <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/gene_mapping.RDS")
+all_cpgs <- all_cpgs[!grepl("Peak", all_cpgs$molecular_id), ]
+random_cpgs <- sample(all_cpgs$molecular_id, 10000, replace = FALSE)
+all_cpgs <- all_cpgs[all_cpgs$molecular_id %in% random_cpgs,]
+all_cpgs$start <- as.numeric(all_cpgs$start)-1
+all_cpgs$end <- as.numeric(all_cpgs$end) + 1
+all_cpgs$chr <- paste0("chr",as.numeric(all_cpgs$chrom))
+all_cpgs <- all_cpgs[,c("chr","start","end","molecular_id")]
+write.table(all_cpgs,file = "/project2/xinhe/shengqian/cTWAS_epigenetics/data/random_cpgs.bed",sep = "\t",quote = F,row.names = F,col.names = F)
+```
 
 ```{r}
 ###each CpG seperately
@@ -426,5 +470,53 @@ write.table(CpG_info_merged,file = "/project/xinhe/shengqian/cTWAS_epigenetic/da
     
 #    bedtools intersect -a "$bed_file" -b "$target_bed" -wa -wb > "$output_file"
 #done
+```
+
+```{r}
+# ---- settings ----
+workdir <- "/project2/xinhe/shengqian/cTWAS_epigenetics/data/random_cpgs_peaks/"
+bed_files <- list.files(workdir, pattern = "^random_cpgs\\.[^.]+\\.PeakCalls\\.bed$", full.names = TRUE)
+stopifnot(length(bed_files) > 0)
+
+# Extract clean cell type names
+cell_types <- sub("^random_cpgs\\.(.*?)\\.PeakCalls\\.bed$", "\\1",
+                  basename(bed_files))
+
+# ---- read CpGs and build long table ----
+read_cpgs <- function(fp) {
+  dt <- fread(fp, header = FALSE, sep = "\t", showProgress = FALSE)
+  unique(dt[[ncol(dt)]])
+}
+
+cpg_list <- lapply(bed_files, read_cpgs)
+
+records <- rbindlist(
+  lapply(seq_along(cpg_list), function(i) {
+    data.table(cpg = cpg_list[[i]], cell = cell_types[i], present = 1L)
+  })
+)
+
+# ---- cast to wide matrix ----
+mat_dt <- dcast(records, cpg ~ cell, value.var = "present", fill = 0L)
+presence_count <- rowSums(as.matrix(mat_dt[, -1, with = FALSE]))
+mat_dt <- mat_dt[order(presence_count, decreasing = TRUE)]
+
+cpg_ids <- mat_dt$cpg
+mat <- as.matrix(mat_dt[, -1, with = FALSE])
+rownames(mat) <- cpg_ids
+
+# ---- proportions: CpG present in exactly k cell types (k = 1..7) ----
+k_per_cpg <- rowSums(mat)                # how many cell types have a peak for each CpG
+n_cpg     <- length(k_per_cpg)
+n_cells   <- ncol(mat)                    # should be 7
+
+stat_dt <- data.table(
+  peaks = 1:n_cells,
+  n = as.integer(table(factor(k_per_cpg, levels = 1:n_cells)))
+)
+stat_dt[, proportion := n / n_cpg]
+
+cat("\nProportion of CpGs present in exactly k cell-type peaks:\n")
+print(stat_dt)
 ```
 

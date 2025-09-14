@@ -50,8 +50,9 @@ snp_prior <- pve_snp/sigma_beta^2/(1-sum(pve_gene)-pve_snp)/5000000
 thins <- c(1)
 
 prior_true <- gene_prior
-  
-enrichment_true_correlated <- log(gene_prior/snp_prior,base = exp(1))
+
+enrichment_true_correlated <- log(gene_prior/snp_prior,base = exp(1))  
+#enrichment_true_correlated <-gene_prior/snp_prior
 
 pve_true <- pve_gene
 
@@ -76,8 +77,8 @@ thins <- c(1)
 
 prior_true <- gene_prior
   
-#enrichment_true <- log(gene_prior/snp_prior,base = exp(1))
-enrichment_true_uncorrelated <- gene_prior/snp_prior
+enrichment_true_uncorrelated <- log(gene_prior/snp_prior,base = exp(1))
+#enrichment_true_uncorrelated <- gene_prior/snp_prior
 pve_true <- pve_gene
 
 phe_true_uncorrelated <- pve_gene/(sum(pve_gene)+pve_snp)
@@ -89,11 +90,12 @@ Proportion of heritability explained by gene expression of each tissue estimated
 make_phe_plot_correlated()$plot
 ```
 
+### Figure S1: Inflated PHE by single-group analysis
 ```{r,echo=FALSE, message=FALSE, warning=FALSE, fig.width= 12, fig.height= 4}
 make_phe_plot_uncorrelated()$plot
 ```
 
-### Figure 2b: PHE
+### Figure 2b: PHE (correlated tissues)
 Proportion of heritability explained by gene expression, splicing and RNA stability of causal and non-causal tissues estimated by M-cTWAS. Causal groups contain two tissues and non-causal groups contain three tissues. Each dot represents one of the ten replicates in simulations. Dashlines show the true PVE value.
 ```{r, eval=FALSE, echo=FALSE, message=FALSE, warning=FALSE, fig.width= 12, fig.height= 4}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correlated_brain_tissues_three_omics/"
@@ -113,13 +115,14 @@ runtag = "five_correlated_brain_tissues_three_omics"
 plot_PHE(results_dir,runtag,paste(1, 1:10, sep = "-"),c(1),"shared_all","ctwas",".minp08.mingene0.parameters.RDS",phe_true_correlated)
 ```
 
+### Figure S2: PHE (uncorrelated tissues)
 ```{r,echo=FALSE, message=FALSE, warning=FALSE, fig.width= 12, fig.height= 4}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_uncorrelated_tissues_three_omics/"
 runtag = "five_uncorrelated_tissues_three_omics"
 plot_PHE(results_dir,runtag,paste(1, 1:10, sep = "-"),c(1),"shared_all","ctwas",".minp08.mingene0.parameters.RDS",phe_true_uncorrelated)
 ```
 
-### Figure S: Enrichment (original scale)
+### Figure S3: Enrichment (correlated and uncorrelated tissues)
 Proportion of heritability explained by gene expression, splicing and RNA stability of each tissue estimated by M-cTWAS. Each dot represents one of the ten replicates in simulations. Dashlines show the true PVE value.
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width= 12, fig.height= 4}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correlated_brain_tissues_three_omics/"
@@ -690,6 +693,22 @@ aa <- make_ctwas_category_barplot(trait = "LDL-ukb-d-30780_irnt",
 ## Figure 6: Brain epiQTLs explain a large fraction of missing heritability by eQTLs
 
 ### Figure 6a: EpiQTLs explain a larger fraction of h2g than eQTLs
+
+```{r,echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.height=4, fig.width=10}
+prop_heritability <- readRDS("/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_eQTL_caQTL_mQTL/SCZ_eQTL_caQTL_mQTL.parameters.RDS")
+prop_heritability <- prop_heritability$prop_heritability
+prop_heritability <- c(sum(prop_heritability[1:5]),sum(prop_heritability[6:7]),prop_heritability[8],prop_heritability[9])
+#colors <- brewer.pal(n = 4, name = "Set2")  # Alternatives: "Pastel1", "Dark2", "Set3"
+colors <- c("#b3cde3","#ccebc5","#decbe4","#fbb4ae")
+# Draw pie chart
+pie(
+  prop_heritability,
+  labels = paste0(c("eQTL","caQTL","mQTL","SNP"), "\n", round(100 * prop_heritability, 1), "%"),
+  col = colors,
+  border = "white"
+)
+```
+
 ```{r, eval=FALSE, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.height=4, fig.width=10}
 prop_heritability <- readRDS("/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_eQTL_caQTL_mQTL/SCZ_eQTL_caQTL_mQTL.parameters.RDS")
 
@@ -713,22 +732,6 @@ ggplot(df, aes(x = context, y = value)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-```{r,echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.height=4, fig.width=10}
-prop_heritability <- readRDS("/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_eQTL_caQTL_mQTL/SCZ_eQTL_caQTL_mQTL.parameters.RDS")
-prop_heritability <- prop_heritability$prop_heritability
-prop_heritability <- c(sum(prop_heritability[1:5]),sum(prop_heritability[6:7]),prop_heritability[8],prop_heritability[9])
-colors <- brewer.pal(n = 4, name = "Set2")  # Alternatives: "Pastel1", "Dark2", "Set3"
-
-# Draw pie chart
-pie(
-  prop_heritability,
-  labels = paste0(c("eQTL","caQTL","mQTL","SNP"), "\n", round(100 * prop_heritability, 1), "%"),
-  col = colors,
-  border = "white"
-)
-```
-
-### Figure 6b: Using epiQTL discovered novel CREs not explained by eQTLs
 ```{r, eval=FALSE, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.height=4, fig.width=10}
 library(RColorBrewer)
 # Example: Load three different heritability proportion datasets
@@ -742,8 +745,9 @@ prop3 <- readRDS("/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_mQTL/S
 par(mfrow = c(1, 3), mar = c(2, 2, 2, 1))  # Adjust margins if needed
 
 # Choose consistent color palette
-colors <- brewer.pal(n = max(lengths(list(prop1, prop2, prop3))), name = "Set2")
-
+#colors <- brewer.pal(n = max(lengths(list(prop1, prop2, prop3))), name = "Set2")
+colors <- c("#7fc97f","#beaed4","#fdc086")
+  
 # Plot each pie chart
 pie(
   prop1,
@@ -768,6 +772,7 @@ pie(
 
 ```
 
+### Figure 6b: Using epiQTL discovered novel CREs not explained by eQTLs
 ```{r echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
 mapping_table <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/weights/gene_mapping.RDS")
 predictdb_mapping_table <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
@@ -788,16 +793,135 @@ df <- data.frame(
 
 # Create bar plot with ggplot2
 ggplot(df, aes(x = category, y = count, fill = category)) +
-  geom_bar(stat = "identity") +
+  geom_bar(stat = "identity", width = 0.6) +
   labs(title = "",
        x = "",
-       y = "Count (PIP>0.8)") +
+       y = "Number of genes or CREs (PIP>0.8)") +
+  scale_fill_manual(values = c("Gene" = "#7fc97f", "CRE" = "#fdc086"))+
   theme_minimal() +
   theme(legend.position = "none")
 ```
 
-### Figure 6c: Using epiQTL discovered novel CREs missed by eQTLs
+### Figure 6c: Validation of meQTL results.
 ```{r echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
+all_cre_cpgs <- fread("/project2/xinhe/shengqian/cTWAS_epigenetics/data/all_cre_cpgs.bed")
+random_cpgs <- fread("/project2/xinhe/shengqian/cTWAS_epigenetics/data/random_cpgs.bed")
+
+read_cpgs <- function(fp) {
+  dt <- fread(fp, header = FALSE, sep = "\t", showProgress = FALSE)
+  unique(dt[[ncol(dt)]])
+}
+
+workdir <- "/project2/xinhe/shengqian/cTWAS_epigenetics/data/all_cre_cpgs_peaks/"
+bed_files <- list.files(workdir, pattern = "^all_cre_cpgs\\.[^.]+\\.PeakCalls\\.bed$", full.names = TRUE)
+stopifnot(length(bed_files) > 0)
+cell_types <- sub("^all_cre_cpgs\\.(.*?)\\.PeakCalls\\.bed$", "\\1",
+                  basename(bed_files))
+all_cre_cpg_list <- lapply(bed_files, read_cpgs)
+all_cre_cpg_list <- unique(unlist(all_cre_cpg_list))
+workdir <- "/project2/xinhe/shengqian/cTWAS_epigenetics/data/random_cpgs_peaks/"
+bed_files <- list.files(workdir, pattern = "^random_cpgs\\.[^.]+\\.PeakCalls\\.bed$", full.names = TRUE)
+stopifnot(length(bed_files) > 0)
+cell_types <- sub("^random_cpgs\\.(.*?)\\.PeakCalls\\.bed$", "\\1",
+                  basename(bed_files))
+random_cpg_list <- lapply(bed_files, read_cpgs)
+random_cpg_list <- unique(unlist(random_cpg_list))
+
+# Values from your results
+df <- data.frame(
+  category = c("CpGs in CREs", "Random CpGs"),
+  prop = c(length(all_cre_cpg_list)/dim(all_cre_cpgs)[1], length(random_cpg_list)/dim(random_cpgs)[1])
+)
+
+# Create bar plot with ggplot2
+ggplot(df, aes(x = category, y = prop, fill = category)) +
+  geom_bar(stat = "identity",width = 0.6) +
+  labs(title = "",
+       x = "",
+       y = "Proportion of CpGs in OCRs") +
+  scale_fill_manual(values = c("CpGs in CREs" = "#7fc97f", "Random CpGs" = "#fdc086"))+
+  theme_minimal() + ylim(c(0,1)) +
+  theme(legend.position = "none")
+```
+
+Most randomly sampled CpGs are also in OCRs. Possible reason: Array is designed to measure CpGs near promoter regions. 
+```{r echo=FALSE}
+#library(annotatr)
+#dm_regions = read_regions(con = "/project/xinhe/shengqian/cTWAS_epigenetic/data/all_cre_cpgs.bed", genome = 'hg38',format = 'bed')
+#annots = c('hg38_basicgenes', 'hg38_genes_intergenic')
+#annotations = build_annotations(genome = 'hg38', annotations = annots)
+#dm_annotated = annotate_regions(regions = dm_regions,annotations = annotations,ignore.strand = TRUE,quiet = FALSE)
+#df_dm_annotated = data.frame(dm_annotated)
+#saveRDS(df_dm_annotated,file = "/project/xinhe/shengqian/cTWAS_epigenetic/data/all_cre_cpgs_annotation.RDS")
+cpg_annot <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/all_cre_cpgs_annotation.RDS")
+cpg_annot$annotation <- sapply(cpg_annot$annot.id, function(x){unlist(strsplit(x, split="[:]"))[1]})
+cpg_annot <- cpg_annot[,c("name","annotation","annot.symbol")]
+cpg_annot <- cpg_annot[cpg_annot$annotation=="intergenic",]
+cpg_annot <- unique(cpg_annot[,c("name","annotation")])
+table(cpg_annot$annotation)
+```
+
+### Figure 6d: Do eQTLs explain epiQTLs? Independent PHE
+```{r echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
+param_mQTL <- readRDS("/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_mQTL/SCZ_mQTL.parameters.RDS")
+param_caQTL <- readRDS("/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_caQTL/SCZ_caQTL.parameters.RDS")
+param_mQTL_eQTL <- readRDS("/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_eQTL_mQTL/SCZ_eQTL_mQTL.parameters.RDS")
+param_caQTL_eQTL <- readRDS("/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_eQTL_caQTL/SCZ_eQTL_caQTL.parameters.RDS")
+
+library(ggplot2)
+library(dplyr)
+
+# Extract values from your objects
+bar1_mQTL <- param_mQTL$prop_heritability[1]
+bar2_mQTL <- param_mQTL_eQTL$prop_heritability[6]
+bar2_eQTL <- sum(param_mQTL_eQTL$prop_heritability[1:5])
+
+bar3_caQTL <- sum(param_caQTL$prop_heritability[1:2])
+bar4_caQTL <- sum(param_caQTL_eQTL$prop_heritability[6:7])
+bar4_eQTL <- sum(param_caQTL_eQTL$prop_heritability[1:5])
+
+# Your values
+bar1_mQTL  <- param_mQTL$prop_heritability[1]
+
+bar2_mQTL <- param_mQTL_eQTL$prop_heritability[6]
+bar2_eQTL <- sum(param_mQTL_eQTL$prop_heritability[1:5])
+
+bar3_caQTL <- param_caQTL$prop_heritability[1]
+
+bar4_caQTL <- sum(param_caQTL_eQTL$prop_heritability[6:7])
+bar4_eQTL  <- sum(param_caQTL_eQTL$prop_heritability[1:5])
+
+# Put everything into a data frame
+df <- data.frame(
+  Bar = c("mQTL", "mQTL+eQTL", "caQTL", "caQTL+eQTL"),
+  Component = c("mQTL", "mQTL", "caQTL", "caQTL"),
+  Value = c(bar1_mQTL, bar2_mQTL, bar3_caQTL, bar4_caQTL)
+)
+
+# Add eQTL parts
+df <- rbind(
+  df,
+  data.frame(Bar = "mQTL+eQTL", Component = "eQTL", Value = bar2_eQTL),
+  data.frame(Bar = "caQTL+eQTL", Component = "eQTL", Value = bar4_eQTL)
+)
+
+# Ensure eQTL is always on top
+df$Component <- factor(df$Component, levels = c("eQTL", "mQTL", "caQTL"))
+
+# Plot with stacked labels
+ggplot(df, aes(x = Bar, y = Value, fill = Component)) +
+  geom_bar(stat = "identity", position = position_stack(),width=0.8) +
+  geom_text(aes(label = round(Value, 3)), 
+            position = position_stack(vjust = 0.5), size = 4, color = "white") +
+  scale_fill_manual(values = c("eQTL" = "#7fc97f", 
+                               "mQTL" = "#fdc086", 
+                               "caQTL" = "#beaed4"))+
+  theme_minimal() +
+  labs(y = "Proportion Heritability", x = "")
+```
+
+### Figure 6e: Do eQTLs explain epiQTLs? few PIPs decreased after adding eQTLs
+```{r echo=FALSE, message=FALSE, warning=FALSE, results='hide',fig.height=5, fig.width=5}
 mapping_table <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/weights/gene_mapping.RDS")
 predictdb_mapping_table <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
 mapping_table <- rbind(mapping_table,predictdb_mapping_table)
@@ -829,41 +953,11 @@ p1 <- ggplot(merged_result, aes(x = total_susie_pip,
        title = "") +
     coord_cartesian(xlim = c(0, 1), ylim = c(0, 1)) +
     theme_minimal(base_size = 14)
+
+p1
 ```
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
-suppressMessages({
-  suppressWarnings({
-    eQTL_res <- get_gene_res(mapping_table, "/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_eQTL/SCZ_eQTL.finemap_regions_res.RDS", snp_map)
-    full_res <- get_gene_res(mapping_table, "/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_eQTL_caQTL_mQTL/SCZ_eQTL_caQTL_mQTL.finemap_regions_res.RDS", snp_map)
-  })
-})
-eQTL_result <- eQTL_res$result_sig
-eQTL_result <- eQTL_result[,c("gene_name","combined_pip")]
-full_result <- full_res$result
-full_result <- full_result[,c("gene_name","combined_pip")]
-setDT(eQTL_result)
-setDT(full_result)
-setnames(full_result, "combined_pip", "combined_pip_full")
-merged_result <- full_result[eQTL_result, 
-                             on = .(gene_name)]
-merged_result[is.na(combined_pip_full), combined_pip_full := 0]
-p2 <- ggplot(merged_result, aes(x = combined_pip, 
-                          y = combined_pip_full)) +
-  geom_point(alpha = 0.6) +
-  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red") +
-  labs(x = "Gene PIP in eQTL results",
-       y = "Gene PIP in full results",
-       title = "") +
-  coord_cartesian(xlim = c(0, 1), ylim = c(0, 1)) +
-  theme_minimal(base_size = 14)
-```
-
-```{r echo=FALSE, message=FALSE, warning=FALSE,fig.height=5, fig.width=10}
-combined_plot <- (p1 | p2) + plot_layout(guides = "collect") & theme(legend.position = "bottom")
-print(combined_plot)
-```
-
+### Figure S: Do eQTLs explain epiQTLs? Why eQTLs do not explain epiQTLs. Cell type specific mQTLs
 ```{r echo=FALSE}
 # ---- settings ----
 workdir <- "/project/xinhe/shengqian/cTWAS_epigenetic/data/all_cre_cpgs_peaks/"
@@ -938,6 +1032,7 @@ ggplot(stat_dt, aes(x = factor(peaks), y = proportion)) +
   theme_classic()
 ```
 
+### Figure S: Do eQTLs explain epiQTLs? GTEx is limited in power. Most mQTLs and caQTLs are eQTLs in MetaBrain eQTL
 ```{r echo=FALSE}
 driver <- dbDriver('SQLite')
 db <- dbConnect(drv = driver, "/project/xinhe/shengqian/cTWAS_epigenetic/data/weights/brain_mQTL.db")
@@ -947,22 +1042,103 @@ RSQLite::dbDisconnect(db)
 MetaBrain_eQTL <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/MetaBrain_eQTL/MetaBrain_eQTL_qvalue005.RDS")
 cre_cpgs <- fread("/project/xinhe/shengqian/cTWAS_epigenetic/data/all_cre_cpgs.bed")
 weights <- weights[weights$gene %in% cre_cpgs$V4,]
-length(intersect(weights$rsid,MetaBrain_eQTL$rsid))
+mQTL_prop <- length(intersect(weights$rsid,MetaBrain_eQTL$rsid))/dim(weights)[1]
+
+driver <- dbDriver('SQLite')
+db <- dbConnect(drv = driver, "/project2/xinhe/shared_data/multigroup_ctwas/weights/neuron_caQTL.db")
+query <- function(...) RSQLite::dbGetQuery(db, ...)
+weights_neuron <- query("select * from weights")
+RSQLite::dbDisconnect(db)
+db <- dbConnect(drv = driver, "/project2/xinhe/shared_data/multigroup_ctwas/weights/glia_caQTL.db")
+query <- function(...) RSQLite::dbGetQuery(db, ...)
+weights_glia <- query("select * from weights")
+RSQLite::dbDisconnect(db)
+weights <- rbind(weights_neuron,weights_glia)
+cre_atac <- fread("/project2/xinhe/shengqian/cTWAS_epigenetics/data/all_cre_atac.bed")
+weights <- weights[weights$gene %in% cre_atac$V4,]
+caQTL_prop <- length(intersect(weights$rsid,MetaBrain_eQTL$rsid))/dim(weights)[1]
+
+# Values from your results
+df <- data.frame(
+  category = c("mQTLs", "caQTLs"),
+  prop = c(mQTL_prop,caQTL_prop)
+)
+
+# Create bar plot with ggplot2
+ggplot(df, aes(x = category, y = prop, fill = category)) +
+  geom_bar(stat = "identity",width = 0.6) +
+  labs(title = "",
+       x = "",
+       y = "Proportion of mQTLs and caQTLs that are also eQTLs") +
+  scale_fill_manual(values = c("mQTLs" = "#7fc97f", "caQTLs" = "#fdc086"))+
+  theme_minimal() + ylim(c(0,1)) +
+  theme(legend.position = "none")
 ```
 
-```{r echo=FALSE}
-#library(annotatr)
-#dm_regions = read_regions(con = "/project/xinhe/shengqian/cTWAS_epigenetic/data/all_cre_cpgs.bed", genome = 'hg38',format = 'bed')
-#annots = c('hg38_basicgenes', 'hg38_genes_intergenic')
-#annotations = build_annotations(genome = 'hg38', annotations = annots)
-#dm_annotated = annotate_regions(regions = dm_regions,annotations = annotations,ignore.strand = TRUE,quiet = FALSE)
-#df_dm_annotated = data.frame(dm_annotated)
-#saveRDS(df_dm_annotated,file = "/project/xinhe/shengqian/cTWAS_epigenetic/data/all_cre_cpgs_annotation.RDS")
-cpg_annot <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/all_cre_cpgs_annotation.RDS")
-cpg_annot$annotation <- sapply(cpg_annot$annot.id, function(x){unlist(strsplit(x, split="[:]"))[1]})
-cpg_annot <- cpg_annot[,c("name","annotation","annot.symbol")]
-cpg_annot <- cpg_annot[cpg_annot$annotation=="intergenic",]
-cpg_annot <- unique(cpg_annot[,c("name","annotation")])
-table(cpg_annot$annotation)
+### Figure 6d: Do epiQTLs explain eqtlS? Independent PHE
+```{r}
+param_eQTL <- readRDS("/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_eQTL/SCZ_eQTL.parameters.RDS")
+param_eQTL_epiQTL <- readRDS("/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_eQTL_caQTL_mQTL/SCZ_eQTL_caQTL_mQTL.parameters.RDS")
+
+# Extract values from your objects
+bar1_eQTL <- sum(param_eQTL$prop_heritability[1:5])
+
+bar2_eQTL <- sum(param_eQTL_epiQTL$prop_heritability[1:5])
+bar2_epi <- sum(param_eQTL_epiQTL$prop_heritability[6:8])
+
+# Data
+df2 <- data.frame(
+  Bar = c("eQTL", "eQTL+epiQTL", "eQTL+epiQTL"),
+  Component = c("eQTL", "eQTL", "epiQTL"),
+  Value = c(bar1_eQTL, bar2_eQTL, bar2_epi)
+)
+
+# 1) Put eQTL first in levels (bottom of stack)
+df2$Component <- factor(df2$Component, levels = c("epiQTL", "eQTL"))
+
+ggplot(df2, aes(x = Bar, y = Value, fill = Component)) +
+  # 2) Explicitly keep default (non-reversed) stacking
+  geom_bar(stat = "identity", position = position_stack(reverse = FALSE), width = 0.6) +
+  geom_text(aes(label = round(Value, 3)),
+            position = position_stack(vjust = 0.5, reverse = FALSE),
+            color = "white", size = 4) +
+  scale_fill_manual(values = c("eQTL" = "#7fc97f", "epiQTL" = "#fdc086"),
+                    breaks = c("eQTL", "epiQTL")) +
+  theme_minimal() +
+  labs(y = "Proportion Heritability", x = "", fill = "Component")
 ```
 
+### Figure 6d: Do epiQTLs explain eqtlS? few PIPs decreased aftering adding epiQTLs
+```{r echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
+suppressMessages({
+  suppressWarnings({
+    eQTL_res <- get_gene_res(mapping_table, "/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_eQTL/SCZ_eQTL.finemap_regions_res.RDS", snp_map)
+    full_res <- get_gene_res(mapping_table, "/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_eQTL_caQTL_mQTL/SCZ_eQTL_caQTL_mQTL.finemap_regions_res.RDS", snp_map)
+  })
+})
+eQTL_result <- eQTL_res$result_sig
+eQTL_result <- eQTL_result[,c("gene_name","combined_pip")]
+full_result <- full_res$result
+full_result <- full_result[,c("gene_name","combined_pip")]
+setDT(eQTL_result)
+setDT(full_result)
+setnames(full_result, "combined_pip", "combined_pip_full")
+merged_result <- full_result[eQTL_result, 
+                             on = .(gene_name)]
+merged_result[is.na(combined_pip_full), combined_pip_full := 0]
+p2 <- ggplot(merged_result, aes(x = combined_pip, 
+                          y = combined_pip_full)) +
+  geom_point(alpha = 0.6) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red") +
+  labs(x = "Gene PIP in eQTL results",
+       y = "Gene PIP in full results",
+       title = "") +
+  coord_cartesian(xlim = c(0, 1), ylim = c(0, 1)) +
+  theme_minimal(base_size = 14)
+p2
+```
+
+```{r, eval=F,echo=FALSE, message=FALSE, warning=FALSE,fig.height=5, fig.width=10}
+combined_plot <- (p1 | p2) + plot_layout(guides = "collect") & theme(legend.position = "bottom")
+print(combined_plot)
+```
