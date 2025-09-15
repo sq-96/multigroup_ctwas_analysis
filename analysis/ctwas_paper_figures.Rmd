@@ -22,6 +22,7 @@ library(GenomicRanges)
 library(mapgen)
 library(RSQLite)
 library(RColorBrewer)
+library(scales)
 source("/project/xinhe/shengqian/cTWAS_paper_figures/plot_function.R")
 source("/project/xinhe/xsun/multi_group_ctwas/data/samplesize.R")
 ```
@@ -122,21 +123,40 @@ runtag = "five_uncorrelated_tissues_three_omics"
 plot_PHE(results_dir,runtag,paste(1, 1:10, sep = "-"),c(1),"shared_all","ctwas",".minp08.mingene0.parameters.RDS",phe_true_uncorrelated)
 ```
 
+
 ### Figure S3: Enrichment (correlated and uncorrelated tissues)
 Proportion of heritability explained by gene expression, splicing and RNA stability of each tissue estimated by M-cTWAS. Each dot represents one of the ten replicates in simulations. Dashlines show the true PVE value.
+```{r, echo=FALSE}
+# 1) Define one base palette of 15 colors (choose any palette you like)
+base_cols <- hue_pal()(15)         # or: viridisLite::viridis(15)
+
+# 2) Your two label vectors (each length 15)
+vec1 <- c("blood E","Liver E","Heart E","Stomach E","Lung E",
+          "blood S","Liver S","Heart S","Stomach S","Lung S",
+          "blood ST","Liver ST","Heart ST","Stomach ST","Lung ST")
+
+vec2 <- c("Cerebellum E","Cortex E","Nucleus_accumbens E","Caudate E","Cerebellar_Hemisphere E",
+          "Cerebellum S","Cortex S","Nucleus_accumbens S","Caudate S","Cerebellar_Hemisphere S",
+          "Cerebellum ST","Cortex ST","Nucleus_accumbens ST","Caudate ST","Cerebellar_Hemisphere ST")
+
+# 3) Create per-plot named palettes by POSITION
+pal_vec1 <- setNames(base_cols, vec1)  # position 1..15 -> same colors
+pal_vec2 <- setNames(base_cols, vec2)
+```
+
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width= 12, fig.height= 4}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correlated_brain_tissues_three_omics/"
 runtag = "five_correlated_brain_tissues_three_omics"
-plot_enrichment_correlated(results_dir,runtag,paste(1, 1:10, sep = "-"),c(1),"shared_all","ctwas",".minp08.mingene0.parameters.RDS",enrichment_true_correlated)
+plot_enrichment_correlated(results_dir,runtag,paste(1, 1:10, sep = "-"),c(1),"shared_all","ctwas",".minp08.mingene0.parameters.RDS",enrichment_true_correlated,pal_vec2)
 ```
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width= 12, fig.height= 4}
 results_dir <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_uncorrelated_tissues_three_omics/"
 runtag = "five_uncorrelated_tissues_three_omics"
-plot_enrichment_uncorrelated(results_dir,runtag,paste(1, 1:10, sep = "-"),c(1),"shared_all","ctwas",".minp08.mingene0.parameters.RDS",enrichment_true_uncorrelated)
+plot_enrichment_uncorrelated(results_dir,runtag,paste(1, 1:10, sep = "-"),c(1),"shared_all","ctwas",".minp08.mingene0.parameters.RDS",enrichment_true_uncorrelated,pal_vec1)
 ```
 
-### Figure 2c: PIP calibration
+### Figure 2c: PIP calibration (correlated)
 Gene PIP calibration. Gene PIPs from all simulations are grouped into bins. The plot shows the proportion of true causal genes (y axis) against the average PIPs (x axis) under each bin. A well-calibrated method should produce points along the diagonal lines (red). The ±s.e. is shown for each point in the vertical bars calculated over ten independent simulations.
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.width=8, fig.height=4}
 df1 <- readRDS("/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correlated_brain_tissues_three_omics/molecular_PIP_calibration_df.RDS")
@@ -146,6 +166,7 @@ fig2 <- cp_plot(df2$susie_pip, df2$ifcausal, df2$runtag, mode ="PIP", main = "Ge
 grid.arrange(fig1, fig2, ncol = 2, top = "Correlated tissues")
 ```
 
+### Figure S5: PIP calibration (uncorrelated)
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.width=8, fig.height=4}
 df1 <- readRDS("/project/xinhe/shengqian/cTWAS_simulation/simulation_five_uncorrelated_tissues_three_omics/molecular_PIP_calibration_df.RDS")
 df2 <- readRDS("/project/xinhe/shengqian/cTWAS_simulation/simulation_five_uncorrelated_tissues_three_omics/gene_PIP_calibration_df.RDS")
@@ -154,7 +175,7 @@ fig2 <- cp_plot(df2$susie_pip, df2$ifcausal, df2$runtag, mode ="PIP", main = "Ge
 grid.arrange(fig1, fig2, ncol = 2, top = "Uncorrelated tissues")
 ```
 
-### Figure 2d: Power and False discovery rate
+### Figure 2d: Power and False discovery rate (correlated)
 Number of genes identified by various methods. We used the following significance thresholds for each method: PIP>0.8 for cTWAS. We use different colors for causal genes identified by each method, and the top gray bars indicate noncausal genes. The height of the bar is the mean over ten independent simulations; the standard error is shown for each bar in vertical lines from the same ten simulations.
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.width=8, fig.height=4}
 multi_ctwas_res <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_correlated_brain_tissues_three_omics/multi_ctwas_simu_res.RDS"
@@ -171,6 +192,7 @@ p2 <- plot_gene_power_compare_method(multi_ctwas_res,single_ctwas_res,coloc_res,
 grid.arrange(p1, p2, ncol = 2, top = "Correlated tissues")
 ```
 
+### Figure S6: Power and False discovery rate (uncorrelated)
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.width=8, fig.height=4}
 multi_ctwas_res <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_uncorrelated_tissues_three_omics/multi_ctwas_simu_res.RDS"
 single_ctwas_res <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_uncorrelated_tissues_three_omics/single_ctwas_simu_res.RDS"
@@ -227,29 +249,29 @@ df <- data.frame(
             bar2_eQTL, bar2_sQTL, bar2_stQTL)
 )
 
-
+df$group <- factor(df$group, levels = c("Single-modality", "Multi-modality"))
 # Plot
 ggplot(df, aes(x = group, y = value, fill = QTL)) +
-  geom_bar(stat = "identity") +
+  geom_bar(stat = "identity",width = 0.7) +
   geom_text(aes(label = round(value, 3)),
             position = position_stack(vjust = 0.5), size = 4, color = "black") +
   ylab("Proportion of PVE") +
   xlab("") +
   ggtitle(trait) +
-  scale_fill_manual(values = c("eQTL" = "#1f77b4",
-                               "sQTL" = "#ff7f0e",
-                               "stQTL" = "#2ca02c")) +
+  scale_fill_manual(values = c("eQTL" = "#e26d5c",
+                               "sQTL" = "#ffe1a8",
+                               "stQTL" = "#c9cba3")) +
   theme_minimal(base_size = 14) +
   theme(legend.position = "right")
 
 ```
 
-### Figure 3b: Tissues are often correlated: but one tissue is not enough.
+### Figure S7: Tissues are often correlated: but one tissue is not enough.
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.height=4, fig.width=10}
 thin <- 1
 vgs <- "shared_all"
 L <-5
-colors <- c("#ff7f0e", "#2ca02c", "#d62728",  "#9467bd", "#8c564b", "#e377c2", "#7f7f7f",  "#bcbd22",  "#17becf",  "#f7b6d2",  "#c5b0d5",  "#9edae5", "#ffbb78",  "#98df8a",  "#ff9896" )
+colors <- c("#e26d5c", "#ffe1a8", "#c9cba3", "#c9cba3")
 
 fix_panel_size <- function(plot, width = 2.1, height = 2) {
   set_panel_size(plot, 
@@ -268,7 +290,7 @@ file_param <- paste0("/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/
 param <- readRDS(file_param)
 ctwas_parameters <- summarize_param(param, gwas_n)
 
-p1 <- plot_piechart_topn(ctwas_parameters = ctwas_parameters,colors = colors,by = "context",title = NULL)
+p1 <- plot_piechart_topn(ctwas_parameters = ctwas_parameters,colors = c("#e26d5c", "#ffe1a8"),by = "context",title = NULL)
 
 
 file_param <- paste0("/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/expression/IBD-ebi-a-GCST004131/IBD-ebi-a-GCST004131_Colon_Transverse.thin1.shared_all.param.RDS")
@@ -297,10 +319,16 @@ p <- grid.arrange(pie1, pie2, pie3,
                   top = paste0(trait))
 ```
 
-### Figure 3b: Shared pattern
-```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.height=6, fig.width=10}
-trait <- "IBD-ebi-a-GCST004131"
-out <- plot_pairwise_PVE(trait, samplesize, n_top = 10)
+### Figure 3b: Shared pattern (eQTL)
+```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.height=8, fig.width=8}
+trait <- "LDL-ukb-d-30780_irnt"
+out <- plot_pairwise_PVE(trait, samplesize, n_top = 5)
+out[[1]]
+```
+
+### Figure S8: Shared pattern (sQTL)
+```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.height=8, fig.width=8}
+out[[2]]
 ```
 
 ### Figure 3c: Partition of h2g (Multiple tissues contribute and Contribution of each modality)
