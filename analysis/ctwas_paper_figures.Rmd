@@ -825,7 +825,7 @@ ggplot(df, aes(x = category, y = count, fill = category)) +
   labs(title = "",
        x = "",
        y = "Number of genes or CREs (PIP>0.8)") +
-  scale_fill_manual(values = c("Gene" = "#7fc97f", "CRE" = "#fdc086"))+
+  scale_fill_manual(values = c("Gene" = "#ffe1a8", "CRE" = "#e26d5c"))+
   theme_minimal() +
   theme(legend.position = "none")
 ```
@@ -867,7 +867,7 @@ ggplot(df, aes(x = category, y = prop, fill = category)) +
   labs(title = "",
        x = "",
        y = "Proportion of CpGs in OCRs") +
-  scale_fill_manual(values = c("CpGs in CREs" = "#7fc97f", "Random CpGs" = "#fdc086"))+
+  scale_fill_manual(values = c("CpGs in CREs" = "#e26d5c", "Random CpGs" = "#ffe1a8"))+
   theme_minimal() + ylim(c(0,1)) +
   theme(legend.position = "none")
 ```
@@ -941,11 +941,16 @@ ggplot(df, aes(x = Bar, y = Value, fill = Component)) +
   geom_bar(stat = "identity", position = position_stack(),width=0.8) +
   geom_text(aes(label = round(Value, 3)), 
             position = position_stack(vjust = 0.5), size = 4, color = "white") +
-  scale_fill_manual(values = c("eQTL" = "#7fc97f", 
-                               "mQTL" = "#fdc086", 
-                               "caQTL" = "#beaed4"))+
+  scale_fill_manual(values = c("eQTL" = "#e26d5c", 
+                               "mQTL" = "#ffe1a8", 
+                               "caQTL" = "#fed766"))+
   theme_minimal() +
   labs(y = "Proportion Heritability", x = "")
+
+
+#scale_fill_manual(values = c("eQTL" = "#e26d5c",
+#                               "sQTL" = "#ffe1a8",
+#                               "stQTL" = "#c9cba3")) +
 ```
 
 ### Figure 6e: Do eQTLs explain epiQTLs? few PIPs decreased after adding eQTLs
@@ -1130,7 +1135,7 @@ ggplot(df2, aes(x = Bar, y = Value, fill = Component)) +
   geom_text(aes(label = round(Value, 3)),
             position = position_stack(vjust = 0.5, reverse = FALSE),
             color = "white", size = 4) +
-  scale_fill_manual(values = c("eQTL" = "#7fc97f", "epiQTL" = "#fdc086"),
+  scale_fill_manual(values = c("eQTL" = "#ffe1a8", "epiQTL" = "#e26d5c"),
                     breaks = c("eQTL", "epiQTL")) +
   theme_minimal() +
   labs(y = "Proportion Heritability", x = "", fill = "Component")
