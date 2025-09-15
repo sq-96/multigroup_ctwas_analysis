@@ -545,13 +545,13 @@ plots <- plot_number_of_signals_per_region_distributions(
 print(plots)
 ```
 
-### Figure 4e: Compare with TGFM: compare with genes found in the paper. Show that unique genes by cTWAS are valid
+### Figure 4e: Compare with TGFM: (LDL)
 For unique genes identified by M-cTWAS and TGFM, I plotted the distribution of POPS scores and showed that M-cTWAS unique genes have higher POPS score than TGFM unique genes.
-```{r echo=FALSE, message=FALSE, warning=FALSE}
+```{r, eval=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
 library(grex)
 library(ggplot2)
-trait_list <- list("LDL-ukb-d-30780_irnt" = "/project/xinhe/xsun/multi_group_ctwas/data/tgfm/GTEx_TGFM_PIPs_biochemistry_LDLdirect.txt",
-                   "HTN-panukb" = "/project/xinhe/xsun/multi_group_ctwas/data/tgfm/GTEx_TGFM_PIPs_disease_HYPERTENSION_DIAGNOSED.txt")
+trait_list <- list("LDL-ukb-d-30780_irnt" = "/project/xinhe/xsun/multi_group_ctwas/data/tgfm/GTEx_TGFM_PIPs_biochemistry_LDLdirect.txt")
+                   #"HTN-panukb" = "/project/xinhe/xsun/multi_group_ctwas/data/tgfm/GTEx_TGFM_PIPs_disease_HYPERTENSION_DIAGNOSED.txt")
 for(i in names(trait_list)){
   ctwas_folder_results <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/"
   #ctwas_folder_results <- "/project/xinhe/xsun/multi_group_ctwas/26.multi_tissue_eQTL_0805/snakemake_outputs/"
@@ -591,9 +591,14 @@ for(i in names(trait_list)){
 
   # Boxplot
   p2 <- ggplot(df, aes(x = group, y = score, fill = group)) +
-    geom_boxplot(alpha = 0.5) +
-    scale_fill_manual(values = c("blue", "red")) +
-    theme_minimal(base_size = 14) +
+    geom_boxplot(alpha = 1) +
+    scale_fill_manual(values = c("#ffe1a8", "#e26d5c")) +
+    theme_minimal(base_size = 21) + grids(linetype = "dashed")+
+    theme(
+      axis.text.x = element_text(color = "black"),
+      axis.text.y = element_text(color = "black"),
+      axis.title.x = element_text(color = "black"),
+      axis.title.y = element_text(color = "black"))+
     labs(title = i, x = "", y = "PoPS Score",fill = "")
   
   combined_plot <- (p1 | p2) + plot_layout(guides = "collect") & theme(legend.position = "bottom")
@@ -604,8 +609,7 @@ for(i in names(trait_list)){
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 library(grex)
 library(ggplot2)
-trait_list <- list("LDL-ukb-d-30780_irnt" = "/project/xinhe/xsun/multi_group_ctwas/data/tgfm/GTEx_TGFM_PIPs_biochemistry_LDLdirect.txt",
-                   "HTN-panukb" = "/project/xinhe/xsun/multi_group_ctwas/data/tgfm/GTEx_TGFM_PIPs_disease_HYPERTENSION_DIAGNOSED.txt")
+trait_list <- list("LDL-ukb-d-30780_irnt" = "/project/xinhe/xsun/multi_group_ctwas/data/tgfm/GTEx_TGFM_PIPs_biochemistry_LDLdirect.txt")
 for(i in names(trait_list)){
   #ctwas_folder_results <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/"
   ctwas_folder_results <- "/project/xinhe/xsun/multi_group_ctwas/26.multi_tissue_eQTL_0805/snakemake_outputs/"
@@ -645,9 +649,14 @@ for(i in names(trait_list)){
 
   # Boxplot
   p2 <- ggplot(df, aes(x = group, y = score, fill = group)) +
-    geom_boxplot(alpha = 0.5) +
-    scale_fill_manual(values = c("blue", "red")) +
-    theme_minimal(base_size = 14) +
+    geom_boxplot(alpha = 1) +
+    scale_fill_manual(values = c("#ffe1a8", "#e26d5c")) +
+    theme_minimal(base_size = 21) + grids(linetype = "dashed")+
+    theme(
+      axis.text.x = element_text(color = "black"),
+      axis.text.y = element_text(color = "black"),
+      axis.title.x = element_text(color = "black"),
+      axis.title.y = element_text(color = "black"))+
     labs(title = i, x = "", y = "PoPS Score",fill = "")
   
   combined_plot <- (p1 | p2) + plot_layout(guides = "collect") & theme(legend.position = "bottom")
@@ -655,7 +664,66 @@ for(i in names(trait_list)){
 }
 ```
 
-## Figure 5: cTWAS discovers candidate genes for complex traits and provides insights on their molecular mechanisms 
+### Figure 4e: Compare with TGFM: (LDL)
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(grex)
+library(ggplot2)
+trait_list <- list("HTN-panukb" = "/project/xinhe/xsun/multi_group_ctwas/data/tgfm/GTEx_TGFM_PIPs_disease_HYPERTENSION_DIAGNOSED.txt")
+for(i in names(trait_list)){
+  #ctwas_folder_results <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/"
+  ctwas_folder_results <- "/project/xinhe/xsun/multi_group_ctwas/26.multi_tissue_eQTL_0805/snakemake_outputs/"
+  #ctwas_genes <-  readRDS(paste0(ctwas_folder_results,i,"/",i,".3qtls.combined_pip_rmmapping_bygroup_final.RDS"))
+  ctwas_genes <-  readRDS(paste0(ctwas_folder_results,i,"/",i,".eqtlonly.combined_pip_rmmapping_bygroup_final.RDS"))
+  ctwas_genes_highpip <- ctwas_genes$gene_name[ctwas_genes$combined_pip > 0.8]
+  tgfm_genes <- data.table::fread(trait_list[[i]])
+  tgfm_genes_highpip <- tgfm_genes[tgfm_genes$TGFM_PIP > 0.8,]
+  tgfm_genes_highpip <- tgfm_genes_highpip[tgfm_genes_highpip$genetic_element_class != "variant",]
+  tgfm_genes_highpip$ensg_id <- sub("\\..*", "", tgfm_genes_highpip$genetic_element_name)
+  tgfm_genes_highpip_ensg <- unique(tgfm_genes_highpip$ensg_id)
+  library(EnsDb.Hsapiens.v86)
+  ensg_to_symbol <- AnnotationDbi::select(
+    EnsDb.Hsapiens.v86,
+    keys = tgfm_genes_highpip_ensg,
+    keytype = "GENEID",
+    columns = c("GENEID", "SYMBOL")
+  )
+
+  tgfm_genes_highpip <- ensg_to_symbol$SYMBOL
+  ctwas_unique_genes <- setdiff(ctwas_genes_highpip,tgfm_genes_highpip)
+  tgfm_unique_genes <- setdiff(tgfm_genes_highpip,ctwas_genes_highpip)
+  p1 <- plot_overlap_barplot_cTWAS_vs_TGFM(ctwas_genes_highpip = ctwas_genes_highpip, tgfm_genes_highpip_symbol = tgfm_genes_highpip,trait = i,return_unique_genes = F)
+  
+  pops <- fread(paste0("/project/xinhe/shengqian/pops/pops_full_features_output/",i,"_pops/",i,".preds"))
+  df <- grex(cleanid(pops$ENSGID))
+  pops <- cbind(pops,df)
+  tgfm_gene <- pops[pops$hgnc_symbol %in% tgfm_unique_genes,]
+  ctwas_gene <- pops[pops$hgnc_symbol %in% ctwas_unique_genes,]
+
+  # Combine into one data frame
+  df <- data.frame(
+    score = c(tgfm_gene$PoPS_Score, ctwas_gene$PoPS_Score),
+    group = c(rep("TGFM", length(tgfm_gene$PoPS_Score)),
+            rep("cTWAS", length(ctwas_gene$PoPS_Score)))
+  )
+
+  # Boxplot
+  p2 <- ggplot(df, aes(x = group, y = score, fill = group)) +
+    geom_boxplot(alpha = 1) +
+    scale_fill_manual(values = c("#ffe1a8", "#e26d5c")) +
+    theme_minimal(base_size = 21) + grids(linetype = "dashed")+
+    theme(
+      axis.text.x = element_text(color = "black"),
+      axis.text.y = element_text(color = "black"),
+      axis.title.x = element_text(color = "black"),
+      axis.title.y = element_text(color = "black"))+
+    labs(title = i, x = "", y = "PoPS Score",fill = "")
+  
+  combined_plot <- (p1 | p2) + plot_layout(guides = "collect") & theme(legend.position = "bottom")
+  print(combined_plot)
+}
+```
+
+### Figure 5: cTWAS discovers candidate genes for complex traits and provides insights on their molecular mechanisms 
 ```{r echo=FALSE, message=FALSE, warning=FALSE,fig.height=8, fig.width=10}
 folder_results_single <- "/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/expression/"
 folder_results_multi <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/"
