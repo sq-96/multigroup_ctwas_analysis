@@ -545,6 +545,67 @@ plots <- plot_number_of_signals_per_region_distributions(
 print(plots)
 ```
 
+### Figure 4e: cTWAS locus plot at FADS1 locus
+<figure class="half">
+    <img src="https://github.com/sq-96/multigroup_ctwas_analysis/raw/master/data/paper_locus_plot/FADS1.png" width="150%">
+</figure>
+
+### Figure S9: Coloc examples at FASD1 locus
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(igraph)
+coloc_res <- readRDS("/project/xinhe/shengqian/coloc_GWAS_analysis/results/LDL-ukb-d-30780_irnt/LDL-ukb-d-30780_irnt.coloc_res.RDS")
+coloc_res <- coloc_res[coloc_res$PP4>0.8,]
+aa <- coloc_res[coloc_res$region_id=="11_59013076_62456299",]
+aa$modality <- sub("_.*$", "", aa$group)
+aa$tissue <- sub("^[^_]*_", "", aa$group)
+# Start from your filtered 'aa'
+df <- data.frame(
+  group     = aa$modality,       # <-- use aa$group here
+  gene_name = aa$gene_name,
+  causalSNP = aa$causalSNP,
+  stringsAsFactors = FALSE
+)
+
+# Edge list: keep 'group' as an edge attribute
+edges <- unique(data.frame(
+  from  = df$causalSNP,
+  to    = df$gene_name,
+  group = df$group,
+  stringsAsFactors = FALSE
+))
+
+# Vertices with bipartite type
+verts <- data.frame(name = unique(c(df$causalSNP, df$gene_name)))
+verts$type <- verts$name %in% df$causalSNP  # TRUE = SNPs, FALSE = genes
+
+# Graph
+g <- graph_from_data_frame(edges, directed = FALSE, vertices = verts)
+
+# Bipartite layout: put SNPs (type=TRUE) higher
+lay <- layout_as_bipartite(g)
+lay[,2] <- ifelse(V(g)$type, 2, 1)
+
+# Color edges by group
+groups <- sort(unique(E(g)$group))
+pal <- setNames(hcl.colors(length(groups), "Dark 3"), groups)  # qualitative palette
+E(g)$color  <- pal[E(g)$group]
+E(g)$width  <- 2
+E(g)$curved <- 0.25 * which_multiple(g)
+
+# Vertex styling
+V(g)$color       <- ifelse(V(g)$type, "salmon", "skyblue")
+V(g)$label.color <- "black"
+V(g)$size        <- 15
+V(g)$label.cex   <- 0.55
+
+# Plot
+plot(g, layout = lay, edge.arrow.mode = 0, edge.label = "",
+     margin = c(0.1, 0.1, 0.1, 0.8))
+
+legend("right", inset = c(-0.1, 0), legend = groups,
+       col = pal[groups], lwd = 2, bty = "n", cex = 0.75, title = "Group")
+```
+
 ### Figure 4e: Compare with TGFM: (LDL)
 For unique genes identified by M-cTWAS and TGFM, I plotted the distribution of POPS scores and showed that M-cTWAS unique genes have higher POPS score than TGFM unique genes.
 ```{r, eval=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
@@ -664,7 +725,7 @@ for(i in names(trait_list)){
 }
 ```
 
-### Figure 4e: Compare with TGFM: (LDL)
+### Figure S10: Compare with TGFM: (HTN)
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 library(grex)
 library(ggplot2)
