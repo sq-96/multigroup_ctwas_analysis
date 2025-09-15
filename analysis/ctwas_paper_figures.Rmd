@@ -211,7 +211,7 @@ grid.arrange(p1, p2, ncol = 2, top = "Uncorrelated tissues")
 ## Figure 3: cTWAS estimates genetic architecture of complex traits from GTEx
 
 ### Figure 3a: Modalities are mostly independent
-```{r echo=FALSE}
+```{r, echo=FALSE, fig.height=5, fig.width=4}
 folder_results_single_E <- "/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/expression/"
 folder_results_single_S <- "/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/splicing/"
 folder_results_single_ST <- "/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/stability/"
@@ -252,7 +252,7 @@ df <- data.frame(
 df$group <- factor(df$group, levels = c("Single-modality", "Multi-modality"))
 # Plot
 ggplot(df, aes(x = group, y = value, fill = QTL)) +
-  geom_bar(stat = "identity",width = 0.7) +
+  geom_bar(stat = "identity",width = 0.5) +
   geom_text(aes(label = round(value, 3)),
             position = position_stack(vjust = 0.5), size = 4, color = "black") +
   ylab("Proportion of PVE") +
@@ -261,8 +261,14 @@ ggplot(df, aes(x = group, y = value, fill = QTL)) +
   scale_fill_manual(values = c("eQTL" = "#e26d5c",
                                "sQTL" = "#ffe1a8",
                                "stQTL" = "#c9cba3")) +
-  theme_minimal(base_size = 14) +
-  theme(legend.position = "right")
+  theme_minimal(base_size = 21) + grids(linetype = "dashed") + 
+  theme(legend.position = "right") + 
+  theme(legend.title = element_blank(),
+      axis.text.x = element_text(color = "black"),
+      axis.text.y = element_text(color = "black"),
+      axis.title.x = element_text(color = "black"),
+      axis.title.y = element_text(color = "black"),
+    )
 
 ```
 
@@ -347,7 +353,6 @@ p <- generate_piecharts_for_trait(ctwas_parameters_single, ctwas_parameters_mult
 grid::grid.draw(p)
 invisible(NULL)
 ```
-
 
 ### Figure 3d: Existing methods may overestimate the contribution of molQTL.
 ```{r, eval=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
@@ -501,7 +506,7 @@ df$Method <- factor(df$Method, levels = c("All genes", "M-cTWAS", "Coloc", "TWAS
 
 # Plot
 ggplot(df, aes(x = Method, y = Proportion, fill = Method)) +
-  geom_col(width = 0.6, alpha = 0.8) +
+  geom_col(width = 0.6, alpha = 1) +
   geom_text(aes(label = round(Proportion, 2)), 
             vjust = -0.5, size = 5) +
   scale_y_continuous(limits = c(0, 1)) +
@@ -510,8 +515,13 @@ ggplot(df, aes(x = Method, y = Proportion, fill = Method)) +
     y = "Detected genes in silver standard (%)",
     x = ""
   ) +
-  theme_minimal(base_size = 14) +
-  theme(legend.position = "none")
+  scale_fill_manual(values = c("#80b1d3","#fb8072","#fdb462","#b3de69"))+
+  theme_minimal(base_size = 21) + grids(linetype = "dashed") + 
+    theme(legend.position = "none",
+      axis.text.x = element_text(color = "black"),
+      axis.text.y = element_text(color = "black"),
+      axis.title.x = element_text(color = "black"),
+      axis.title.y = element_text(color = "black"))
 ```
 
 ### Figure 4d: Comparison of number of signals per region between M-cTWAS, Coloc and TWAS
