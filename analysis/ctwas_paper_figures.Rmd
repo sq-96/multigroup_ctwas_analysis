@@ -553,7 +553,7 @@ print(plots)
 </figure>
 
 ### Figure S9: Coloc examples at FASD1 locus
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.height=6, fig.width=6}
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.height=8, fig.width=8}
 library(igraph)
 coloc_res <- readRDS("/project/xinhe/shengqian/coloc_GWAS_analysis/results/LDL-ukb-d-30780_irnt/LDL-ukb-d-30780_irnt.coloc_res.RDS")
 coloc_res <- coloc_res[coloc_res$PP4>0.8,]
@@ -600,12 +600,41 @@ V(g)$label.color <- "black"
 V(g)$size        <- 15
 V(g)$label.cex   <- 0.55
 
-# Plot
-plot(g, layout = lay, edge.arrow.mode = 0, edge.label = "",
-     margin = c(0.1, 0.1, 0.1, 0.3))
+# Bipartite layout with a smaller vertical gap and no auto-rescale
+lay <- layout_as_bipartite(g)
 
-legend("right", inset = c(-0.1, 0), legend = groups,
+# Put genes/SNPs much closer: e.g., y = 0 and y = 0.35 instead of 1 and 2
+y_low  <- 0
+y_high <- 1
+lay[,2] <- ifelse(V(g)$type, y_high, y_low)
+# 3) Horizontal compression: bring nodes closer together on x
+x_center <- mean(lay[,1])
+x_scale  <- 0.6        # 0.5 = half the horizontal spread; try 0.6–0.8 if too tight
+lay[,1]  <- (lay[,1] - x_center) * x_scale + x_center
+# (Optional) also compress horizontally a bit
+lay[,1] <- lay[,1] * 0.3
+
+# Plot without rescaling, so your shorter gap is preserved
+plot(
+  g,
+  layout = lay,
+  rescale = FALSE,
+  xlim = range(lay[,1]) + c(-0.1, 0.1),
+  ylim = c(min(lay[,2]) - 0.1, max(lay[,2]) + 0.1),
+  edge.arrow.mode = 0,
+  edge.label = "",
+  margin = c(0.1, 0.1, 0.1, 0.3)
+)
+
+legend("bottomleft", inset = c(0, 0), legend = groups,
        col = pal[groups], lwd = 2, bty = "n", cex = 0.75, title = "Group")
+
+## Plot
+#plot(g, layout = lay, edge.arrow.mode = 0, edge.label = "",
+#     margin = c(0.1, 0.1, 0.1, 0.3))
+
+#legend("right", inset = c(-0.1, 0), legend = groups,
+#       col = pal[groups], lwd = 2, bty = "n", cex = 0.75, title = "Group")
 ```
 
 ### Figure 4e: Compare with TGFM: (LDL)
@@ -787,7 +816,7 @@ for(i in names(trait_list)){
 ```
 
 ## Figure 5: cTWAS discovers candidate genes for complex traits and provides insights on their molecular mechanisms 
-```{r echo=FALSE, message=FALSE, warning=FALSE,fig.height=8, fig.width=10}
+```{r echo=FALSE, message=FALSE, warning=FALSE,fig.height=8, fig.width=7}
 folder_results_single <- "/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/expression/"
 folder_results_multi <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/"
 trait <- "LDL-ukb-d-30780_irnt"
@@ -856,18 +885,6 @@ ggraph(graph, layout = "fr", niter = 1000, area = vcount(graph)^2.4) +
   geom_node_point(aes(color = factor(component)), size = 5) +
   geom_node_text(aes(label = name), repel = TRUE) +
   theme_void() + theme(legend.position = "none")
-```
-
-### Figure 5d: A substantial fraction of cTWAS genes are novel
-```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
-mapping_predictdb <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
-mapping_munro     <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/Munro_mapping.RDS")
-mapping_table <- rbind(mapping_predictdb, mapping_munro)
-snp_map <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/LD_region_info/snp_map.RDS")
-aa <- make_ctwas_category_barplot(trait = "LDL-ukb-d-30780_irnt",
-                            mapping_table = mapping_table,
-                            snp_map = snp_map)
-aa$plot
 ```
 
 ### Figure 5e: locus examples
@@ -1148,7 +1165,7 @@ p1
 ```
 
 ### Figure S: Do eQTLs explain epiQTLs? Why eQTLs do not explain epiQTLs. Cell type specific mQTLs
-```{r echo=FALSE}
+```{r echo=FALSE, fig.height=5, fig.width=5}
 # ---- settings ----
 workdir <- "/project/xinhe/shengqian/cTWAS_epigenetic/data/all_cre_cpgs_peaks/"
 bed_files <- list.files(workdir, pattern = "^all_cre_cpgs\\.[^.]+\\.PeakCalls\\.bed$", full.names = TRUE)
@@ -1266,7 +1283,7 @@ ggplot(df, aes(x = category, y = prop, fill = category)) +
 ```
 
 ### Figure 6d: Do epiQTLs explain eqtls? Independent PHE
-```{r echo=FALSE,fig.height=4, fig.width=3}
+```{r echo=FALSE, fig.height=4, fig.width=4}
 param_eQTL <- readRDS("/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_eQTL/SCZ_eQTL.parameters.RDS")
 param_eQTL_epiQTL <- readRDS("/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_eQTL_caQTL_mQTL/SCZ_eQTL_caQTL_mQTL.parameters.RDS")
 
