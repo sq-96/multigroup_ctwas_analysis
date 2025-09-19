@@ -213,7 +213,7 @@ grid.arrange(p1, p2, ncol = 2, top = "Uncorrelated tissues")
 ## Figure 3: cTWAS estimates genetic architecture of complex traits from GTEx
 
 ### Figure 3a: Modalities are mostly independent
-```{r, echo=FALSE, fig.height=6, fig.width=4}
+```{r, echo=FALSE, fig.height=6, fig.width=6}
 folder_results_single_E <- "/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/expression/"
 folder_results_single_S <- "/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/splicing/"
 folder_results_single_ST <- "/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/stability/"
@@ -328,14 +328,14 @@ p <- grid.arrange(pie1, pie2, pie3,
 ```
 
 ### Figure 3b: Shared pattern (eQTL)
-```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.height=5, fig.width=6}
+```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.height=5.5, fig.width=6}
 trait <- "LDL-ukb-d-30780_irnt" #IBD-ebi-a-GCST004131 #LDL-ukb-d-30780_irnt
 out <- plot_pairwise_PVE(trait, samplesize, n_top = 5)
 out[[1]]
 ```
 
 ### Figure S7: Shared pattern (sQTL)
-```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.height=5, fig.width=6}
+```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.height=5.5, fig.width=6}
 out[[2]]
 ```
 
@@ -456,14 +456,30 @@ for(i in traits){
 ### Figure 4b: M-cTWAS identified genes with higher POPS scores
 Averaged POPS scores across all traits stratified by M-cTWAS PIPs 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width=6, fig.height6}
+#traits <- c(
+#  "SBP-ukb-a-360", "LDL-ukb-d-30780_irnt", "aFib-ebi-a-GCST006414",
+#  "WBC-ieu-b-30", "IBD-ebi-a-GCST004131", "BMI-panukb",
+#  "PLT-panukb", "RBC-panukb", "HB-panukb", "HTN-panukb", "Height-panukb",
+#  "T2D-panukb", "MDD-ieu-b-102", "SCZ-ieu-b-5102", "T1D-GCST90014023", "BIP-ieu-b-5110", 
+#  "ASD-ieu-a-1185", "PD-ieu-b-7", "NS-ukb-a-230","ATH_gtexukb"
+#)
 traits <- c(
-  "SBP-ukb-a-360", "LDL-ukb-d-30780_irnt", "aFib-ebi-a-GCST006414",
-  "WBC-ieu-b-30", "IBD-ebi-a-GCST004131", "BMI-panukb",
-  "PLT-panukb", "RBC-panukb", "HB-panukb", "HTN-panukb", "Height-panukb",
-  "T2D-panukb", "MDD-ieu-b-102", "SCZ-ieu-b-5102", "T1D-GCST90014023", "BIP-ieu-b-5110", 
-  "ASD-ieu-a-1185", "PD-ieu-b-7", "NS-ukb-a-230","ATH_gtexukb"
+  "LDL-ukb-d-30780_irnt", 
+  "IBD-ebi-a-GCST004131", 
+  "aFib-ebi-a-GCST006414",
+  "SBP-ukb-a-360", 
+  "T1D-GCST90014023",
+  "T2D-panukb",
+  "ATH_gtexukb",
+  "BMI-panukb",
+  "HB-panukb",
+  "Height-panukb",
+  "HTN-panukb",
+  "PLT-panukb", 
+  "RBC-panukb",
+  "WBC-ieu-b-30",
+  "SCZ-ieu-b-5102"
 )
-
 plot_df <- data.frame()
 for(i in traits){
   pops <- fread(paste0("/project/xinhe/shengqian/pops/pops_full_features_output/",i,"_pops/",i,".preds"))
@@ -479,7 +495,9 @@ plot_df <- na.omit(plot_df)
 plot_pops_by_pip_bin(plot_df,"POPs score across all traits")
 ```
 
-### Figure 4c: Validation with Silver Standand Genes
+
+
+### Figure 4c: Validation with LDL Silver Standand Genes
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width=6, fig.height=6}
 trait <- "LDL-ukb-d-30780_irnt"
 folder_results_multi <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/"
@@ -503,6 +521,49 @@ df <- data.frame(
   Proportion = c(length(known)/(length(known)+length(bystander)),sum(ctwas_genes%in%known) / (sum(ctwas_genes%in%known) + sum(ctwas_genes%in%bystander)), sum(coloc_genes%in%known) / (sum(coloc_genes%in%known) + sum(coloc_genes%in%bystander)), sum(twas_genes%in%known) / (sum(twas_genes%in%known) + sum(twas_genes%in%bystander)))
 )
 
+# Ensure order
+df$Method <- factor(df$Method, levels = c("All genes", "M-cTWAS", "Coloc", "TWAS"))
+
+# Plot
+ggplot(df, aes(x = Method, y = Proportion, fill = Method)) +
+  geom_col(width = 0.6, alpha = 1) +
+  geom_text(aes(label = round(Proportion, 2)), 
+            vjust = -0.5, size = 5) +
+  scale_y_continuous(limits = c(0, 1)) +
+  labs(
+    title = "",
+    y = "Detected genes in silver standard (%)",
+    x = ""
+  ) +
+  scale_fill_manual(values = c("#80b1d3","#fb8072","#fdb462","#b3de69"))+
+  theme_minimal(base_size = 21) + grids(linetype = "dashed") + 
+    theme(legend.position = "none",
+      axis.text.x = element_text(color = "black"),
+      axis.text.y = element_text(color = "black"),
+      axis.title.x = element_text(color = "black"),
+      axis.title.y = element_text(color = "black"))
+```
+
+### Figure S: Validation with IBD deepseek curated genes
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width=6, fig.height=6}
+genes1 <- c("NOD2","ATG16L1","IRGM","IL23R","CARD9","TNFSF15","HNF4A","ECM1","LRRK2","DSC2","GPR35","PTPN2","PTPN22","SMAD3","FUT2","CCR6","STAT3","JAK2","IL10RA","IL10RB","SLC39A8")
+genes2 <- c("NOD2","ATG16L1","IRGM","IL23R","CARD9","TNFSF15","HNF4A","ECM1","DSCAM","PTPN2","PTPN22","SMAD3","CCR6","STAT3","LRRK2","FUT2","GPR35","GPR65","RNF186","SLC39A8")
+genes3 <- c("NOD2","ATG16L1","IL23R","IRGM","CARD9","TNFSF15","HERC2","PTPN2","PTPN22","TYK2","LRRK2","SMAD3","STAT3","FUT2","GPR35","DKK1","CCR6","IL10RA","IL10RB","SBNO2","ZNF365")
+ibd_genes <- intersect(genes1,intersect(genes2,genes3))
+bystander <- fread("/project/xinhe/xsun/multi_group_ctwas/data/bystander.txt",header = F)$V1
+twas_genes <- readRDS("/project/xinhe/shengqian/coloc_GWAS_analysis/results/IBD-ebi-a-GCST004131/IBD-ebi-a-GCST004131.twas_res.RDS")
+twas_genes <- unique(twas_genes$gene_name)
+coloc_genes <- readRDS("/project/xinhe/shengqian/coloc_GWAS_analysis/results/IBD-ebi-a-GCST004131/IBD-ebi-a-GCST004131.coloc_res.RDS")
+coloc_genes <- coloc_genes[coloc_genes$PP4>0.8,]
+coloc_genes <- unique(coloc_genes$gene_name)
+ctwas_genes <- readRDS("/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/IBD-ebi-a-GCST004131/IBD-ebi-a-GCST004131.3qtls.combined_pip_rmmapping_bytype_final.RDS")
+#ctwas_genes <- ctwas_genes[ctwas_genes$combined_pip>0.8,]
+ctwas_genes <- ctwas_genes$gene_name
+
+df <- data.frame(
+  Method = c("All genes", "M-cTWAS", "Coloc", "TWAS"),
+  Proportion = c(length(ibd_genes)/(length(ibd_genes)+length(bystander)),sum(ctwas_genes%in%ibd_genes) / (sum(ctwas_genes%in%ibd_genes) + sum(ctwas_genes%in%bystander)), sum(coloc_genes%in%ibd_genes) / (sum(coloc_genes%in%ibd_genes) + sum(coloc_genes%in%bystander)), sum(twas_genes%in%ibd_genes) / (sum(twas_genes%in%ibd_genes) + sum(twas_genes%in%bystander)))
+)
 # Ensure order
 df$Method <- factor(df$Method, levels = c("All genes", "M-cTWAS", "Coloc", "TWAS"))
 
