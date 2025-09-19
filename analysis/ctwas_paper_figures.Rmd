@@ -168,7 +168,7 @@ fig2 <- cp_plot(df2$susie_pip, df2$ifcausal, df2$runtag, mode ="PIP", main = "Ge
 grid.arrange(fig1, fig2, ncol = 2, top = "Correlated tissues")
 ```
 
-### Figure S5: PIP calibration (uncorrelated)
+### Figure S4: PIP calibration (uncorrelated)
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.width=8, fig.height=4}
 df1 <- readRDS("/project/xinhe/shengqian/cTWAS_simulation/simulation_five_uncorrelated_tissues_three_omics/molecular_PIP_calibration_df.RDS")
 df2 <- readRDS("/project/xinhe/shengqian/cTWAS_simulation/simulation_five_uncorrelated_tissues_three_omics/gene_PIP_calibration_df.RDS")
@@ -194,7 +194,7 @@ p2 <- plot_gene_power_compare_method(multi_ctwas_res,single_ctwas_res,coloc_res,
 grid.arrange(p1, p2, ncol = 2, top = "Correlated tissues")
 ```
 
-### Figure S6: Power and False discovery rate (uncorrelated)
+### Figure S5: Power and False discovery rate (uncorrelated)
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.width=8, fig.height=4}
 multi_ctwas_res <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_uncorrelated_tissues_three_omics/multi_ctwas_simu_res.RDS"
 single_ctwas_res <- "/project/xinhe/shengqian/cTWAS_simulation/simulation_five_uncorrelated_tissues_three_omics/single_ctwas_simu_res.RDS"
@@ -274,7 +274,7 @@ ggplot(df, aes(x = group, y = value, fill = QTL)) +
 
 ```
 
-### Figure S7: Tissues are often correlated: but one tissue is not enough.
+### Figure S6: Tissues are often correlated: but one tissue is not enough.
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.height=4, fig.width=10}
 thin <- 1
 vgs <- "shared_all"
@@ -334,7 +334,7 @@ out <- plot_pairwise_PVE(trait, samplesize, n_top = 5)
 out[[1]]
 ```
 
-### Figure S8: Shared pattern (sQTL)
+### Figure S7: Shared pattern (sQTL)
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.height=8, fig.width=8}
 out[[2]]
 ```
@@ -552,7 +552,7 @@ print(plots)
     <img src="https://github.com/sq-96/multigroup_ctwas_analysis/raw/master/data/paper_locus_plot/FADS1.png" width="150%">
 </figure>
 
-### Figure S9: Coloc examples at FASD1 locus
+### Figure S8: Coloc examples at FASD1 locus
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.height=8, fig.width=8}
 library(igraph)
 coloc_res <- readRDS("/project/xinhe/shengqian/coloc_GWAS_analysis/results/LDL-ukb-d-30780_irnt/LDL-ukb-d-30780_irnt.coloc_res.RDS")
@@ -756,7 +756,7 @@ for(i in names(trait_list)){
 }
 ```
 
-### Figure S10: Compare with TGFM: (HTN)
+### Figure S9: Compare with TGFM: (HTN)
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.height=6, fig.width=8}
 library(grex)
 library(ggplot2)
@@ -1164,7 +1164,7 @@ p1 <- ggplot(merged_result, aes(x = total_susie_pip,
 p1
 ```
 
-### Figure S: Do eQTLs explain epiQTLs? Why eQTLs do not explain epiQTLs. Cell type specific mQTLs
+### Figure S10: Do eQTLs explain epiQTLs? Why eQTLs do not explain epiQTLs. Cell type specific mQTLs
 ```{r echo=FALSE, fig.height=5, fig.width=5}
 # ---- settings ----
 workdir <- "/project/xinhe/shengqian/cTWAS_epigenetic/data/all_cre_cpgs_peaks/"
@@ -1239,7 +1239,7 @@ ggplot(stat_dt, aes(x = factor(peaks), y = proportion)) +
   theme_classic()
 ```
 
-### Figure S: Do eQTLs explain epiQTLs? GTEx is limited in power. Most mQTLs and caQTLs are eQTLs in MetaBrain eQTL
+### Figure S11: Do eQTLs explain epiQTLs? GTEx is limited in power. Most mQTLs and caQTLs are eQTLs in MetaBrain eQTL
 ```{r echo=FALSE,fig.height=4,fig.width=3}
 driver <- dbDriver('SQLite')
 db <- dbConnect(drv = driver, "/project/xinhe/shengqian/cTWAS_epigenetic/data/weights/brain_mQTL.db")
