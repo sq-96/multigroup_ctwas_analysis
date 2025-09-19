@@ -455,7 +455,7 @@ for(i in traits){
 
 ### Figure 4b: M-cTWAS identified genes with higher POPS scores
 Averaged POPS scores across all traits stratified by M-cTWAS PIPs 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width=4, fig.height=6}
 traits <- c(
   "SBP-ukb-a-360", "LDL-ukb-d-30780_irnt", "aFib-ebi-a-GCST006414",
   "WBC-ieu-b-30", "IBD-ebi-a-GCST004131", "BMI-panukb",
@@ -480,7 +480,7 @@ plot_pops_by_pip_bin(plot_df,"POPs score across all traits")
 ```
 
 ### Figure 4c: Validation with Silver Standand Genes
-```{r echo=FALSE, message=FALSE, warning=FALSE}
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width=4, fig.height=6}
 trait <- "LDL-ukb-d-30780_irnt"
 folder_results_multi <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/"
 traits_silver <- c("T2D","LDL","BMI","RBC","IBD","SCZ","aFib")
@@ -902,14 +902,17 @@ ggraph(graph, layout = "fr", niter = 1000, area = vcount(graph)^2.4) +
 ```
 
 ### Figure 5e: locus examples
+#### LDLR
 <figure class="half">
     <img src="https://github.com/sq-96/multigroup_ctwas_analysis/raw/master/data/paper_locus_plot/LDLR.png" width="150%">
 </figure>
 
+#### PCSK9
 <figure class="half">
     <img src="https://github.com/sq-96/multigroup_ctwas_analysis/raw/master/data/paper_locus_plot/PCSK9.png" width="150%">
 </figure>
 
+#### SNX17
 <figure class="half">
     <img src="https://github.com/sq-96/multigroup_ctwas_analysis/raw/master/data/paper_locus_plot/SNX17.png" width="150%">
 </figure>
@@ -1223,7 +1226,7 @@ mat <- as.matrix(mat_dt[, -1, with = FALSE])
 rownames(mat) <- cpg_ids
 
 # ---- plot heatmap ----
-cols <- c("white", "#FF9999")
+cols <- c("white", "#ffd380")
 brks <- c(-0.5, 0.5, 1.5)
 
 pheatmap(
@@ -1253,7 +1256,7 @@ stat_dt[, proportion := n / n_cpg]
 #print(stat_dt)
 # ---- optional: quick bar plot to screen (not saved) ----
 ggplot(stat_dt, aes(x = factor(peaks), y = proportion)) +
-  geom_col(fill = "#FF9999") +
+  geom_col(fill = "#ffd380") +
   geom_text(aes(label = sprintf("%.2f", proportion)), vjust = -0.3, size = 3) +
   labs(x = "k (number of cell types with a peak)", y = "Proportion of CpGs",
        title = "CpGs present in exactly k cell-type peaks") +
