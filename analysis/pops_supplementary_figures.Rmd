@@ -1,0 +1,63 @@
+---
+title: "cTWAS paper figures"
+output: html_document
+date: '2025-8-18'
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+library(ctwas)
+library(data.table)
+library(ggplot2)
+library(ggrepel)
+library(egg)
+library(grid)
+library(dplyr)
+library(pheatmap)
+library(EnsDb.Hsapiens.v86)
+library(ComplexHeatmap)
+library(GenomicRanges)
+library(mapgen)
+library(RSQLite)
+library(RColorBrewer)
+library(scales)
+library(igraph)
+library(ggraph)
+source("/project/xinhe/shengqian/cTWAS_paper_figures/plot_function.R")
+source("/project/xinhe/xsun/multi_group_ctwas/data/samplesize.R")
+```
+
+### Figure S: M-cTWAS identified genes with higher POPS scores (individual traits)
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width=6, fig.height6}
+traits <- c(
+  "LDL-ukb-d-30780_irnt", 
+  "IBD-ebi-a-GCST004131", 
+  "aFib-ebi-a-GCST006414",
+  "SBP-ukb-a-360", 
+  "T1D-GCST90014023",
+  "T2D-panukb",
+  "ATH_gtexukb",
+  "BMI-panukb",
+  "HB-panukb",
+  "Height-panukb",
+  "HTN-panukb",
+  "PLT-panukb", 
+  "RBC-panukb",
+  "WBC-ieu-b-30",
+  "SCZ-ieu-b-5102"
+)
+
+for(i in traits){
+  pops <- fread(paste0("/project/xinhe/shengqian/pops/pops_full_features_output/",i,"_pops/",i,".preds"))
+  pop_anno <- fread("/project/xinhe/shengqian/pops/example/data/utils/gene_annot_jun10.txt")
+  pops_pred <- merge(pops, pop_anno, by = "ENSGID", all.x = TRUE)
+  pops_pred <- pops_pred[,c("PoPS_Score","NAME")]
+  ctwas_res <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/",i,"/",i,".3qtls.combined_pip_bytype_final.RDS"))
+  ctwas_res <- ctwas_res[,c("gene_name","combined_pip")]
+  merged_df <- merge(ctwas_res, pops_pred, by.x = "gene_name", by.y = "NAME", all.x = TRUE)
+  merged_df <- na.omit(merged_df)
+  print(plot_pops_by_pip_bin(merged_df,paste0(i,", # of genes ",dim(merged_df)[1])))
+}
+```

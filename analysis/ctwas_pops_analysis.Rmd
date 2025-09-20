@@ -12,13 +12,23 @@ editor_options:
 3. Run POPS with features and MAGMA output
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, include=FALSE}
-library(data.table)#a
+library(data.table)
 traits <- c(
-  "SBP-ukb-a-360", "LDL-ukb-d-30780_irnt", "aFib-ebi-a-GCST006414",
-  "WBC-ieu-b-30", "IBD-ebi-a-GCST004131", "BMI-panukb",
-  "PLT-panukb", "RBC-panukb", "HB-panukb", "HTN-panukb", "Height-panukb",
-  "T2D-panukb", "MDD-ieu-b-102", "SCZ-ieu-b-5102", "T1D-GCST90014023", "BIP-ieu-b-5110", 
-  "ASD-ieu-a-1185", "PD-ieu-b-7", "NS-ukb-a-230","ATH_gtexukb"
+  "LDL-ukb-d-30780_irnt", 
+  "IBD-ebi-a-GCST004131", 
+  "aFib-ebi-a-GCST006414",
+  "SBP-ukb-a-360", 
+  "T1D-GCST90014023",
+  "T2D-panukb",
+  "ATH_gtexukb",
+  "BMI-panukb",
+  "HB-panukb",
+  "Height-panukb",
+  "HTN-panukb",
+  "PLT-panukb", 
+  "RBC-panukb",
+  "WBC-ieu-b-30",
+  "SCZ-ieu-b-5102"
 )
 
 plot_pops_by_pip_bin <- function(df,trait_name) {
@@ -91,7 +101,7 @@ for(i in traits){
 ```
 
 ### POPS score of genes uniquelly identified by cTWAS and TGFM
-```{r echo=FALSE, message=FALSE, warning=FALSE}
+```{r, eval=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
 library(grex)
 library(ggplot2)
 trait_list <- list("LDL-ukb-d-30780_irnt" = "/project/xinhe/xsun/multi_group_ctwas/data/tgfm/GTEx_TGFM_PIPs_biochemistry_LDLdirect.txt",
