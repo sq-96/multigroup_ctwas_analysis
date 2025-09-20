@@ -1,0 +1,62 @@
+---
+title: "Novel gene category supplementary figures"
+output: html_document
+date: '2025-8-18'
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+library(ctwas)
+library(data.table)
+library(ggplot2)
+library(ggrepel)
+library(egg)
+library(grid)
+library(dplyr)
+library(pheatmap)
+library(EnsDb.Hsapiens.v86)
+library(ComplexHeatmap)
+library(GenomicRanges)
+library(mapgen)
+library(RSQLite)
+library(RColorBrewer)
+library(scales)
+library(igraph)
+library(ggraph)
+source("/project/xinhe/shengqian/cTWAS_paper_figures/plot_function.R")
+source("/project/xinhe/xsun/multi_group_ctwas/data/samplesize.R")
+```
+
+### Figure S: A substantial fraction of cTWAS genes are novel
+```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.width= 7, fig.height= 6}
+mapping_predictdb <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
+mapping_munro     <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/Munro_mapping.RDS")
+mapping_table <- rbind(mapping_predictdb, mapping_munro)
+snp_map <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/LD_region_info/snp_map.RDS")
+traits <- c(
+  "LDL-ukb-d-30780_irnt", 
+  "IBD-ebi-a-GCST004131", 
+  "aFib-ebi-a-GCST006414",
+  "SBP-ukb-a-360", 
+  "T1D-GCST90014023",
+  "T2D-panukb",
+  "ATH_gtexukb",
+  "BMI-panukb",
+  "HB-panukb",
+  "Height-panukb",
+  "HTN-panukb",
+  "PLT-panukb", 
+  "RBC-panukb",
+  "WBC-ieu-b-30",
+  "SCZ-ieu-b-5102"
+)
+
+for(i in traits){
+  aa <- make_ctwas_category_barplot(trait = i,
+                            mapping_table = mapping_table,
+                            snp_map = snp_map)
+  print(aa$plot)
+}
+```
