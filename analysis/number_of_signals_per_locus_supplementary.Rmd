@@ -1,0 +1,96 @@
+---
+title: "Number of signals per locus"
+output: html_document
+date: '2025-8-18'
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+library(ctwas)
+library(data.table)
+library(ggplot2)
+library(ggrepel)
+library(egg)
+library(grid)
+library(dplyr)
+library(pheatmap)
+library(EnsDb.Hsapiens.v86)
+library(ComplexHeatmap)
+library(GenomicRanges)
+library(mapgen)
+library(RSQLite)
+library(RColorBrewer)
+library(scales)
+library(igraph)
+library(ggraph)
+source("/project/xinhe/shengqian/cTWAS_paper_figures/plot_function.R")
+source("/project/xinhe/xsun/multi_group_ctwas/data/samplesize.R")
+```
+
+### Figure S: Partition of h2g (other traits)
+```{r echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
+traits <- c(
+  "LDL-ukb-d-30780_irnt", 
+  "IBD-ebi-a-GCST004131", 
+  "aFib-ebi-a-GCST006414",
+  "SBP-ukb-a-360", 
+  "T1D-GCST90014023",
+  "T2D-panukb",
+  #"ATH_gtexukb",
+  "BMI-panukb",
+  "HB-panukb",
+  "Height-panukb",
+  "HTN-panukb",
+  "PLT-panukb", 
+  "RBC-panukb",
+  "WBC-ieu-b-30",
+  "SCZ-ieu-b-5102"
+)
+
+mapping_predictdb <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
+mapping_munro     <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/Munro_mapping.RDS")
+mapping_table <- rbind(mapping_predictdb, mapping_munro)
+
+for(trait in traits){
+  print(trait)
+  # ---- load fine-mapping results with fallback order ----
+  file_finemap_original    <- file.path("/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/", trait, paste0(trait,".3qtls.thin1.shared_all.L5.finemap_regions_res.RDS"))
+  file_finemap_regionmerge <- file.path("/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/", trait, paste0(trait,".3qtls.thin1.shared_all.L5.regionmerge_with_mappingtable_finemap_res.RDS"))
+  file_finemap_ldmismatch  <- file.path("/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/", trait, paste0(trait,".3qtls.thin1.shared_all.L5.ldmismatch_with_mappingtable_noLD_finemap_regions_res.RDS"))
+
+  if (file.exists(file_finemap_ldmismatch)) {
+    ctwas_id_res <- readRDS(file_finemap_ldmismatch)
+  } else if (file.exists(file_finemap_regionmerge)) {
+    ctwas_id_res <- readRDS(file_finemap_regionmerge)
+  } else {
+    ctwas_id_res <- readRDS(file_finemap_original)
+    if (!is.null(ctwas_id_res$finemap_res)) ctwas_id_res <- ctwas_id_res$finemap_res
+  }
+  
+  file_alpha_original    <- file.path("/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/", trait, paste0(trait,".3qtls.thin1.shared_all.L5.finemap_regions_res.RDS"))
+  file_alpha_regionmerge <- file.path("/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/", trait, paste0(trait,".3qtls.thin1.shared_all.L5.regionmerge_with_mappingtable_susie_alpha_res.RDS"))
+  file_alpha_ldmismatch  <- file.path("/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/", trait, paste0(trait,".3qtls.thin1.shared_all.L5.ldmismatch_with_mappingtable_noLD_susie_alpha_res.RDS"))
+  
+  if (file.exists(file_alpha_ldmismatch)) {
+    ctwas_gene_alpha <- readRDS(file_alpha_ldmismatch)
+  } else if (file.exists(file_alpha_regionmerge)) {
+    ctwas_gene_alpha <- readRDS(file_alpha_regionmerge)
+  } else {
+    ctwas_gene_alpha <- readRDS(file_alpha_original)
+    if (!is.null(ctwas_gene_alpha$susie_alpha_res)) ctwas_gene_alpha <- ctwas_gene_alpha$susie_alpha_res
+  }
+  
+  plots <- plot_number_of_signals_per_region_distributions(
+    coloc_file = paste0("/project/xinhe/shengqian/coloc_GWAS_analysis/results/",trait,"/",trait,".coloc_res.RDS"),
+    twas_file  = paste0("/project/xinhe/shengqian/coloc_GWAS_analysis/results/",trait,"/",trait,".twas_res.RDS"),
+    ctwas_id_res = ctwas_id_res,
+    ctwas_gene_alpha = ctwas_gene_alpha,
+    mapping_table = mapping_table,
+    x_max = 10,
+    title = trait
+  )
+  print(plots)
+}
+```
