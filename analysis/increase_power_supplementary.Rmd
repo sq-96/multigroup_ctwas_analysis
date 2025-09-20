@@ -1,0 +1,70 @@
+---
+title: "Partition of h2g"
+output: html_document
+date: '2025-8-18'
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+library(ctwas)
+library(data.table)
+library(ggplot2)
+library(ggrepel)
+library(egg)
+library(grid)
+library(dplyr)
+library(pheatmap)
+library(EnsDb.Hsapiens.v86)
+library(ComplexHeatmap)
+library(GenomicRanges)
+library(mapgen)
+library(RSQLite)
+library(RColorBrewer)
+library(scales)
+library(igraph)
+library(ggraph)
+source("/project/xinhe/shengqian/cTWAS_paper_figures/plot_function.R")
+source("/project/xinhe/xsun/multi_group_ctwas/data/samplesize.R")
+```
+
+### Figure S: Partition of h2g (other traits)
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.height=6, fig.width=10}
+traits <- c(
+  "LDL-ukb-d-30780_irnt", 
+  "IBD-ebi-a-GCST004131", 
+  "aFib-ebi-a-GCST006414",
+  "SBP-ukb-a-360", 
+  "T1D-GCST90014023",
+  "T2D-panukb",
+  "ATH_gtexukb",
+  "BMI-panukb",
+  "HB-panukb",
+  "Height-panukb",
+  "HTN-panukb",
+  "PLT-panukb", 
+  "RBC-panukb",
+  "WBC-ieu-b-30",
+  "SCZ-ieu-b-5102"
+)
+
+folder_results_single <- "/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/expression/"
+folder_results_multi <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/"
+folder_results_multi_E <- "/project/xinhe/xsun/multi_group_ctwas/26.multi_tissue_eQTL_0805/snakemake_outputs/"
+for(i in traits){
+  trait <- i
+  gwas_n <- samplesize[trait]
+  param_multi <- readRDS(paste0(folder_results_multi,trait,"/",trait,".3qtls.thin1.shared_all.param.RDS"))
+  ctwas_parameters_multi <- summarize_param(param = param_multi,gwas_n = gwas_n)
+  top_tissue <- get_top_tissue(ctwas_parameters_multi$group_pve)
+  param_single <- readRDS(paste0(folder_results_single, trait, "/", trait, "_", top_tissue,".thin1.shared_all.param.RDS"))
+  ctwas_parameters_single <- summarize_param(param_single, gwas_n)
+  title <- paste0(trait, ", top tissue: ", top_tissue)
+  PIP_cutoff <- 0.8
+  combined_pip_by_group_single <- readRDS(paste0(folder_results_single, trait, "/", trait, "_", top_tissue,".combined_pip_rmmapping_bygroup_final.RDS"))
+  combined_pip_by_group_multi <- readRDS(paste0(folder_results_multi,trait,"/",trait,".3qtls.combined_pip_rmmapping_bygroup_final.RDS"))
+  combined_pip_by_group_multi_E <- readRDS(paste0(folder_results_multi_E,trait,"/",trait,".eqtlonly.combined_pip_rmmapping_bygroup_final.RDS"))
+  print(plot_overlap_barplot_multi_vs_multi_E_vs_single(combined_pip_by_group_multi = combined_pip_by_group_multi, combined_pip_by_group_single = combined_pip_by_group_single, combined_pip_by_group_multi_E = combined_pip_by_group_multi_E, PIP_cutoff = PIP_cutoff,tissue = top_tissue,trait = trait,return_unique_genes = T)$plot)
+}
+```
