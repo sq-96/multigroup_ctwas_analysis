@@ -418,6 +418,9 @@ plot_MESC_eQTL_heritability("LDL-ukb-d-30780_irnt")$plot
 make_eqtl_prop_plot("LDL-ukb-d-30780_irnt")$plot
 ```
 
+### Figure S: Existing methods may overestimate the contribution of molQTL (other traits).
+https://sq-96.github.io/multigroup_ctwas_analysis/overestimate_eQTL_supplementary.html
+
 ### Figure S: Existing methods may overestimate the contribution of molQTL for other traits
 https://sq-96.github.io/multigroup_ctwas_analysis/overestimate_eQTL_supplementary.html
 
@@ -444,8 +447,9 @@ combined_pip_by_group_multi_E <- readRDS(paste0(folder_results_multi_E,trait,"/"
 print(plot_overlap_barplot_multi_vs_multi_E_vs_single(combined_pip_by_group_multi = combined_pip_by_group_multi, combined_pip_by_group_single = combined_pip_by_group_single, combined_pip_by_group_multi_E = combined_pip_by_group_multi_E, PIP_cutoff = PIP_cutoff,tissue = top_tissue,trait = trait,return_unique_genes = T)$plot)
 ```
 
-### Figure 4a: Incorporating multiple modality and tissues improves discovery power (other traits)
+### Figure S: Incorporating multiple modality and tissues improves discovery power (other traits)
 https://sq-96.github.io/multigroup_ctwas_analysis/increase_power_supplementary.html
+
 ```{r, eval=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
 traits <- c(
   "SBP-ukb-a-360", "LDL-ukb-d-30780_irnt", "aFib-ebi-a-GCST006414",
@@ -603,19 +607,51 @@ mapping_predictdb <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weigh
 mapping_munro     <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/Munro_mapping.RDS")
 mapping_table <- rbind(mapping_predictdb, mapping_munro)
 
+trait <- "LDL-ukb-d-30780_irnt"
+
+# ---- load fine-mapping results with fallback order ----
+file_finemap_original    <- file.path("/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/", trait, paste0(trait,".3qtls.thin1.shared_all.L5.finemap_regions_res.RDS"))
+file_finemap_regionmerge <- file.path("/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/", trait, paste0(trait,".3qtls.thin1.shared_all.L5.regionmerge_with_mappingtable_finemap_res.RDS"))
+file_finemap_ldmismatch  <- file.path("/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/", trait, paste0(trait,".3qtls.thin1.shared_all.L5.ldmismatch_with_mappingtable_noLD_finemap_regions_res.RDS"))
+
+if (file.exists(file_finemap_ldmismatch)) {
+  ctwas_id_res <- readRDS(file_finemap_ldmismatch)
+} else if (file.exists(file_finemap_regionmerge)) {
+  ctwas_id_res <- readRDS(file_finemap_regionmerge)
+} else {
+  ctwas_id_res <- readRDS(file_finemap_original)
+  if (!is.null(ctwas_id_res$finemap_res)) ctwas_id_res <- ctwas_id_res$finemap_res
+}
+  
+file_alpha_original    <- file.path("/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/", trait, paste0(trait,".3qtls.thin1.shared_all.L5.finemap_regions_res.RDS"))
+file_alpha_regionmerge <- file.path("/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/", trait, paste0(trait,".3qtls.thin1.shared_all.L5.regionmerge_with_mappingtable_susie_alpha_res.RDS"))
+file_alpha_ldmismatch  <- file.path("/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/", trait, paste0(trait,".3qtls.thin1.shared_all.L5.ldmismatch_with_mappingtable_noLD_susie_alpha_res.RDS"))
+  
+if (file.exists(file_alpha_ldmismatch)) {
+  ctwas_gene_alpha <- readRDS(file_alpha_ldmismatch)
+} else if (file.exists(file_alpha_regionmerge)) {
+  ctwas_gene_alpha <- readRDS(file_alpha_regionmerge)
+} else {
+  ctwas_gene_alpha <- readRDS(file_alpha_original)
+  if (!is.null(ctwas_gene_alpha$susie_alpha_res)) ctwas_gene_alpha <- ctwas_gene_alpha$susie_alpha_res
+}
 plots <- plot_number_of_signals_per_region_distributions(
-  coloc_file = "/project/xinhe/shengqian/coloc_GWAS_analysis/results/LDL-ukb-d-30780_irnt/LDL-ukb-d-30780_irnt.coloc_res.RDS",
-  twas_file  = "/project/xinhe/shengqian/coloc_GWAS_analysis/results/LDL-ukb-d-30780_irnt/LDL-ukb-d-30780_irnt.twas_res.RDS",
-  ctwas_id_file = "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/LDL-ukb-d-30780_irnt/LDL-ukb-d-30780_irnt.3qtls.thin1.shared_all.L5.regionmerge_with_mappingtable_finemap_res.RDS",
-  ctwas_gene_alpha_file = "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/LDL-ukb-d-30780_irnt/LDL-ukb-d-30780_irnt.3qtls.thin1.shared_all.L5.regionmerge_with_mappingtable_susie_alpha_res.RDS",
+  coloc_file = paste0("/project/xinhe/shengqian/coloc_GWAS_analysis/results/",trait,"/",trait,".coloc_res.RDS"),
+  twas_file  = paste0("/project/xinhe/shengqian/coloc_GWAS_analysis/results/",trait,"/",trait,".twas_res.RDS"),
+  ctwas_id_res = ctwas_id_res,
+  ctwas_gene_alpha = ctwas_gene_alpha,
   mapping_table = mapping_table,
-  x_max = 10
+  x_max = 10,
+  title = trait
 )
 ```
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.height=8, fig.width=12}
 print(plots)
 ```
+
+### Figure S: Comparison of number of signals per region between M-cTWAS, Coloc and TWAS (other traits)
+https://sq-96.github.io/multigroup_ctwas_analysis/number_of_signals_per_locus_supplementary.html
 
 ### Figure 4e: cTWAS locus plot at FADS1 locus
 <figure class="half">
@@ -930,6 +966,9 @@ print(p2)
 draw(p1 + p2,heatmap_legend_side = "right",
   annotation_legend_side = "right")
 ```
+
+### Figure S: cTWAS helps identify causal modality and context (other traits)
+https://sq-96.github.io/multigroup_ctwas_analysis/causal_modality_context_supplementary.html
 
 ### Figure 5b: A substantial fraction of cTWAS genes are novel
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.width= 7, fig.height= 6}
