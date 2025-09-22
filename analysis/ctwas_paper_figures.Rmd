@@ -356,7 +356,7 @@ grid::grid.draw(p)
 invisible(NULL)
 ```
 
-### Figure S: Partition of h2g for other traits
+### Figure S8: Partition of h2g for other traits
 https://sq-96.github.io/multigroup_ctwas_analysis/partition_of_h2g_supplementary.html
 
 ### Figure 3d: Existing methods may overestimate the contribution of molQTL.
@@ -418,10 +418,7 @@ plot_MESC_eQTL_heritability("LDL-ukb-d-30780_irnt")$plot
 make_eqtl_prop_plot("LDL-ukb-d-30780_irnt")$plot
 ```
 
-### Figure S: Existing methods may overestimate the contribution of molQTL (other traits).
-https://sq-96.github.io/multigroup_ctwas_analysis/overestimate_eQTL_supplementary.html
-
-### Figure S: Existing methods may overestimate the contribution of molQTL for other traits
+### Figure S9: Existing methods may overestimate the contribution of molQTL (other traits).
 https://sq-96.github.io/multigroup_ctwas_analysis/overestimate_eQTL_supplementary.html
 
 ## Figure 4: Multi-cTWAS improves the discovery of candidate genes
@@ -447,7 +444,7 @@ combined_pip_by_group_multi_E <- readRDS(paste0(folder_results_multi_E,trait,"/"
 print(plot_overlap_barplot_multi_vs_multi_E_vs_single(combined_pip_by_group_multi = combined_pip_by_group_multi, combined_pip_by_group_single = combined_pip_by_group_single, combined_pip_by_group_multi_E = combined_pip_by_group_multi_E, PIP_cutoff = PIP_cutoff,tissue = top_tissue,trait = trait,return_unique_genes = T)$plot)
 ```
 
-### Figure S: Incorporating multiple modality and tissues improves discovery power (other traits)
+### Figure S10: Incorporating multiple modality and tissues improves discovery power (other traits)
 https://sq-96.github.io/multigroup_ctwas_analysis/increase_power_supplementary.html
 
 ```{r, eval=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
@@ -650,7 +647,7 @@ plots <- plot_number_of_signals_per_region_distributions(
 print(plots)
 ```
 
-### Figure S: Comparison of number of signals per region between M-cTWAS, Coloc and TWAS (other traits)
+### Figure S11: Comparison of number of signals per region between M-cTWAS, Coloc and TWAS (other traits)
 https://sq-96.github.io/multigroup_ctwas_analysis/number_of_signals_per_locus_supplementary.html
 
 ### Figure 4e: cTWAS locus plot at FADS1 locus
@@ -658,7 +655,7 @@ https://sq-96.github.io/multigroup_ctwas_analysis/number_of_signals_per_locus_su
     <img src="https://github.com/sq-96/multigroup_ctwas_analysis/raw/master/data/paper_locus_plot/FADS1.png" width="150%">
 </figure>
 
-### Figure S8: Coloc examples at FASD1 locus
+### Figure S12: Coloc examples at FASD1 locus
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.height=8, fig.width=8}
 library(igraph)
 coloc_res <- readRDS("/project/xinhe/shengqian/coloc_GWAS_analysis/results/LDL-ukb-d-30780_irnt/LDL-ukb-d-30780_irnt.coloc_res.RDS")
@@ -862,7 +859,7 @@ for(i in names(trait_list)){
 }
 ```
 
-### Figure S9: Compare with TGFM: (HTN)
+### Figure S13: Compare with TGFM: (HTN)
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.height=6, fig.width=8}
 library(grex)
 library(ggplot2)
@@ -933,7 +930,7 @@ top_tissue <- get_top_tissue(ctwas_parameters_multi$group_pve)
 param_single <- readRDS(paste0(folder_results_single, trait, "/", trait, "_", top_tissue, ".thin1.shared_all.param.RDS"))
 ctwas_parameters_single <- summarize_param(param_single, gwas_n)
 title <- paste0(trait, ", top tissue: ", top_tissue)
-PIP_cutoff <- 0.9
+PIP_cutoff <- 0.8
 combined_pip_by_group_single <- readRDS(paste0(folder_results_single, trait, "/", trait, "_", top_tissue, ".combined_pip_rmmapping_bygroup_final.RDS"))
 combined_pip_by_group_multi <- readRDS(paste0(folder_results_multi,trait,"/",trait,".3qtls.combined_pip_rmmapping_bytype_final.RDS"))
 combined_pip_by_context_multi <- readRDS(paste0(folder_results_multi,trait,"/",trait,".3qtls.combined_pip_rmmapping_bycontext_final.RDS"))
@@ -967,7 +964,7 @@ draw(p1 + p2,heatmap_legend_side = "right",
   annotation_legend_side = "right")
 ```
 
-### Figure S: cTWAS helps identify causal modality and context (other traits)
+### Figure S14: cTWAS helps identify causal modality and context (other traits)
 https://sq-96.github.io/multigroup_ctwas_analysis/causal_modality_context_supplementary.html
 
 ### Figure 5b: A substantial fraction of cTWAS genes are novel
@@ -976,16 +973,16 @@ mapping_predictdb <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weigh
 mapping_munro     <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/Munro_mapping.RDS")
 mapping_table <- rbind(mapping_predictdb, mapping_munro)
 snp_map <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/LD_region_info/snp_map.RDS")
-aa <- make_ctwas_category_barplot(trait = "LDL-ukb-d-30780_irnt",
+aa <- make_ctwas_category_barplot(trait = "LDL-ukb-d-30780_irnt", #"IBD-ebi-a-GCST004131"
                             mapping_table = mapping_table,
                             snp_map = snp_map)
 aa$plot
 ```
 
-### Figure S: Novel gene category for other traits
+### Figure S15: Novel gene category for other traits
 https://sq-96.github.io/multigroup_ctwas_analysis/novel_gene_category_supplementary_figures.html
 
-### Figure 5c: Network analysis of candidate genes suggests novel pathways
+### Figure 5c: Network analysis of candidate genes suggests novel pathways (LDL)
 ```{r,echo=FALSE, message=FALSE, warning=FALSE, fig.width= 5, fig.height= 5}
 string <- read.table("/project/xinhe/shengqian/cTWAS_paper_figures/data/string_LDL.tsv",header = F)
 graph <- graph_from_data_frame(d = string, directed = FALSE)
@@ -999,7 +996,7 @@ ggraph(graph, layout = "fr", niter = 1000, area = vcount(graph)^2.4) +
   theme_void() + theme(legend.position = "none")
 ```
 
-### Figure S10: Network analysis of candidate genes suggests novel pathways
+### Figure S16: Network analysis of candidate genes suggests novel pathways (IBD)
 ```{r,echo=FALSE, message=FALSE, warning=FALSE, fig.width= 5, fig.height= 5}
 string <- read.table("/project/xinhe/shengqian/cTWAS_paper_figures/data/string_IBD.tsv",header = F)
 graph <- graph_from_data_frame(d = string, directed = FALSE)
@@ -1013,7 +1010,7 @@ ggraph(graph, layout = "fr", niter = 1000, area = vcount(graph)^2.4) +
   theme_void() + theme(legend.position = "none")
 ```
 
-### Figure 5e: locus examples
+### Figure S17: Locus plot of highlighted gene
 #### LDLR
 <figure class="half">
     <img src="https://github.com/sq-96/multigroup_ctwas_analysis/raw/master/data/paper_locus_plot/LDLR.png" width="150%">
@@ -1028,6 +1025,7 @@ ggraph(graph, layout = "fr", niter = 1000, area = vcount(graph)^2.4) +
 <figure class="half">
     <img src="https://github.com/sq-96/multigroup_ctwas_analysis/raw/master/data/paper_locus_plot/SNX17.png" width="150%">
 </figure>
+
 
 ## Figure 6: Brain epiQTLs explain a large fraction of missing heritability by eQTLs
 
@@ -1301,7 +1299,7 @@ p1 <- ggplot(merged_result, aes(x = total_susie_pip,
 p1
 ```
 
-### Figure S11: Do eQTLs explain epiQTLs? Why eQTLs do not explain epiQTLs. Cell type specific mQTLs
+### Figure S18: Do eQTLs explain epiQTLs? Why eQTLs do not explain epiQTLs. Cell type specific mQTLs
 ```{r echo=FALSE, fig.height=5, fig.width=5}
 # ---- settings ----
 workdir <- "/project/xinhe/shengqian/cTWAS_epigenetic/data/all_cre_cpgs_peaks/"
@@ -1376,7 +1374,7 @@ ggplot(stat_dt, aes(x = factor(peaks), y = proportion)) +
   theme_classic()
 ```
 
-### Figure S12: Do eQTLs explain epiQTLs? GTEx is limited in power. Most mQTLs and caQTLs are eQTLs in MetaBrain eQTL
+### Figure S19: Do eQTLs explain epiQTLs? GTEx is limited in power. Most mQTLs and caQTLs are eQTLs in MetaBrain eQTL
 ```{r echo=FALSE,fig.height=4,fig.width=3}
 driver <- dbDriver('SQLite')
 db <- dbConnect(drv = driver, "/project/xinhe/shengqian/cTWAS_epigenetic/data/weights/brain_mQTL.db")
