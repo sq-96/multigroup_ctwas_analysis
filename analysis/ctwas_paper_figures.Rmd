@@ -264,7 +264,7 @@ ggplot(df, aes(x = group, y = value, fill = QTL)) +
 
 ```
 
-```{r, echo=FALSE, fig.height=6, fig.width=8}
+```{r, message=FALSE, warning=FALSE, echo=FALSE, fig.height=6, fig.width=12}
 traits <- c("LDL-ukb-d-30780_irnt", 
   "IBD-ebi-a-GCST004131", 
   "aFib-ebi-a-GCST006414",
@@ -446,7 +446,6 @@ counts_long <- count_for_traits(
   get_top_tissue = get_top_tissue
 )
 
-print(head(counts_long))
 p_box <- plot_box_counts_across_traits(counts_long, title = "")
 print(p_box)
 
@@ -659,7 +658,7 @@ plots <- plot_number_of_signals_per_region_distributions(
 print(plots)
 ```
 
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
+```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.height=6, fig.width=6}
 traits <- c("LDL-ukb-d-30780_irnt", "IBD-ebi-a-GCST004131", "aFib-ebi-a-GCST006414",
              "SBP-ukb-a-360", "T1D-GCST90014023", "T2D-panukb", "BMI-panukb", "HB-panukb",
              "Height-panukb", "HTN-panukb", "PLT-panukb", "RBC-panukb", "WBC-ieu-b-30", "SCZ-ieu-b-5102")
@@ -1119,15 +1118,13 @@ read_cpgs <- function(fp) {
 workdir <- "/project2/xinhe/shengqian/cTWAS_epigenetics/data/all_cre_cpgs_peaks/"
 bed_files <- list.files(workdir, pattern = "^all_cre_cpgs\\.[^.]+\\.PeakCalls\\.bed$", full.names = TRUE)
 stopifnot(length(bed_files) > 0)
-cell_types <- sub("^all_cre_cpgs\\.(.*?)\\.PeakCalls\\.bed$", "\\1",
-                  basename(bed_files))
+cell_types <- sub("^all_cre_cpgs\\.(.*?)\\.PeakCalls\\.bed$", "\\1",basename(bed_files))
 all_cre_cpg_list <- lapply(bed_files, read_cpgs)
 all_cre_cpg_list <- unique(unlist(all_cre_cpg_list))
 workdir <- "/project2/xinhe/shengqian/cTWAS_epigenetics/data/random_cpgs_peaks/"
 bed_files <- list.files(workdir, pattern = "^random_cpgs\\.[^.]+\\.PeakCalls\\.bed$", full.names = TRUE)
 stopifnot(length(bed_files) > 0)
-cell_types <- sub("^random_cpgs\\.(.*?)\\.PeakCalls\\.bed$", "\\1",
-                  basename(bed_files))
+cell_types <- sub("^random_cpgs\\.(.*?)\\.PeakCalls\\.bed$", "\\1", basename(bed_files))
 random_cpg_list <- lapply(bed_files, read_cpgs)
 random_cpg_list <- unique(unlist(random_cpg_list))
 
@@ -1306,17 +1303,17 @@ rownames(mat) <- cpg_ids
 cols <- c("white", "#ffd380")
 brks <- c(-0.5, 0.5, 1.5)
 
-pheatmap(
-  mat,
-  color = cols,
-  breaks = brks,
-  cluster_rows = FALSE,
-  cluster_cols = FALSE,
-  show_rownames = FALSE,
-  show_colnames = TRUE,
-  legend = FALSE,
-  border_color = NA
-)
+#pheatmap(
+#  mat,
+#  color = cols,
+#  breaks = brks,
+#  cluster_rows = FALSE,
+#  cluster_cols = FALSE,
+#  show_rownames = FALSE,
+#  show_colnames = TRUE,
+#  legend = FALSE,
+#  border_color = NA
+#)
 
 # ---- proportions: CpG present in exactly k cell types (k = 1..7) ----
 k_per_cpg <- rowSums(mat)                # how many cell types have a peak for each CpG
@@ -1340,6 +1337,71 @@ ggplot(stat_dt, aes(x = factor(peaks), y = proportion)) +
   ylim(0, max(stat_dt$proportion) * 1.15) +
   theme_classic()
 ```
+
+```{r}
+workdir <- "/project/xinhe/shengqian/cTWAS_epigenetic/data/all_cre_cpgs_peaks/"
+bed_files <- list.files(workdir, pattern = "^all_cre_cpgs\\.[^.]+\\.PeakCalls\\.bed$", full.names = TRUE)
+stopifnot(length(bed_files) > 0)
+
+# Extract clean cell type names
+cell_types <- sub("^all_cre_cpgs\\.(.*?)\\.PeakCalls\\.bed$", "\\1",
+                  basename(bed_files))
+
+# ---- read CpGs and build long table ----
+read_cpgs <- function(fp) {
+  dt <- fread(fp, header = FALSE, sep = "\t", showProgress = FALSE)
+  unique(dt[[ncol(dt)]])
+}
+
+cpg_list <- lapply(bed_files, read_cpgs)
+
+records <- rbindlist(
+  lapply(seq_along(cpg_list), function(i) {
+    data.table(cpg = cpg_list[[i]], cell = cell_types[i], present = 1L)
+  })
+)
+
+records <- unique(records, by = c("cpg", "cell"))
+
+# ---- cast to wide matrix ----
+mat_dt <- dcast(records, cpg ~ cell, value.var = "present", fill = 0L)
+presence_count <- rowSums(as.matrix(mat_dt[, -1, with = FALSE]))
+mat_dt <- mat_dt[order(presence_count, decreasing = TRUE)]
+
+cpg_ids <- mat_dt$cpg
+mat <- as.matrix(mat_dt[, -1, with = FALSE])
+rownames(mat) <- cpg_ids
+
+# ---- plot heatmap ----
+cols <- c("white", "#ffd380")
+brks <- c(-0.5, 0.5, 1.5)
+
+if (exists("all_cpg_ids")) {
+  # Add missing CpGs that never appear
+  missing_cpgs <- setdiff(all_cpg_ids, cpg_ids)
+  if (length(missing_cpgs) > 0) {
+    k_per_cpg <- c(k_per_cpg, rep(0L, length(missing_cpgs)))
+    n_cpg     <- length(k_per_cpg)
+  }
+}
+
+# ---- recompute distribution including 0 ----
+stat_dt <- data.table(
+  peaks = 0:n_cells,
+  n = as.integer(table(factor(k_per_cpg, levels = 0:n_cells)))
+)
+stat_dt[, proportion := n / n_cpg]
+
+# ---- plot including 0 ----
+ggplot(stat_dt, aes(x = factor(peaks), y = proportion)) +
+  geom_col(fill = "#ffd380") +
+  geom_text(aes(label = sprintf("%.2f", proportion)), vjust = -0.3, size = 3) +
+  labs(x = "k (number of cell types with a peak)", y = "Proportion of CpGs",
+       title = "CpGs present in exactly k cell-type peaks") +
+  ylim(0, max(stat_dt$proportion) * 1.15) +
+  theme_classic()
+```
+
 
 ### Figure S20: Do eQTLs explain epiQTLs? GTEx is limited in power. Most mQTLs and caQTLs are eQTLs in MetaBrain eQTL
 ```{r echo=FALSE,fig.height=4,fig.width=3}
@@ -1378,7 +1440,61 @@ ggplot(df, aes(x = category, y = prop, fill = category)) +
   geom_bar(stat = "identity",width = 0.6) +
   labs(title = "",
        x = "",
-       y = "Proportion of mQTLs and caQTLs that are also eQTLs") +
+       y = "Proportion of epiQTLs that are also MetaBrain eQTLs") +
+  scale_fill_manual(values = c("mQTLs" = "#ffe1a8", "caQTLs" = "#e26d5c"))+
+  theme_minimal() + ylim(c(0,1)) +
+  theme(legend.position = "none")
+```
+
+```{r echo=FALSE}
+data_dir <- "/project2/xinhe/shared_data/multigroup_ctwas/GTEx_significant_associations/GTEx_Analysis_v8_eQTL"
+files <- list.files(path = data_dir, pattern = "^Brain.*signif_variant_gene_pairs.txt.gz$", full.names = TRUE)
+variant_ids <- lapply(files, function(f) {fread(f, select = "variant_id")$variant_id})
+variant_ids <- unique(unlist(variant_ids))
+
+eqtl_lookup <- "/project2/xinhe/shared_data/multigroup_ctwas/GTEx_all_associations/GTEx_Analysis_2017-06-05_v8_WholeGenomeSeq_838Indiv_Analysis_Freeze.lookup_table.txt.gz"
+eqtl_lookup <- fread(eqtl_lookup, header = T, select=c("variant_id", "rs_id_dbSNP151_GRCh38p7"))
+
+GTEx_eqtl <- eqtl_lookup[eqtl_lookup$variant_id %in% variant_ids,]
+```
+
+```{r echo=FALSE,fig.height=4,fig.width=3}
+driver <- dbDriver('SQLite')
+db <- dbConnect(drv = driver, "/project/xinhe/shengqian/cTWAS_epigenetic/data/weights/brain_mQTL.db")
+query <- function(...) RSQLite::dbGetQuery(db, ...)
+weights <- query("select * from weights")
+RSQLite::dbDisconnect(db)
+#MetaBrain_eQTL <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/MetaBrain_eQTL/MetaBrain_eQTL_qvalue005.RDS")
+cre_cpgs <- fread("/project/xinhe/shengqian/cTWAS_epigenetic/data/all_cre_cpgs.bed")
+weights <- weights[weights$gene %in% cre_cpgs$V4,]
+mQTL_prop <- length(intersect(weights$rsid,GTEx_eqtl$rs_id_dbSNP151_GRCh38p7))/dim(weights)[1]
+
+driver <- dbDriver('SQLite')
+db <- dbConnect(drv = driver, "/project2/xinhe/shared_data/multigroup_ctwas/weights/neuron_caQTL.db")
+query <- function(...) RSQLite::dbGetQuery(db, ...)
+weights_neuron <- query("select * from weights")
+RSQLite::dbDisconnect(db)
+db <- dbConnect(drv = driver, "/project2/xinhe/shared_data/multigroup_ctwas/weights/glia_caQTL.db")
+query <- function(...) RSQLite::dbGetQuery(db, ...)
+weights_glia <- query("select * from weights")
+RSQLite::dbDisconnect(db)
+weights <- rbind(weights_neuron,weights_glia)
+cre_atac <- fread("/project2/xinhe/shengqian/cTWAS_epigenetics/data/all_cre_atac.bed")
+weights <- weights[weights$gene %in% cre_atac$V4,]
+caQTL_prop <- length(intersect(weights$rsid,GTEx_eqtl$rs_id_dbSNP151_GRCh38p7))/dim(weights)[1]
+
+# Values from your results
+df <- data.frame(
+  category = c("mQTLs", "caQTLs"),
+  prop = c(mQTL_prop,caQTL_prop)
+)
+
+# Create bar plot with ggplot2
+ggplot(df, aes(x = category, y = prop, fill = category)) +
+  geom_bar(stat = "identity",width = 0.6) +
+  labs(title = "",
+       x = "",
+       y = "Proportion of epiQTLs that are also GTEx eQTLs") +
   scale_fill_manual(values = c("mQTLs" = "#ffe1a8", "caQTLs" = "#e26d5c"))+
   theme_minimal() + ylim(c(0,1)) +
   theme(legend.position = "none")
