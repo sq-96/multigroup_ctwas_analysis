@@ -883,7 +883,7 @@ for(i in names(trait_list)){
 ## Figure 5: cTWAS discovers candidate genes for complex traits and provides insights on their molecular mechanisms 
 
 ### Figure 5a: cTWAS helps identify causal modality and context
-```{r echo=FALSE, message=FALSE, warning=FALSE,fig.height=6, fig.width=7}
+```{r echo=FALSE, message=FALSE, warning=FALSE,fig.height=4, fig.width=7}
 folder_results_single <- "/project/xinhe/xsun/multi_group_ctwas/22.singlegroup_0515/ctwas_output/expression/"
 folder_results_multi <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/"
 trait <- "LDL-ukb-d-30780_irnt"
@@ -1380,7 +1380,12 @@ ggplot(df, aes(x = category, y = prop, fill = category)) +
 
 ```{r echo=FALSE}
 data_dir <- "/project2/xinhe/shared_data/multigroup_ctwas/GTEx_significant_associations/GTEx_Analysis_v8_eQTL"
-files <- list.files(path = data_dir, pattern = "^Brain.*signif_variant_gene_pairs.txt.gz$", full.names = TRUE)
+#files <- list.files(path = data_dir, pattern = "^Brain.*signif_variant_gene_pairs.txt.gz$", full.names = TRUE)
+files <- c("/project2/xinhe/shared_data/multigroup_ctwas/GTEx_significant_associations/GTEx_Analysis_v8_eQTL/Brain_Cerebellar_Hemisphere.v8.signif_variant_gene_pairs.txt.gz",
+           "/project2/xinhe/shared_data/multigroup_ctwas/GTEx_significant_associations/GTEx_Analysis_v8_eQTL/Brain_Cerebellum.v8.signif_variant_gene_pairs.txt.gz",
+           "/project2/xinhe/shared_data/multigroup_ctwas/GTEx_significant_associations/GTEx_Analysis_v8_eQTL/Brain_Cortex.v8.signif_variant_gene_pairs.txt.gz",
+           "/project2/xinhe/shared_data/multigroup_ctwas/GTEx_significant_associations/GTEx_Analysis_v8_eQTL/Brain_Nucleus_accumbens_basal_ganglia.v8.signif_variant_gene_pairs.txt.gz",
+           "/project2/xinhe/shared_data/multigroup_ctwas/GTEx_significant_associations/GTEx_Analysis_v8_eQTL/Brain_Caudate_basal_ganglia.v8.signif_variant_gene_pairs.txt.gz")
 variant_ids <- lapply(files, function(f) {fread(f, select = "variant_id")$variant_id})
 variant_ids <- unique(unlist(variant_ids))
 
@@ -1392,12 +1397,12 @@ GTEx_eqtl <- eqtl_lookup[eqtl_lookup$variant_id %in% variant_ids,]
 
 ```{r echo=FALSE,fig.height=4,fig.width=3}
 driver <- dbDriver('SQLite')
-db <- dbConnect(drv = driver, "/project/xinhe/shengqian/cTWAS_epigenetic/data/weights/brain_mQTL.db")
+db <- dbConnect(drv = driver, "/project2/xinhe/shared_data/multigroup_ctwas/weights/brain_mQTL.db")
 query <- function(...) RSQLite::dbGetQuery(db, ...)
 weights <- query("select * from weights")
 RSQLite::dbDisconnect(db)
 #MetaBrain_eQTL <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/MetaBrain_eQTL/MetaBrain_eQTL_qvalue005.RDS")
-cre_cpgs <- fread("/project/xinhe/shengqian/cTWAS_epigenetic/data/all_cre_cpgs.bed")
+cre_cpgs <- fread("/project2/xinhe/shengqian/cTWAS_epigenetics/data/all_cre_cpgs.bed")
 weights <- weights[weights$gene %in% cre_cpgs$V4,]
 mQTL_prop <- length(intersect(weights$rsid,GTEx_eqtl$rs_id_dbSNP151_GRCh38p7))/dim(weights)[1]
 
