@@ -264,7 +264,7 @@ ggplot(df, aes(x = group, y = value, fill = QTL)) +
 
 ```
 
-```{r, message=FALSE, warning=FALSE, echo=FALSE, fig.height=6, fig.width=12}
+```{r, message=FALSE, warning=FALSE, echo=FALSE, fig.height=6, fig.width=15}
 traits <- c("LDL-ukb-d-30780_irnt", 
   "IBD-ebi-a-GCST004131", 
   "aFib-ebi-a-GCST006414",
@@ -557,7 +557,7 @@ ggplot(df, aes(x = Method, y = Proportion, fill = Method)) +
     x = ""
   ) +
   scale_fill_manual(values = c("#80b1d3","#fb8072","#fdb462","#b3de69"))+
-  theme_minimal(base_size = 21) + grids(linetype = "dashed") + 
+  theme_minimal(base_size = 18) + grids(linetype = "dashed") + 
     theme(legend.position = "none",
       axis.text.x = element_text(color = "black"),
       axis.text.y = element_text(color = "black"),
@@ -578,7 +578,7 @@ coloc_genes <- readRDS("/project/xinhe/shengqian/coloc_GWAS_analysis/results/IBD
 coloc_genes <- coloc_genes[coloc_genes$PP4>0.8,]
 coloc_genes <- unique(coloc_genes$gene_name)
 ctwas_genes <- readRDS("/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/IBD-ebi-a-GCST004131/IBD-ebi-a-GCST004131.3qtls.combined_pip_rmmapping_bytype_final.RDS")
-#ctwas_genes <- ctwas_genes[ctwas_genes$combined_pip>0.8,]
+ctwas_genes <- ctwas_genes[ctwas_genes$combined_pip>0.8,]
 ctwas_genes <- ctwas_genes$gene_name
 
 df <- data.frame(
@@ -902,8 +902,10 @@ combined_pip_by_context_multi <- readRDS(paste0(folder_results_multi,trait,"/",t
 #combined_pip_by_group_single_sig <- combined_pip_by_group_single[combined_pip_by_group_single$combined_pip > PIP_cutoff,]
 #combined_pip_by_context_multi_sig <- combined_pip_by_context_multi[combined_pip_by_context_multi$combined_pip > PIP_cutoff,]
   
-combined_pip_by_group_multi_sig <- combined_pip_by_group_multi[1:20,]
-combined_pip_by_context_multi_sig <- combined_pip_by_context_multi[1:20,]
+combined_pip_by_group_multi_sig <- combined_pip_by_group_multi[1:10,]
+combined_pip_by_context_multi_sig <- combined_pip_by_context_multi[1:10,]
+combined_pip_by_context_multi_sig <- combined_pip_by_context_multi_sig[,c("gene_name","combined_pip","Artery_Aorta_pip","Liver_pip",
+                                                                          "Artery_Tibial_pip","Whole_Blood_pip")]
 #combined_pip_by_group_multi_unique <- combined_pip_by_group_multi_sig[!combined_pip_by_group_multi_sig$gene_name %in% combined_pip_by_group_single_sig$gene_name, ]
 #combined_pip_by_context_multi_unique <- combined_pip_by_context_multi_sig[!combined_pip_by_context_multi_sig$gene_name %in% combined_pip_by_group_single_sig$gene_name, ]
 
@@ -932,7 +934,7 @@ aa <- make_ctwas_category_barplot(trait = "LDL-ukb-d-30780_irnt", #"IBD-ebi-a-GC
 aa$plot
 ```
 
-```{r, eval = F, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.width= 7, fig.height= 6}
+```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.width= 7, fig.height= 6}
 mapping_predictdb <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
 mapping_munro     <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/Munro_mapping.RDS")
 mapping_table <- rbind(mapping_predictdb, mapping_munro)
@@ -1105,8 +1107,8 @@ ggplot(df, aes(x = category, y = count, fill = category)) +
   theme(legend.position = "none")
 ```
 
+```{r, eval=FALSE, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.height=4, fig.width=3}
 ### Figure 6c: Validation of meQTL results.
-```{r echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.height=4, fig.width=3}
 all_cre_cpgs <- fread("/project2/xinhe/shengqian/cTWAS_epigenetics/data/all_cre_cpgs.bed")
 random_cpgs <- fread("/project2/xinhe/shengqian/cTWAS_epigenetics/data/random_cpgs.bed")
 
@@ -1118,13 +1120,15 @@ read_cpgs <- function(fp) {
 workdir <- "/project2/xinhe/shengqian/cTWAS_epigenetics/data/all_cre_cpgs_peaks/"
 bed_files <- list.files(workdir, pattern = "^all_cre_cpgs\\.[^.]+\\.PeakCalls\\.bed$", full.names = TRUE)
 stopifnot(length(bed_files) > 0)
-cell_types <- sub("^all_cre_cpgs\\.(.*?)\\.PeakCalls\\.bed$", "\\1",basename(bed_files))
+cell_types <- sub("^all_cre_cpgs\\.(.*?)\\.PeakCalls\\.bed$", "\\1",
+                  basename(bed_files))
 all_cre_cpg_list <- lapply(bed_files, read_cpgs)
 all_cre_cpg_list <- unique(unlist(all_cre_cpg_list))
 workdir <- "/project2/xinhe/shengqian/cTWAS_epigenetics/data/random_cpgs_peaks/"
 bed_files <- list.files(workdir, pattern = "^random_cpgs\\.[^.]+\\.PeakCalls\\.bed$", full.names = TRUE)
 stopifnot(length(bed_files) > 0)
-cell_types <- sub("^random_cpgs\\.(.*?)\\.PeakCalls\\.bed$", "\\1", basename(bed_files))
+cell_types <- sub("^random_cpgs\\.(.*?)\\.PeakCalls\\.bed$", "\\1",
+                  basename(bed_files))
 random_cpg_list <- lapply(bed_files, read_cpgs)
 random_cpg_list <- unique(unlist(random_cpg_list))
 
@@ -1143,9 +1147,9 @@ ggplot(df, aes(x = category, y = prop, fill = category)) +
   scale_fill_manual(values = c("CpGs in CREs" = "#e26d5c", "Random CpGs" = "#ffe1a8"))+
   theme_minimal() + ylim(c(0,1)) +
   theme(legend.position = "none")
+#Most randomly sampled CpGs are also in OCRs. Possible reason: Array is designed to measure CpGs near promoter regions. 
 ```
 
-Most randomly sampled CpGs are also in OCRs. Possible reason: Array is designed to measure CpGs near promoter regions. 
 ```{r, eval=FALSE, echo=FALSE}
 #library(annotatr)
 #dm_regions = read_regions(con = "/project/xinhe/shengqian/cTWAS_epigenetic/data/all_cre_cpgs.bed", genome = 'hg38',format = 'bed')
@@ -1162,7 +1166,7 @@ cpg_annot <- unique(cpg_annot[,c("name","annotation")])
 table(cpg_annot$annotation)
 ```
 
-### Figure 6d: Do eQTLs explain epiQTLs? Independent PHE
+### Figure 6c: Do eQTLs explain epiQTLs? Independent PHE
 ```{r echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
 param_mQTL <- readRDS("/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_mQTL/SCZ_mQTL.parameters.RDS")
 param_caQTL <- readRDS("/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_caQTL/SCZ_caQTL.parameters.RDS")
@@ -1226,7 +1230,7 @@ ggplot(df, aes(x = Bar, y = Value, fill = Component)) +
 #                               "stQTL" = "#c9cba3")) +
 ```
 
-### Figure 6e: Do eQTLs explain epiQTLs? few PIPs decreased after adding eQTLs
+### Figure 6d: Do eQTLs explain epiQTLs? few PIPs decreased after adding eQTLs
 ```{r echo=FALSE, message=FALSE, warning=FALSE, results='hide',fig.height=5, fig.width=5}
 mapping_table <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/weights/gene_mapping.RDS")
 predictdb_mapping_table <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
@@ -1299,82 +1303,11 @@ cpg_ids <- mat_dt$cpg
 mat <- as.matrix(mat_dt[, -1, with = FALSE])
 rownames(mat) <- cpg_ids
 
-# ---- plot heatmap ----
-cols <- c("white", "#ffd380")
-brks <- c(-0.5, 0.5, 1.5)
-
-#pheatmap(
-#  mat,
-#  color = cols,
-#  breaks = brks,
-#  cluster_rows = FALSE,
-#  cluster_cols = FALSE,
-#  show_rownames = FALSE,
-#  show_colnames = TRUE,
-#  legend = FALSE,
-#  border_color = NA
-#)
-
-# ---- proportions: CpG present in exactly k cell types (k = 1..7) ----
 k_per_cpg <- rowSums(mat)                # how many cell types have a peak for each CpG
 n_cpg     <- length(k_per_cpg)
-n_cells   <- ncol(mat)                    # should be 7
+n_cells   <- ncol(mat)      
 
-stat_dt <- data.table(
-  peaks = 1:n_cells,
-  n = as.integer(table(factor(k_per_cpg, levels = 1:n_cells)))
-)
-stat_dt[, proportion := n / n_cpg]
-
-#cat("\nProportion of CpGs present in exactly k cell-type peaks:\n")
-#print(stat_dt)
-# ---- optional: quick bar plot to screen (not saved) ----
-ggplot(stat_dt, aes(x = factor(peaks), y = proportion)) +
-  geom_col(fill = "#ffd380") +
-  geom_text(aes(label = sprintf("%.2f", proportion)), vjust = -0.3, size = 3) +
-  labs(x = "k (number of cell types with a peak)", y = "Proportion of CpGs",
-       title = "CpGs present in exactly k cell-type peaks") +
-  ylim(0, max(stat_dt$proportion) * 1.15) +
-  theme_classic()
-```
-
-```{r}
-workdir <- "/project/xinhe/shengqian/cTWAS_epigenetic/data/all_cre_cpgs_peaks/"
-bed_files <- list.files(workdir, pattern = "^all_cre_cpgs\\.[^.]+\\.PeakCalls\\.bed$", full.names = TRUE)
-stopifnot(length(bed_files) > 0)
-
-# Extract clean cell type names
-cell_types <- sub("^all_cre_cpgs\\.(.*?)\\.PeakCalls\\.bed$", "\\1",
-                  basename(bed_files))
-
-# ---- read CpGs and build long table ----
-read_cpgs <- function(fp) {
-  dt <- fread(fp, header = FALSE, sep = "\t", showProgress = FALSE)
-  unique(dt[[ncol(dt)]])
-}
-
-cpg_list <- lapply(bed_files, read_cpgs)
-
-records <- rbindlist(
-  lapply(seq_along(cpg_list), function(i) {
-    data.table(cpg = cpg_list[[i]], cell = cell_types[i], present = 1L)
-  })
-)
-
-records <- unique(records, by = c("cpg", "cell"))
-
-# ---- cast to wide matrix ----
-mat_dt <- dcast(records, cpg ~ cell, value.var = "present", fill = 0L)
-presence_count <- rowSums(as.matrix(mat_dt[, -1, with = FALSE]))
-mat_dt <- mat_dt[order(presence_count, decreasing = TRUE)]
-
-cpg_ids <- mat_dt$cpg
-mat <- as.matrix(mat_dt[, -1, with = FALSE])
-rownames(mat) <- cpg_ids
-
-# ---- plot heatmap ----
-cols <- c("white", "#ffd380")
-brks <- c(-0.5, 0.5, 1.5)
+all_cpg_ids <- fread("/project/xinhe/shengqian/cTWAS_epigenetic/data/all_cre_cpgs.bed")$V4
 
 if (exists("all_cpg_ids")) {
   # Add missing CpGs that never appear
@@ -1401,7 +1334,6 @@ ggplot(stat_dt, aes(x = factor(peaks), y = proportion)) +
   ylim(0, max(stat_dt$proportion) * 1.15) +
   theme_classic()
 ```
-
 
 ### Figure S20: Do eQTLs explain epiQTLs? GTEx is limited in power. Most mQTLs and caQTLs are eQTLs in MetaBrain eQTL
 ```{r echo=FALSE,fig.height=4,fig.width=3}
@@ -1500,7 +1432,36 @@ ggplot(df, aes(x = category, y = prop, fill = category)) +
   theme(legend.position = "none")
 ```
 
-### Figure 6d: Do epiQTLs explain eqtls? Independent PHE
+```{r, echo=FALSE, eval=FALSE}
+driver <- dbDriver('SQLite')
+db <- dbConnect(drv = driver, "/project/xinhe/shengqian/cTWAS_epigenetic/data/weights/brain_mQTL.db")
+query <- function(...) RSQLite::dbGetQuery(db, ...)
+weights <- query("select * from weights")
+RSQLite::dbDisconnect(db)
+#MetaBrain_eQTL <- readRDS("/project/xinhe/shengqian/cTWAS_epigenetic/data/MetaBrain_eQTL/MetaBrain_eQTL_qvalue005.RDS")
+cre_cpgs <- fread("/project/xinhe/shengqian/cTWAS_epigenetic/data/all_cre_cpgs.bed")
+weights <- weights[weights$gene %in% cre_cpgs$V4,]
+write.table(weights$rsid,file = "/project/xinhe/shengqian/cTWAS_epigenetic/data/all_cre_cpgs_topQTLs.txt",
+            sep = "\t",col.names = F,row.names = F,quote = F)
+
+driver <- dbDriver('SQLite')
+db <- dbConnect(drv = driver, "/project2/xinhe/shared_data/multigroup_ctwas/weights/neuron_caQTL.db")
+query <- function(...) RSQLite::dbGetQuery(db, ...)
+weights_neuron <- query("select * from weights")
+RSQLite::dbDisconnect(db)
+db <- dbConnect(drv = driver, "/project2/xinhe/shared_data/multigroup_ctwas/weights/glia_caQTL.db")
+query <- function(...) RSQLite::dbGetQuery(db, ...)
+weights_glia <- query("select * from weights")
+RSQLite::dbDisconnect(db)
+weights <- rbind(weights_neuron,weights_glia)
+cre_atac <- fread("/project2/xinhe/shengqian/cTWAS_epigenetics/data/all_cre_atac.bed")
+weights <- weights[weights$gene %in% cre_atac$V4,]
+write.table(weights$rsid,file = "/project/xinhe/shengqian/cTWAS_epigenetic/data/all_cre_atac_topQTLs.txt",
+            sep = "\t",col.names = F,row.names = F,quote = F)
+```
+
+
+### Figure 6e: Do epiQTLs explain eqtls? Independent PHE
 ```{r echo=FALSE, fig.height=4, fig.width=4}
 param_eQTL <- readRDS("/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_eQTL/SCZ_eQTL.parameters.RDS")
 param_eQTL_epiQTL <- readRDS("/project2/xinhe/shengqian/cTWAS_epigenetics/results/SCZ_eQTL_caQTL_mQTL/SCZ_eQTL_caQTL_mQTL.parameters.RDS")
@@ -1533,7 +1494,7 @@ ggplot(df2, aes(x = Bar, y = Value, fill = Component)) +
   labs(y = "Proportion Heritability", x = "", fill = "Component")
 ```
 
-### Figure 6d: Do epiQTLs explain eqtlS? few PIPs decreased aftering adding epiQTLs
+### Figure 6f: Do epiQTLs explain eqtlS? few PIPs decreased aftering adding epiQTLs
 ```{r echo=FALSE, message=FALSE, warning=FALSE, results='hide',fig.height=5, fig.width=5}
 suppressMessages({
   suppressWarnings({
