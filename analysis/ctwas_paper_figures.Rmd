@@ -564,7 +564,7 @@ ggplot(df, aes(x = Method, y = Proportion, fill = Method)) +
       axis.title.y = element_text(color = "black"))
 ```
 
-### Figure S: Validation with IBD deepseek curated genes
+### Figure S12: Validation with IBD deepseek curated genes
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width=6, fig.height=6}
 genes1 <- c("NOD2","ATG16L1","IRGM","IL23R","CARD9","TNFSF15","HNF4A","ECM1","LRRK2","DSC2","GPR35","PTPN2","PTPN22","SMAD3","FUT2","CCR6","STAT3","JAK2","IL10RA","IL10RB","SLC39A8")
 genes2 <- c("NOD2","ATG16L1","IRGM","IL23R","CARD9","TNFSF15","HNF4A","ECM1","DSCAM","PTPN2","PTPN22","SMAD3","CCR6","STAT3","LRRK2","FUT2","GPR35","GPR65","RNF186","SLC39A8")
@@ -609,7 +609,13 @@ ggplot(df, aes(x = Method, y = Proportion, fill = Method)) +
 
 ### Figure 4d: Comparison of number of signals per region between M-cTWAS, Coloc and TWAS
 cTWAS tends to report single genes per locus, while coloc or TWAS report many. The number of signals of Coloc and TWAS are calcuated in regions with TWAS signals (after bonferroni correction). M-cTWAS signals are culated in regions selected by screen region step. 
-```{r, eval=FALSE, echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
+```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.height=6, fig.width=6}
+data <- readRDS("/project/xinhe/shengqian/cTWAS_paper_figures/data/figure_data/avg_genes_per_locus.RDS")
+out <- plot_avg_genes_per_locus_across_traits(data)
+```
+
+### Figure S12: Comparison of number of signals per region between M-cTWAS, Coloc and TWAS (LDL, histogram)
+```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
 mapping_predictdb <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
 mapping_munro     <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/Munro_mapping.RDS")
 mapping_table <- rbind(mapping_predictdb, mapping_munro)
@@ -653,16 +659,11 @@ plots <- plot_number_of_signals_per_region_distributions(
 )
 ```
 
-```{r, eval=FALSE, echo=FALSE, message=FALSE, warning=FALSE, fig.height=8, fig.width=12}
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.height=8, fig.width=12}
 print(plots)
 ```
 
-```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.height=6, fig.width=6}
-data <- readRDS("/project/xinhe/shengqian/cTWAS_paper_figures/data/figure_data/avg_genes_per_locus.RDS")
-out <- plot_avg_genes_per_locus_across_traits(data)
-```
-
-### Figure S12: Comparison of number of signals per region between M-cTWAS, Coloc and TWAS (other traits)
+### Figure S13: Comparison of number of signals per region between M-cTWAS, Coloc and TWAS (other traits)
 https://sq-96.github.io/multigroup_ctwas_analysis/number_of_signals_per_locus_supplementary.html
 
 ### Figure 4e: cTWAS locus plot at FADS1 locus
@@ -670,7 +671,7 @@ https://sq-96.github.io/multigroup_ctwas_analysis/number_of_signals_per_locus_su
     <img src="https://github.com/sq-96/multigroup_ctwas_analysis/raw/master/data/paper_locus_plot/FADS1.png" width="150%">
 </figure>
 
-### Figure S13: Coloc examples at FASD1 locus
+### Figure S14: Coloc examples at FASD1 locus
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.height=8, fig.width=8}
 library(igraph)
 coloc_res <- readRDS("/project/xinhe/shengqian/coloc_GWAS_analysis/results/LDL-ukb-d-30780_irnt/LDL-ukb-d-30780_irnt.coloc_res.RDS")
@@ -813,7 +814,7 @@ for(i in names(trait_list)){
 }
 ```
 
-### Figure S14: Compare with TGFM: (HTN)
+### Figure S15: Compare with TGFM: (HTN)
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.height=6, fig.width=8}
 library(grex)
 library(ggplot2)
@@ -895,8 +896,8 @@ combined_pip_by_context_multi <- readRDS(paste0(folder_results_multi,trait,"/",t
 #combined_pip_by_group_single_sig <- combined_pip_by_group_single[combined_pip_by_group_single$combined_pip > PIP_cutoff,]
 #combined_pip_by_context_multi_sig <- combined_pip_by_context_multi[combined_pip_by_context_multi$combined_pip > PIP_cutoff,]
   
-combined_pip_by_group_multi_sig <- combined_pip_by_group_multi[1:10,]
-combined_pip_by_context_multi_sig <- combined_pip_by_context_multi[1:10,]
+combined_pip_by_group_multi_sig <- combined_pip_by_group_multi[1:100,]
+combined_pip_by_context_multi_sig <- combined_pip_by_context_multi[1:100,]
 combined_pip_by_context_multi_sig <- combined_pip_by_context_multi_sig[,c("gene_name","combined_pip","Artery_Aorta_pip","Liver_pip",
                                                                           "Artery_Tibial_pip","Whole_Blood_pip")]
 #combined_pip_by_group_multi_unique <- combined_pip_by_group_multi_sig[!combined_pip_by_group_multi_sig$gene_name %in% combined_pip_by_group_single_sig$gene_name, ]
@@ -912,7 +913,7 @@ draw(p1 + p2,heatmap_legend_side = "right",
   annotation_legend_side = "right")
 ```
 
-### Figure S15: cTWAS helps identify causal modality and context (other traits)
+### Figure S16: cTWAS helps identify causal modality and context (other traits)
 https://sq-96.github.io/multigroup_ctwas_analysis/causal_modality_context_supplementary.html
 
 ### Figure 5b: A substantial fraction of cTWAS genes are novel
@@ -934,7 +935,7 @@ p <- make_ctwas_category_boxplot(data)
 print(p)
 ```
 
-### Figure S16: Novel gene category for other traits
+### Figure S17: Novel gene category for other traits
 https://sq-96.github.io/multigroup_ctwas_analysis/novel_gene_category_supplementary_figures.html
 
 ### Figure 5c: Network analysis of candidate genes suggests novel pathways (LDL)
@@ -951,7 +952,7 @@ ggraph(graph, layout = "fr", niter = 1000, area = vcount(graph)^2.4) +
   theme_void() + theme(legend.position = "none")
 ```
 
-### Figure S17: Network analysis of candidate genes suggests novel pathways (IBD)
+### Figure S18: Network analysis of candidate genes suggests novel pathways (IBD)
 ```{r,echo=FALSE, message=FALSE, warning=FALSE, fig.width= 5, fig.height= 5}
 string <- read.table("/project/xinhe/shengqian/cTWAS_paper_figures/data/string_IBD.tsv",header = F)
 graph <- graph_from_data_frame(d = string, directed = FALSE)
@@ -965,7 +966,7 @@ ggraph(graph, layout = "fr", niter = 1000, area = vcount(graph)^2.4) +
   theme_void() + theme(legend.position = "none")
 ```
 
-### Figure S18: Locus plot of highlighted gene
+### Figure S19: Locus plot of highlighted gene
 #### LDLR
 <figure class="half">
     <img src="https://github.com/sq-96/multigroup_ctwas_analysis/raw/master/data/paper_locus_plot/LDLR.png" width="150%">
@@ -1254,7 +1255,7 @@ p1 <- ggplot(merged_result, aes(x = total_susie_pip,
 p1
 ```
 
-### Figure S19: Do eQTLs explain epiQTLs? Why eQTLs do not explain epiQTLs. Cell type specific mQTLs
+### Figure S20: Do eQTLs explain epiQTLs? Why eQTLs do not explain epiQTLs. Cell type specific mQTLs
 ```{r echo=FALSE, fig.height=5, fig.width=5}
 # ---- settings ----
 workdir <- "/project/xinhe/shengqian/cTWAS_epigenetic/data/all_cre_cpgs_peaks/"
@@ -1322,7 +1323,7 @@ ggplot(stat_dt, aes(x = factor(peaks), y = proportion)) +
   theme_classic()
 ```
 
-### Figure S20: Do eQTLs explain epiQTLs? GTEx is limited in power. Most mQTLs and caQTLs are eQTLs in MetaBrain eQTL
+### Figure S21: Do eQTLs explain epiQTLs? GTEx is limited in power. Most mQTLs and caQTLs are eQTLs in MetaBrain eQTL
 ```{r echo=FALSE,fig.height=4,fig.width=3}
 driver <- dbDriver('SQLite')
 db <- dbConnect(drv = driver, "/project/xinhe/shengqian/cTWAS_epigenetic/data/weights/brain_mQTL.db")
