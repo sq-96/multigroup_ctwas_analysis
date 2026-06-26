@@ -23,9 +23,9 @@ library(ggplot2)
 
 For regions reporting exactly one gene (combined_pip > 0.8), we examine the credible set (CS) structure to understand the number and nature of independent signals supporting that gene.
 
-- **Case 1**: Multiple CS, but supporting the same gene. Multiple independent molecular signals converge on the same gene.
-- **Case 2**: Multiple CS, some CS supports the gene, others are variants (SNP-only).
-- **Case 3**: Multiple CS, some support the gene, some support other genes (but with combined PIP < 0.8), and others are variants if there are others.
+- **Case 1**: Multiple CS, all supporting the same gene only. No SNP-only or other-gene CS present.
+- **Case 2**: Multiple CS, one or more CS support the gene, others are variants (SNP-only). No other-gene CS.
+- **Case 3**: Multiple CS, one or more CS support the gene, one or more CS support other genes (with combined PIP < 0.8), and possibly SNP-only CS.
 - **Case 4**: No CS. Genes achieve high combined PIP by accumulating small contributions across multiple sets without entering any single credible set.
 - **Case 5**: Single CS.
 
@@ -170,12 +170,12 @@ for (i in seq_len(nrow(single_gene_regions))) {
 
   if (n_cs == 1) {
     cl <- "case5_single_cs"
-  } else if (n_cs_sig > 1) {
-    cl <- "case1_multi_cs_same_gene"
-  } else if (n_cs_sig == 1 & n_cs_other_gene > 0) {
+  } else if (n_cs_sig >= 1 & n_cs_other_gene > 0) {
     cl <- "case3_sig_gene_plus_other_genes"
-  } else if (n_cs_sig == 1 & n_cs_other_gene == 0 & n_cs_snp >= 1) {
+  } else if (n_cs_sig >= 1 & n_cs_other_gene == 0 & n_cs_snp >= 1) {
     cl <- "case2_one_cs_gene_rest_snp"
+  } else if (n_cs_sig > 1 & n_cs_other_gene == 0 & n_cs_snp == 0) {
+    cl <- "case1_multi_cs_same_gene"
   } else if (n_cs_sig == 0) {
     cl <- "case4_no_cs"
   } else {
@@ -233,9 +233,9 @@ ggplot(plot_df, aes(x = label, y = count, fill = label)) +
   ylim(0, max(plot_df$count) * 1.15)
 ```
 
-## Case 1: Multiple CS, supporting the same gene
+## Case 1: Multiple CS, all supporting the same gene only
 
-These regions have multiple CS, and more than one CS supports molecular traits mapping to the same significant gene (e.g., eQTL in one tissue/CS, sQTL in another CS).
+These regions have multiple CS, and all CS support molecular traits mapping to the same significant gene (e.g., eQTL in one tissue/CS, sQTL in another CS). No SNP-only or other-gene CS present.
 
 ```{r case1_table}
 c1 <- results_df[case == "case1_multi_cs_same_gene",
@@ -324,15 +324,15 @@ for (j in seq_len(nrow(c1_df))) {
 
 ## Case 2: Multiple CS, gene + variants
 
-These regions have multiple CS. Some CS support the significant gene's molecular traits, while the others contain only SNP variants.
+These regions have multiple CS. One or more CS support the significant gene's molecular traits, while the others contain only SNP variants.
 
 ```{r case2_table}
 c2 <- results_df[case == "case2_one_cs_gene_rest_snp",
                  .(Gene = gene_name, Region = region_id,
-                   `Total CS` = n_cs, `Mol CS` = n_cs_mol, `SNP CS` = n_cs_snp,
+                   `Total CS` = n_cs, `CS Sig Gene` = n_cs_sig, `SNP CS` = n_cs_snp,
                    `CS Details` = cs_details)]
 DT::datatable(c2, options = list(pageLength = 20, scrollX = TRUE),
-              caption = "Case 2: One CS with molecular traits, rest SNP-only")
+              caption = "Case 2: CS supporting sig gene + SNP-only CS")
 ```
 
 ### Case 2 details
