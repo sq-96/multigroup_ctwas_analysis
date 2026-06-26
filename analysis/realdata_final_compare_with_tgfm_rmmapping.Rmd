@@ -74,6 +74,78 @@ ctwas_folder_results <- "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_05
 ```
 
 
+# Comparing with silver standard genes 
+
+```{r fig.height=4, fig.width=4}
+
+traits <- c("LDL-ukb-d-30780_irnt","RBC-panukb","BMI-panukb","T2D-panukb")
+traits_silver <- c("LDL","RBC","BMI","T2D")
+names(traits_silver) <- traits
+
+tgfm_files <- c("GTEx_TGFM_PIPs_biochemistry_LDLdirect.txt","GTEx_TGFM_PIPs_blood_RED_COUNT.txt",
+                "GTEx_TGFM_PIPs_body_BMIz.txt","GTEx_TGFM_PIPs_disease_T2D.txt")
+names(tgfm_files) <- traits
+
+
+
+
+num_known_all <- c()
+num_bystander_all <- c()
+num_gene_pip08_all_ctwas <- c()
+num_gene_pip08_all_tgfm <- c()
+num_silver_pip08_all_ctwas <- c()
+num_bystander_pip08_all_ctwas <- c()
+num_silver_pip08_all_tgfm <- c()
+num_bystander_pip08_all_tgfm <- c()
+for (trait in traits){
+  
+  ctwas_genes <-  readRDS(paste0(ctwas_folder_results,trait,"/",trait,".3qtls.combined_pip_rmmapping_bygroup_final.RDS"))
+  ctwas_genes_highpip <- ctwas_genes$gene_name[ctwas_genes$combined_pip > 0.8] 
+  
+  tgfm_genes <- data.table::fread(paste0("/project/xinhe/xsun/multi_group_ctwas/data/tgfm/",tgfm_files[trait]))
+  tgfm_genes_highpip <- tgfm_genes[tgfm_genes$TGFM_PIP > 0.8,]
+  tgfm_genes_highpip <- tgfm_genes_highpip[tgfm_genes_highpip$genetic_element_class != "variant",]
+  tgfm_genes_highpip$ensg_id <- sub("\\..*", "", tgfm_genes_highpip$genetic_element_name)
+  tgfm_genes_highpip_ensg <- unique(tgfm_genes_highpip$ensg_id)
+  
+  ensg_to_symbol <- AnnotationDbi::select(
+    EnsDb.Hsapiens.v86,
+    keys = tgfm_genes_highpip_ensg,
+    keytype = "GENEID",
+    columns = c("GENEID", "SYMBOL")
+  )
+  
+  tgfm_genes_highpip_symbol <- ensg_to_symbol$SYMBOL
+ 
+  num_gene_pip08_all_ctwas <- c(num_gene_pip08_all_ctwas, nrow(ctwas_genes_highpip))
+  
+  known <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/data/silverstandard/known_annotations_",traits_silver[trait],".RDS"))
+  bystander <- readRDS(paste0("/project/xinhe/xsun/multi_group_ctwas/data/silverstandard/bystanders_",traits_silver[trait],".RDS"))
+  
+  num_known_all <- c(num_known_all, length(known))
+  num_bystander_all <- c(num_bystander_all,length(bystander))
+  
+  num_silver_pip08_all_ctwas <- c(num_silver_pip08_all_ctwas,sum(ctwas_genes_highpip %in% known))
+  num_bystander_pip08_all_ctwas <- c(num_bystander_pip08_all_ctwas,sum(ctwas_genes_highpip %in% bystander))
+  
+  num_silver_pip08_all_tgfm <- c(num_silver_pip08_all_tgfm,sum(tgfm_genes_highpip_symbol %in% known))
+  num_bystander_pip08_all_tgfm <- c(num_bystander_pip08_all_tgfm,sum(tgfm_genes_highpip_symbol %in% bystander))
+  
+}
+
+df <- data.frame(trait = traits, num_silver = num_known_all, num_silver_pip08_ctwas = num_silver_pip08_all_ctwas, num_silver_pip08_tgfm = num_silver_pip08_all_tgfm,
+                 num_bystander = num_bystander_all, num_bystander_pip08_ctwas = num_bystander_pip08_all_ctwas, num_bystander_pip08_tgfm = num_bystander_pip08_all_tgfm )
+
+df$TP_rate_ctwas <- df$num_silver_pip08_ctwas / (df$num_silver_pip08_ctwas + df$num_bystander_pip08_ctwas)
+df$TP_rate_tgfm <- df$num_silver_pip08_tgfm / (df$num_silver_pip08_tgfm + df$num_bystander_pip08_tgfm)
+
+DT::datatable(df,caption = htmltools::tags$caption( style = 'caption-side: left; text-align: left; color:black;  font-size:150% ;','Comparing with silver standard genes'),options = list(pageLength = 10) )
+
+
+```
+
+
+
 # LDL-ukb-d-30780_irnt
 
 ```{r fig.height=4, fig.width=4}

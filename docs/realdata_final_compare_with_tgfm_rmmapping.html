@@ -38,6 +38,14 @@
 <script src="site_libs/navigation-1.1/codefolding.js"></script>
 <link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/htmlwidgets-1.5.4/htmlwidgets.js"></script>
+<link href="site_libs/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet" />
+<script src="site_libs/datatables-binding-0.22/datatables.js"></script>
+<link href="site_libs/dt-core-1.11.3/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="site_libs/dt-core-1.11.3/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="site_libs/dt-core-1.11.3/js/jquery.dataTables.min.js"></script>
+<link href="site_libs/crosstalk-1.2.0/css/crosstalk.min.css" rel="stylesheet" />
+<script src="site_libs/crosstalk-1.2.0/js/crosstalk.min.js"></script>
 <link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
 <link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
 
@@ -402,7 +410,7 @@ aria-hidden="true"></span> </a>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2025-07-31
+<strong>Last updated:</strong> 2025-08-23
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -440,10 +448,10 @@ changes </a>
 <div id="strongRMarkdownfilestronguncommittedchanges"
 class="panel-collapse collapse">
 <div class="panel-body">
-<p>The R Markdown is untracked by Git. To know which version of the R
-Markdown file created these results, you’ll want to first commit it to
-the Git repo. If you’re still working on the analysis, you can ignore
-this warning. When you’re finished, you can run
+<p>The R Markdown file has unstaged changes. To know which version of
+the R Markdown file created these results, you’ll want to first commit
+it to the Git repo. If you’re still working on the analysis, you can
+ignore this warning. When you’re finished, you can run
 <code>wflow_publish</code> to commit the R Markdown file and build the
 HTML.</p>
 </div>
@@ -536,15 +544,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistreeee25fe87dace9b31047081ee8830790ffdb867c5targetblankee25fe8a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistreec91b82e4aaa9349806403a8d247aa1d7680d4206targetblankc91b82ea">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/ee25fe87dace9b31047081ee8830790ffdb867c5" target="_blank">ee25fe8</a>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/c91b82e4aaa9349806403a8d247aa1d7680d4206" target="_blank">c91b82e</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistreeee25fe87dace9b31047081ee8830790ffdb867c5targetblankee25fe8a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomsq96multigroupctwasanalysistreec91b82e4aaa9349806403a8d247aa1d7680d4206targetblankc91b82ea"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -554,7 +562,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/ee25fe87dace9b31047081ee8830790ffdb867c5" target="_blank">ee25fe8</a>.
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/tree/c91b82e4aaa9349806403a8d247aa1d7680d4206" target="_blank">c91b82e</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -574,16 +582,8 @@ Ignored files:
     Ignored:    figures/lz/IBD-ebi-a-GCST004131/single/
     Ignored:    figures/lz_ld/IBD-ebi-a-GCST004131/single/
 
-Untracked files:
-    Untracked:  analysis/realdata_final_compare_with_tgfm_rmmapping.Rmd
-
 Unstaged changes:
-    Deleted:    VennDiagram.2025-07-16_11-06-59.log
-    Deleted:    VennDiagram.2025-07-16_11-07-00.log
-    Deleted:    VennDiagram.2025-07-16_11-07-01.log
-    Deleted:    VennDiagram.2025-07-16_11-07-02.log
-    Deleted:    VennDiagram.2025-07-16_11-07-03.log
-    Deleted:    VennDiagram.2025-07-16_11-07-04.log
+    Modified:   analysis/realdata_final_compare_with_tgfm_rmmapping.Rmd
 
 </code></pre>
 <p>
@@ -598,10 +598,76 @@ have uncommitted changes.
 <hr>
 </div>
 <div id="versions" class="tab-pane fade">
+
 <p>
-There are no past versions. Publish this analysis with
-<code>wflow_publish()</code> to start tracking its development.
+These are the previous versions of the repository in which changes were
+made to the R Markdown
+(<code>analysis/realdata_final_compare_with_tgfm_rmmapping.Rmd</code>)
+and HTML
+(<code>docs/realdata_final_compare_with_tgfm_rmmapping.html</code>)
+files. If you’ve configured a remote Git repository (see
+<code>?wflow_git_remote</code>), click on the hyperlinks in the table
+below to view the files as they were in that past version.
 </p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/d213b6a3085c5295634b52d0561e046cff132dc7/analysis/realdata_final_compare_with_tgfm_rmmapping.Rmd" target="_blank">d213b6a</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-07-31
+</td>
+<td>
+update
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/sq-96/multigroup_ctwas_analysis/d213b6a3085c5295634b52d0561e046cff132dc7/docs/realdata_final_compare_with_tgfm_rmmapping.html" target="_blank">d213b6a</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-07-31
+</td>
+<td>
+update
+</td>
+</tr>
+</tbody>
+</table>
+</div>
 <hr>
 </div>
 </div>
@@ -708,6 +774,73 @@ plot_overlap_barplot &lt;- function(ctwas_genes_highpip,
 
 ctwas_folder_results &lt;- &quot;/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/snakemake_outputs/&quot;</code></pre>
 </div>
+<div id="comparing-with-silver-standard-genes" class="section level1">
+<h1>Comparing with silver standard genes</h1>
+<pre class="r"><code>traits &lt;- c(&quot;LDL-ukb-d-30780_irnt&quot;,&quot;RBC-panukb&quot;,&quot;BMI-panukb&quot;,&quot;T2D-panukb&quot;)
+traits_silver &lt;- c(&quot;LDL&quot;,&quot;RBC&quot;,&quot;BMI&quot;,&quot;T2D&quot;)
+names(traits_silver) &lt;- traits
+
+tgfm_files &lt;- c(&quot;GTEx_TGFM_PIPs_biochemistry_LDLdirect.txt&quot;,&quot;GTEx_TGFM_PIPs_blood_RED_COUNT.txt&quot;,
+                &quot;GTEx_TGFM_PIPs_body_BMIz.txt&quot;,&quot;GTEx_TGFM_PIPs_disease_T2D.txt&quot;)
+names(tgfm_files) &lt;- traits
+
+
+
+
+num_known_all &lt;- c()
+num_bystander_all &lt;- c()
+num_gene_pip08_all_ctwas &lt;- c()
+num_gene_pip08_all_tgfm &lt;- c()
+num_silver_pip08_all_ctwas &lt;- c()
+num_bystander_pip08_all_ctwas &lt;- c()
+num_silver_pip08_all_tgfm &lt;- c()
+num_bystander_pip08_all_tgfm &lt;- c()
+for (trait in traits){
+  
+  ctwas_genes &lt;-  readRDS(paste0(ctwas_folder_results,trait,&quot;/&quot;,trait,&quot;.3qtls.combined_pip_rmmapping_bygroup_final.RDS&quot;))
+  ctwas_genes_highpip &lt;- ctwas_genes$gene_name[ctwas_genes$combined_pip &gt; 0.8] 
+  
+  tgfm_genes &lt;- data.table::fread(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/data/tgfm/&quot;,tgfm_files[trait]))
+  tgfm_genes_highpip &lt;- tgfm_genes[tgfm_genes$TGFM_PIP &gt; 0.8,]
+  tgfm_genes_highpip &lt;- tgfm_genes_highpip[tgfm_genes_highpip$genetic_element_class != &quot;variant&quot;,]
+  tgfm_genes_highpip$ensg_id &lt;- sub(&quot;\\..*&quot;, &quot;&quot;, tgfm_genes_highpip$genetic_element_name)
+  tgfm_genes_highpip_ensg &lt;- unique(tgfm_genes_highpip$ensg_id)
+  
+  ensg_to_symbol &lt;- AnnotationDbi::select(
+    EnsDb.Hsapiens.v86,
+    keys = tgfm_genes_highpip_ensg,
+    keytype = &quot;GENEID&quot;,
+    columns = c(&quot;GENEID&quot;, &quot;SYMBOL&quot;)
+  )
+  
+  tgfm_genes_highpip_symbol &lt;- ensg_to_symbol$SYMBOL
+ 
+  num_gene_pip08_all_ctwas &lt;- c(num_gene_pip08_all_ctwas, nrow(ctwas_genes_highpip))
+  
+  known &lt;- readRDS(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/data/silverstandard/known_annotations_&quot;,traits_silver[trait],&quot;.RDS&quot;))
+  bystander &lt;- readRDS(paste0(&quot;/project/xinhe/xsun/multi_group_ctwas/data/silverstandard/bystanders_&quot;,traits_silver[trait],&quot;.RDS&quot;))
+  
+  num_known_all &lt;- c(num_known_all, length(known))
+  num_bystander_all &lt;- c(num_bystander_all,length(bystander))
+  
+  num_silver_pip08_all_ctwas &lt;- c(num_silver_pip08_all_ctwas,sum(ctwas_genes_highpip %in% known))
+  num_bystander_pip08_all_ctwas &lt;- c(num_bystander_pip08_all_ctwas,sum(ctwas_genes_highpip %in% bystander))
+  
+  num_silver_pip08_all_tgfm &lt;- c(num_silver_pip08_all_tgfm,sum(tgfm_genes_highpip_symbol %in% known))
+  num_bystander_pip08_all_tgfm &lt;- c(num_bystander_pip08_all_tgfm,sum(tgfm_genes_highpip_symbol %in% bystander))
+  
+}
+
+df &lt;- data.frame(trait = traits, num_silver = num_known_all, num_silver_pip08_ctwas = num_silver_pip08_all_ctwas, num_silver_pip08_tgfm = num_silver_pip08_all_tgfm,
+                 num_bystander = num_bystander_all, num_bystander_pip08_ctwas = num_bystander_pip08_all_ctwas, num_bystander_pip08_tgfm = num_bystander_pip08_all_tgfm )
+
+df$TP_rate_ctwas &lt;- df$num_silver_pip08_ctwas / (df$num_silver_pip08_ctwas + df$num_bystander_pip08_ctwas)
+df$TP_rate_tgfm &lt;- df$num_silver_pip08_tgfm / (df$num_silver_pip08_tgfm + df$num_bystander_pip08_tgfm)
+
+DT::datatable(df,caption = htmltools::tags$caption( style = &#39;caption-side: left; text-align: left; color:black;  font-size:150% ;&#39;,&#39;Comparing with silver standard genes&#39;),options = list(pageLength = 10) )</code></pre>
+<div id="htmlwidget-4de263013227ca78a293" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-4de263013227ca78a293">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: left; text-align: left; color:black;  font-size:150% ;\">Comparing with silver standard genes<\/caption>","data":[["1","2","3","4"],["LDL-ukb-d-30780_irnt","RBC-panukb","BMI-panukb","T2D-panukb"],[69,71,42,72],[10,1,1,1],[2,0,0,0],[1515,1638,639,1556],[3,12,1,1],[0,2,0,0],[0.769230769230769,0.0769230769230769,0.5,0.5],[1,0,null,null]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>trait<\/th>\n      <th>num_silver<\/th>\n      <th>num_silver_pip08_ctwas<\/th>\n      <th>num_silver_pip08_tgfm<\/th>\n      <th>num_bystander<\/th>\n      <th>num_bystander_pip08_ctwas<\/th>\n      <th>num_bystander_pip08_tgfm<\/th>\n      <th>TP_rate_ctwas<\/th>\n      <th>TP_rate_tgfm<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[2,3,4,5,6,7,8,9]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
 <div id="ldl-ukb-d-30780_irnt" class="section level1">
 <h1>LDL-ukb-d-30780_irnt</h1>
 <pre class="r"><code>trait &lt;- &quot;LDL-ukb-d-30780_irnt&quot;
@@ -732,7 +865,44 @@ tgfm_genes_highpip_symbol &lt;- ensg_to_symbol$SYMBOL
 
 plot_overlap_barplot(ctwas_genes_highpip = ctwas_genes_highpip, tgfm_genes_highpip_symbol = tgfm_genes_highpip_symbol,trait = trait,return_unique_genes = T)</code></pre>
 <pre><code>$plot</code></pre>
-<p><img src="figure/realdata_final_compare_with_tgfm_rmmapping.Rmd/unnamed-chunk-2-1.png" width="384" style="display: block; margin: auto;" /></p>
+<p><img src="figure/realdata_final_compare_with_tgfm_rmmapping.Rmd/unnamed-chunk-3-1.png" width="384" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-3-1">
+Past versions of unnamed-chunk-3-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-3-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/d213b6a3085c5295634b52d0561e046cff132dc7/docs/figure/realdata_final_compare_with_tgfm_rmmapping.Rmd/unnamed-chunk-3-1.png" target="_blank">d213b6a</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-07-31
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>
 $tgfm_genes_unique
 [1] &quot;TRIM2&quot;   &quot;GIGYF1&quot;  &quot;LIPA&quot;    &quot;ST3GAL4&quot; &quot;M6PR&quot;    &quot;SCYL2&quot;   &quot;NYNRIN&quot; 
@@ -775,7 +945,44 @@ tgfm_genes_highpip_symbol &lt;- ensg_to_symbol$SYMBOL
 
 plot_overlap_barplot(ctwas_genes_highpip = ctwas_genes_highpip, tgfm_genes_highpip_symbol = tgfm_genes_highpip_symbol,trait = trait,return_unique_genes = T)</code></pre>
 <pre><code>$plot</code></pre>
-<p><img src="figure/realdata_final_compare_with_tgfm_rmmapping.Rmd/unnamed-chunk-3-1.png" width="384" style="display: block; margin: auto;" /></p>
+<p><img src="figure/realdata_final_compare_with_tgfm_rmmapping.Rmd/unnamed-chunk-4-1.png" width="384" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-4-1">
+Past versions of unnamed-chunk-4-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-4-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/d213b6a3085c5295634b52d0561e046cff132dc7/docs/figure/realdata_final_compare_with_tgfm_rmmapping.Rmd/unnamed-chunk-4-1.png" target="_blank">d213b6a</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-07-31
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>
 $tgfm_genes_unique
 [1] &quot;C1GALT1&quot; &quot;SNX31&quot;   &quot;HRCT1&quot;   &quot;ABO&quot;     &quot;STOX1&quot;   &quot;SLC5A11&quot; &quot;KAT8&quot;   
@@ -814,7 +1021,44 @@ tgfm_genes_highpip_symbol &lt;- ensg_to_symbol$SYMBOL
 
 plot_overlap_barplot(ctwas_genes_highpip = ctwas_genes_highpip, tgfm_genes_highpip_symbol = tgfm_genes_highpip_symbol,trait = trait,return_unique_genes = T)</code></pre>
 <pre><code>$plot</code></pre>
-<p><img src="figure/realdata_final_compare_with_tgfm_rmmapping.Rmd/unnamed-chunk-4-1.png" width="384" style="display: block; margin: auto;" /></p>
+<p><img src="figure/realdata_final_compare_with_tgfm_rmmapping.Rmd/unnamed-chunk-5-1.png" width="384" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-5-1">
+Past versions of unnamed-chunk-5-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-5-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/d213b6a3085c5295634b52d0561e046cff132dc7/docs/figure/realdata_final_compare_with_tgfm_rmmapping.Rmd/unnamed-chunk-5-1.png" target="_blank">d213b6a</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-07-31
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>
 $tgfm_genes_unique
  [1] &quot;LDLRAP1&quot;   &quot;CDC7&quot;      &quot;KIAA1614&quot;  &quot;ALS2&quot;      &quot;CHST13&quot;    &quot;PAK2&quot;     
@@ -868,7 +1112,44 @@ tgfm_genes_highpip_symbol &lt;- ensg_to_symbol$SYMBOL
 
 plot_overlap_barplot(ctwas_genes_highpip = ctwas_genes_highpip, tgfm_genes_highpip_symbol = tgfm_genes_highpip_symbol,trait = trait,return_unique_genes = T)</code></pre>
 <pre><code>$plot</code></pre>
-<p><img src="figure/realdata_final_compare_with_tgfm_rmmapping.Rmd/unnamed-chunk-5-1.png" width="384" style="display: block; margin: auto;" /></p>
+<p><img src="figure/realdata_final_compare_with_tgfm_rmmapping.Rmd/unnamed-chunk-6-1.png" width="384" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-6-1">
+Past versions of unnamed-chunk-6-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-6-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/d213b6a3085c5295634b52d0561e046cff132dc7/docs/figure/realdata_final_compare_with_tgfm_rmmapping.Rmd/unnamed-chunk-6-1.png" target="_blank">d213b6a</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-07-31
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>
 $tgfm_genes_unique
  [1] &quot;SMIM1&quot;   &quot;LINGO4&quot;  &quot;THBS3&quot;   &quot;TWIST2&quot;  &quot;MKRN2&quot;   &quot;SLC12A7&quot; &quot;ANKRD55&quot;
@@ -919,7 +1200,44 @@ tgfm_genes_highpip_symbol &lt;- ensg_to_symbol$SYMBOL
 
 plot_overlap_barplot(ctwas_genes_highpip = ctwas_genes_highpip, tgfm_genes_highpip_symbol = tgfm_genes_highpip_symbol,trait = trait,return_unique_genes = T)</code></pre>
 <pre><code>$plot</code></pre>
-<p><img src="figure/realdata_final_compare_with_tgfm_rmmapping.Rmd/unnamed-chunk-6-1.png" width="384" style="display: block; margin: auto;" /></p>
+<p><img src="figure/realdata_final_compare_with_tgfm_rmmapping.Rmd/unnamed-chunk-7-1.png" width="384" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-7-1">
+Past versions of unnamed-chunk-7-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-7-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/d213b6a3085c5295634b52d0561e046cff132dc7/docs/figure/realdata_final_compare_with_tgfm_rmmapping.Rmd/unnamed-chunk-7-1.png" target="_blank">d213b6a</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-07-31
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>
 $tgfm_genes_unique
  [1] &quot;SLC35E2B&quot; &quot;FUBP1&quot;    &quot;PRMT6&quot;    &quot;ZBTB7B&quot;   &quot;ADH1A&quot;    &quot;SPDYE5&quot;  
@@ -961,7 +1279,44 @@ tgfm_genes_highpip_symbol &lt;- ensg_to_symbol$SYMBOL
 
 plot_overlap_barplot(ctwas_genes_highpip = ctwas_genes_highpip, tgfm_genes_highpip_symbol = tgfm_genes_highpip_symbol,trait = trait,return_unique_genes = T)</code></pre>
 <pre><code>$plot</code></pre>
-<p><img src="figure/realdata_final_compare_with_tgfm_rmmapping.Rmd/unnamed-chunk-7-1.png" width="384" style="display: block; margin: auto;" /></p>
+<p><img src="figure/realdata_final_compare_with_tgfm_rmmapping.Rmd/unnamed-chunk-8-1.png" width="384" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-8-1">
+Past versions of unnamed-chunk-8-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-8-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/sq-96/multigroup_ctwas_analysis/blob/d213b6a3085c5295634b52d0561e046cff132dc7/docs/figure/realdata_final_compare_with_tgfm_rmmapping.Rmd/unnamed-chunk-8-1.png" target="_blank">d213b6a</a>
+</td>
+<td>
+XSun
+</td>
+<td>
+2025-07-31
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>
 $tgfm_genes_unique
  [1] &quot;AGRN&quot;     &quot;WRAP73&quot;   &quot;SH3D21&quot;   &quot;MEAF6&quot;    &quot;FUBP1&quot;    &quot;CDC14A&quot;  
@@ -1032,7 +1387,7 @@ tgfm_genes_highpip_symbol &lt;- ensg_to_symbol$SYMBOL
 
 plot_overlap_barplot(ctwas_genes_highpip = ctwas_genes_highpip, tgfm_genes_highpip_symbol = tgfm_genes_highpip_symbol,trait = trait,return_unique_genes = T)</code></pre>
 <pre><code>$plot</code></pre>
-<p><img src="figure/realdata_final_compare_with_tgfm_rmmapping.Rmd/unnamed-chunk-8-1.png" width="384" style="display: block; margin: auto;" /></p>
+<p><img src="figure/realdata_final_compare_with_tgfm_rmmapping.Rmd/unnamed-chunk-9-1.png" width="384" style="display: block; margin: auto;" /></p>
 <pre><code>
 $tgfm_genes_unique
 [1] &quot;SRGAP2C&quot; &quot;GTF2I&quot;   &quot;CWF19L1&quot;
@@ -1073,55 +1428,57 @@ other attached packages:
 [11] S4Vectors_0.34.0          BiocGenerics_0.42.0      
 
 loaded via a namespace (and not attached):
- [1] ProtGenerics_1.28.0         bitops_1.0-7               
- [3] matrixStats_0.62.0          fs_1.5.2                   
- [5] bit64_4.0.5                 filelock_1.0.2             
- [7] progress_1.2.2              httr_1.4.3                 
- [9] rprojroot_2.0.3             tools_4.2.0                
-[11] bslib_0.3.1                 utf8_1.2.2                 
-[13] R6_2.5.1                    colorspace_2.0-3           
-[15] DBI_1.2.2                   lazyeval_0.2.2             
-[17] withr_2.5.0                 tidyselect_1.2.0           
-[19] prettyunits_1.1.1           bit_4.0.4                  
-[21] curl_4.3.2                  compiler_4.2.0             
-[23] git2r_0.30.1                cli_3.6.1                  
-[25] xml2_1.3.3                  DelayedArray_0.22.0        
-[27] labeling_0.4.2              rtracklayer_1.56.0         
-[29] sass_0.4.1                  scales_1.3.0               
-[31] rappdirs_0.3.3              stringr_1.5.1              
-[33] digest_0.6.29               Rsamtools_2.12.0           
-[35] rmarkdown_2.25              XVector_0.36.0             
-[37] pkgconfig_2.0.3             htmltools_0.5.2            
-[39] MatrixGenerics_1.8.0        highr_0.9                  
-[41] dbplyr_2.1.1                fastmap_1.1.0              
-[43] rlang_1.1.2                 rstudioapi_0.13            
-[45] RSQLite_2.3.1               farver_2.1.0               
-[47] jquerylib_0.1.4             BiocIO_1.6.0               
-[49] generics_0.1.2              jsonlite_1.8.0             
-[51] BiocParallel_1.30.3         dplyr_1.1.4                
-[53] RCurl_1.98-1.7              magrittr_2.0.3             
-[55] GenomeInfoDbData_1.2.8      Matrix_1.5-3               
-[57] munsell_0.5.0               Rcpp_1.0.12                
-[59] fansi_1.0.3                 lifecycle_1.0.4            
-[61] stringi_1.7.6               yaml_2.3.5                 
-[63] SummarizedExperiment_1.26.1 zlibbioc_1.42.0            
-[65] BiocFileCache_2.4.0         grid_4.2.0                 
-[67] blob_1.2.3                  parallel_4.2.0             
-[69] promises_1.2.0.1            crayon_1.5.1               
-[71] lattice_0.20-45             Biostrings_2.64.0          
-[73] hms_1.1.1                   KEGGREST_1.36.3            
-[75] knitr_1.39                  pillar_1.9.0               
-[77] rjson_0.2.21                codetools_0.2-18           
-[79] biomaRt_2.54.1              XML_3.99-0.14              
-[81] glue_1.6.2                  evaluate_0.15              
-[83] data.table_1.14.2           png_0.1-7                  
-[85] vctrs_0.6.5                 httpuv_1.6.5               
-[87] gtable_0.3.0                assertthat_0.2.1           
-[89] cachem_1.0.6                xfun_0.41                  
-[91] restfulr_0.0.14             later_1.3.0                
-[93] tibble_3.2.1                GenomicAlignments_1.32.0   
-[95] memoise_2.0.1               workflowr_1.7.0            
-[97] ellipsis_0.3.2             </code></pre>
+  [1] ProtGenerics_1.28.0         bitops_1.0-7               
+  [3] matrixStats_0.62.0          fs_1.5.2                   
+  [5] bit64_4.0.5                 filelock_1.0.2             
+  [7] progress_1.2.2              httr_1.4.3                 
+  [9] rprojroot_2.0.3             tools_4.2.0                
+ [11] bslib_0.3.1                 DT_0.22                    
+ [13] utf8_1.2.2                  R6_2.5.1                   
+ [15] colorspace_2.0-3            DBI_1.2.2                  
+ [17] lazyeval_0.2.2              withr_2.5.0                
+ [19] tidyselect_1.2.0            prettyunits_1.1.1          
+ [21] bit_4.0.4                   curl_4.3.2                 
+ [23] compiler_4.2.0              git2r_0.30.1               
+ [25] cli_3.6.1                   xml2_1.3.3                 
+ [27] DelayedArray_0.22.0         labeling_0.4.2             
+ [29] rtracklayer_1.56.0          sass_0.4.1                 
+ [31] scales_1.3.0                rappdirs_0.3.3             
+ [33] stringr_1.5.1               digest_0.6.29              
+ [35] Rsamtools_2.12.0            rmarkdown_2.25             
+ [37] XVector_0.36.0              pkgconfig_2.0.3            
+ [39] htmltools_0.5.2             MatrixGenerics_1.8.0       
+ [41] highr_0.9                   dbplyr_2.1.1               
+ [43] fastmap_1.1.0               htmlwidgets_1.5.4          
+ [45] rlang_1.1.2                 rstudioapi_0.13            
+ [47] RSQLite_2.3.1               farver_2.1.0               
+ [49] jquerylib_0.1.4             BiocIO_1.6.0               
+ [51] generics_0.1.2              jsonlite_1.8.0             
+ [53] crosstalk_1.2.0             BiocParallel_1.30.3        
+ [55] dplyr_1.1.4                 RCurl_1.98-1.7             
+ [57] magrittr_2.0.3              GenomeInfoDbData_1.2.8     
+ [59] Matrix_1.5-3                munsell_0.5.0              
+ [61] Rcpp_1.0.12                 fansi_1.0.3                
+ [63] lifecycle_1.0.4             stringi_1.7.6              
+ [65] whisker_0.4                 yaml_2.3.5                 
+ [67] SummarizedExperiment_1.26.1 zlibbioc_1.42.0            
+ [69] BiocFileCache_2.4.0         grid_4.2.0                 
+ [71] blob_1.2.3                  parallel_4.2.0             
+ [73] promises_1.2.0.1            crayon_1.5.1               
+ [75] lattice_0.20-45             Biostrings_2.64.0          
+ [77] hms_1.1.1                   KEGGREST_1.36.3            
+ [79] knitr_1.39                  pillar_1.9.0               
+ [81] rjson_0.2.21                codetools_0.2-18           
+ [83] biomaRt_2.54.1              XML_3.99-0.14              
+ [85] glue_1.6.2                  evaluate_0.15              
+ [87] data.table_1.14.2           png_0.1-7                  
+ [89] vctrs_0.6.5                 httpuv_1.6.5               
+ [91] gtable_0.3.0                assertthat_0.2.1           
+ [93] cachem_1.0.6                xfun_0.41                  
+ [95] restfulr_0.0.14             later_1.3.0                
+ [97] tibble_3.2.1                GenomicAlignments_1.32.0   
+ [99] memoise_2.0.1               workflowr_1.7.0            
+[101] ellipsis_0.3.2             </code></pre>
 </div>
 </div>
 

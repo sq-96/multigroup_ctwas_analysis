@@ -1,0 +1,489 @@
+---
+title: "CS Structure in Single-Gene Regions (LDL)"
+author: "Xinhe Sun"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 3
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+knitr::opts_knit$set(root.dir = "/project/xinhe/xsun/multi_group_ctwas/23.multi_group_0515/")
+library(ctwas)
+library(data.table)
+library(DT)
+library(ggplot2)
+```
+
+## Overview
+
+For regions reporting exactly one gene (combined_pip > 0.8), we examine the credible set (CS) structure to understand the number and nature of independent signals supporting that gene.
+
+- **Case 1**: Multiple CS, but supporting the same gene. Multiple independent molecular signals converge on the same gene.
+- **Case 2**: Multiple CS, some CS supports the gene, others are variants (SNP-only).
+- **Case 3**: Multiple CS, some support the gene, some support other genes (but with combined PIP < 0.8), and others are variants if there are others.
+- **Case 4**: No CS. Genes achieve high combined PIP by accumulating small contributions across multiple sets without entering any single credible set.
+- **Case 5**: Single CS.
+
+## Load data and combine gene PIPs
+
+```{r load_data}
+trait <- "LDL-ukb-d-30780_irnt"
+folder_results <- "snakemake_outputs/"
+
+mapping_predictdb <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/PredictDB_mapping.RDS")
+mapping_munro <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/Munro_mapping.RDS")
+mapping_ed <- readRDS("/project2/xinhe/shared_data/multigroup_ctwas/weights/mapping_files/mapping_edqtl.RDS")
+mapping_all <- rbind(mapping_predictdb, mapping_munro, mapping_ed)
+mapping_dt <- as.data.table(mapping_all)
+
+finemap_res <- readRDS(paste0(folder_results, trait, "/", trait, ".3qtls.thin1.shared_all.L5.regionmerge_with_mappingtable_finemap_res.RDS"))
+susie_alpha_res <- readRDS(paste0(folder_results, trait, "/", trait, ".3qtls.thin1.shared_all.L5.regionmerge_with_mappingtable_susie_alpha_res.RDS"))
+```
+
+```{r combine_pip}
+ctwas_gene_anno <- anno_susie_alpha_res(
+  susie_alpha_res,
+  mapping_table = mapping_all,
+  map_by = "molecular_id",
+  drop_unmapped = TRUE
+)
+
+gene_pip_df <- combine_gene_pips(
+  ctwas_gene_anno,
+  group_by = "gene_name",
+  by = "type",
+  method = "combine_cs",
+  filter_cs = FALSE,
+  include_cs_id = TRUE,
+  include_set_id = TRUE
+)
+
+set_ids <- gene_pip_df$combined_set_id
+first_set <- sub(",.*$", "", set_ids)
+gene_pip_df$region_id <- sub("\\.L[0-9]+$", "", first_set)
+```
+
+## Identify single-gene regions
+
+```{r single_gene_regions}
+sig_genes <- gene_pip_df[gene_pip_df$combined_pip > 0.8, ]
+sig_dt <- as.data.table(sig_genes)
+genes_per_region <- sig_dt[, .(n_genes = uniqueN(gene_name)), by = region_id]
+
+cat("Total genes with combined_pip > 0.8:", nrow(sig_genes), "\n")
+cat("Total regions with significant genes:", nrow(genes_per_region), "\n")
+```
+
+```{r gene_per_region_table}
+knitr::kable(as.data.frame(table(genes_per_region$n_genes)),
+             col.names = c("Genes per region", "Number of regions"),
+             caption = "Distribution of significant genes per region")
+```
+
+```{r}
+single_gene_regions <- genes_per_region[n_genes == 1]
+cat("Single-gene regions:", nrow(single_gene_regions), "\n")
+```
+
+## Analyze CS structure in single-gene regions
+
+```{r analyze_cs}
+finemap_dt <- as.data.table(finemap_res)
+
+results <- list()
+
+for (i in seq_len(nrow(single_gene_regions))) {
+  rid <- single_gene_regions$region_id[i]
+  gene_name_val <- sig_dt[region_id == rid, unique(gene_name)]
+
+  region_fm <- finemap_dt[region_id == rid]
+  region_cs <- region_fm[!is.na(cs)]
+
+  if (nrow(region_cs) == 0) {
+    results[[i]] <- list(
+      region_id = rid, gene_name = gene_name_val,
+      n_cs = 0L, n_cs_mol = 0L, n_cs_snp = 0L,
+      n_cs_sig = 0L, n_cs_other_gene = 0L,
+      max_mol_pip = NA_real_, all_mol_below_08 = NA,
+      case = "case4_no_cs", cs_details = ""
+    )
+    next
+  }
+
+  ucs <- unique(region_cs$cs)
+  n_cs <- length(ucs)
+
+  # Classify each CS: SNP-only, mol for sig gene, or mol for other gene
+  cs_type <- sapply(ucs, function(cv) {
+    ents <- region_cs[cs == cv]
+    mol <- ents[type != "SNP"]
+    if (nrow(mol) == 0) return("snp_only")
+    mol_ids <- unique(mol$molecular_id)
+    mapped_genes <- unique(mapping_dt[molecular_id %in% mol_ids, gene_name])
+    if (gene_name_val %in% mapped_genes) return("sig_gene")
+    return("other_gene")
+  })
+
+  n_cs_snp <- sum(cs_type == "snp_only")
+  n_cs_sig <- sum(cs_type == "sig_gene")
+  n_cs_other_gene <- sum(cs_type == "other_gene")
+  n_cs_mol <- n_cs_sig + n_cs_other_gene
+
+  details <- sapply(ucs, function(cv) {
+    ents <- region_cs[cs == cv]
+    mol <- ents[type != "SNP"]
+    if (nrow(mol) > 0) {
+      types_found <- unique(mol$type)
+      contexts_found <- unique(mol$context)
+      mol_ids <- unique(mol$molecular_id)
+      mapped_genes <- unique(mapping_dt[molecular_id %in% mol_ids, gene_name])
+      gene_str <- paste(mapped_genes, collapse = ", ")
+      paste0(cv, ": ", paste(types_found, collapse = "/"),
+             " (", paste(contexts_found, collapse = ", "),
+             ") [genes: ", gene_str, "]")
+    } else {
+      paste0(cv, ": SNP-only (n=", nrow(ents), ")")
+    }
+  })
+
+  # Max mol PIP for traits mapping to sig gene only
+  mol_entries_sig <- region_cs[type != "SNP"]
+  if (nrow(mol_entries_sig) > 0) {
+    sig_mol_ids <- mapping_dt[gene_name == gene_name_val, unique(molecular_id)]
+    mol_for_sig <- mol_entries_sig[molecular_id %in% sig_mol_ids]
+    if (nrow(mol_for_sig) > 0) {
+      max_mol_pip <- max(mol_for_sig$susie_pip)
+      all_mol_below_08 <- all(mol_for_sig$susie_pip < 0.8)
+    } else {
+      max_mol_pip <- NA_real_
+      all_mol_below_08 <- NA
+    }
+  } else {
+    max_mol_pip <- NA_real_
+    all_mol_below_08 <- NA
+  }
+
+  if (n_cs == 1) {
+    cl <- "case5_single_cs"
+  } else if (n_cs_sig > 1) {
+    cl <- "case1_multi_cs_same_gene"
+  } else if (n_cs_sig == 1 & n_cs_other_gene > 0) {
+    cl <- "case3_sig_gene_plus_other_genes"
+  } else if (n_cs_sig == 1 & n_cs_other_gene == 0 & n_cs_snp >= 1) {
+    cl <- "case2_one_cs_gene_rest_snp"
+  } else if (n_cs_sig == 0) {
+    cl <- "case4_no_cs"
+  } else {
+    cl <- "other"
+  }
+
+  results[[i]] <- list(
+    region_id = rid, gene_name = gene_name_val,
+    n_cs = n_cs, n_cs_mol = n_cs_mol, n_cs_snp = n_cs_snp,
+    n_cs_sig = n_cs_sig, n_cs_other_gene = n_cs_other_gene,
+    max_mol_pip = max_mol_pip, all_mol_below_08 = all_mol_below_08,
+    case = cl, cs_details = paste(details, collapse = " | ")
+  )
+}
+
+results_df <- rbindlist(results)
+```
+
+## Summary
+
+```{r summary_table}
+case_labels <- c(
+  "case1_multi_cs_same_gene" = "Case 1: Multiple CS, supporting same gene",
+  "case2_one_cs_gene_rest_snp" = "Case 2: Multiple CS, gene + variants",
+  "case3_sig_gene_plus_other_genes" = "Case 3: Multiple CS, gene + other genes (+variants)",
+  "case4_no_cs" = "Case 4: No CS",
+  "case5_single_cs" = "Case 5: Single CS"
+)
+
+case_order <- c("case1_multi_cs_same_gene", "case2_one_cs_gene_rest_snp",
+                "case3_sig_gene_plus_other_genes", "case4_no_cs", "case5_single_cs")
+
+case_counts <- as.data.frame(table(factor(results_df$case, levels = case_order)))
+colnames(case_counts) <- c("Case", "Count")
+case_counts$Description <- case_labels[as.character(case_counts$Case)]
+case_counts <- case_counts[, c("Case", "Description", "Count")]
+
+knitr::kable(case_counts, row.names = FALSE,
+             caption = "Breakdown of CS structure in single-gene regions")
+```
+
+```{r summary_plot, fig.width=8, fig.height=4}
+plot_df <- results_df[, .(count = .N), by = case]
+plot_df[, label := case_labels[case]]
+label_order <- case_labels[case_order]
+plot_df[, label := factor(label, levels = rev(label_order))]
+
+ggplot(plot_df, aes(x = label, y = count, fill = label)) +
+  geom_col(show.legend = FALSE) +
+  geom_text(aes(label = count), hjust = -0.2, size = 4) +
+  coord_flip() +
+  labs(x = "", y = "Number of regions", title = paste0(trait, ": CS structure in single-gene regions")) +
+  theme_minimal(base_size = 14) +
+  theme(axis.text.y = element_text(color = "black")) +
+  ylim(0, max(plot_df$count) * 1.15)
+```
+
+## Case 1: Multiple CS, supporting the same gene
+
+These regions have multiple CS, and more than one CS supports molecular traits mapping to the same significant gene (e.g., eQTL in one tissue/CS, sQTL in another CS).
+
+```{r case1_table}
+c1 <- results_df[case == "case1_multi_cs_same_gene",
+                 .(Gene = gene_name, Region = region_id,
+                   `Total CS` = n_cs, `CS Sig Gene` = n_cs_sig,
+                   `CS Other Gene` = n_cs_other_gene, `CS SNP` = n_cs_snp,
+                   `Max Mol PIP` = max_mol_pip, `All Mol PIP < 0.8` = all_mol_below_08,
+                   `CS Details` = cs_details)]
+DT::datatable(c1, options = list(pageLength = 20, scrollX = TRUE),
+              caption = "Case 1: Multiple CS supporting the same gene")
+```
+
+### Case 1 sub-classification: individual PIP check
+
+For Case 1 genes, we check whether all individual molecular trait PIPs (susie_pip) are below 0.8 before combining. Genes where all individual PIPs < 0.8 are truly "multi-signal" — they only reach significance by combining evidence across multiple independent credible sets. Genes where at least one molecular trait already has PIP >= 0.8 would have been identified even without combining.
+
+```{r case1_subclass}
+c1_res <- results_df[case == "case1_multi_cs_same_gene"]
+
+cat("Case 1 genes where ALL individual molecular PIPs < 0.8:", sum(c1_res$all_mol_below_08, na.rm = TRUE), "\n")
+cat("Case 1 genes where some individual molecular PIP >= 0.8:", sum(!c1_res$all_mol_below_08, na.rm = TRUE), "\n")
+```
+
+#### Case 1a: All individual molecular PIPs < 0.8 (truly multi-signal)
+
+These genes only reach combined_pip > 0.8 by aggregating evidence across multiple CS — no single molecular trait is individually significant.
+
+```{r case1a_table}
+c1a <- results_df[case == "case1_multi_cs_same_gene" & all_mol_below_08 == TRUE,
+                  .(Gene = gene_name, Region = region_id,
+                    `Total CS` = n_cs, `Mol CS` = n_cs_mol,
+                    `Max Mol PIP` = round(max_mol_pip, 4),
+                    `CS Details` = cs_details)]
+
+c1a <- merge(c1a, sig_dt[, .(gene_name, combined_pip)],
+             by.x = "Gene", by.y = "gene_name", all.x = TRUE)
+setnames(c1a, "combined_pip", "Combined PIP")
+c1a[, `Combined PIP` := round(`Combined PIP`, 4)]
+
+DT::datatable(c1a, options = list(pageLength = 20, scrollX = TRUE),
+              caption = "Case 1a: All individual molecular PIPs < 0.8")
+```
+
+#### Case 1b: At least one individual molecular PIP >= 0.8
+
+These genes already have at least one molecular trait with high individual PIP — the multi-CS structure provides additional support but is not required for identification.
+
+```{r case1b_table}
+c1b <- results_df[case == "case1_multi_cs_same_gene" & all_mol_below_08 == FALSE,
+                  .(Gene = gene_name, Region = region_id,
+                    `Total CS` = n_cs, `Mol CS` = n_cs_mol,
+                    `Max Mol PIP` = round(max_mol_pip, 4),
+                    `CS Details` = cs_details)]
+
+c1b <- merge(c1b, sig_dt[, .(gene_name, combined_pip)],
+             by.x = "Gene", by.y = "gene_name", all.x = TRUE)
+setnames(c1b, "combined_pip", "Combined PIP")
+c1b[, `Combined PIP` := round(`Combined PIP`, 4)]
+
+DT::datatable(c1b, options = list(pageLength = 20, scrollX = TRUE),
+              caption = "Case 1b: At least one molecular PIP >= 0.8")
+```
+
+### Case 1 details
+
+```{r case1_details, results='asis'}
+c1_df <- results_df[case == "case1_multi_cs_same_gene"]
+
+for (j in seq_len(nrow(c1_df))) {
+  rid <- c1_df$region_id[j]
+  gn <- c1_df$gene_name[j]
+
+  cat(sprintf("\n#### %s (region: %s)\n\n", gn, rid))
+
+  region_fm <- finemap_dt[region_id == rid & !is.na(cs)]
+  mol_entries <- region_fm[type != "SNP", .(id, type, context, group, cs, susie_pip, z)]
+  mol_entries <- mol_entries[order(cs, -susie_pip)]
+
+  if (nrow(mol_entries) > 0) {
+    print(knitr::kable(mol_entries, digits = 4,
+                       caption = paste0("Molecular traits in CS for ", gn)))
+    cat("\n")
+  }
+}
+```
+
+## Case 2: Multiple CS, gene + variants
+
+These regions have multiple CS. Some CS support the significant gene's molecular traits, while the others contain only SNP variants.
+
+```{r case2_table}
+c2 <- results_df[case == "case2_one_cs_gene_rest_snp",
+                 .(Gene = gene_name, Region = region_id,
+                   `Total CS` = n_cs, `Mol CS` = n_cs_mol, `SNP CS` = n_cs_snp,
+                   `CS Details` = cs_details)]
+DT::datatable(c2, options = list(pageLength = 20, scrollX = TRUE),
+              caption = "Case 2: One CS with molecular traits, rest SNP-only")
+```
+
+### Case 2 details
+
+```{r case2_details, results='asis'}
+c2_df <- results_df[case == "case2_one_cs_gene_rest_snp"]
+
+for (j in seq_len(nrow(c2_df))) {
+  rid <- c2_df$region_id[j]
+  gn <- c2_df$gene_name[j]
+
+  cat(sprintf("\n#### %s (region: %s)\n\n", gn, rid))
+
+  region_fm <- finemap_dt[region_id == rid & !is.na(cs)]
+
+  # Molecular traits CS
+  mol_entries <- region_fm[type != "SNP", .(id, type, context, group, cs, susie_pip, z)]
+  mol_entries <- mol_entries[order(cs, -susie_pip)]
+
+  if (nrow(mol_entries) > 0) {
+    cat("**Molecular traits in CS:**\n\n")
+    print(knitr::kable(mol_entries, digits = 4))
+    cat("\n")
+  }
+
+  # SNP-only CS summary
+  snp_cs <- region_fm[type == "SNP"]
+  snp_cs_summary <- snp_cs[, .(`N SNPs` = .N,
+                                `Max PIP` = max(susie_pip),
+                                `Max |z|` = max(abs(z))), by = cs]
+  snp_cs_summary <- snp_cs_summary[!snp_cs_summary$cs %in% mol_entries$cs]
+
+  if (nrow(snp_cs_summary) > 0) {
+    cat("**SNP-only CS:**\n\n")
+    print(knitr::kable(snp_cs_summary, digits = 4))
+    cat("\n")
+  }
+}
+```
+
+## Case 3: Multiple CS, gene + other genes (+variants)
+
+These regions have multiple CS. Some CS support the significant gene's molecular traits, some CS contain molecular traits mapping to other genes (with combined PIP < 0.8), and the remaining CS (if any) are SNP-only variants.
+
+```{r case3_table}
+c3 <- results_df[case == "case3_sig_gene_plus_other_genes",
+                 .(Gene = gene_name, Region = region_id,
+                   `Total CS` = n_cs, `CS Sig Gene` = n_cs_sig,
+                   `CS Other Gene` = n_cs_other_gene, `CS SNP` = n_cs_snp,
+                   `CS Details` = cs_details)]
+DT::datatable(c3, options = list(pageLength = 20, scrollX = TRUE),
+              caption = "Case 3: Sig gene CS + other gene CS")
+```
+
+### Case 3 details
+
+```{r case3_details, results='asis'}
+c3_df <- results_df[case == "case3_sig_gene_plus_other_genes"]
+
+for (j in seq_len(nrow(c3_df))) {
+  rid <- c3_df$region_id[j]
+  gn <- c3_df$gene_name[j]
+
+  cat(sprintf("\n#### %s (region: %s)\n\n", gn, rid))
+
+  region_fm <- finemap_dt[region_id == rid & !is.na(cs)]
+
+  # Molecular traits mapping to sig gene
+  sig_mol_ids <- mapping_dt[gene_name == gn, unique(molecular_id)]
+  mol_sig <- region_fm[type != "SNP" & molecular_id %in% sig_mol_ids,
+                       .(id, type, context, cs, susie_pip, z)]
+  mol_sig <- mol_sig[order(cs, -susie_pip)]
+
+  if (nrow(mol_sig) > 0) {
+    cat(sprintf("**Molecular traits mapping to %s:**\n\n", gn))
+    print(knitr::kable(mol_sig, digits = 4))
+    cat("\n")
+  }
+
+  # Molecular traits mapping to other genes
+  mol_other <- region_fm[type != "SNP" & !molecular_id %in% sig_mol_ids,
+                         .(id, molecular_id, type, context, cs, susie_pip, z)]
+  if (nrow(mol_other) > 0) {
+    mol_other_mapped <- merge(mol_other,
+                              unique(mapping_dt[, .(molecular_id, gene_name)]),
+                              by = "molecular_id", all.x = TRUE)
+    mol_other_mapped <- mol_other_mapped[, .(id, gene_name, type, context, cs, susie_pip, z)]
+    mol_other_mapped <- mol_other_mapped[order(cs, -susie_pip)]
+
+    cat("**Molecular traits mapping to other genes:**\n\n")
+    print(knitr::kable(mol_other_mapped, digits = 4))
+    cat("\n")
+  }
+
+  # SNP-only CS summary
+  snp_cs <- region_fm[type == "SNP"]
+  all_mol_cs <- unique(region_fm[type != "SNP", cs])
+  snp_only_cs <- snp_cs[!cs %in% all_mol_cs]
+  if (nrow(snp_only_cs) > 0) {
+    snp_cs_summary <- snp_only_cs[, .(`N SNPs` = .N,
+                                       `Max PIP` = max(susie_pip),
+                                       `Max |z|` = max(abs(z))), by = cs]
+    cat("**SNP-only CS:**\n\n")
+    print(knitr::kable(snp_cs_summary, digits = 4))
+    cat("\n")
+  }
+}
+```
+
+## Case 4: No CS
+
+Genes with combined_pip > 0.8 but no CS membership in the finemap result. These genes achieve high combined PIP by accumulating small contributions across multiple sets without entering any single credible set.
+
+```{r case4_table}
+c4 <- results_df[case == "case4_no_cs",
+                 .(Gene = gene_name, Region = region_id)]
+
+c4_pip <- merge(c4, sig_dt[, .(gene_name, combined_pip, eQTL_pip, sQTL_pip, stQTL_pip)],
+                by.x = "Gene", by.y = "gene_name", all.x = TRUE)
+
+DT::datatable(c4_pip, options = list(pageLength = 20, scrollX = TRUE),
+              caption = "Case 4: No CS — gene PIP breakdown")
+```
+
+## Case 5: Single CS
+
+Regions where only one credible set exists.
+
+```{r case5_table}
+c5 <- results_df[case == "case5_single_cs",
+                 .(Gene = gene_name, Region = region_id,
+                   `CS Details` = cs_details)]
+DT::datatable(c5, options = list(pageLength = 50, scrollX = TRUE),
+              caption = "Case 5: Single CS regions")
+```
+
+## Full results table
+
+```{r full_table}
+full_tbl <- results_df[, .(Gene = gene_name, Region = region_id,
+                            Case = case, `Total CS` = n_cs,
+                            `CS Sig Gene` = n_cs_sig, `CS Other Gene` = n_cs_other_gene,
+                            `CS SNP` = n_cs_snp,
+                            `Max Mol PIP` = round(max_mol_pip, 4),
+                            `All Mol PIP < 0.8` = all_mol_below_08)]
+full_tbl <- merge(full_tbl,
+                  sig_dt[, .(gene_name, combined_pip)],
+                  by.x = "Gene", by.y = "gene_name", all.x = TRUE)
+setnames(full_tbl, "combined_pip", "Combined PIP")
+full_tbl <- full_tbl[order(Case, -`Combined PIP`)]
+
+DT::datatable(full_tbl, options = list(pageLength = 80, scrollX = TRUE),
+              caption = "All single-gene regions with CS structure")
+```
